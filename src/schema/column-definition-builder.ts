@@ -72,7 +72,10 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * col.references('person.id')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id', 'integer', (col) => col.references('person.id'))
+   *   .execute()
    * ```
    */
   references(ref: string): ColumnDefinitionBuilder {
@@ -103,7 +106,14 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * col.references('person.id').onDelete('cascade')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn(
+   *     'owner_id',
+   *     'integer',
+   *     (col) => col.references('person.id').onDelete('cascade')
+   *   )
+   *   .execute()
    * ```
    */
   onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilder {
@@ -127,7 +137,14 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * col.references('person.id').onUpdate('cascade')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn(
+   *     'owner_id',
+   *     'integer',
+   *     (col) => col.references('person.id').onUpdate('cascade')
+   *   )
+   *   .execute()
    * ```
    */
   onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilder {
@@ -180,7 +197,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn('number_of_legs', 'integer', (col) => col.defaultTo(4))
    *   .execute()
@@ -192,7 +209,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn(
    *     'number_of_legs',
@@ -218,7 +235,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn('number_of_legs', 'integer', (col) =>
    *     col.check(sql`number_of_legs < 5`)
@@ -242,7 +259,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)',
    *     (col) => col.generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
@@ -293,7 +310,9 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)', (col) => col
    *     .generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
@@ -322,10 +341,17 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('first_name', 'varchar(36)', col => col.modifyFront(sql`collate utf8mb4_general_ci`).notNull())
-   *  .execute()
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn(
+   *     'first_name',
+   *     'varchar(36)',
+   *     (col) => col.modifyFront(sql`collate utf8mb4_general_ci`).notNull()
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -355,10 +381,11 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
-   *  .execute()
+   * db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -392,10 +419,19 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`))
-   *  .execute()
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn(
+   *     'age',
+   *     'integer',
+   *     col => col.unsigned()
+   *       .notNull()
+   *       .modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`)
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
