@@ -200,8 +200,11 @@ export class Kysely<DB>
    * The returned {@link TransactionBuilder} can be used to configure the transaction. The
    * {@link TransactionBuilder.execute} method can then be called to run the transaction.
    * {@link TransactionBuilder.execute} takes a function that is run inside the
-   * transaction. If the function throws, the transaction is rolled back. Otherwise
-   * the transaction is committed.
+   * transaction. If the function throws an exception,
+   * 1. the exception is caught,
+   * 2. the transaction is rolled back, and
+   * 3. the exception is thrown again.
+   * Otherwise the transaction is committed.
    *
    * The callback function passed to the {@link TransactionBuilder.execute | execute}
    * method gets the transaction object as its only argument. The transaction is
@@ -212,9 +215,12 @@ export class Kysely<DB>
    *
    * <!-- siteExample("transactions", "Simple transaction", 10) -->
    *
-   * This example inserts two rows in a transaction. If an error is thrown inside
-   * the callback passed to the `execute` method, the transaction is rolled back.
-   * Otherwise it's committed.
+   * This example inserts two rows in a transaction. If an exception is thrown inside
+   * the callback passed to the `execute` method,
+   * 1. the exception is caught,
+   * 2. the transaction is rolled back, and
+   * 3. the exception is thrown again.
+   * Otherwise the transaction is committed.
    *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
