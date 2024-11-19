@@ -25,14 +25,16 @@ type AllProps<T> = T & { [P in keyof T]-?: unknown }
  * 1. Omit checked type - all checked properties will be expect as of type never
  *
  * ```ts
- * const z: SomeType = requireAllProps({ propC: "no type will work" });
+ * type SomeType = { propA: string; propB?: number; }
+ * // const z: SomeType = requireAllProps({ propC: "no type will work" }); // Property 'propA' is missing in type '{ propC: string; }' but required in type 'SomeType'.
  * ```
  *
  * 2. Apply to spreaded object - there is no way how to check in compile time if spreaded object contains all properties
  *
  * ```ts
+ * type SomeType = { propA: string; propB?: number; }
  * const y: SomeType = { propA: "" }; // valid object according to SomeType declaration
- * const x = requireAllProps<SomeType>( { ... y } );
+ * // const x = requireAllProps<SomeType>({ ...y }); // Argument of type '{ propA: string; propB?: number; }' is not assignable to parameter of type 'AllProps<SomeType>'.
  * ```
  *
  * @param obj object to check if all properties has been used

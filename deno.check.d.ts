@@ -64,6 +64,11 @@ export type PetUpdate = Updateable<PetTable>
 export type Species = 'dog' | 'cat'
 
 declare global {
+  // @ts-ignore
+  export class Buffer {
+    static isBuffer(obj: unknown): obj is { length: number }
+    static compare(a: Buffer, b: Buffer): number
+  }
   export const db: Kysely<Database>
   export function functionThatExpectsPersonWithNonNullValue(
     person: Person & { nullable_column: string },
