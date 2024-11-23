@@ -214,20 +214,19 @@ export class QueryCreator<DB> {
    * ### Examples
    *
    * ```ts
-   * const result = db.selectNoFrom((eb) => [
+   * const result = await db.selectNoFrom((eb) => [
    *   eb.selectFrom('person')
    *     .select('id')
    *     .where('first_name', '=', 'Jennifer')
    *     .limit(1)
    *     .as('jennifer_id'),
-   *
    *   eb.selectFrom('pet')
    *     .select('id')
    *     .where('name', '=', 'Doggo')
    *     .limit(1)
    *     .as('doggo_id')
-   *   ])
-   *   .executeTakeFirstOrThrow()
+   * ])
+   * .executeTakeFirstOrThrow()
    *
    * console.log(result.jennifer_id)
    * console.log(result.doggo_id)
@@ -309,7 +308,7 @@ export class QueryCreator<DB> {
    *     last_name: 'Aniston'
    *   })
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    */
   insertInto<T extends keyof DB & string>(
@@ -382,7 +381,7 @@ export class QueryCreator<DB> {
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
-   *   .where('person.id', '=', '1')
+   *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    *
    * console.log(result.numDeletedRows)
@@ -400,7 +399,7 @@ export class QueryCreator<DB> {
    * const result = await db
    *   .deleteFrom(['person', 'pet'])
    *   .using('person')
-   *   .innerJoin('pet', 'pet.owner_id', '=', 'person.id')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    * ```
@@ -547,24 +546,24 @@ export class QueryCreator<DB> {
    *
    * ```ts
    * const result = await db
-   *   .mergeInto("wine as target")
+   *   .mergeInto('wine as target')
    *   .using(
-   *     "wine_stock_change as source",
-   *     "source.wine_name",
-   *     "target.name",
+   *     'wine_stock_change as source',
+   *     'source.wine_name',
+   *     'target.name',
    *   )
-   *   .whenNotMatchedAnd("source.stock_delta", ">", 0)
+   *   .whenNotMatchedAnd('source.stock_delta', '>', 0)
    *   .thenInsertValues(({ ref }) => ({
-   *     name: ref("source.wine_name"),
-   *     stock: ref("source.stock_delta"),
+   *     name: ref('source.wine_name'),
+   *     stock: ref('source.stock_delta'),
    *   }))
    *   .whenMatchedAnd(
-   *     (eb) => eb("target.stock", "+", eb.ref("source.stock_delta")),
-   *     ">",
+   *     (eb) => eb('target.stock', '+', eb.ref('source.stock_delta')),
+   *     '>',
    *     0,
    *   )
-   *   .thenUpdateSet("stock", (eb) =>
-   *     eb("target.stock", "+", eb.ref("source.stock_delta")),
+   *   .thenUpdateSet('stock', (eb) =>
+   *     eb('target.stock', '+', eb.ref('source.stock_delta')),
    *   )
    *   .whenMatched()
    *   .thenDelete()
