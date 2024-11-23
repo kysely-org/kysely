@@ -61,7 +61,7 @@ export type PersonUpdate = Updateable<PersonTable>
 export type Pet = Selectable<PetTable>
 export type NewPet = Insertable<PetTable>
 export type PetUpdate = Updateable<PetTable>
-export type Species = 'dog' | 'cat'
+export type Species = 'dog' | 'cat' | 'hamster'
 
 declare global {
   // @ts-ignore
