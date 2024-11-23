@@ -13,12 +13,17 @@
  * ### Examples
  *
  * ```ts
- * const result = await db
- *   .insertInto('person')
- *   .values(person)
- *   .executeTakeFirst()
+ * import type { NewPerson } from 'type-editor' // imaginary module
  *
- * console.log(result.insertId)
+ * async function insertPerson(person: NewPerson) {
+ *   const result = await db
+ *     .insertInto('person')
+ *     .values(person)
+ *     .executeTakeFirstOrThrow()
+ *
+ *   console.log(result.insertId) // relevant on MySQL
+ *   console.log(result.numInsertedOrUpdatedRows) // always relevant
+ * }
  * ```
  */
 export class InsertResult {
