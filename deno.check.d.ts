@@ -5,6 +5,7 @@ import type {
   Insertable,
   Kysely,
   Selectable,
+  SqlBool,
   Updateable,
 } from './dist/esm'
 
@@ -41,7 +42,7 @@ interface PersonTable {
 interface PetTable {
   id: Generated<number>
   created_at: GeneratedAlways<Date>
-  is_favorite: Generated<boolean>
+  is_favorite: Generated<SqlBool>
   name: string
   owner_id: number
   species: Species
