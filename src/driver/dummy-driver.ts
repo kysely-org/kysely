@@ -11,20 +11,21 @@ import { Driver } from './driver.js'
  * This example creates a Kysely instance for building postgres queries:
  *
  * ```ts
+ * import {
+ *   DummyDriver,
+ *   Kysely,
+ *   PostgresAdapter,
+ *   PostgresIntrospector,
+ *   PostgresQueryCompiler
+ * } from 'kysely'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
  * const db = new Kysely<Database>({
  *   dialect: {
- *     createAdapter() {
- *       return new PostgresAdapter()
- *     },
- *     createDriver() {
- *       return new DummyDriver()
- *     },
- *     createIntrospector(db: Kysely<any>) {
- *       return new PostgresIntrospector(db)
- *     },
- *     createQueryCompiler() {
- *       return new PostgresQueryCompiler()
- *     },
+ *     createAdapter: () => new PostgresAdapter(),
+ *     createDriver: () => new DummyDriver(),
+ *     createIntrospector: (db: Kysely<any>) => new PostgresIntrospector(db),
+ *     createQueryCompiler: () => new PostgresQueryCompiler(),
  *   },
  * })
  * ```
