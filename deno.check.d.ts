@@ -37,6 +37,7 @@ interface PersonTable {
     website: { url: string }
   } | null
   updated_at: ColumnType<Date | null, string | null | undefined, string | null>
+  marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 }
 
 interface PetTable {
