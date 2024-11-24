@@ -5,10 +5,11 @@ import type {
   Insertable,
   Kysely,
   Selectable,
+  SqlBool,
   Updateable,
 } from './dist/esm'
 
-interface Database {
+export interface Database {
   person: PersonTable
   pet: PetTable
   toy: ToyTable
@@ -36,11 +37,13 @@ interface PersonTable {
     website: { url: string }
   } | null
   updated_at: ColumnType<Date | null, string | null | undefined, string | null>
+  marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 }
 
 interface PetTable {
   id: Generated<number>
-  is_favorite: Generated<boolean>
+  created_at: GeneratedAlways<Date>
+  is_favorite: Generated<SqlBool>
   name: string
   owner_id: number
   species: Species

@@ -3,15 +3,15 @@ import { DialectAdapterBase } from '../dialect-adapter-base.js'
 import { MigrationLockOptions } from '../dialect-adapter.js'
 
 export class SqliteAdapter extends DialectAdapterBase {
-  get supportsTransactionalDdl(): boolean {
+  override get supportsTransactionalDdl(): boolean {
     return false
   }
 
-  get supportsReturning(): boolean {
+  override get supportsReturning(): boolean {
     return true
   }
 
-  async acquireMigrationLock(
+  override async acquireMigrationLock(
     _db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {
@@ -20,7 +20,7 @@ export class SqliteAdapter extends DialectAdapterBase {
     // We don't need to do anything here.
   }
 
-  async releaseMigrationLock(
+  override async releaseMigrationLock(
     _db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {

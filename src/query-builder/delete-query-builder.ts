@@ -300,7 +300,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name'])
    *   .execute()
    *
    * result[0].id
@@ -372,7 +372,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
@@ -536,7 +536,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from all tables
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -560,7 +560,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from a single table.
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -584,7 +584,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from multiple tables.
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -677,10 +677,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .clearReturning()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -702,11 +703,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .limit(5)
    *   .clearLimit()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -728,11 +730,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .orderBy('id')
    *   .clearOrderBy()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -812,6 +815,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(5)
    *   .execute()
    * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `pet` order by `created_at` limit ?
+   * ```
    */
   limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
@@ -829,10 +838,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.deleteFrom('person')
-   * .where('first_name', '=', 'John')
-   * .modifyEnd(sql.raw('-- This is a comment'))
-   * .execute()
+   *   .where('first_name', '=', 'John')
+   *   .modifyEnd(sql`-- This is a comment`)
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -864,12 +875,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
    *
-   * db.deleteFrom('person')
+   * await db.deleteFrom('person')
    *   .$call(log)
    *   .execute()
    * ```
@@ -957,25 +970,33 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
    * const person = await db.deleteFrom('person')
-   *   .where('id', '=', id)
+   *   .where('id', '=', 3)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (person.nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
    * const person = await db.deleteFrom('person')
-   *   .where('id', '=', id)
+   *   .where('id', '=', 3)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
-   *   .$narrowType<{ nullable_column: string }>()
+   *   .$narrowType<{ nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -1008,22 +1029,26 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * const result = await db
-   *   .with('deleted_person', (qb) => qb
-   *     .deleteFrom('person')
-   *     .where('id', '=', person.id)
-   *     .returning('first_name')
-   *     .$assertType<{ first_name: string }>()
-   *   )
-   *   .with('deleted_pet', (qb) => qb
-   *     .deleteFrom('pet')
-   *     .where('owner_id', '=', person.id)
-   *     .returning(['name as pet_name', 'species'])
-   *     .$assertType<{ pet_name: string, species: Species }>()
-   *   )
-   *   .selectFrom(['deleted_person', 'deleted_pet'])
-   *   .selectAll()
-   *   .executeTakeFirstOrThrow()
+   * import type { Species } from 'type-editor' // imaginary module
+   *
+   * async function deletePersonAndPets(personId: number) {
+   *   return await db
+   *     .with('deleted_person', (qb) => qb
+   *        .deleteFrom('person')
+   *        .where('id', '=', personId)
+   *        .returning('first_name')
+   *        .$assertType<{ first_name: string }>()
+   *     )
+   *     .with('deleted_pets', (qb) => qb
+   *       .deleteFrom('pet')
+   *       .where('owner_id', '=', personId)
+   *       .returning(['name as pet_name', 'species'])
+   *       .$assertType<{ pet_name: string, species: Species }>()
+   *     )
+   *     .selectFrom(['deleted_person', 'deleted_pets'])
+   *     .selectAll()
+   *     .execute()
+   * }
    * ```
    */
   $assertType<T extends O>(): O extends T

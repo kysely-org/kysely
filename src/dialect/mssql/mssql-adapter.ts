@@ -4,19 +4,19 @@ import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
 export class MssqlAdapter extends DialectAdapterBase {
-  get supportsCreateIfNotExists(): boolean {
+  override get supportsCreateIfNotExists(): boolean {
     return false
   }
 
-  get supportsTransactionalDdl(): boolean {
+  override get supportsTransactionalDdl(): boolean {
     return true
   }
 
-  get supportsOutput(): boolean {
+  override get supportsOutput(): boolean {
     return true
   }
 
-  async acquireMigrationLock(db: Kysely<any>): Promise<void> {
+  override async acquireMigrationLock(db: Kysely<any>): Promise<void> {
     // Acquire a transaction-level exclusive lock on the migrations table.
     // https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-getapplock-transact-sql?view=sql-server-ver16
     await sql`exec sp_getapplock @DbPrincipal = ${sql.lit(
@@ -26,7 +26,7 @@ export class MssqlAdapter extends DialectAdapterBase {
     )}`.execute(db)
   }
 
-  async releaseMigrationLock(): Promise<void> {
+  override async releaseMigrationLock(): Promise<void> {
     // Nothing to do here. `sp_getapplock` is automatically released at the
     // end of the transaction and since `supportsTransactionalDdl` true, we know
     // the `db` instance passed to acquireMigrationLock is actually a transaction.

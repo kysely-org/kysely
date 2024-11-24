@@ -113,7 +113,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    *   .selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .select((eb) =>
-   *     eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('person_pets')
+   *     eb.fn.jsonAgg('pet').orderBy('pet.name').as('person_pets')
    *   )
    *   .executeTakeFirstOrThrow()
    * ```
@@ -121,7 +121,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select json_agg("pet"."name" order by "pet"."name") as "person_pets"
+   * select json_agg("pet" order by "pet"."name") as "person_pets"
    * from "person"
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * ```

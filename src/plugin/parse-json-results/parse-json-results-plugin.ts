@@ -30,12 +30,42 @@ type ObjectStrategy = 'in-place' | 'create'
  * This plugin can be useful with dialects that don't automatically parse
  * JSON into objects and arrays but return JSON strings instead.
  *
+ * To apply this plugin globally, pass an instance of it to the `plugins` option
+ * when creating a new `Kysely` instance:
+ *
  * ```ts
- * const db = new Kysely<DB>({
- *   // ...
- *   plugins: [new ParseJSONResultsPlugin()]
- *   // ...
+ * import * as Sqlite from 'better-sqlite3'
+ * import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:'),
+ *   }),
+ *   plugins: [new ParseJSONResultsPlugin()],
  * })
+ * ```
+ *
+ * To apply this plugin to a single query:
+ *
+ * ```ts
+ * import { ParseJSONResultsPlugin } from 'kysely'
+ * import { jsonArrayFrom } from 'kysely/helpers/sqlite'
+ *
+ * const result = await db
+ *   .selectFrom('person')
+ *   .select((eb) => [
+ *     'id',
+ *     'first_name',
+ *     'last_name',
+ *     jsonArrayFrom(
+ *       eb.selectFrom('pet')
+ *         .whereRef('owner_id', '=', 'person.id')
+ *         .select(['name', 'species'])
+ *     ).as('pets')
+ *   ])
+ *   .withPlugin(new ParseJSONResultsPlugin())
+ *   .execute()
  * ```
  */
 export class ParseJSONResultsPlugin implements KyselyPlugin {
