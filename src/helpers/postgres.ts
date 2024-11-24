@@ -126,6 +126,9 @@ export function jsonObjectFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { sql } from 'kysely'
+ * import { jsonBuildObject } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -138,10 +141,10 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].name.first
- * result[0].name.last
- * result[0].name.full
+ * result[0]?.id
+ * result[0]?.name.first
+ * result[0]?.name.last
+ * result[0]?.name.full
  * ```
  *
  * The generated SQL (PostgreSQL):
