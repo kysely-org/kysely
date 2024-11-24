@@ -72,13 +72,13 @@ preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
  * One cannot do no alterations:
  *
  * ```ts
- * db.schema
+ * await db.schema
  *   .alterTable('person')
  * //  .execute() // Property 'execute' does not exist on type 'AlteredColumnBuilder'.
  * ```
  *
  * ```ts
- * db.schema
+ * await db.schema
  *   .alterTable('person')
  * //  .alterColumn('age', (ac) => ac) // Type 'AlterColumnBuilder' is not assignable to type 'AlteredColumnBuilder'.
  * //  .execute()
@@ -87,7 +87,7 @@ preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
  * One cannot do multiple alterations:
  *
  * ```ts
- * db.schema
+ * await db.schema
  *   .alterTable('person')
  * //  .alterColumn('age', (ac) => ac.dropNotNull().setNotNull()) // Property 'setNotNull' does not exist on type 'AlteredColumnBuilder'.
  * //  .execute()
