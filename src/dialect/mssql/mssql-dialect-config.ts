@@ -6,21 +6,23 @@ export interface MssqlDialectConfig {
    * (excluding `create`, `destroy` and `validate` functions which are controlled by this dialect),
    * `min` & `max` connections at the very least.
    *
-   * Example:
+   * ### Examples
    *
    * ```ts
+   * import { MssqlDialect } from 'kysely'
    * import * as Tarn from 'tarn'
+   * import * as Tedious from 'tedious'
    *
    * const dialect = new MssqlDialect({
-   *   // ...
-   *   tarn: {
-   *     ...Tarn,
-   *     options: {
+   *   tarn: { ...Tarn, options: { max: 10, min: 0 } },
+   *   tedious: {
+   *     ...Tedious,
+   *     connectionFactory: () => new Tedious.Connection({
    *       // ...
-   *       min: 0,
-   *       max: 10,
-   *     },
-   *   },
+   *       server: 'localhost',
+   *       // ...
+   *     }),
+   *   }
    * })
    * ```
    */
@@ -32,19 +34,23 @@ export interface MssqlDialectConfig {
    * you need to pass the `tedious` package itself. You also need to pass a factory
    * function that creates new `tedious` `Connection` instances on demand.
    *
-   * Example:
+   * ### Examples
    *
    * ```ts
+   * import { MssqlDialect } from 'kysely'
+   * import * as Tarn from 'tarn'
    * import * as Tedious from 'tedious'
    *
    * const dialect = new MssqlDialect({
-   *   // ...
+   *   tarn: { ...Tarn, options: { max: 10, min: 0 } },
    *   tedious: {
    *     ...Tedious,
    *     connectionFactory: () => new Tedious.Connection({
    *       // ...
+   *       server: 'localhost',
+   *       // ...
    *     }),
-   *   },
+   *   }
    * })
    * ```
    */
@@ -163,20 +169,6 @@ export interface Tarn {
 
   /**
    * Tarn.js' Pool class.
-   *
-   * Example:
-   *
-   * ```ts
-   * import { Pool } from 'tarn'
-   *
-   * const dialect = new MssqlDialect({
-   *   // ...
-   *   tarn: {
-   *     // ...
-   *     Pool,
-   *   },
-   * })
-   * ```
    */
   Pool: typeof TarnPool
 }
