@@ -37,6 +37,8 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
   /**
    * Returns an aliased version of the expression.
    *
+   * ### Examples
+   *
    * In addition to slapping `as "the_alias"` to the end of the SQL,
    * this method also provides strict typing:
    *
@@ -75,12 +77,13 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .selectAll()
    *   .where(eb => eb('first_name', '=', 'Jennifer')
    *     .or('first_name', '=', 'Arnold')
    *     .or('first_name', '=', 'Sylvester')
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -99,7 +102,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * this method:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .selectAll()
    *   .where(eb => eb('first_name', '=', 'Jennifer')
    *     .or(eb('first_name', '=', 'Sylvester').and('last_name', '=', 'Stallone'))
@@ -109,6 +112,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *         .whereRef('pet.owner_id', '=', 'person.id')
    *     ))
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -158,12 +162,13 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .selectAll()
    *   .where(eb => eb('first_name', '=', 'Jennifer')
    *     .and('last_name', '=', 'Aniston')
    *     .and('age', '>', 40)
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -182,7 +187,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * this method:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .selectAll()
    *   .where(eb => eb('first_name', '=', 'Jennifer')
    *     .and(eb('first_name', '=', 'Sylvester').or('last_name', '=', 'Stallone'))
@@ -192,6 +197,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *         .whereRef('pet.owner_id', '=', 'person.id')
    *     ))
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -405,7 +411,7 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
    *   .executeTakeFirstOrThrow()
    *
    * // `is_jennifer_aniston: SqlBool` field exists in the result type.
-   * console.log(result.is_jennifer_or_sylvester)
+   * console.log(result.is_jennifer_aniston)
    * ```
    *
    * The generated SQL (PostgreSQL):
