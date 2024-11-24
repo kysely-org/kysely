@@ -15,13 +15,16 @@ export interface PostgresDialectConfig {
 
   /**
    * https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor
+   *
    * ```ts
+   * import { PostgresDialect } from 'kysely'
+   * import { Pool } from 'pg'
    * import Cursor from 'pg-cursor'
-   * // or
-   * import * as Cursor from 'pg-cursor'
+   * // or import * as Cursor from 'pg-cursor'
    *
    * new PostgresDialect({
-   *  cursor: Cursor
+   *  cursor: Cursor,
+   *  pool: new Pool('postgres://localhost:5432/mydb')
    * })
    * ```
    */
