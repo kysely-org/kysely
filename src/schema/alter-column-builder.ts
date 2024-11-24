@@ -69,14 +69,28 @@ preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 /**
  * Allows us to force consumers to do exactly one alteration to a column.
  *
- * Basically, deny the following:
+ * One cannot do no alterations:
  *
  * ```ts
- * db.schema.alterTable('person').alterColumn('age', (ac) => ac)
+ * await db.schema
+ *   .alterTable('person')
+ * //  .execute() // Property 'execute' does not exist on type 'AlteredColumnBuilder'.
  * ```
  *
  * ```ts
- * db.schema.alterTable('person').alterColumn('age', (ac) => ac.dropNotNull().setNotNull())
+ * await db.schema
+ *   .alterTable('person')
+ * //  .alterColumn('age', (ac) => ac) // Type 'AlterColumnBuilder' is not assignable to type 'AlteredColumnBuilder'.
+ * //  .execute()
+ * ```
+ *
+ * One cannot do multiple alterations:
+ *
+ * ```ts
+ * await db.schema
+ *   .alterTable('person')
+ * //  .alterColumn('age', (ac) => ac.dropNotNull().setNotNull()) // Property 'setNotNull' does not exist on type 'AlteredColumnBuilder'.
+ * //  .execute()
  * ```
  *
  * Which would now throw a compilation error, instead of a runtime error.

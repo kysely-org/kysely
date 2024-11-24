@@ -173,7 +173,9 @@ export type NarrowPartial<O, T> = DrainOuterGeneric<
  * Example:
  *
  * ```ts
- * const person = await db.selectFrom('person')
+ * import type { NotNull } from 'kysely'
+ *
+ * await db.selectFrom('person')
  *   .where('nullable_column', 'is not', null)
  *   .selectAll()
  *   .$narrowType<{ nullable_column: NotNull }>()
@@ -196,7 +198,7 @@ export type SqlBool = boolean | 0 | 1
  *   A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<T>>>>>>>>>>>>>>>>>>>>>>>>
  * >
  *
- * type Error = Test<number> // Type instantiation is excessively deep and possibly infinite.ts (2589)
+ * // type Error = Test<number> // Type instantiation is excessively deep and possibly infinite.ts (2589)
  * ```
  *
  * To fix this, we can use `DrainOuterGeneric`:

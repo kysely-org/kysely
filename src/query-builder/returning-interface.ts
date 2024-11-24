@@ -30,20 +30,20 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *     last_name: 'Aniston'
    *   })
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    *
    * Return multiple columns:
    *
    * ```ts
-   * const { id, first_name } = await db
+   * const { id, last_name } = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
    *   .returning(['id', 'last_name'])
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    *
    * Return arbitrary expressions:
@@ -60,9 +60,9 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *   .returning((eb) => [
    *     'id as id',
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
-   *     eb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')
+   *     eb.selectFrom('pet').select('pet.id').limit(1).as('first_pet_id')
    *   ])
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    */
   returning<SE extends SelectExpression<DB, TB>>(
