@@ -40,6 +40,7 @@ interface PersonTable {
 
 interface PetTable {
   id: Generated<number>
+  created_at: GeneratedAlways<Date>
   is_favorite: Generated<boolean>
   name: string
   owner_id: number
