@@ -8,7 +8,7 @@ import type {
   Updateable,
 } from './dist/esm'
 
-interface Database {
+export interface Database {
   person: PersonTable
   pet: PetTable
   toy: ToyTable

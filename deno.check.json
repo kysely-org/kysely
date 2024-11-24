@@ -7,6 +7,7 @@
     "better-sqlite3": "npm:better-sqlite3",
     "kysely": "./dist/esm",
     "kysely/helpers/postgres": "./dist/esm/helpers/postgres.js",
+    "kysely/helpers/sqlite": "./dist/esm/helpers/sqlite.js",
     "mysql2": "npm:mysql2",
     "pg": "npm:pg",
     "pg-cursor": "npm:pg-cursor",
