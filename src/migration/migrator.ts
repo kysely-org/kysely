@@ -38,14 +38,27 @@ export interface Migration {
  * ```ts
  * import { promises as fs } from 'node:fs'
  * import path from 'node:path'
+ * import * as Sqlite from 'better-sqlite3'
+ * import {
+ *   FileMigrationProvider,
+ *   Kysely,
+ *   Migrator,
+ *   SqliteDialect
+ * } from 'kysely'
+ *
+ * const db = new Kysely<any>({
+ *   dialect: new SqliteDialect({
+ *     database: Sqlite(':memory:')
+ *   })
+ * })
  *
  * const migrator = new Migrator({
  *   db,
  *   provider: new FileMigrationProvider({
  *     fs,
- *     path,
  *     // Path to the folder that contains all your migrations.
- *     migrationFolder: 'some/path/to/migrations'
+ *     migrationFolder: 'some/path/to/migrations',
+ *     path,
  *   })
  * })
  * ```
@@ -102,19 +115,18 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect({
-   *     host: 'localhost',
-   *     database: 'kysely_test',
-   *   }),
-   * })
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import * as Sqlite from 'better-sqlite3'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
    *
    * const migrator = new Migrator({
    *   db,
-   *   provider: new FileMigrationProvider(
-   *     // Path to the folder that contains all your migrations.
-   *     'some/path/to/migrations'
-   *   )
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
    * })
    *
    * const { error, results } = await migrator.migrateToLatest()
@@ -148,6 +160,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateTo('some_migration')
    * ```
    *
@@ -157,6 +183,20 @@ export class Migrator {
    * you can use a special constant `NO_MIGRATIONS`:
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateTo(NO_MIGRATIONS)
    * ```
    */
@@ -213,6 +253,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateUp()
    * ```
    */
@@ -231,6 +285,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateDown()
    * ```
    */
