@@ -89,7 +89,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  protected transformReferences(node: ReferencesNode): ReferencesNode {
+  protected override transformReferences(node: ReferencesNode): ReferencesNode {
     const transformed = super.transformReferences(node)
 
     if (transformed.table.table.schema) {
