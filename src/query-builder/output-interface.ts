@@ -30,15 +30,24 @@ export interface OutputInterface<
    *   .output('inserted.id')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     gender: 'female',
    *   })
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MSSQL):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name", "gender")
+   * output "inserted"."id"
+   * values (@1, @2, @3)
    * ```
    *
    * Return multiple columns:
    *
    * ```ts
-   * const { id, first_name } = await db
+   * const { old_first_name, old_last_name, new_first_name, new_last_name } = await db
    *   .updateTable('person')
    *   .set({ first_name: 'John', last_name: 'Doe' })
    *   .output([
@@ -48,7 +57,19 @@ export interface OutputInterface<
    *     'inserted.last_name as new_last_name',
    *   ])
    *   .where('created_at', '<', new Date())
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MSSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = @1, "last_name" = @2
+   * output "deleted"."first_name" as "old_first_name",
+   *   "deleted"."last_name" as "old_last_name",
+   *   "inserted"."first_name" as "new_first_name",
+   *   "inserted"."last_name" as "new_last_name"
+   * where "created_at" < @3
    * ```
    *
    * Return arbitrary expressions:
@@ -56,11 +77,19 @@ export interface OutputInterface<
    * ```ts
    * import { sql } from 'kysely'
    *
-   * const { id, full_name } = await db
+   * const { full_name } = await db
    *   .deleteFrom('person')
    *   .output((eb) => sql<string>`concat(${eb.ref('deleted.first_name')}, ' ', ${eb.ref('deleted.last_name')})`.as('full_name'))
    *   .where('created_at', '<', new Date())
    *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MSSQL):
+   *
+   * ```sql
+   * delete from "person"
+   * output concat("deleted"."first_name", ' ', "deleted"."last_name") as "full_name"
+   * where "created_at" < @1
    * ```
    *
    * Return the action performed on the row:
@@ -81,7 +110,21 @@ export interface OutputInterface<
    *     'inserted.id as inserted_id',
    *     'deleted.id as deleted_id',
    *   ])
+   *   .execute()
    * ```
+   *
+   * The generated SQL (MSSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "pet"."owner_id" = "person"."id"
+   * when matched then delete
+   * when not matched then
+   * insert ("first_name", "last_name", "gender")
+   * values (@1, @2, @3)
+   * output "inserted"."id" as "inserted_id", "deleted"."id" as "deleted_id"
+   * ```
+   *
    */
   output<OE extends OutputExpression<DB, TB, OP>>(
     selections: ReadonlyArray<OE>,

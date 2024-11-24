@@ -11,6 +11,7 @@ import type {
 interface Database {
   person: PersonTable
   pet: PetTable
+  toy: ToyTable
   wine: WineTable
   wine_stock_change: WineStockChangeTable
 }
@@ -45,6 +46,12 @@ interface PetTable {
   species: Species
 }
 
+interface ToyTable {
+  id: Generated<number>
+  pet_id: number
+  price: number
+}
+
 interface WineTable {
   name: string
   stock: number
@@ -61,7 +68,7 @@ export type PersonUpdate = Updateable<PersonTable>
 export type Pet = Selectable<PetTable>
 export type NewPet = Insertable<PetTable>
 export type PetUpdate = Updateable<PetTable>
-export type Species = 'dog' | 'cat'
+export type Species = 'dog' | 'cat' | 'hamster'
 
 declare global {
   // @ts-ignore
