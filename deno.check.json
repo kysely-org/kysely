@@ -6,6 +6,7 @@
   "imports": {
     "better-sqlite3": "npm:better-sqlite3",
     "kysely": "./dist/esm",
+    "kysely/helpers/mysql": "./dist/esm/helpers/mysql.js",
     "kysely/helpers/postgres": "./dist/esm/helpers/postgres.js",
     "kysely/helpers/sqlite": "./dist/esm/helpers/sqlite.js",
     "lodash/snakeCase": "npm:lodash/snakeCase",
