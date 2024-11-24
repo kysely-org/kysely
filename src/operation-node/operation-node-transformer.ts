@@ -109,8 +109,11 @@ import { OutputNode } from './output-node.js'
  * snake_case, you'd do something like this:
  *
  * ```ts
+ * import { type IdentifierNode, OperationNodeTransformer } from 'kysely'
+ * import snakeCase from 'lodash/snakeCase'
+ *
  * class CamelCaseTransformer extends OperationNodeTransformer {
- *   transformIdentifier(node: IdentifierNode): IdentifierNode {
+ *   override transformIdentifier(node: IdentifierNode): IdentifierNode {
  *     node = super.transformIdentifier(node)
  *
  *     return {
@@ -121,7 +124,10 @@ import { OutputNode } from './output-node.js'
  * }
  *
  * const transformer = new CamelCaseTransformer()
- * const tree = transformer.transformNode(tree)
+ *
+ * const query = db.selectFrom('person').select(['first_name', 'last_name'])
+ *
+ * const tree = transformer.transformNode(query.toOperationNode())
  * ```
  */
 export class OperationNodeTransformer {
