@@ -11,6 +11,7 @@ import type {
 interface Database {
   person: PersonTable
   pet: PetTable
+  toy: ToyTable
   wine: WineTable
   wine_stock_change: WineStockChangeTable
 }
@@ -43,6 +44,12 @@ interface PetTable {
   name: string
   owner_id: number
   species: Species
+}
+
+interface ToyTable {
+  id: Generated<number>
+  pet_id: number
+  price: number
 }
 
 interface WineTable {
