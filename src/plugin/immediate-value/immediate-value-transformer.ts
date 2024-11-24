@@ -10,7 +10,7 @@ import { ValueNode } from '../../operation-node/value-node.js'
  * @internal
  */
 export class ImmediateValueTransformer extends OperationNodeTransformer {
-  transformValue(node: ValueNode): ValueNode {
+  override transformValue(node: ValueNode): ValueNode {
     return {
       ...super.transformValue(node),
       immediate: true,
