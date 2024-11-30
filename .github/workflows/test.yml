@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: ['lts/-2', 'lts/-1', 'lts/*']
 
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: ['lts/-2', 'lts/-1', 'lts/*']
 
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [1.x.x, 2.0.x]
+        deno-version: ['1.x.x', '2.0.x', '2.1.x']
 
     steps:
       - uses: actions/checkout@v4
@@ -79,7 +79,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Use Deno ${{ matrix.deno-version }}
@@ -106,7 +106,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bun-version: [1.1.26]
+        bun-version: ['1.1.26']
 
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -141,7 +141,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -163,7 +163,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -182,26 +182,45 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        typescript-version: [
-            '4.7', # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
-            '4.8', # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
-            '4.9', # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
-            '5.0', # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
-            '5.1', # 1.6.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/
-            '5.2', # 24.8.2023  https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
-            '5.3', # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
-            '5.4', # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
-            '5.5', # 20.6.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/
-            '5.6', # 9.9.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/
-          ]
+        versions:
+          - typescript: '4.7' # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
+            node: '18.x'
+            tsd: '0.22.0'
+          - typescript: '4.8' # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
+            node: '18.x'
+            tsd: '0.24.1'
+          - typescript: '4.9' # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
+            node: '18.x'
+            tsd: '0.27.0'
+          - typescript: '5.0' # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
+            node: '18.x'
+            tsd: '0.28.1'
+          - typescript: '5.1' # 1.6.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/
+            node: '20.x'
+            tsd: false
+          - typescript: '5.2' # 24.8.2023  https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+            node: '20.x'
+            tsd: '0.29.0'
+          - typescript: '5.3' # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
+            node: '20.x'
+            tsd: '0.30.7'
+          - typescript: '5.4' # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+            node: '20.x'
+            tsd: '0.31.2'
+          - typescript: '5.5' # 20.6.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/
+            node: '22.x'
+            tsd: false
+          - typescript: '5.6' # 9.9.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/
+            node: '22.x'
+            tsd: false
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Use Node.js (${{ matrix.versions.node }})
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: ${{ matrix.versions.node }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -210,11 +229,13 @@ jobs:
       - name: Run build with newer TypeScript
         run: npm run build
 
-      - name: Install older TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }} ${{ fromJson('{ "4.7":"tsd@0.22.0", "4.8":"tsd@0.24.1", "4.9":"tsd@0.27.0", "5.0":"tsd@0.28.1", "5.2":"tsd@0.29.0", "5.3":"tsd@0.30.7", "5.4":"tsd@0.31.2" }')[matrix.typescript-version] || '' }}
+      - name: Run typings tests with older TypeScript
+        if: ${{ matrix.versions.tsd != false }}
+        run: |
+          npm i -D tsd@${{ matrix.versions.tsd }} && npm run test:typings
 
-      - name: Run tests with older TypeScript
-        run: ${{ fromJson('{ "5.1":"", "5.5":"", "5.6":"" }')[matrix.typescript-version] || 'npm run test:typings &&' }} npm run test:node:build
+      - name: Build unit tests with older TypeScript
+        run: npm i -D typescript@${{ matrix.versions.typescript }} && npm run test:node:build
 
   next-typescript-version:
     name: Next TypeScript version
@@ -226,7 +247,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -245,13 +266,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Use Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.0.x
+          deno-version: 2.1.x
 
       - name: Install dependencies
         run: npm ci
