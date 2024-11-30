@@ -187,7 +187,7 @@ jobs:
             4.7, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
             4.8, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
             4.9, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
-            5.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
+            '5.0', # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
             5.2, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
             5.3, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
             5.4, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
