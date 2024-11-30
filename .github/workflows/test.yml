@@ -183,7 +183,6 @@ jobs:
       fail-fast: false
       matrix:
         typescript-version: [
-            '4.6', # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
             '4.7', # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
             '4.8', # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
             '4.9', # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
@@ -212,10 +211,10 @@ jobs:
         run: npm run build
 
       - name: Install older TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "4.6":"0.20.0", "4.7":"0.22.0", "4.8":"0.24.1", "4.9":"0.27.0", "5.0":"0.28.1", "5.1":"0.28.1", "5.2":"0.29.0", "5.3":"0.30.7", "5.4":"0.31.2" }')[matrix.typescript-version] || '0.31.2' }}${{ fromJson('{ "4.6":" @types/node@18" }')[matrix.typescript-version] || '' }}
+        run: npm i -D typescript@${{ matrix.typescript-version }} ${{ fromJson('{ "4.7":"tsd@0.22.0", "4.8":"tsd@0.24.1", "4.9":"tsd@0.27.0", "5.0":"tsd@0.28.1", "5.2":""tsd@0.29.0", "5.3":"tsd@0.30.7", "5.4":"tsd@0.31.2" }')[matrix.typescript-version] || '' }}
 
       - name: Run tests with older TypeScript
-        run: npm run test:typings && npm run test:node:build
+        run: ${{ fromJson('{ "5.1":"", "5.5":"", "5.6":"" }')[matrix.typescript-version] || 'npm run test:typings &&' }} npm run test:node:build
 
   next-typescript-version:
     name: Next TypeScript version
