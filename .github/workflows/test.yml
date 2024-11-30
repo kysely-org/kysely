@@ -231,16 +231,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci && npm i -D typescript@next @types/node@latest
 
-      - name: Run build with newer TypeScript
-        run: npm run build
-
-      - name: Install older TypeScript
-        run: npm i -D typescript@next @types/node@latest
-
-      - name: Run tests with older TypeScript
-        run: npm run test:node:build
+      - name: Build with next TypeScript
+        run: npm run build && npm run test:node:build
 
   jsdocs:
     name: JSDocs
