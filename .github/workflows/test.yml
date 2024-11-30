@@ -183,14 +183,17 @@ jobs:
       fail-fast: false
       matrix:
         typescript-version: [
-            4.6, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
-            4.7, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
-            4.8, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
-            4.9, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
+            '4.6', # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
+            '4.7', # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
+            '4.8', # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
+            '4.9', # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
             '5.0', # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
-            5.2, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
-            5.3, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
-            5.4, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+            '5.1', # 1.6.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/
+            '5.2', # 24.8.2023  https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+            '5.3', # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
+            '5.4', # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+            '5.5', # 20.6.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/
+            '5.6', # 9.9.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/
           ]
 
     steps:
@@ -209,10 +212,35 @@ jobs:
         run: npm run build
 
       - name: Install older TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "4.6":"0.20.0", "4.7":"0.22.0", "4.8":"0.24.1", "4.9":"0.27.0", "5.0":"0.28.1", "5.2":"0.29.0", "5.3":"0.30.7", "5.4":"0.31.2" }')[matrix.typescript-version] }}${{ fromJson('{ "4.6":" @types/node@18" }')[matrix.typescript-version] || '' }}
+        run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "4.6":"0.20.0", "4.7":"0.22.0", "4.8":"0.24.1", "4.9":"0.27.0", "5.0":"0.28.1", "5.1":"0.28.1", "5.2":"0.29.0", "5.3":"0.30.7", "5.4":"0.31.2" }')[matrix.typescript-version] || '0.31.2' }}${{ fromJson('{ "4.6":" @types/node@18" }')[matrix.typescript-version] || '' }}
 
       - name: Run tests with older TypeScript
         run: npm run test:typings && npm run test:node:build
+
+  next-typescript-version:
+    name: Next TypeScript version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build with newer TypeScript
+        run: npm run build
+
+      - name: Install older TypeScript
+        run: npm i -D typescript@next @types/node@latest
+
+      - name: Run tests with older TypeScript
+        run: npm run test:node:build
 
   jsdocs:
     name: JSDocs
