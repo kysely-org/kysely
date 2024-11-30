@@ -211,7 +211,7 @@ jobs:
         run: npm run build
 
       - name: Install older TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }} ${{ fromJson('{ "4.7":"tsd@0.22.0", "4.8":"tsd@0.24.1", "4.9":"tsd@0.27.0", "5.0":"tsd@0.28.1", "5.2":""tsd@0.29.0", "5.3":"tsd@0.30.7", "5.4":"tsd@0.31.2" }')[matrix.typescript-version] || '' }}
+        run: npm i -D typescript@${{ matrix.typescript-version }} ${{ fromJson('{ "4.7":"tsd@0.22.0", "4.8":"tsd@0.24.1", "4.9":"tsd@0.27.0", "5.0":"tsd@0.28.1", "5.2":"tsd@0.29.0", "5.3":"tsd@0.30.7", "5.4":"tsd@0.31.2" }')[matrix.typescript-version] || '' }}
 
       - name: Run tests with older TypeScript
         run: ${{ fromJson('{ "5.1":"", "5.5":"", "5.6":"" }')[matrix.typescript-version] || 'npm run test:typings &&' }} npm run test:node:build
