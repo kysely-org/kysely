@@ -22,8 +22,17 @@ import {
 } from '../parser/join-parser.js'
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
-import { parseSelectAll, parseSelectArg } from '../parser/select-parser.js'
+import {
+  ReturningAllRow,
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
+import {
+  parseSelectAll,
+  parseSelectArg,
+  SelectCallback,
+  SelectExpression,
+} from '../parser/select-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
 import {
@@ -58,10 +67,13 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
-  implements OutputInterface<DB, TT, O>
+  implements
+    MultiTableReturningInterface<DB, TT, O>,
+    OutputInterface<DB, TT, O>
 {
   readonly #props: MergeQueryBuilderProps
 
@@ -215,6 +227,44 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     })
   }
 
+  returning<SE extends SelectExpression<DB, TT>>(
+    selections: ReadonlyArray<SE>,
+  ): MergeQueryBuilder<DB, TT, ReturningRow<DB, TT, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TT>>(
+    callback: CB,
+  ): MergeQueryBuilder<DB, TT, ReturningCallbackRow<DB, TT, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TT>>(
+    selection: SE,
+  ): MergeQueryBuilder<DB, TT, ReturningRow<DB, TT, O, SE>>
+
+  returning(args: any): any {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithReturning(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  returningAll<T extends TT>(
+    table: T,
+  ): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, T, O>>
+
+  returningAll(): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, TT, O>>
+
+  returningAll(table?: any): any {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithReturning(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
+
   output<OE extends OutputExpression<DB, TT>>(
     selections: readonly OE[],
   ): MergeQueryBuilder<
@@ -274,7 +324,11 @@ export class WheneableMergeQueryBuilder<
     ST extends keyof DB,
     O,
   >
-  implements Compilable<O>, OutputInterface<DB, TT, O>, OperationNodeSource
+  implements
+    Compilable<O>,
+    MultiTableReturningInterface<DB, TT | ST, O>,
+    OutputInterface<DB, TT, O>,
+    OperationNodeSource
 {
   readonly #props: MergeQueryBuilderProps
 
@@ -608,6 +662,54 @@ export class WheneableMergeQueryBuilder<
     return this.#whenNotMatched([lhs, op, rhs], true, true)
   }
 
+  returning<SE extends SelectExpression<DB, TT | ST>>(
+    selections: ReadonlyArray<SE>,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningRow<DB, TT | ST, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TT | ST>>(
+    callback: CB,
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningCallbackRow<DB, TT | ST, O, CB>
+  >
+
+  returning<SE extends SelectExpression<DB, TT | ST>>(
+    selection: SE,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningRow<DB, TT | ST, O, SE>>
+
+  returning(args: any): any {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithReturning(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  returningAll<T extends TT | ST>(
+    table: T,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, T, O>>
+
+  returningAll(): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningAllRow<DB, TT | ST, O>
+  >
+
+  returningAll(table?: any): any {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithReturning(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
+
   output<OE extends OutputExpression<DB, TT>>(
     selections: readonly OE[],
   ): WheneableMergeQueryBuilder<
@@ -788,9 +890,12 @@ export class WheneableMergeQueryBuilder<
       this.#props.queryId,
     )
 
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as MergeQueryNode
+
     if (
-      (compiledQuery.query as MergeQueryNode).output &&
-      this.#props.executor.adapter.supportsOutput
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
     ) {
       return result.rows as any
     }
