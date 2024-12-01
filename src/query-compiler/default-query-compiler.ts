@@ -1585,6 +1585,11 @@ export class DefaultQueryCompiler
       this.compileList(node.whens, ' ')
     }
 
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
+    }
+
     if (node.output) {
       this.append(' ')
       this.visitNode(node.output)
