@@ -341,7 +341,7 @@ export class Kysely<DB>
    *
    *   await trx.commit().execute()
    *
-   *   return catto
+   *   // ...
    * } catch (error) {
    *   await trx.rollback().execute()
    * }
@@ -375,20 +375,19 @@ export class Kysely<DB>
    *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
    *
    *   try {
-   *     const bone = await trxAfterJennifer
-   *       .insertInto('toy')
-   *       .values({ name: 'Bone', price: 1.99 })
-   *       .returning('id')
-   *       .executeTakeFirstOrThrow()
-   *
-   *     await trxAfterJennifer
+   *     const catto = await trxAfterJennifer
    *       .insertInto('pet')
    *       .values({
    *         owner_id: jennifer.id,
    *         name: 'Catto',
    *         species: 'cat',
-   *         favorite_toy_id: bone.id,
    *       })
+   *       .returning('id')
+   *       .executeTakeFirstOrThrow()
+   *
+   *     await trxAfterJennifer
+   *       .insertInto('toy')
+   *       .values({ name: 'Bone', price: 1.99, pet_id: catto.id })
    *       .execute()
    *   } catch (error) {
    *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
@@ -838,6 +837,11 @@ export class ControlledTransaction<
    * ### Examples
    *
    * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
    * try {
    *   await doSomething(trx)
    *
@@ -845,6 +849,8 @@ export class ControlledTransaction<
    * } catch (error) {
    *   await trx.rollback().execute()
    * }
+   *
+   * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
   commit(): Command<void> {
@@ -865,6 +871,11 @@ export class ControlledTransaction<
    * ### Examples
    *
    * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
    * try {
    *   await doSomething(trx)
    *
@@ -872,6 +883,8 @@ export class ControlledTransaction<
    * } catch (error) {
    *   await trx.rollback().execute()
    * }
+   *
+   * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
   rollback(): Command<void> {
@@ -894,15 +907,23 @@ export class ControlledTransaction<
    * ### Examples
    *
    * ```ts
-   *   await insertJennifer(trx)
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
    *
-   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   * const trx = await db.startTransaction().execute()
    *
-   *   try {
-   *     await doSomething(trxAfterJennifer)
-   *   } catch (error) {
-   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
-   *   }
+   * await insertJennifer(trx)
+   *
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
   savepoint<SN extends string>(
@@ -932,15 +953,23 @@ export class ControlledTransaction<
    * ### Examples
    *
    * ```ts
-   *   await insertJennifer(trx)
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
    *
-   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   * const trx = await db.startTransaction().execute()
    *
-   *   try {
-   *     await doSomething(trxAfterJennifer)
-   *   } catch (error) {
-   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
-   *   }
+   * await insertJennifer(trx)
+   *
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
   rollbackToSavepoint<SN extends S[number]>(
@@ -972,19 +1001,28 @@ export class ControlledTransaction<
    * ### Examples
    *
    * ```ts
-   *   await insertJennifer(trx)
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
    *
-   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   * const trx = await db.startTransaction().execute()
    *
-   *   try {
-   *     await doSomething(trxAfterJennifer)
-   *   } catch (error) {
-   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
-   *   }
+   * await insertJennifer(trx)
    *
-   *   await trxAfterJennifer.releaseSavepoint('after_jennifer').execute()
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
    *
-   *   await doSomethingElse(trx)
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * await trxAfterJennifer.releaseSavepoint('after_jennifer').execute()
+   *
+   * await doSomethingElse(trx)
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * async function doSomethingElse(kysely: Kysely<Database>) {}
    * ```
    */
   releaseSavepoint<SN extends S[number]>(
