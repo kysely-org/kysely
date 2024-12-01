@@ -259,7 +259,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
-   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name').
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
    *
    *     // Select a static string value
    *     val('Some value').as('string_value'),
@@ -1961,13 +1961,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * instances as inputs:
    *
    * ```ts
+   * import type { Expression } from 'kysely'
+   *
    * function doStuff(expr: Expression<string>) {
-   *   ...
+   *   // ...
    * }
    *
    * // Error! This is not ok because the expression type is
    * // `{ first_name: string }` instead of `string`.
-   * doStuff(db.selectFrom('person').select('first_name'))
+   * // doStuff(db.selectFrom('person').select('first_name'))
    *
    * // Ok! This is ok since we've plucked the `string` type of the
    * // only column in the output type.
