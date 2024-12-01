@@ -189,15 +189,17 @@ export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
  *   .using('person_backup as pb', 'p.id', 'pb.id')
  *   .whenMatched()
  *   .thenUpdateSet(({ ref }) => ({
- *     nickname: ref('pb.nickname'),
- *     updated_at: ref('pb.updated_at')
+ *     first_name: ref('pb.first_name'),
+ *     updated_at: ref('pb.updated_at').$castTo<string | null>(),
  *   }))
  *   .whenNotMatched()
  *   .thenInsertValues(({ ref}) => ({
- *     nickname: ref('pb.nickname'),
- *     created_at: ref('pb.updated_at')
+ *     id: ref('pb.id'),
+ *     first_name: ref('pb.first_name'),
+ *     created_at: ref('pb.updated_at'),
+ *     updated_at: ref('pb.updated_at').$castTo<string | null>(),
  *   }))
- *   .returning([mergeAction().as('action'), 'p.id', 'p.nickname'])
+ *   .returning([mergeAction().as('action'), 'p.id', 'p.updated_at'])
  *   .execute()
  *
  * result[0].action
@@ -208,9 +210,12 @@ export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
  * ```sql
  * merge into "person" as "p"
  * using "person_backup" as "pb" on "p"."id" = "pb"."id"
- * when matched then update set "nickname" = "pb"."nickname", "updated_at" = "pb"."updated_at"
- * when not matched then insert ("nickname", "created_at") values ("pb"."nickname", "pb"."updated_at")
- * returning merge_action() as "action", "p"."id", "p"."nickname"
+ * when matched then update set
+ *   "first_name" = "pb"."first_name",
+ *   "updated_at" = "pb"."updated_at"::text
+ * when not matched then insert values ("id", "first_name", "created_at", "updated_at")
+ * values ("pb"."id", "pb"."first_name", "pb"."updated_at", "pb"."updated_at")
+ * returning merge_action() as "action", "p"."id", "p"."updated_at"
  * ```
  */
 export function mergeAction(): RawBuilder<MergeAction> {
