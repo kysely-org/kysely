@@ -54,7 +54,6 @@ import {
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
@@ -649,7 +648,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .set('person.first_name', 'Updated person')
    *   .set('pet.name', 'Updated doggo')
    *   .whereRef('person.id', '=', 'pet.owner_id')
-   *   .where('person.id', '=', '1')
+   *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    * ```
    *
