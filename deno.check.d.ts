@@ -12,6 +12,7 @@ import type {
 export interface Database {
   audit: AuditTable
   person: PersonTable
+  person_backup: PersonTable
   pet: PetTable
   toy: ToyTable
   wine: WineTable
