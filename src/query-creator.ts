@@ -169,18 +169,22 @@ export class QueryCreator<DB> {
    */
   selectFrom<TE extends keyof DB & string>(
     from: TE[],
+    converter?: (row: any) => any,
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
   selectFrom<TE extends TableExpression<DB, never>>(
     from: TE[],
+    converter?: (row: any) => any,
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom<TE extends keyof DB & string>(
     from: TE,
+    converter?: (rows: any) => any,
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
   selectFrom<TE extends AnyAliasedTable<DB>>(
     from: TE,
+    converter?: (rows: any) => any,
   ): SelectQueryBuilder<
     DB & PickTableWithAlias<DB, TE>,
     ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
@@ -189,17 +193,23 @@ export class QueryCreator<DB> {
 
   selectFrom<TE extends TableExpression<DB, never>>(
     from: TE,
+    converter?: (rows: any) => any,
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
-  selectFrom(from: TableExpressionOrList<any, any>): any {
-    return createSelectQueryBuilder({
+  selectFrom(
+    from: TableExpressionOrList<any, any>,
+    converter?: (rows: any) => any,
+  ): any {
+    const builder = createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: SelectQueryNode.createFrom(
         parseTableExpressionOrList(from),
         this.#props.withNode,
       ),
+      converter: converter || ((rows: any) => rows),
     })
+    return builder
   }
 
   /**
@@ -271,6 +281,7 @@ export class QueryCreator<DB> {
         SelectQueryNode.create(this.#props.withNode),
         parseSelectArg(selection as any),
       ),
+      converter: (rows: any) => rows,
     })
   }
 
