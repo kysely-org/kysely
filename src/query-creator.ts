@@ -198,7 +198,7 @@ export class QueryCreator<DB> {
 
   selectFrom(
     from: TableExpressionOrList<any, any>,
-    converter?: (rows: any) => any,
+    converter?: (rows: any[]) => any[],
   ): any {
     const builder = createSelectQueryBuilder({
       queryId: createQueryId(),
@@ -207,7 +207,7 @@ export class QueryCreator<DB> {
         parseTableExpressionOrList(from),
         this.#props.withNode,
       ),
-      converter: converter || ((rows: any) => rows),
+      converter: converter || ((rows: any[]) => rows),
     })
     return builder
   }
@@ -281,7 +281,7 @@ export class QueryCreator<DB> {
         SelectQueryNode.create(this.#props.withNode),
         parseSelectArg(selection as any),
       ),
-      converter: (rows: any) => rows,
+      converter: (rows: any[]) => rows,
     })
   }
 

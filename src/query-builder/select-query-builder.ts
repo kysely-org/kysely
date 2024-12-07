@@ -2369,11 +2369,17 @@ export class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       compiledQuery,
       this.#props.queryId,
     )
-    return result.rows.map(this.#props.converter)
+    if (!this.#props.converter) {
+      return result.rows
+    }
+    return this.#props.converter(result.rows)
   }
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
+    if (!this.#props.converter) {
+      return result as SimplifySingleResult<O>
+    }
     const [_result] = this.#props.converter([result])
     return _result as SimplifySingleResult<O>
   }
@@ -2442,7 +2448,7 @@ export interface SelectQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: SelectQueryNode
   readonly executor: QueryExecutor
-  readonly converter: (rows: any) => any
+  readonly converter?: (rows: any[]) => any[]
 }
 
 export interface AliasedSelectQueryBuilder<

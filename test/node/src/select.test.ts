@@ -1333,6 +1333,38 @@ for (const dialect of DIALECTS) {
 
         await query.execute()
       })
+
+      it('should proccess result in converter with execute', async () => {
+        const query = ctx.db
+          .selectFrom('person', (rows) => {
+            return rows.map((row: any) => {
+              return { id: -1, first_name: row.first_name }
+            })
+          })
+          .select('first_name')
+          .orderBy('first_name')
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { id: -1, first_name: 'Arnold' },
+          { id: -1, first_name: 'Jennifer' },
+          { id: -1, first_name: 'Sylvester' },
+        ])
+      })
+
+      it('should proccess result in converter with executeTakeFirst', async () => {
+        const query = ctx.db
+          .selectFrom('person', (rows) => {
+            return rows.map((row: any) => {
+              return { id: -1, first_name: row.first_name }
+            })
+          })
+          .select('first_name')
+          .where('first_name', '=', 'Arnold')
+
+        const result = await query.executeTakeFirst()
+        expect(result).to.eql({ id: -1, first_name: 'Arnold' })
+      })
     }
   })
 }
