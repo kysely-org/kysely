@@ -1336,9 +1336,11 @@ for (const dialect of DIALECTS) {
 
       it('should proccess result in converter with execute', async () => {
         const query = ctx.db
-          .selectFrom('person', (rows) => {
+          .selectFrom('person')
+          .converter((rows) => {
+            let i = 0
             return rows.map((row: any) => {
-              return { id: -1, first_name: row.first_name }
+              return { id: i++, first_name: row.first_name }
             })
           })
           .select('first_name')
@@ -1346,15 +1348,16 @@ for (const dialect of DIALECTS) {
 
         const result = await query.execute()
         expect(result).to.eql([
-          { id: -1, first_name: 'Arnold' },
-          { id: -1, first_name: 'Jennifer' },
-          { id: -1, first_name: 'Sylvester' },
+          { id: 0, first_name: 'Arnold' },
+          { id: 1, first_name: 'Jennifer' },
+          { id: 2, first_name: 'Sylvester' },
         ])
       })
 
       it('should proccess result in converter with executeTakeFirst', async () => {
         const query = ctx.db
-          .selectFrom('person', (rows) => {
+          .selectFrom('person')
+          .converter((rows) => {
             return rows.map((row: any) => {
               return { id: -1, first_name: row.first_name }
             })

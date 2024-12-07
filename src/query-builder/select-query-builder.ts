@@ -474,6 +474,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   distinct(): SelectQueryBuilder<DB, TB, O>
 
   /**
+   *
+   * Adds a conversion function to the query. The conversion function is called with the rows
+   */
+  converter(converter: (rows: O[]) => any[]): SelectQueryBuilder<DB, TB, O>
+
+  /**
    * Adds the `for update` modifier to a select query on supported databases.
    */
   forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
@@ -1973,6 +1979,14 @@ export class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
         this.#props.queryNode,
         SelectModifierNode.create('Distinct'),
       ),
+    })
+  }
+
+  converter(converter: (rows: O[]) => any[]): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: this.#props.queryNode,
+      converter: converter,
     })
   }
 
