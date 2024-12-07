@@ -2377,11 +2377,7 @@ export class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    if (!this.#props.converter) {
-      return result as SimplifySingleResult<O>
-    }
-    const [_result] = this.#props.converter([result])
-    return _result as SimplifySingleResult<O>
+    return result as SimplifySingleResult<O>
   }
 
   async executeTakeFirstOrThrow(
