@@ -1,6 +1,5 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { freeze } from '../util/object-utils.js'
 
 export class CTEBuilder<N extends string> implements OperationNodeSource {
@@ -38,11 +37,6 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
     return this.#props.node
   }
 }
-
-preventAwait(
-  CTEBuilder,
-  "don't await CTEBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 interface CTEBuilderProps {
   readonly node: CommonTableExpressionNode

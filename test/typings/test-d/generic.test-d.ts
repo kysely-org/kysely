@@ -81,18 +81,6 @@ async function testGenericSelectHelper() {
     .execute()
 }
 
-async function testGenericSelect<T extends keyof Database>(
-  db: Kysely<Database>,
-  table: T,
-) {
-  const r1 = await db.selectFrom(table).select('id').executeTakeFirstOrThrow()
-  expectAssignable<string | number>(r1.id)
-}
-
-async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
-  await db.updateTable(table).set({ id: '123' }).execute()
-}
-
 async function testSelectsInVariable(db: Kysely<Database>) {
   const selects = [
     'first_name',

@@ -4,7 +4,9 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
@@ -48,6 +50,36 @@ export class SqliteDriver implements Driver {
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
+  }
+
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('savepoint', savepointName)),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('rollback to', savepointName)),
+    )
+  }
+
+  async releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('release', savepointName)),
+    )
   }
 
   async releaseConnection(): Promise<void> {

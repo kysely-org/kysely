@@ -86,6 +86,20 @@ export class MssqlDriver implements Driver {
     await connection.rollbackTransaction()
   }
 
+  async savepoint(
+    connection: MssqlConnection,
+    savepointName: string,
+  ): Promise<void> {
+    await connection.savepoint(savepointName)
+  }
+
+  async rollbackToSavepoint(
+    connection: MssqlConnection,
+    savepointName: string,
+  ): Promise<void> {
+    await connection.rollbackTransaction(savepointName)
+  }
+
   async releaseConnection(connection: MssqlConnection): Promise<void> {
     await connection[PRIVATE_RELEASE_METHOD]()
     this.#pool.release(connection)
@@ -174,12 +188,21 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  async rollbackTransaction(): Promise<void> {
+  async rollbackTransaction(savepointName?: string): Promise<void> {
     await new Promise((resolve, reject) =>
       this.#connection.rollbackTransaction((error) => {
         if (error) reject(error)
         else resolve(undefined)
-      }),
+      }, savepointName),
+    )
+  }
+
+  async savepoint(savepointName: string): Promise<void> {
+    await new Promise((resolve, reject) =>
+      this.#connection.saveTransaction((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      }, savepointName),
     )
   }
 

@@ -6,7 +6,6 @@ import {
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
@@ -509,11 +508,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
-
-preventAwait(
-  CreateTableBuilder,
-  "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`",
-)
 
 export interface CreateTableBuilderProps {
   readonly queryId: QueryId

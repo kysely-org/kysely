@@ -1,0 +1,19 @@
+{
+  "name": "outdated-ts",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "kysely": "file:../../"
+  },
+  "devDependencies": {
+    "typescript": "4.5.x"
+  }
+}
