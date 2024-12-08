@@ -67,6 +67,7 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
+import { OrActionNode } from '../operation-node/or-action-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -420,7 +421,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * occurs.
    *
    * This is only supported on some dialects like MySQL. On most dialects you should
-   * use the {@link onConflict} method.
+   * use the {@link onConflict} method. Calls to this method for the SQLite dialect will
+   * be treated like a call to {@link orIgnore}.
    *
    * ### Examples
    *
@@ -446,6 +448,128 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         ignore: true,
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert or ignore into` query.
+   *
+   * If you use the ignore modifier, ignorable errors that occur while executing the
+   * insert statement are ignored. For example, without ignore, a row that duplicates
+   * an existing unique index or primary key value in the table causes a duplicate-key
+   * error and the statement is aborted. With ignore, the row is discarded and no error
+   * occurs.
+   *
+   * This is only supported on some dialects like SQLite. On most dialects you should
+   * use the {@link onConflict} method.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .ignore()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  orIgnore(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        or: OrActionNode.create('ignore'),
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert or abort into` query.
+   *
+   * This is only supported on some dialects like SQLite.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .orAbort()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  orAbort(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        or: OrActionNode.create('abort'),
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert or fail into` query.
+   *
+   * This is only supported on some dialects like SQLite.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .orFail()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  orFail(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        or: OrActionNode.create('fail'),
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert or replace into` query.
+   *
+   * This is only supported on some dialects like SQLite.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .orReplace()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  orReplace(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        or: OrActionNode.create('replace'),
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert or rollback into` query.
+   *
+   * This is only supported on some dialects like SQLite.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .orRollback()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  orRollback(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        or: OrActionNode.create('rollback'),
       }),
     })
   }
