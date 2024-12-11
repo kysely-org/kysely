@@ -309,6 +309,93 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it('should respect underscoreBeforeDigits and not add a second underscore in a nested query', async () => {
+      interface CamelTestDatabase {
+        camelTest: CamelTest
+      }
+   
+      interface CamelTest {
+        id: Generated<number>
+        firstName: string
+        lastName: string
+        addressRow1: string
+        addressRow2: string
+      }
+   
+      let dbForMigration = new Kysely<CamelTestDatabase>({
+        ...ctx.config,
+        plugins: [new CamelCasePlugin()],
+      })
+   
+      await dbForMigration.schema.dropTable('test_camel').ifExists().execute()
+      await createTableWithId(dbForMigration.schema, dialect, 'test_camel')
+        .addColumn('first_name', 'varchar(255)')
+        .addColumn('last_name', 'varchar(255)')
+        .addColumn('address_row_1', 'varchar(255)')
+        .addColumn('address_row_2', 'varchar(255)')
+        .execute()
+   
+      let db = new Kysely<CamelTestDatabase>({
+        ...ctx.config,
+        plugins: [new CamelCasePlugin({ underscoreBeforeDigits: true })],
+      })
+   
+      if (dialect === 'mssql' || dialect === 'sqlite') {
+        db = db.withPlugin(new ParseJSONResultsPlugin())
+      }
+   
+      const originalQuery = db.selectFrom('camelTest').select('addressRow1')
+      const nestedQuery = db
+        .selectFrom(originalQuery.as('originalQuery'))
+        .selectAll()
+   
+      testSql(originalQuery, dialect, {
+        postgres: {
+          sql: [`select "address_row_1" from "camel_test"`],
+          parameters: [],
+        },
+        mysql: {
+          sql: ['select `address_row_1` from `camel_test`'],
+          parameters: [],
+        },
+        mssql: {
+          sql: [`select "address_row_1" from "camel_test"`],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [`select "address_row_1" from "camel_test"`],
+          parameters: [],
+        },
+      })
+   
+      testSql(nestedQuery, dialect, {
+        postgres: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_test") as "original_query"`,
+          ],
+          parameters: [],
+        },
+        mysql: {
+          sql: [
+            'select * from (select `address_row_1` from `camel_test`) as `original_query`',
+          ],
+          parameters: [],
+        },
+        mssql: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_test") as "original_query"`,
+          ],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_test") as "original_query"`,
+          ],
+          parameters: [],
+        },
+      })
+    })
+
     if (dialect === 'postgres' || dialect === 'mssql') {
       it('should convert merge queries', async () => {
         const query = camelDb

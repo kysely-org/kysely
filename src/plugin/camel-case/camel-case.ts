@@ -31,7 +31,7 @@ export function createSnakeCaseMapper({
       // If underScoreBeforeDigits is true then, well, insert an underscore
       // before digits :). Only the first digit gets an underscore if
       // there are multiple.
-      if (underscoreBeforeDigits && isDigit(char) && !isDigit(prevChar)) {
+      if (underscoreBeforeDigits && isDigit(char) && !isDigit(prevChar) && !hasUnderscore(out)) {
         out += '_' + char
         continue
       }
@@ -114,6 +114,10 @@ function isAllUpperCaseSnakeCase(str: string): boolean {
 
 function isDigit(char: string): boolean {
   return char >= '0' && char <= '9'
+}
+
+function hasUnderscore(str: string): boolean {
+  return str.endsWith('_')
 }
 
 function memoize(func: StringMapper): StringMapper {
