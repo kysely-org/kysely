@@ -30,6 +30,7 @@ for (const dialect of DIALECTS) {
       preferences: {
         disable_emails: boolean
       }
+      addressRow1: string
     }
 
     interface CamelDatabase {
@@ -52,6 +53,7 @@ for (const dialect of DIALECTS) {
           'preferences',
           dialect === 'mssql' ? 'varchar(8000)' : 'json',
         )
+        .addColumn('addressRow1', 'varchar(255)')
         .execute()
     })
 
@@ -63,11 +65,13 @@ for (const dialect of DIALECTS) {
             firstName: 'Jennifer',
             lastName: 'Aniston',
             preferences: json({ disable_emails: true }),
+            addressRow1: '123 Main St',
           },
           {
             firstName: 'Arnold',
             lastName: 'Schwarzenegger',
             preferences: json({ disable_emails: true }),
+            addressRow1: '123 Main St',
           },
         ])
         .execute()
@@ -306,6 +310,72 @@ for (const dialect of DIALECTS) {
 
       expect(data.preferences).to.eql({
         disable_emails: true,
+      })
+    })
+
+    it('should respect underscoreBeforeDigits and not add a second underscore in a nested query', async () => {
+      let db = camelDb.withoutPlugins()
+
+      if (dialect === 'mssql' || dialect === 'sqlite') {
+        db = db.withPlugin(new ParseJSONResultsPlugin())
+      }
+
+      db = db.withPlugin(
+        new CamelCasePlugin({
+          underscoreBeforeDigits: true,
+        }),
+      )
+
+      const originalQuery = db.selectFrom('camelPerson').select('addressRow1')
+
+      const nestedQuery = db
+        .selectFrom(originalQuery.as('originalQuery'))
+        .selectAll()
+
+      testSql(originalQuery, dialect, {
+        postgres: {
+          sql: [`select "address_row_1" from "camel_person"`],
+          parameters: [],
+        },
+        mysql: {
+          sql: ['select `address_row_1` from `camel_person`'],
+          parameters: [],
+        },
+        mssql: {
+          sql: [`select "address_row_1" from "camel_person"`],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [`select "address_row_1" from "camel_person"`],
+          parameters: [],
+        },
+      })
+
+      testSql(nestedQuery, dialect, {
+        postgres: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_person") as "original_query"`,
+          ],
+          parameters: [],
+        },
+        mysql: {
+          sql: [
+            'select * from (select `address_row_1` from `camel_person`) as `original_query`',
+          ],
+          parameters: [],
+        },
+        mssql: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_person") as "original_query"`,
+          ],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [
+            `select * from (select "address_row_1" from "camel_person") as "original_query"`,
+          ],
+          parameters: [],
+        },
       })
     })
 
