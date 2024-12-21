@@ -484,6 +484,53 @@ for (const dialect of DIALECTS) {
         throw new Error(`Unknown dialect: ${dialect}`)
       }
 
+      it('should create table with default timestamp column', async () => {
+        if (dialect !== 'postgres') {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('created_at', 'datetime', (col) =>
+              col.defaultToCurrentTimestamp(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: 'create table `test` (`created_at` datetime default current_timestamp)',
+              parameters: [],
+            },
+            mssql: {
+              sql: 'create table "test" ("created_at" datetime default current_timestamp)',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'create table "test" ("created_at" datetime default current_timestamp)',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        } else {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('created_at', 'timestamptz', (col) =>
+              col.defaultToCurrentTimestamp(),
+            )
+            .addColumn('data', 'varchar')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("created_at" timestamptz default current_timestamp, "data" varchar)',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        }
+      })
+
       it('should create a table with a unique constraints', async () => {
         const builder = ctx.db.schema
           .createTable('test')
