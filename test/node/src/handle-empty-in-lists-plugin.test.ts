@@ -50,7 +50,7 @@ const fixtures = [
 ] as const
 
 for (const dialect of DIALECTS) {
-  describe.only(`${dialect}: handle empty in lists plugin`, () => {
+  describe(`${dialect}: handle empty in lists plugin`, () => {
     for (const fixture of fixtures) {
       describe(`strategy: ${fixture.strategy.name}`, () => {
         let ctx: TestContext
