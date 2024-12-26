@@ -10,11 +10,17 @@ import type {
 } from './dist/esm'
 
 export interface Database {
+  audit: AuditTable
   person: PersonTable
+  person_backup: PersonTable
   pet: PetTable
   toy: ToyTable
   wine: WineTable
   wine_stock_change: WineStockChangeTable
+}
+
+interface AuditTable {
+  action: string
 }
 
 interface PersonTable {
@@ -51,6 +57,7 @@ interface PetTable {
 
 interface ToyTable {
   id: Generated<number>
+  name: string
   pet_id: number
   price: number
 }

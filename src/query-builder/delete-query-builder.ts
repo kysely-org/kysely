@@ -35,14 +35,13 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -83,7 +82,7 @@ import {
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
@@ -1177,11 +1176,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  DeleteQueryBuilder,
-  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId

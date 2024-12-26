@@ -217,15 +217,12 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 export async function initTest(
   ctx: Mocha.Context,
   dialect: BuiltInDialect,
-  log?: Logger,
+  overrides?: Omit<KyselyConfig, 'dialect'>,
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
-  const db = await connect({
-    ...config,
-    log,
-  })
+  const db = await connect({ ...config, ...overrides })
 
   await createDatabase(db, dialect)
   return { config, db, dialect }

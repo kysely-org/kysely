@@ -1,3 +1,4 @@
+import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { ArrayItemType } from '../util/type-utils.js'
 import { DatabaseConnection } from './database-connection.js'
 
@@ -36,6 +37,33 @@ export interface Driver {
    * Rolls back a transaction.
    */
   rollbackTransaction(connection: DatabaseConnection): Promise<void>
+
+  /**
+   * Establishses a new savepoint within a transaction.
+   */
+  savepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
+
+  /**
+   * Rolls back to a savepoint within a transaction.
+   */
+  rollbackToSavepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
+
+  /**
+   * Releases a savepoint within a transaction.
+   */
+  releaseSavepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
 
   /**
    * Releases a connection back to the pool.
