@@ -487,7 +487,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | Date | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
@@ -538,7 +538,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   min<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | Date | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
