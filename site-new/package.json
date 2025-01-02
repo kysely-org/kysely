@@ -1,0 +1,31 @@
+{
+  "name": "site-new",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "postinstall": "fumadocs-mdx"
+  },
+  "dependencies": {
+    "next": "15.1.2",
+    "fumadocs-ui": "14.6.8",
+    "fumadocs-core": "14.6.8",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "fumadocs-mdx": "11.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2",
+    "@types/mdx": "^2.0.13",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "eslint": "^8",
+    "eslint-config-next": "15.1.2"
+  }
+}
