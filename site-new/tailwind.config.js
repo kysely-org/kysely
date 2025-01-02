@@ -1,8 +1,8 @@
 // @ts-check
-import { createPreset } from 'fumadocs-ui/tailwind-plugin';
+import { createPreset } from 'fumadocs-ui/tailwind-plugin'
 
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: [
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
@@ -10,5 +10,12 @@ export default {
     './mdx-components.{ts,tsx}',
     './node_modules/fumadocs-ui/dist/**/*.js',
   ],
-  presets: [createPreset()],
-};
+  presets: [
+    createPreset({
+      preset: 'black',
+      addGlobalColors: true,
+    }),
+  ],
+}
+
+export default config
