@@ -69,3 +69,5 @@ documentation in your IDE by hovering over a class/method/property/whatever.
         <img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" />
     </a>
 </p>
+
+1
