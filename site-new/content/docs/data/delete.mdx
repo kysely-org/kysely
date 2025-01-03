@@ -1,0 +1,10 @@
+---
+title: Delete
+description: Learn how to use the delete method in Kysely.
+---
+
+## Basic usage
+
+```ts
+await db.deleteFrom('person').where('id', '=', 1).execute()
+```

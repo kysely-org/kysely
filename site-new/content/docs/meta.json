@@ -9,8 +9,13 @@
     "generate-types",
     "plugins",
     "---Data---",
-    "select",
-    "insert",
-    "plugin-system"
+    "data/select",
+    "data/insert",
+    "data/update",
+    "data/delete",
+    "data/where",
+    "data/transactions",
+    "---Guides---",
+    "guides/relations"
   ]
 }

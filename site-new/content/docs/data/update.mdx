@@ -1,0 +1,20 @@
+---
+title: Update
+description: Learn how to use the update method in Kysely.
+---
+
+## Basic usage
+
+```ts
+await db
+  .updateTable('person')
+  .set({
+    first_name: 'Bruce',
+    last_name: 'Wayne',
+    age: 35,
+    occupation: 'Billionaire Vigilante',
+  })
+  .where('secret_identity', '=', 'Batman')
+  .where('city', '=', 'Gotham')
+  .execute()
+```

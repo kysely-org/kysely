@@ -1,0 +1,122 @@
+---
+title: Where
+description: Learn how to use the where method in Kysely.
+---
+
+Where clauses are used to filter rows in a database. It can be used in `select`, `update`, `delete` and `insert` queries.
+
+## Basic usage
+
+```ts
+// Select
+const persons = await db
+  .selectFrom('person')
+  .where('first_name', '=', 'Arnold')
+  .execute()
+
+// Update
+await db
+  .updateTable('person')
+  .set({
+    first_name: 'Jennifer',
+  })
+  .where('id', '=', 1)
+  .execute()
+
+// Delete
+await db.deleteFrom('person').where('id', '=', 1).execute()
+```
+
+## Where in
+
+```ts
+const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  .where('first_name', 'in', ['Arnold', 'Jennifer'])
+  .execute()
+```
+
+## Where AND or OR
+
+```ts
+// AND example
+const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  // 1. Using the `and` method on the expression builder:
+  .where((eb) =>
+    eb.and([
+      eb('first_name', '=', 'Jennifer'),
+      eb('last_name', '=', 'Aniston'),
+    ]),
+  )
+  // 2. Chaining expressions using the `and` method on the
+  // created expressions:
+  .where((eb) =>
+    eb('first_name', '=', 'Jennifer').and('last_name', '=', 'Aniston'),
+  )
+  .execute()
+
+// OR example
+const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  // 1. Using the `or` method on the expression builder:
+  .where((eb) =>
+    eb.or([
+      eb('first_name', '=', 'Jennifer'),
+      eb('first_name', '=', 'Sylvester'),
+    ]),
+  )
+  // 2. Chaining expressions using the `or` method on the
+  // created expressions:
+  .where((eb) =>
+    eb('last_name', '=', 'Aniston').or('last_name', '=', 'Stallone'),
+  )
+  .execute()
+```
+
+## Conditinal where
+
+You can conditionally add where clauses to your query.
+
+```ts
+import { Expression, SqlBool } from 'kysely'
+
+const firstName: string | undefined = 'Jennifer'
+const lastName: string | undefined = 'Aniston'
+const under18 = true
+const over60 = true
+
+let query = db.selectFrom('person').selectAll()
+
+if (firstName) {
+  // The query builder is immutable. Remember to reassign
+  // the result back to the query variable.
+  query = query.where('first_name', '=', firstName)
+}
+
+if (lastName) {
+  query = query.where('last_name', '=', lastName)
+}
+
+if (under18 || over60) {
+  // Conditional OR expressions can be added like this.
+  query = query.where((eb) => {
+    const ors: Expression<SqlBool>[] = []
+
+    if (under18) {
+      ors.push(eb('age', '<', 18))
+    }
+
+    if (over60) {
+      ors.push(eb('age', '>', 60))
+    }
+
+    return eb.or(ors)
+  })
+}
+
+const persons = await query.execute()
+```
