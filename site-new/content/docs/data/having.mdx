@@ -1,0 +1,15 @@
+---
+title: Having
+description: Learn how to use the having method in Kysely.
+---
+
+## Basic usage
+
+```ts
+await db
+  .selectFrom('person')
+  .selectAll()
+  .groupBy('age')
+  .having((eb) => eb('age', '>', 18))
+  .execute()
+```

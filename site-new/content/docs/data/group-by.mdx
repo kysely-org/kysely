@@ -1,0 +1,10 @@
+---
+title: Group By
+description: Learn how to use the groupBy method in Kysely.
+---
+
+## Basic usage
+
+```ts
+await db.selectFrom('person').selectAll().groupBy('age').execute()
+```

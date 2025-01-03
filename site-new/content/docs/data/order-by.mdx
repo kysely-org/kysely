@@ -1,0 +1,10 @@
+---
+title: Order By
+description: Learn how to use the orderBy method in Kysely.
+---
+
+## Basic usage
+
+```ts
+await db.selectFrom('person').selectAll().orderBy('age', 'desc').execute()
+```

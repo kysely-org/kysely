@@ -1,0 +1,16 @@
+---
+title: Limit / Offset
+description: Learn how to use the limit and offset methods in Kysely.
+---
+
+## Basic usage
+
+The `limit` method allows you to limit the number of rows returned by your query. The `offset` method allows you to skip a certain number of rows.
+
+```ts
+await db.selectFrom('person').selectAll().limit(10).execute()
+```
+
+```ts
+await db.selectFrom('person').selectAll().limit(10).offset(10).execute()
+```

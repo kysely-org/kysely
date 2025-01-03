@@ -24,6 +24,12 @@ export default async function Page(props: {
       toc={page.data.toc}
       full={page.data.full}
       tableOfContent={{ style: 'clerk' }}
+      editOnGithub={{
+        owner: 'kysely-org',
+        repo: 'kysely',
+        sha: 'main',
+        path: `site/content/docs/${page.file.path}`,
+      }}
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
