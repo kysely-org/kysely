@@ -1,21 +1,5 @@
-import { type LinkItemType } from 'fumadocs-ui/layouts/docs'
-import { AlbumIcon, LayoutTemplate } from 'lucide-react'
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
-
-export const linkItems: LinkItemType[] = [
-  {
-    icon: <AlbumIcon />,
-    text: 'Blog',
-    url: '/blog',
-    active: 'nested-url',
-  },
-  {
-    text: 'Showcase',
-    url: '/showcase',
-    icon: <LayoutTemplate />,
-    active: 'url',
-  },
-]
+import { Discord, X } from '@/components/icons'
 
 export const baseOptions: BaseLayoutProps = {
   githubUrl: 'https://github.com/kysely-org/kysely',
@@ -35,6 +19,19 @@ export const baseOptions: BaseLayoutProps = {
       url: '/docs',
       active: 'nested-url',
     },
-    ...linkItems,
+    {
+      type: 'icon',
+      url: 'https://x.com/kysely_',
+      text: 'X',
+      icon: X({}),
+      external: true,
+    },
+    {
+      type: 'icon',
+      url: 'https://discord.gg/xyBJ3GwvAm',
+      text: 'Discord',
+      icon: Discord({}),
+      external: true,
+    },
   ],
 }

@@ -3,8 +3,147 @@ title: Relations
 description: Learn how to use relations in Kysely.
 ---
 
-## Basic usage
+# Working with Relations in Kysely
 
-```ts
+## Important Note
 
+Kysely is a query builder, not an ORM. It doesn't have built-in relation concepts - it simply builds the SQL you specify.
+
+## Nesting Related Rows
+
+You can nest related rows using your database's native JSON capabilities (PostgreSQL, MySQL 8.0.14+, or SQLite).
+
+## Helper Functions
+
+Import the helpers for your specific database:
+
+<Tabs items={['Postgres', 'MySQL', 'SQLite']}>
+  <Tab value="Postgres">
+
+```typescript
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
+
+</Tab>
+<Tab value="MySQL">
+
+```typescript
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'
+```
+
+</Tab>
+<Tab value="SQLite">
+
+```typescript
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
+```
+
+</Tab>
+</Tabs>
+
+## Basic Example
+
+Here's how to fetch persons with their pets and mother information:
+
+```typescript
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .select(({ ref }) => [
+    jsonArrayFrom(
+      db
+        .selectFrom('pet')
+        .select(['pet.id', 'pet.name'])
+        .where('pet.owner_id', '=', ref('person.id'))
+        .orderBy('pet.name'),
+    ).as('pets'),
+
+    jsonObjectFrom(
+      db
+        .selectFrom('person as mother')
+        .select(['mother.id', 'mother.first_name'])
+        .where('mother.id', '=', ref('person.mother_id')),
+    ).as('mother'),
+  ])
+  .execute()
+```
+
+## Creating Reusable Relations
+
+You can create helper functions for commonly used relations:
+
+```typescript
+function pets(ownerId: Expression<string>) {
+  return jsonArrayFrom(
+    db
+      .selectFrom('pet')
+      .select(['pet.id', 'pet.name'])
+      .where('pet.owner_id', '=', ownerId)
+      .orderBy('pet.name'),
+  )
+}
+
+function mother(motherId: Expression<string>) {
+  return jsonObjectFrom(
+    db
+      .selectFrom('person as mother')
+      .select(['mother.id', 'mother.first_name'])
+      .where('mother.id', '=', motherId),
+  )
+}
+
+// Usage
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .select(({ ref }) => [
+    pets(ref('person.id')).as('pets'),
+    mother(ref('person.mother_id')).as('mother'),
+  ])
+  .execute()
+```
+
+## Advanced Features
+
+### Handling Nullability
+
+Use `$notNull()` to mark relations as non-nullable:
+
+```typescript
+mother(ref('person.mother_id')).$notNull().as('mother')
+```
+
+### Conditional Relations
+
+Use `$if` to include relations conditionally:
+
+```typescript
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .$if(includePets, (qb) =>
+    qb.select((eb) => pets(eb.ref('person.id')).as('pets')),
+  )
+  .$if(includeMom, (qb) =>
+    qb.select((eb) => mother(eb.ref('person.mother_id')).as('mother')),
+  )
+  .execute()
+```
+
+## JSON Parsing Note
+
+If your database driver doesn't automatically parse JSON columns, use the `ParseJSONResultsPlugin`:
+
+```typescript
+const db = new Kysely<DB>({
+  ...
+  plugins: [new ParseJSONResultsPlugin()]
+})
+```
+
+## Database Support
+
+- PostgreSQL: Full support
+- MySQL: Version 8.0.14+ required
+- SQLite: Supported via helpers
+- MariaDB: Not currently supported

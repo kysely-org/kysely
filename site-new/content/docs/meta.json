@@ -23,6 +23,7 @@
     "data/subqueries",
     "data/case",
     "data/transactions",
+    "data/sql",
     "---Other---",
     "guides",
     "dialects",
