@@ -6,20 +6,11 @@
   "pages": [
     "---Guide---",
     "index",
-    "getting-started",
-    "...",
-    "---Setup---",
-    "manual-installation",
-    "static-export",
-    "(integrations)",
-    "---Writing---",
-    "markdown",
-    "page-conventions",
-    "navigation",
-    "---UI---",
-    "theme",
-    "components",
-    "mdx",
+    "generate-types",
+    "plugins",
+    "---Data---",
+    "select",
+    "insert",
     "plugin-system"
   ]
 }

@@ -1,0 +1,75 @@
+---
+title: Insert
+description: Learn how to use the insert method in Kysely.
+---
+
+## Basic usage
+
+```ts
+const result = await db
+  .insertInto('users')
+  .values({
+    id: 1,
+    name: 'John Doe',
+  })
+  .execute()
+```
+
+## Inserting multiple rows
+
+```ts
+const result = await db
+  .insertInto('users')
+  .values([
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Doe' },
+  ])
+  .execute()
+```
+
+## Returning inserted rows
+
+```ts
+const result = await db
+  .insertInto('users')
+  .values({ id: 1, name: 'John Doe' })
+  .returning('id')
+  .executeTakeFirst()
+```
+
+## Inserting with a subquery
+
+```ts
+const result = await db
+  .insertInto('person')
+  .columns(['first_name', 'last_name', 'age'])
+  .expression((eb) =>
+    eb
+      .selectFrom('pet')
+      .select((eb) => [
+        'pet.name',
+        eb.val('Petson').as('last_name'),
+        eb.lit(7).as('age'),
+      ]),
+  )
+  .execute()
+```
+
+## Insert complex values
+
+```ts
+import { sql } from 'kysely'
+
+const ani = 'Ani'
+const ston = 'ston'
+
+const result = await db
+  .insertInto('person')
+  .values(({ ref, selectFrom, fn }) => ({
+    first_name: 'Jennifer',
+    last_name: sql<string>`concat(${ani}, ${ston})`,
+    middle_name: ref('first_name'),
+    age: selectFrom('person').select(fn.avg<number>('age').as('avg_age')),
+  }))
+  .executeTakeFirst()
+```
