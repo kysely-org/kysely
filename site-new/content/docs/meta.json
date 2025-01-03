@@ -8,6 +8,7 @@
     "index",
     "generate-types",
     "plugins",
+    "migrations",
     "---Data---",
     "data/select",
     "data/insert",
@@ -22,8 +23,9 @@
     "data/subqueries",
     "data/case",
     "data/transactions",
-    "---Guides---",
-    "guides/relations",
-    "guides/ai"
+    "---Other---",
+    "guides",
+    "dialects",
+    "other-runtimes"
   ]
 }

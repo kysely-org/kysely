@@ -3,18 +3,67 @@ title: Update
 description: Learn how to use the update method in Kysely.
 ---
 
-## Basic usage
+The `update` operation allows you to modify existing records in a table. You can update single or multiple columns, use expressions, and filter the rows to update.
 
-```ts
-await db
-  .updateTable('person')
+## Basic Update
+
+```typescript
+db.updateTable('users')
   .set({
-    first_name: 'Bruce',
-    last_name: 'Wayne',
-    age: 35,
-    occupation: 'Billionaire Vigilante',
+    first_name: 'Jennifer',
+    last_name: 'Aniston',
   })
-  .where('secret_identity', '=', 'Batman')
-  .where('city', '=', 'Gotham')
+  .where('id', '=', 1)
+  .execute()
+```
+
+## Update with Expressions
+
+```typescript
+db.updateTable('users')
+  .set((eb) => ({
+    age: eb('age', '+', 1),
+    last_login: new Date(),
+    full_name: sql`concat(first_name, ' ', last_name)`,
+  }))
+  .execute()
+```
+
+## Update with Returning
+
+```typescript
+// PostgreSQL only
+const updated = await db
+  .updateTable('users')
+  .set({ status: 'inactive' })
+  .where('last_login', '<', someDate)
+  .returning(['id', 'email'])
+  .execute()
+```
+
+## Update with Join
+
+```typescript
+db.updateTable('users')
+  .set((eb) => ({
+    status: eb.ref('orders.status'),
+  }))
+  .innerJoin('orders', 'orders.user_id', 'users.id')
+  .where('orders.id', '=', orderId)
+  .execute()
+```
+
+## Update with Subquery
+
+```typescript
+db.updateTable('users')
+  .set({
+    rank: (eb) =>
+      eb
+        .selectFrom('rankings')
+        .select('rank')
+        .where('rankings.user_id', '=', eb.ref('users.id'))
+        .limit(1),
+  })
   .execute()
 ```
