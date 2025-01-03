@@ -3,8 +3,40 @@ title: Group By
 description: Learn how to use the groupBy method in Kysely.
 ---
 
-## Basic usage
+The `groupBy` clause groups rows that have the same values into summary rows. It's typically used with aggregate functions like `count`, `sum`, or `avg`.
 
-```ts
-await db.selectFrom('person').selectAll().groupBy('age').execute()
+## Basic Grouping
+
+```typescript
+db.selectFrom('orders')
+  .select(['category', (eb) => eb.fn.count('id').as('total_orders')])
+  .groupBy('category')
+  .execute()
+```
+
+## Multiple Columns
+
+```typescript
+db.selectFrom('orders')
+  .select([
+    'category',
+    'status',
+    (eb) => eb.fn.sum('amount').as('total_amount'),
+  ])
+  .groupBy(['category', 'status'])
+  .execute()
+```
+
+## SQL Expressions
+
+```typescript
+import { sql } from 'kysely'
+
+db.selectFrom('sales')
+  .select([
+    (eb) => eb.fn.count('id').as('sales_count'),
+    sql`date_trunc('month', created_at)`.as('month'),
+  ])
+  .groupBy(sql`date_trunc('month', created_at)`)
+  .execute()
 ```

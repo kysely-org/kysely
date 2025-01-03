@@ -3,13 +3,63 @@ title: Join
 description: Learn how to use the join method in Kysely.
 ---
 
-## Basic usage
+Join clauses combine rows from two or more tables based on a related column. Kysely supports inner, left, right, and full joins.
 
-```ts
-await db
-  .selectFrom('person')
-  .innerJoin('pet', 'pet.owner_id', 'person.id')
-  .selectAll('person')
-  .select('pet.name')
+## Basic Inner Join
+
+```typescript
+db.selectFrom('users')
+  .innerJoin('orders', 'orders.user_id', 'users.id')
+  .select(['users.id', 'orders.total'])
+  .execute()
+```
+
+## Left Join
+
+```typescript
+db.selectFrom('users')
+  .leftJoin('orders', 'orders.user_id', 'users.id')
+  .select(['users.name', (eb) => eb.fn.count('orders.id').as('order_count')])
+  .groupBy('users.id')
+  .execute()
+```
+
+## Multiple Conditions
+
+```typescript
+db.selectFrom('users')
+  .innerJoin('orders', (join) =>
+    join
+      .onRef('orders.user_id', '=', 'users.id')
+      .on('orders.status', '=', 'completed'),
+  )
+  .select(['users.id', 'orders.total'])
+  .execute()
+```
+
+## Subquery Join
+
+```typescript
+db.selectFrom('users')
+  .innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('orders')
+        .select(['user_id', 'total'])
+        .where('status', '=', 'completed')
+        .as('recent_orders'),
+    'recent_orders.user_id',
+    'users.id',
+  )
+  .select(['users.name', 'recent_orders.total'])
+  .execute()
+```
+
+## Table Aliases
+
+```typescript
+db.selectFrom('users as u')
+  .innerJoin('orders as o', 'o.user_id', 'u.id')
+  .select(['u.name', 'o.total'])
   .execute()
 ```

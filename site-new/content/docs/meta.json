@@ -19,6 +19,8 @@
     "data/limit-offset",
     "data/group-by",
     "data/having",
+    "data/subqueries",
+    "data/case",
     "data/transactions",
     "---Guides---",
     "guides/relations",

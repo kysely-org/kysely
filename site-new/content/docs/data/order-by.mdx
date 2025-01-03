@@ -3,8 +3,46 @@ title: Order By
 description: Learn how to use the orderBy method in Kysely.
 ---
 
-## Basic usage
+The `orderBy` clause sorts query results based on one or more columns or expressions. Results can be sorted in ascending (`asc`) or descending (`desc`) order.
 
-```ts
-await db.selectFrom('person').selectAll().orderBy('age', 'desc').execute()
+```typescript
+db.selectFrom('users')
+  .select(['id', 'email', 'created_at'])
+  .orderBy('created_at', 'desc')
+  .orderBy('email') // 'asc' by default
+  .execute()
+```
+
+## Multiple Columns
+
+```typescript
+db.selectFrom('users')
+  .select(['id', 'email'])
+  .orderBy(['created_at desc', 'email'])
+  .execute()
+```
+
+## SQL Expressions
+
+```typescript
+import { sql } from 'kysely'
+
+db.selectFrom('users')
+  .select(['id', 'first_name', 'last_name'])
+  .orderBy(sql`concat(first_name, ' ', last_name)`)
+  .execute()
+```
+
+## Dynamic Sorting
+
+```typescript
+const { ref } = db.dynamic
+
+function sortUsers(orderByColumn: string) {
+  return db
+    .selectFrom('users')
+    .select(['id', 'email'])
+    .orderBy(ref(orderByColumn))
+    .execute()
+}
 ```

@@ -3,14 +3,49 @@ title: Limit / Offset
 description: Learn how to use the limit and offset methods in Kysely.
 ---
 
-## Basic usage
+The `limit` and `offset` clauses allow you to control the number of rows returned and their starting position in the result set. This is commonly used for pagination.
 
-The `limit` method allows you to limit the number of rows returned by your query. The `offset` method allows you to skip a certain number of rows.
+## Basic Limit
 
-```ts
-await db.selectFrom('person').selectAll().limit(10).execute()
+```typescript
+db.selectFrom('users')
+  .selectAll()
+  .limit(10) // Get only 10 results
+  .execute()
 ```
 
-```ts
-await db.selectFrom('person').selectAll().limit(10).offset(10).execute()
+## Basic Offset
+
+```typescript
+db.selectFrom('users')
+  .selectAll()
+  .offset(20) // Skip first 20 results
+  .execute()
+```
+
+## Pagination
+
+```typescript
+function getPage(pageNumber: number, pageSize: number) {
+  return db
+    .selectFrom('users')
+    .selectAll()
+    .limit(pageSize)
+    .offset(pageSize * (pageNumber - 1))
+    .execute()
+}
+```
+
+## Dynamic Values
+
+```typescript
+// Using variables
+const maxResults = 10
+const startingPoint = 20
+
+db.selectFrom('users')
+  .selectAll()
+  .limit(maxResults)
+  .offset(startingPoint)
+  .execute()
 ```
