@@ -1,0 +1,224 @@
+---
+title: Database Introspection
+description: Learn how to use database introspection in Kysely.
+---
+
+Kysely provides powerful introspection capabilities that allow you to examine your database schema at runtime. You can retrieve metadata about tables, views, columns, and constraints using the `introspection` property of your Kysely instance.
+
+## Overview
+
+Database introspection is useful for:
+
+- Generating documentation
+- Building dynamic queries based on schema structure
+- Validating database migrations
+- Creating schema visualization tools
+- Runtime type checking and validation
+
+## Basic Usage
+
+Here's a simple example of how to retrieve table metadata:
+
+```ts
+import { Kysely, PostgresDialect } from 'kysely'
+import { Pool } from 'pg'
+
+async function inspectDatabase() {
+  const db = new Kysely({
+    dialect: new PostgresDialect({
+      pool: new Pool({
+        connectionString: process.env.DATABASE_URL,
+      }),
+    }),
+  })
+
+  const tables = await db.introspection.getTables()
+  console.log('Database tables:', tables)
+}
+```
+
+## Available Methods
+
+The introspection API provides several methods to examine different aspects of your database schema:
+
+### Getting Table Information
+
+```ts
+// Get all tables and views
+const tables = await db.introspection.getTables()
+
+// Get a specific table
+const userTable = await db.introspection.getTable('users')
+
+// Get only tables (excluding views)
+const onlyTables = await db.introspection.getTables({ withViews: false })
+```
+
+### Getting Column Information
+
+```ts
+// Get all columns for a specific table
+const columns = await db.introspection.getColumns('users')
+
+// Get a specific column
+const emailColumn = await db.introspection.getColumn('users', 'email')
+```
+
+## Understanding the Metadata
+
+### TableMetadata Interface
+
+The `TableMetadata` interface provides detailed information about tables and views:
+
+```ts
+interface TableMetadata {
+  // Name of the table or view
+  name: string
+
+  // Schema name (e.g., 'public' in PostgreSQL)
+  schema: string
+
+  // Whether this is a view rather than a table
+  isView: boolean
+
+  // Comments/descriptions from the database
+  comment?: string
+}
+```
+
+### ColumnMetadata Interface
+
+The `ColumnMetadata` interface describes individual columns:
+
+```ts
+interface ColumnMetadata {
+  // Column name
+  name: string
+
+  // SQL data type (e.g., 'varchar', 'integer')
+  dataType: string
+
+  // Maximum length for string columns
+  maxLength?: number
+
+  // Is the column nullable?
+  isNullable: boolean
+
+  // Has a default value?
+  hasDefaultValue: boolean
+
+  // Column comment/description
+  comment?: string
+}
+```
+
+## Advanced Usage Examples
+
+### Generating Schema Documentation
+
+```ts
+async function generateSchemaDoc() {
+  const tables = await db.introspection.getTables()
+
+  let documentation = '# Database Schema\n\n'
+
+  for (const table of tables) {
+    documentation += `## ${table.name}\n`
+    if (table.comment) {
+      documentation += `${table.comment}\n`
+    }
+
+    const columns = await db.introspection.getColumns(table.name)
+    documentation += '\n### Columns\n\n'
+
+    for (const column of columns) {
+      documentation += `- ${column.name} (${column.dataType})`
+      if (column.comment) {
+        documentation += `: ${column.comment}`
+      }
+      documentation += '\n'
+    }
+    documentation += '\n'
+  }
+
+  return documentation
+}
+```
+
+### Validating Schema Changes
+
+```ts
+async function validateSchema(expectedTables: string[]) {
+  const tables = await db.introspection.getTables()
+  const tableNames = tables.map((t) => t.name)
+
+  const missingTables = expectedTables.filter(
+    (name) => !tableNames.includes(name),
+  )
+
+  if (missingTables.length > 0) {
+    throw new Error(`Missing tables: ${missingTables.join(', ')}`)
+  }
+}
+```
+
+### Dynamic Query Building
+
+```ts
+async function buildDynamicQuery(
+  tableName: string,
+  filters: Record<string, any>,
+) {
+  // Validate table exists
+  const table = await db.introspection.getTable(tableName)
+  if (!table) {
+    throw new Error(`Table ${tableName} does not exist`)
+  }
+
+  // Get valid columns
+  const columns = await db.introspection.getColumns(tableName)
+  const columnNames = new Set(columns.map((c) => c.name))
+
+  // Filter out invalid columns
+  const validFilters = Object.entries(filters)
+    .filter(([key]) => columnNames.has(key))
+    .reduce(
+      (obj, [key, value]) => ({
+        ...obj,
+        [key]: value,
+      }),
+      {},
+    )
+
+  // Build query
+  return db.selectFrom(tableName).selectAll().where(validFilters)
+}
+```
+
+## Best Practices
+
+1. **Cache Introspection Results**
+
+   - Introspection queries can be expensive
+   - Cache results when possible, especially in production
+   - Invalidate cache after schema migrations
+
+2. **Error Handling**
+
+   - Always handle cases where tables or columns might not exist
+   - Consider schema changes that might happen during runtime
+
+3. **Performance Considerations**
+   - Limit introspection calls in hot paths
+   - Use specific methods (getTable, getColumn) instead of fetching all metadata
+   - Consider implementing a schema cache layer
+
+## Dialect Support
+
+Different SQL dialects may provide different levels of introspection support. Always check the documentation for your specific dialect:
+
+- PostgreSQL: Full support for all introspection features
+- MySQL: Supports basic table and column introspection
+- SQLite: Limited introspection capabilities
+
+For complete details on available methods and interfaces, refer to the [DatabaseIntrospector](https://kysely-org.github.io/kysely-apidoc/interfaces/DatabaseIntrospector.html) and [TableMetadata](https://kysely-org.github.io/kysely-apidoc/interfaces/TableMetadata.html) documentation.
