@@ -31,7 +31,12 @@ export function createSnakeCaseMapper({
       // If underScoreBeforeDigits is true then, well, insert an underscore
       // before digits :). Only the first digit gets an underscore if
       // there are multiple.
-      if (underscoreBeforeDigits && isDigit(char) && !isDigit(prevChar) && !out.endsWith('_')) {
+      if (
+        underscoreBeforeDigits &&
+        isDigit(char) &&
+        !isDigit(prevChar) &&
+        !out.endsWith('_')
+      ) {
         out += '_' + char
         continue
       }

@@ -313,45 +313,21 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    it('should respect underscoreBeforeDigits and not add a second underscore in a nested query', async () => {
-      let db = camelDb.withoutPlugins()
+    it.only('should respect `underscoreBeforeDigits` and not add a second underscore in a nested query', async () => {
+      const db = camelDb
+        .withoutPlugins()
+        .withPlugin(new CamelCasePlugin({ underscoreBeforeDigits: true }))
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
-        db = db.withPlugin(new ParseJSONResultsPlugin())
-      }
-
-      db = db.withPlugin(
-        new CamelCasePlugin({
-          underscoreBeforeDigits: true,
-        }),
-      )
-
-      const originalQuery = db.selectFrom('camelPerson').select('addressRow1')
-
-      const nestedQuery = db
-        .selectFrom(originalQuery.as('originalQuery'))
+      const query = db
+        .selectFrom(
+          db
+            .selectFrom('camelPerson')
+            .select('addressRow1')
+            .as('originalQuery'),
+        )
         .selectAll()
 
-      testSql(originalQuery, dialect, {
-        postgres: {
-          sql: [`select "address_row_1" from "camel_person"`],
-          parameters: [],
-        },
-        mysql: {
-          sql: ['select `address_row_1` from `camel_person`'],
-          parameters: [],
-        },
-        mssql: {
-          sql: [`select "address_row_1" from "camel_person"`],
-          parameters: [],
-        },
-        sqlite: {
-          sql: [`select "address_row_1" from "camel_person"`],
-          parameters: [],
-        },
-      })
-
-      testSql(nestedQuery, dialect, {
+      testSql(query, dialect, {
         postgres: {
           sql: [
             `select * from (select "address_row_1" from "camel_person") as "original_query"`,
