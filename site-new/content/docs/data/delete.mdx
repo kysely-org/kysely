@@ -1,10 +1,109 @@
 ---
 title: Delete
-description: Learn how to use the delete method in Kysely.
+description: Learn how to delete data using Kysely's type-safe deleteFrom() method. From simple deletions to returning deleted data, master database DELETE operations in TypeScript with full type safety and autocomplete support.
 ---
 
-## Basic usage
+The `deleteFrom` method allows you to delete rows from a table.
 
-```ts
-await db.deleteFrom('person').where('id', '=', 1).execute()
+## Basic Delete
+
+The simplest way to delete rows is using the `deleteFrom` method:
+
+<Tabs items={['typescript', 'sql']}>
+  <Tab value="typescript">
+
+```typescript
+await db.deleteFrom('movies').execute()
 ```
+
+</Tab>
+<Tab value="sql">
+
+```sql
+delete from "movies"
+```
+
+</Tab>
+</Tabs>
+
+## Returning Deleted Data
+
+On supported databases like PostgreSQL, you can return data from deleted rows:
+
+<Tabs items={['typescript', 'sql']}>
+  <Tab value="typescript">
+
+```typescript
+const deletedMovie = await db
+  .deleteFrom('movies')
+  .where('id', '=', 123)
+  .returning(['id', 'title'])
+  .executeTakeFirst()
+
+// Returns: { id: 123, title: 'The Matrix' }
+```
+
+</Tab>
+<Tab value="sql">
+
+```sql
+delete from "movies"
+where "id" = $1
+returning "id", "title"
+```
+
+</Tab>
+</Tabs>
+
+You can return all columns using `returningAll()`:
+
+<Tabs items={['typescript', 'sql']}>
+  <Tab value="typescript">
+
+```typescript
+const deletedMovie = await db
+  .deleteFrom('movies')
+  .where('id', '=', 123)
+  .returningAll()
+  .executeTakeFirst()
+
+// Returns all columns from the deleted row
+```
+
+</Tab>
+<Tab value="sql">
+
+```sql
+delete from "movies"
+where "id" = $1
+returning *
+```
+
+</Tab>
+</Tabs>
+
+## Getting Delete Count
+
+You can get the number of deleted rows from the result:
+
+<Tabs items={['typescript', 'sql']}>
+  <Tab value="typescript">
+
+```typescript
+const result = await db
+  .deleteFrom('movies')
+  .where('rating', '<', 5)
+  .executeTakeFirst()
+
+console.log(`Deleted ${result.numDeletedRows} movies`)
+```
+
+</Tab>
+<Tab value="sql">
+
+```sql
+delete from "movies" where "rating" < $1
+```
+
+</Tab>
+</Tabs>
