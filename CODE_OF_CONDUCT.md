@@ -44,6 +44,16 @@ That's it. That's the pledge.
 Don't be an asshole.
 You are not entitled to other people's time, energy or attention.
 
+Examples of being an asshole or entitled include:
+
+* > what is the migration_lock ?? why we have this in the database - https://github.com/kysely-org/kysely/issues/973
+* > You got any more of them there examples buster? Not sure how you'd do these with kysely syntax. - https://github.com/kysely-org/kysely/issues/677#issuecomment-2019876074
+* > NO documentation about error handling!!!!
+  > I am really confused that the docs doesnt have anything about error handling
+  > ex: user already exists
+  > violating constraints
+  > this is a mandataory things to add!! - https://github.com/kysely-org/kysely/issues/1217
+
 ## Enforcement Responsibilities
 
 ~~Community leaders are responsible for clarifying and enforcing our standards of~~
