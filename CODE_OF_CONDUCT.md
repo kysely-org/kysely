@@ -46,7 +46,7 @@ You are not entitled to other people's time, energy or attention.
 
 Examples of being an asshole or entitled include:
 
-* We're not Chat GPT.
+* Probably not the best idea to come in complaining and not having minimal respect to develop some basic sentences.
   > what is the migration_lock ?? why we have this in the database - https://github.com/kysely-org/kysely/issues/973
 * Probably not the best idea to attack the maintainer after he answered succinctly (out of character) for whatever reason (context switch? busy?).
   > You got any more of them there examples buster? - https://github.com/kysely-org/kysely/issues/677#issuecomment-2019876074
@@ -60,6 +60,10 @@ Examples of being an asshole or entitled include:
   > I don't understand your answer and closing the issue. - https://github.com/kysely-org/kysely/issues/527#issuecomment-1577383794
 * Probably not the best idea to jump into closed issues and be entitled to other people's efforts.
   > why on earth there is no mention of this in the documentation? - https://github.com/kysely-org/kysely/issues/649#issuecomment-2430854835
+* Probably not the best idea to not search existing issues, and then ask the maintainer to spend time doing it.
+  > could you please provide numbers of duplicated issues to explore the topic? - https://github.com/kysely-org/kysely/issues/762#issuecomment-1801951960
+* Probably not the best idea to sarcastically suggest the maintainer is not helpful while using his hard work for free.
+  > https://github.com/kysely-org/kysely/issues/762#issuecomment-2404599281
 
 ## Enforcement Responsibilities
 
