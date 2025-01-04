@@ -46,15 +46,18 @@ You are not entitled to other people's time, energy or attention.
 
 Examples of being an asshole or entitled include:
 
-* > what is the migration_lock ?? why we have this in the database - https://github.com/kysely-org/kysely/issues/973
-* > You got any more of them there examples buster? - https://github.com/kysely-org/kysely/issues/677#issuecomment-2019876074
-* > NO documentation about error handling!!!!
+* We're not Chat GPT.
+  > what is the migration_lock ?? why we have this in the database - https://github.com/kysely-org/kysely/issues/973
+* Probably not the best idea to attack the maintainer after he answered succinctly (out of character) for whatever reason (context switch? busy?).
+  > You got any more of them there examples buster? - https://github.com/kysely-org/kysely/issues/677#issuecomment-2019876074
+* Probably not the best idea to come in all yelling and demanding stuff.
+  > NO documentation about error handling!!!!
   > I am really confused that the docs doesnt have anything about error handling
-  > ex: user already exists
-  > violating constraints
   > this is a mandataory things to add!! - https://github.com/kysely-org/kysely/issues/1217
-* Demands changes to docs or implementation and when offered to submit a PR responds with
+* Probably not the best idea to tone police the maintainer after he spent time explaining library philosophy, and to publicly refuse to contribute something you demanded.
   > I'm sorry fella but with your tone I really don't feel like it. Good luck - https://github.com/kysely-org/kysely/issues/709#issuecomment-1727617260
+* Probably not the best idea to question the maintainer's decisions after properly answering your question, and to be entitled for JavaScript skill issue help after the issue is closed.
+  > I don't understand your answer and closing the issue. - https://github.com/kysely-org/kysely/issues/527#issuecomment-1577383794
 
 ## Enforcement Responsibilities
 
