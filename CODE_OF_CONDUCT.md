@@ -58,6 +58,8 @@ Examples of being an asshole or entitled include:
   > I'm sorry fella but with your tone I really don't feel like it. Good luck - https://github.com/kysely-org/kysely/issues/709#issuecomment-1727617260
 * Probably not the best idea to question the maintainer's decisions after properly answering your question, and to be entitled for JavaScript skill issue help after the issue is closed.
   > I don't understand your answer and closing the issue. - https://github.com/kysely-org/kysely/issues/527#issuecomment-1577383794
+* Probably not the best idea to jump into closed issues and be entitled to other people's efforts.
+  > why on earth there is no mention of this in the documentation? - https://github.com/kysely-org/kysely/issues/649#issuecomment-2430854835
 
 ## Enforcement Responsibilities
 
