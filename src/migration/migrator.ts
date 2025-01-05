@@ -83,6 +83,7 @@ export class Migrator {
           .withPlugin(this.#schemaPlugin)
           .selectFrom(this.#migrationTable)
           .select(['name', 'timestamp'])
+          .$narrowType<{ name: string; timestamp: string }>()
           .execute()
       : []
 
@@ -578,13 +579,18 @@ export class Migrator {
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
       .select(['name', 'timestamp'])
+      .$narrowType<{ name: string; timestamp: string }>()
       .execute()
+
+    const nameComparator =
+      this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
     return executedMigrations
       .sort((a, b) => {
         if (a.timestamp === b.timestamp) {
-          return a.name < b.name ? -1 : 1
+          return nameComparator(a.name, b.name)
         }
+
         return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       })
       .map((it) => it.name)
@@ -803,6 +809,14 @@ export interface MigratorProps {
    * order.
    */
   readonly allowUnorderedMigrations?: boolean
+
+  /**
+   * A function that compares migration names, used when sorting migrations in
+   * ascending order.
+   *
+   * Default is `name0.localeCompare(name1)`.
+   */
+  readonly nameComparator?: (name0: string, name1: string) => number
 }
 
 /**
