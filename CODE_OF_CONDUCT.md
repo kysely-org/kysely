@@ -13,7 +13,7 @@
 ~~diverse, inclusive, and healthy community.~~
 
 Don't be an asshole.
-You are not entitled to other people's time, energy or attention.
+You are not entitled to other people's time, energy, or attention.
 
 That's it. That's the pledge.
 
@@ -42,7 +42,7 @@ That's it. That's the pledge.
   ~~professional setting~~
 
 Don't be an asshole.
-You are not entitled to other people's time, energy or attention.
+You are not entitled to other people's time, energy, or attention.
 
 Examples of being an asshole or entitled include:
 
@@ -77,8 +77,11 @@ Examples of being an asshole or entitled include:
 ~~not aligned to this Code of Conduct, and will communicate reasons for moderation~~
 ~~decisions when appropriate.~~
 
+We are here in our free time. We are not getting paid to serve and please you.
+
 We will not tolerate assholes or entitled behavior.
-We are capable of banning you from the GitHub organization, Discord server or any 
+
+We are capable of banning you from the GitHub organization, Discord server, or any 
 other community space we manage. Don't make us do it.
 
 ## Scope
