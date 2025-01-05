@@ -94,6 +94,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -109,9 +110,12 @@ import { OutputNode } from './output-node.js'
  * snake_case, you'd do something like this:
  *
  * ```ts
+ * import { type IdentifierNode, OperationNodeTransformer } from 'kysely'
+ * import snakeCase from 'lodash/snakeCase'
+ *
  * class CamelCaseTransformer extends OperationNodeTransformer {
- *   transformIdentifier(node: IdentifierNode): IdentifierNode {
- *     node = super.transformIdentifier(node),
+ *   override transformIdentifier(node: IdentifierNode): IdentifierNode {
+ *     node = super.transformIdentifier(node)
  *
  *     return {
  *       ...node,
@@ -121,7 +125,10 @@ import { OutputNode } from './output-node.js'
  * }
  *
  * const transformer = new CamelCaseTransformer()
- * const tree = transformer.transformNode(tree)
+ *
+ * const query = db.selectFrom('person').select(['first_name', 'last_name'])
+ *
+ * const tree = transformer.transformNode(query.toOperationNode())
  * ```
  */
 export class OperationNodeTransformer {
@@ -189,6 +196,8 @@ export class OperationNodeTransformer {
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
+    RefreshMaterializedViewNode:
+      this.transformRefreshMaterializedView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedNode: this.transformGenerated.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
@@ -796,6 +805,17 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): RefreshMaterializedViewNode {
+    return requireAllProps<RefreshMaterializedViewNode>({
+      kind: 'RefreshMaterializedViewNode',
+      name: this.transformNode(node.name),
+      concurrently: node.concurrently,
+      withNoData: node.withNoData,
+    })
+  }
+
   protected transformDropView(node: DropViewNode): DropViewNode {
     return requireAllProps<DropViewNode>({
       kind: 'DropViewNode',
@@ -883,6 +903,7 @@ export class OperationNodeTransformer {
       kind: 'AggregateFunctionNode',
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
+      orderBy: this.transformNode(node.orderBy),
       filter: this.transformNode(node.filter),
       func: node.func,
       over: this.transformNode(node.over),
@@ -1018,6 +1039,7 @@ export class OperationNodeTransformer {
       top: this.transformNode(node.top),
       endModifiers: this.transformNodeList(node.endModifiers),
       output: this.transformNode(node.output),
+      returning: this.transformNode(node.returning),
     })
   }
 

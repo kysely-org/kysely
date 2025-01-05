@@ -6,21 +6,23 @@ export interface MssqlDialectConfig {
    * (excluding `create`, `destroy` and `validate` functions which are controlled by this dialect),
    * `min` & `max` connections at the very least.
    *
-   * Example:
+   * ### Examples
    *
    * ```ts
+   * import { MssqlDialect } from 'kysely'
    * import * as Tarn from 'tarn'
+   * import * as Tedious from 'tedious'
    *
    * const dialect = new MssqlDialect({
-   *   // ...
-   *   tarn: {
-   *     ...Tarn,
-   *     options: {
+   *   tarn: { ...Tarn, options: { max: 10, min: 0 } },
+   *   tedious: {
+   *     ...Tedious,
+   *     connectionFactory: () => new Tedious.Connection({
    *       // ...
-   *       min: 0,
-   *       max: 10,
-   *     },
-   *   },
+   *       server: 'localhost',
+   *       // ...
+   *     }),
+   *   }
    * })
    * ```
    */
@@ -32,17 +34,23 @@ export interface MssqlDialectConfig {
    * you need to pass the `tedious` package itself. You also need to pass a factory
    * function that creates new `tedious` `Connection` instances on demand.
    *
-   * Example:
+   * ### Examples
    *
    * ```ts
+   * import { MssqlDialect } from 'kysely'
+   * import * as Tarn from 'tarn'
    * import * as Tedious from 'tedious'
    *
    * const dialect = new MssqlDialect({
-   *   // ...
+   *   tarn: { ...Tarn, options: { max: 10, min: 0 } },
    *   tedious: {
    *     ...Tedious,
-   *     connectionFactory: () => new Tedious.Connection({ ... }),
-   *   },
+   *     connectionFactory: () => new Tedious.Connection({
+   *       // ...
+   *       server: 'localhost',
+   *       // ...
+   *     }),
+   *   }
    * })
    * ```
    */
@@ -65,17 +73,20 @@ export interface Tedious {
 
 export interface TediousConnection {
   beginTransaction(
-    callback: (error?: Error | null, transactionDescriptor?: any) => void,
-    name?: string,
-    isolationLevel?: number,
+    callback: (
+      err: Error | null | undefined,
+      transactionDescriptor?: any,
+    ) => void,
+    name?: string | undefined,
+    isolationLevel?: number | undefined,
   ): void
   cancel(): boolean
   close(): void
   commitTransaction(
-    callback: (error?: Error | null) => void,
-    name?: string,
+    callback: (err: Error | null | undefined) => void,
+    name?: string | undefined,
   ): void
-  connect(callback?: (error?: Error) => void): void
+  connect(connectListener: (err?: Error) => void): void
   execSql(request: TediousRequest): void
   off(event: 'error', listener: (error: unknown) => void): this
   off(event: string, listener: (...args: any[]) => void): this
@@ -83,12 +94,15 @@ export interface TediousConnection {
   on(event: string, listener: (...args: any[]) => void): this
   once(event: 'end', listener: () => void): this
   once(event: string, listener: (...args: any[]) => void): this
-  reset(callback: (error?: Error | null) => void): void
+  reset(callback: (err: Error | null | undefined) => void): void
   rollbackTransaction(
-    callback: (error?: Error | null) => void,
-    name?: string,
+    callback: (err: Error | null | undefined) => void,
+    name?: string | undefined,
   ): void
-  saveTransaction(callback: (error?: Error | null) => void, name: string): void
+  saveTransaction(
+    callback: (err: Error | null | undefined) => void,
+    name: string,
+  ): void
 }
 
 export type TediousIsolationLevel = Record<string, number>
@@ -161,20 +175,6 @@ export interface Tarn {
 
   /**
    * Tarn.js' Pool class.
-   *
-   * Example:
-   *
-   * ```ts
-   * import { Pool } from 'tarn'
-   *
-   * const dialect = new MssqlDialect({
-   *   // ...
-   *   tarn: {
-   *     // ...
-   *     Pool,
-   *   },
-   * })
-   * ```
    */
   Pool: typeof TarnPool
 }

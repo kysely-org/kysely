@@ -12,8 +12,26 @@ import { Simplify } from '../util/type-utils.js'
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new MssqlDialect(config),
+ * import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
+ * import * as Tarn from 'tarn'
+ * import * as Tedious from 'tedious'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new MssqlDialect({
+ *     tarn: { options: { max: 10, min: 0 }, ...Tarn },
+ *     tedious: {
+ *       ...Tedious,
+ *       connectionFactory: () => new Tedious.Connection({
+ *         authentication: {
+ *           options: { password: 'password', userName: 'sa' },
+ *           type: 'default',
+ *         },
+ *         options: { database: 'test', port: 21433, trustServerCertificate: true },
+ *         server: 'localhost',
+ *       }),
+ *     },
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -21,6 +39,8 @@ import { Simplify } from '../util/type-utils.js'
  * ### Examples
  *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/mssql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -30,14 +50,14 @@ import { Simplify } from '../util/type-utils.js'
  *         .select(['pet.id as pet_id', 'pet.name'])
  *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .orderBy('pet.name')
- *         .modifyEnd(sql`offset 0 rows`)
+ *         .offset(0)
  *     ).as('pets')
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
+ * result[0]?.id
+ * result[0]?.pets[0]?.pet_id
+ * result[0]?.pets[0]?.name
  * ```
  *
  * The generated SQL (MS SQL Server):
@@ -49,7 +69,7 @@ import { Simplify } from '../util/type-utils.js'
  *     from "pet"
  *     where "pet"."owner_id" = "person"."id"
  *     order by "pet"."name"
- *     offset 0 rows
+ *     offset @1 rows
  *   ) as "agg" for json path, include_null_values), '[]')
  * ) as "pets"
  * from "person"
@@ -72,8 +92,26 @@ export function jsonArrayFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new MssqlDialect(config),
+ * import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
+ * import * as Tarn from 'tarn'
+ * import * as Tedious from 'tedious'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new MssqlDialect({
+ *     tarn: { options: { max: 10, min: 0 }, ...Tarn },
+ *     tedious: {
+ *       ...Tedious,
+ *       connectionFactory: () => new Tedious.Connection({
+ *         authentication: {
+ *           options: { password: 'password', userName: 'sa' },
+ *           type: 'default',
+ *         },
+ *         options: { database: 'test', port: 21433, trustServerCertificate: true },
+ *         server: 'localhost',
+ *       }),
+ *     },
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -81,6 +119,8 @@ export function jsonArrayFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/mssql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -94,9 +134,9 @@ export function jsonArrayFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
+ * result[0]?.id
+ * result[0]?.favorite_pet?.pet_id
+ * result[0]?.favorite_pet?.name
  * ```
  *
  * The generated SQL (MS SQL Server):
@@ -128,8 +168,26 @@ export function jsonObjectFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new MssqlDialect(config),
+ * import { Kysely, MssqlDialect, ParseJSONResultsPlugin } from 'kysely'
+ * import * as Tarn from 'tarn'
+ * import * as Tedious from 'tedious'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new MssqlDialect({
+ *     tarn: { options: { max: 10, min: 0 }, ...Tarn },
+ *     tedious: {
+ *       ...Tedious,
+ *       connectionFactory: () => new Tedious.Connection({
+ *         authentication: {
+ *           options: { password: 'password', userName: 'sa' },
+ *           type: 'default',
+ *         },
+ *         options: { database: 'test', port: 21433, trustServerCertificate: true },
+ *         server: 'localhost',
+ *       }),
+ *     },
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -137,6 +195,8 @@ export function jsonObjectFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { jsonBuildObject } from 'kysely/helpers/mssql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [

@@ -35,9 +35,12 @@ export class JSONPathBuilder<S, O = S> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person').select(eb =>
-   *   eb.ref('nicknames', '->').at(0).as('primary_nickname')
-   * )
+   * await db.selectFrom('person')
+   *   .select(eb =>
+   *     eb.ref('nicknames', '->').at(0).as('primary_nickname')
+   *   )
+   *   .execute()
+   * ```
    *
    * The generated SQL (PostgreSQL):
    *
@@ -229,7 +232,7 @@ export class TraversedJSONPathBuilder<S, O>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select "first_name" = $1 as "is_jennifer"
    * from "person"
    * ```
@@ -246,12 +249,12 @@ export class TraversedJSONPathBuilder<S, O>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `JSONPathBuilder` with a new output type.
    */
-  $castTo<C>(): JSONPathBuilder<C> {
-    return new JSONPathBuilder(this.#node)
+  $castTo<O2>(): TraversedJSONPathBuilder<S, O2> {
+    return new TraversedJSONPathBuilder(this.#node)
   }
 
-  $notNull(): JSONPathBuilder<Exclude<O, null>> {
-    return new JSONPathBuilder(this.#node)
+  $notNull(): TraversedJSONPathBuilder<S, Exclude<O, null>> {
+    return new TraversedJSONPathBuilder(this.#node)
   }
 
   toOperationNode(): OperationNode {

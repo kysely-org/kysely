@@ -26,6 +26,8 @@ import { DropTypeBuilder } from './drop-type-builder.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { parseSchemableIdentifier } from '../parser/identifier-parser.js'
+import { RefreshMaterializedViewBuilder } from './refresh-materialized-view-builder.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
 /**
  * Provides methods for building database schema.
@@ -231,6 +233,26 @@ export class SchemaModule {
       queryId: createQueryId(),
       executor: this.#executor,
       node: CreateViewNode.create(viewName),
+    })
+  }
+
+  /**
+   * Refresh a materialized view.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .refreshMaterializedView('my_view')
+   *   .concurrently()
+   *   .execute()
+   * ```
+   */
+  refreshMaterializedView(viewName: string): RefreshMaterializedViewBuilder {
+    return new RefreshMaterializedViewBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      node: RefreshMaterializedViewNode.create(viewName),
     })
   }
 

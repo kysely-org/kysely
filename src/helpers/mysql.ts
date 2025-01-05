@@ -17,6 +17,8 @@ import { Simplify } from '../util/type-utils.js'
  * ### Examples
  *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/mysql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -30,9 +32,9 @@ import { Simplify } from '../util/type-utils.js'
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
+ * result[0]?.id
+ * result[0]?.pets[0]?.pet_id
+ * result[0]?.pets[0]?.name
  * ```
  *
  * The generated SQL (MySQL):
@@ -73,6 +75,8 @@ export function jsonArrayFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/mysql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -86,9 +90,9 @@ export function jsonArrayFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
+ * result[0]?.id
+ * result[0]?.favorite_pet?.pet_id
+ * result[0]?.favorite_pet?.name
  * ```
  *
  * The generated SQL (MySQL):
@@ -139,10 +143,10 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].name.first
- * result[0].name.last
- * result[0].name.full
+ * result[0]?.id
+ * result[0]?.name.first
+ * result[0]?.name.last
+ * result[0]?.name.full
  * ```
  *
  * The generated SQL (MySQL):

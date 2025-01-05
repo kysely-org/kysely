@@ -8,21 +8,17 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-background-color: var(--gray12) !important;
   --ifm-color-primary: var(--sky9);
   --ifm-color-primary-dark: var(--sky10);
   --ifm-color-primary-darker: var(--sky11);
   --ifm-color-primary-darkest: var(--sky12);
-  --ifm-color-primary-light: var(--sky6);
-  --ifm-color-primary-lighter: var(--sky4);
-  --ifm-color-primary-lightest: var(--sky2);
+  --ifm-color-primary-light: var(--sky8);
+  --ifm-color-primary-lighter: var(--sky7);
+  --ifm-color-primary-lightest: var(--sky6);
+  --ifm-footer-background-color: var(--sky12);
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  --ifm-footer-background-color: var(--sky12);
   --ifm-button-font-weight: 500;
-}
-
-:root {
   --shadow-color: 0deg 0% 0%;
   --shadow-elevation-low: -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
     -0.2px 0.8px 0.9px -1.2px hsl(var(--shadow-color) / 0.1),
@@ -41,7 +37,41 @@
     -14.8px 50.6px 59.3px -2.5px hsl(var(--shadow-color) / 0.1);
 }
 
-.footer--dark {
+/* remove default theme max-width in examples content */
+:root [class^='col docItemCol_'] {
+  max-width: unset !important;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: var(--sky9);
+  --ifm-color-primary-dark: var(--sky10);
+  --ifm-color-primary-darker: var(--sky11);
+  --ifm-color-primary-darkest: var(--sky12);
+  --ifm-color-primary-light: var(--sky6);
+  --ifm-color-primary-lighter: var(--sky4);
+  --ifm-color-primary-lightest: var(--sky2);
+  --ifm-footer-background-color: var(--sky12);
+}
+
+[data-theme='light'] .footer {
+  background-image: linear-gradient(
+    180deg,
+    hsl(0deg 0% 100%) 0%,
+    hsl(227deg 10% 98%) 40%,
+    hsl(226deg 19% 97%) 58%,
+    hsl(224deg 28% 96%) 69%,
+    hsl(222deg 36% 95%) 77%,
+    hsl(220deg 45% 94%) 83%,
+    hsl(219deg 54% 93%) 89%,
+    hsl(216deg 65% 93%) 93%,
+    hsl(214deg 80% 93%) 97%,
+    hsl(211deg 100% 93%) 100%
+  );
+  --ifm-footer-title-color: var(--ifm-color-black);
+  --ifm-footer-link-color: var(--gray12);
+}
+
+[data-theme='dark'] .footer {
   background-image: linear-gradient(
     180deg,
     hsl(0deg 0% 9%) 0%,
@@ -55,10 +85,6 @@
     hsl(214deg 80% 15%) 97%,
     hsl(211deg 100% 15%) 100%
   );
-}
-
-.navbar--dark {
-  --ifm-navbar-background-color: var(--gray12);
 }
 
 .navbar__title {

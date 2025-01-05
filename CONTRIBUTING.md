@@ -52,7 +52,7 @@ for all cases, are best left for consumers to implement.
 
 5. create a branch.
 
-6. create a draft pull request. link the relevant issue by refering to it in the 
+6. create a draft pull request. link the relevant issue by referring to it in the 
 PR's description. E.g. `closes #123` will link the PR to issue/pull request #123.
 
 7. implement your changes.

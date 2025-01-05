@@ -2,7 +2,6 @@ import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constrai
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 
 export interface ForeignKeyConstraintBuilderInterface<R> {
   onDelete(onDelete: OnModifyForeignAction): R
@@ -48,8 +47,3 @@ export class ForeignKeyConstraintBuilder
     return this.#node
   }
 }
-
-preventAwait(
-  ForeignKeyConstraintBuilder,
-  "don't await ForeignKeyConstraintBuilder instances directly.",
-)

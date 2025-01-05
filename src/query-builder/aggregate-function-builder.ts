@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import {
@@ -10,7 +9,10 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ReferenceExpression,
+  StringReference,
+} from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -19,6 +21,11 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import {
+  OrderByDirectionExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements AliasableExpression<O>
@@ -91,6 +98,42 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithDistinct(
         this.#props.aggregateFunctionNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds an `order by` clause inside the aggregate function.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) =>
+   *     eb.fn.jsonAgg('pet').orderBy('pet.name').as('person_pets')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select json_agg("pet" order by "pet"."name") as "person_pets"
+   * from "person"
+   * inner join "pet" ON "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
@@ -299,11 +342,6 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return this.#props.aggregateFunctionNode
   }
 }
-
-preventAwait(
-  AggregateFunctionBuilder,
-  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 /**
  * {@link AggregateFunctionBuilder} with an alias. The result of calling {@link AggregateFunctionBuilder.as}.

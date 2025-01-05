@@ -30,10 +30,12 @@ for (const dialect of DIALECTS) {
     >
 
     before(async function () {
-      ctx = await initTest(this, dialect, (event) => {
-        if (event.level === 'query') {
-          executedQueries.push(event.query)
-        }
+      ctx = await initTest(this, dialect, {
+        log(event) {
+          if (event.level === 'query') {
+            executedQueries.push(event.query)
+          }
+        },
       })
     })
 
@@ -66,7 +68,7 @@ for (const dialect of DIALECTS) {
         'repeatable read',
         'serializable',
         ...(dialect === 'mssql' ? (['snapshot'] as const) : []),
-      ] satisfies IsolationLevel[]) {
+      ] as const) {
         it(`should set the transaction isolation level as "${isolationLevel}"`, async () => {
           await ctx.db
             .transaction()

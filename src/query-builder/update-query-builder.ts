@@ -41,7 +41,6 @@ import {
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
@@ -49,13 +48,12 @@ import { freeze } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
@@ -85,7 +83,7 @@ import {
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
@@ -327,7 +325,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
@@ -468,15 +466,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Update the first 2 rows in the 'person' table:
    *
    * ```ts
-   * return await db
+   * await db
    *   .updateTable('person')
    *   .set({ first_name: 'Foo' })
-   *   .limit(2);
+   *   .limit(2)
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
+   *
    * ```sql
-   * update `person` set `first_name` = 'Foo' limit 2
+   * update `person` set `first_name` = ? limit ?
    * ```
    */
   limit(
@@ -519,10 +519,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .where('id', '=', '1')
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -544,10 +542,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: eb.selectFrom('pet').select('name').limit(1),
    *     last_name: 'updated',
    *   }))
-   *   .where('id', '=', '1')
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -566,13 +562,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * (or other target) and the second as the value:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .updateTable('person')
    *   .set('first_name', 'Foo')
    *   // As always, both arguments can be arbitrary expressions or
    *   // callbacks that give you access to an expression builder:
-   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710))
-   *   .where('id', '=', '1')
+   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710'))
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
    * ```
    *
@@ -629,6 +627,43 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * "age" = "age" + $2,
    * "last_name" = $3 || $4
    * where "id" = $5
+   * ```
+   *
+   * <!-- siteExample("update", "MySQL joins", 30) -->
+   *
+   * MySQL allows you to join tables directly to the "main" table and update
+   * rows of all joined tables. This is possible by passing all tables to the
+   * `updateTable` method as a list and adding the `ON` conditions as `WHERE`
+   * statements. You can then use the `set(column, value)` variant to update
+   * columns using table qualified names.
+   *
+   * The `UpdateQueryBuilder` also has `innerJoin` etc. join methods, but those
+   * can only be used as part of a PostgreSQL `update set from join` query.
+   * Due to type complexity issues, we unfortunately can't make the same
+   * methods work in both cases.
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable(['person', 'pet'])
+   *   .set('person.first_name', 'Updated person')
+   *   .set('pet.name', 'Updated doggo')
+   *   .whereRef('person.id', '=', 'pet.owner_id')
+   *   .where('person.id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update
+   *   `person`,
+   *   `pet`
+   * set
+   *   `person`.`first_name` = ?,
+   *   `pet`.`name` = ?
+   * where
+   *   `person`.`id` = `pet`.`owner_id`
+   *   and `person`.`id` = ?
    * ```
    */
   set(
@@ -756,12 +791,14 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-    * ```ts
+   * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.updateTable('person')
-   * .set({ age: 39 })
-   * .where('first_name', '=', 'John')
-   * .modifyEnd(sql.raw('-- This is a comment'))
-   * .execute()
+   *   .set({ age: 39 })
+   *   .where('first_name', '=', 'John')
+   *   .modifyEnd(sql.raw('-- This is a comment'))
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -820,10 +857,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   * import type { PersonUpdate } from 'type-editor' // imaginary module
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
+   *
+   * const values = {
+   *   first_name: 'John',
+   * } satisfies PersonUpdate
    *
    * db.updateTable('person')
    *   .set(values)
@@ -848,7 +892,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * async function updatePerson(id: number, updates: UpdateablePerson, returnLastName: boolean) {
+   * import type { PersonUpdate } from 'type-editor' // imaginary module
+   *
+   * async function updatePerson(id: number, updates: PersonUpdate, returnLastName: boolean) {
    *   return await db
    *     .updateTable('person')
    *     .set(updates)
@@ -864,11 +910,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `updatePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(
@@ -916,27 +962,41 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
+   * const id = 1
+   * const now = new Date().toISOString()
+   *
    * const person = await db.updateTable('person')
-   *   .set({ deletedAt: now })
+   *   .set({ deleted_at: now })
    *   .where('id', '=', id)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (person.nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
+   * const id = 1
+   * const now = new Date().toISOString()
+   *
    * const person = await db.updateTable('person')
-   *   .set({ deletedAt: now })
+   *   .set({ deleted_at: now })
    *   .where('id', '=', id)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
-   *   .$narrowType<{ deletedAt: Date; nullable_column: string }>()
+   *   .$narrowType<{ deleted_at: Date; nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -969,6 +1029,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
+   * import type { PersonUpdate, PetUpdate, Species } from 'type-editor' // imaginary module
+   *
+   * const person = {
+   *   id: 1,
+   *   gender: 'other',
+   * } satisfies PersonUpdate
+   *
+   * const pet = {
+   *   name: 'Fluffy',
+   * } satisfies PetUpdate
+   *
    * const result = await db
    *   .with('updated_person', (qb) => qb
    *     .updateTable('person')
@@ -1117,11 +1188,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  UpdateQueryBuilder,
-  "don't await UpdateQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface UpdateQueryBuilderProps {
   readonly queryId: QueryId

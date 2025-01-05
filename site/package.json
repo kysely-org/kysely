@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.27.3",
+  "version": "0.27.4",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -15,21 +15,21 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.4.0",
-    "@docusaurus/preset-classic": "^3.4.0",
+    "@docusaurus/core": "^3.5.2",
+    "@docusaurus/preset-classic": "^3.5.2",
     "@mdx-js/react": "^3.0.1",
-    "@radix-ui/colors": "^0.1.8",
-    "clsx": "^1.2.1",
+    "@radix-ui/colors": "^0.1.9",
+    "clsx": "^2.1.1",
     "prism-react-renderer": "^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.4.0",
-    "@docusaurus/tsconfig": "^3.4.0",
+    "@docusaurus/module-type-aliases": "^3.5.2",
+    "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
-    "@types/react": "^18.3.3",
-    "typescript": "^5.5.2"
+    "@types/react": "^18.3.4",
+    "typescript": "^5.5.4"
   },
   "browserslist": {
     "production": [

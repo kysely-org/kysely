@@ -126,6 +126,9 @@ export function jsonObjectFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { sql } from 'kysely'
+ * import { jsonBuildObject } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -138,10 +141,10 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].name.first
- * result[0].name.last
- * result[0].name.full
+ * result[0]?.id
+ * result[0]?.name.first
+ * result[0]?.name.last
+ * result[0]?.name.full
  * ```
  *
  * The generated SQL (PostgreSQL):
@@ -165,4 +168,56 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   return sql`json_build_object(${sql.join(
     Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
   )})`
+}
+
+export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
+
+/**
+ * The PostgreSQL `merge_action` function.
+ *
+ * This function can be used in a `returning` clause to get the action that was
+ * performed in a `mergeInto` query. The function returns one of the following
+ * strings: `'INSERT'`, `'UPDATE'`, or `'DELETE'`.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * import { mergeAction } from 'kysely/helpers/postgres'
+ *
+ * const result = await db
+ *   .mergeInto('person as p')
+ *   .using('person_backup as pb', 'p.id', 'pb.id')
+ *   .whenMatched()
+ *   .thenUpdateSet(({ ref }) => ({
+ *     first_name: ref('pb.first_name'),
+ *     updated_at: ref('pb.updated_at').$castTo<string | null>(),
+ *   }))
+ *   .whenNotMatched()
+ *   .thenInsertValues(({ ref}) => ({
+ *     id: ref('pb.id'),
+ *     first_name: ref('pb.first_name'),
+ *     created_at: ref('pb.updated_at'),
+ *     updated_at: ref('pb.updated_at').$castTo<string | null>(),
+ *   }))
+ *   .returning([mergeAction().as('action'), 'p.id', 'p.updated_at'])
+ *   .execute()
+ *
+ * result[0].action
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * merge into "person" as "p"
+ * using "person_backup" as "pb" on "p"."id" = "pb"."id"
+ * when matched then update set
+ *   "first_name" = "pb"."first_name",
+ *   "updated_at" = "pb"."updated_at"::text
+ * when not matched then insert values ("id", "first_name", "created_at", "updated_at")
+ * values ("pb"."id", "pb"."first_name", "pb"."updated_at", "pb"."updated_at")
+ * returning merge_action() as "action", "p"."id", "p"."updated_at"
+ * ```
+ */
+export function mergeAction(): RawBuilder<MergeAction> {
+  return sql`merge_action()`
 }

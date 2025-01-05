@@ -14,19 +14,41 @@ export interface KyselyPlugin {
    * can use a `WeakMap` with {@link PluginTransformQueryArgs.queryId | args.queryId} as the key:
    *
    * ```ts
-   * const plugin = {
-   *   data: new WeakMap<QueryId, SomeData>(),
+   * import type {
+   *   KyselyPlugin,
+   *   QueryResult,
+   *   RootOperationNode,
+   *   UnknownRow
+   * } from 'kysely'
    *
+   * interface MyData {
+   *   // ...
+   * }
+   * const data = new WeakMap<any, MyData>()
+   *
+   * const plugin = {
    *   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-   *     this.data.set(args.queryId, something)
+   *     const something: MyData = {}
+   *
+   *     // ...
+   *
+   *     data.set(args.queryId, something)
+   *
+   *     // ...
+   *
    *     return args.node
    *   },
    *
-   *   transformResult(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
-   *     const data = this.data.get(args.queryId)
+   *   async transformResult(args: PluginTransformResultArgs): Promise<QueryResult<UnknownRow>> {
+   *     // ...
+   *
+   *     const something = data.get(args.queryId)
+   *
+   *     // ...
+   *
    *     return args.result
    *   }
-   * }
+   * } satisfies KyselyPlugin
    * ```
    *
    * You should use a `WeakMap` instead of a `Map` or some other strong references because `transformQuery`

@@ -15,8 +15,14 @@ import { Simplify } from '../util/type-utils.js'
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
+ * import * as Sqlite from 'better-sqlite3'
+ * import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:')
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -24,6 +30,8 @@ import { Simplify } from '../util/type-utils.js'
  * ### Examples
  *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/sqlite'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -37,9 +45,9 @@ import { Simplify } from '../util/type-utils.js'
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
+ * result[0]?.id
+ * result[0]?.pets[0].pet_id
+ * result[0]?.pets[0].name
  * ```
  *
  * The generated SQL (SQLite):
@@ -78,8 +86,14 @@ export function jsonArrayFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
+ * import * as Sqlite from 'better-sqlite3'
+ * import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:')
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -87,6 +101,8 @@ export function jsonArrayFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/sqlite'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -100,9 +116,9 @@ export function jsonArrayFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
+ * result[0]?.id
+ * result[0]?.favorite_pet?.pet_id
+ * result[0]?.favorite_pet?.name
  * ```
  *
  * The generated SQL (SQLite):
@@ -139,8 +155,14 @@ export function jsonObjectFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
+ * import * as Sqlite from 'better-sqlite3'
+ * import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely'
+ * import type { Database } from 'type-editor' // imaginary module
+ *
+ * const db = new Kysely<Database>({
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:')
+ *   }),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
@@ -148,6 +170,9 @@ export function jsonObjectFrom<O>(
  * ### Examples
  *
  * ```ts
+ * import { sql } from 'kysely'
+ * import { jsonBuildObject } from 'kysely/helpers/sqlite'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -160,10 +185,10 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].name.first
- * result[0].name.last
- * result[0].name.full
+ * result[0]?.id
+ * result[0]?.name.first
+ * result[0]?.name.last
+ * result[0]?.name.full
  * ```
  *
  * The generated SQL (SQLite):

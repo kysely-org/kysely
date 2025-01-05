@@ -3,7 +3,14 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
+import { IdentifierNode } from '../../operation-node/identifier-node.js'
+import { RawNode } from '../../operation-node/raw-node.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import {
+  QueryCompiler,
+  RootOperationNode,
+} from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
@@ -48,6 +55,10 @@ export class PostgresDriver implements Driver {
       }
     }
 
+    if (this.#config.onReserveConnection) {
+      await this.#config.onReserveConnection(connection)
+    }
+
     return connection
   }
 
@@ -72,6 +83,36 @@ export class PostgresDriver implements Driver {
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
+  }
+
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('savepoint', savepointName)),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('rollback to', savepointName)),
+    )
+  }
+
+  async releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('release', savepointName)),
+    )
   }
 
   async releaseConnection(connection: PostgresConnection): Promise<void> {
