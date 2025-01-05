@@ -585,15 +585,20 @@ export class Migrator {
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
-    return executedMigrations
-      .sort((a, b) => {
-        if (a.timestamp === b.timestamp) {
-          return nameComparator(a.name, b.name)
-        }
+    return (
+      executedMigrations
+        // https://github.com/kysely-org/kysely/issues/843
+        .sort((a, b) => {
+          if (a.timestamp === b.timestamp) {
+            return nameComparator(a.name, b.name)
+          }
 
-        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      })
-      .map((it) => it.name)
+          return (
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          )
+        })
+        .map((it) => it.name)
+    )
   }
 
   #ensureNoMissingMigrations(

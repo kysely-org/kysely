@@ -645,10 +645,9 @@ for (const dialect of DIALECTS) {
             },
           ])
 
-        expect(executedUpMethods3).to.eql([])
-        expect(executedDownMethods3).to.eql(['migration2'])
+          expect(executedUpMethods3).to.eql([])
+          expect(executedDownMethods3).to.eql(['migration2'])
         })
-
       })
     })
 
@@ -846,9 +845,6 @@ for (const dialect of DIALECTS) {
       })
 
       describe('Migrate up should work when timestamps are equal', () => {
-        // The following lines of code simulate a situation where the migrations would have the
-        // timestamp
-
         let originalToIsoString: typeof Date.prototype.toISOString
 
         before(() => {
@@ -858,7 +854,6 @@ for (const dialect of DIALECTS) {
         })
 
         after(() => {
-          // Reset to originalToIsoString function so that upcoming tests are not affected
           Date.prototype.toISOString = originalToIsoString
         })
 
