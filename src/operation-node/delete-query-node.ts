@@ -24,6 +24,7 @@ export interface DeleteQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
   readonly explain?: ExplainNode
+  readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly top?: TopNode
   readonly output?: OutputNode
 }

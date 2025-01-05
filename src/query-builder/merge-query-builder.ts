@@ -1,4 +1,4 @@
-import { AliasedExpression } from '../expression/expression.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
@@ -45,7 +45,6 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { InsertQueryBuilder } from './insert-query-builder.js'
 import { MergeResult } from './merge-result.js'
 import {
   NoResultError,
@@ -69,6 +68,39 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .modifyEnd(sql.raw('-- this is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): MergeQueryBuilder<DB, TT, O> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
   }
 
   /**
@@ -254,6 +286,41 @@ export class WheneableMergeQueryBuilder<
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .modifyEnd(sql.raw('-- this is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment
+   * ```
+   */
+  modifyEnd(
+    modifier: Expression<any>,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
   }
 
   /**
@@ -628,13 +695,15 @@ export class WheneableMergeQueryBuilder<
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
    *
-   * db.updateTable('person')
-   *   .set(values)
+   * await db.updateTable('person')
+   *   .set({ first_name: 'John' })
    *   .$call(log)
    *   .execute()
    * ```
@@ -656,7 +725,9 @@ export class WheneableMergeQueryBuilder<
    * ### Examples
    *
    * ```ts
-   * async function updatePerson(id: number, updates: UpdateablePerson, returnLastName: boolean) {
+   * import type { PersonUpdate } from 'type-editor' // imaginary module
+   *
+   * async function updatePerson(id: number, updates: PersonUpdate, returnLastName: boolean) {
    *   return await db
    *     .updateTable('person')
    *     .set(updates)
@@ -672,11 +743,11 @@ export class WheneableMergeQueryBuilder<
    * the code. In the example above the return type of the `updatePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(
@@ -703,7 +774,7 @@ export class WheneableMergeQueryBuilder<
     )
   }
 
-  compile(): CompiledQuery<never> {
+  compile(): CompiledQuery<O> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId,
@@ -882,7 +953,7 @@ export class MatchedThenableMergeQueryBuilder<
    *   .thenUpdate((ub) => ub
    *     .set(sql`metadata['has_pets']`, 'Y')
    *     .set({
-   *       updated_at: Date.now(),
+   *       updated_at: new Date().toISOString(),
    *     })
    *   )
    *   .execute()

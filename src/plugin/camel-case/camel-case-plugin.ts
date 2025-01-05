@@ -51,47 +51,48 @@ export interface CamelCasePluginOptions {
 
 /**
  * A plugin that converts snake_case identifiers in the database into
- * camelCase in the javascript side.
+ * camelCase in the JavaScript side.
  *
  * For example let's assume we have a table called `person_table`
  * with columns `first_name` and `last_name` in the database. When
  * using `CamelCasePlugin` we would setup Kysely like this:
  *
  * ```ts
- * interface Person {
- *   firstName: string
- *   lastName: string
+ * import * as Sqlite from 'better-sqlite3'
+ * import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+ *
+ * interface CamelCasedDatabase {
+ *   userMetadata: {
+ *     firstName: string
+ *     lastName: string
+ *   }
  * }
  *
- * interface Database {
- *   personTable: Person
- * }
- *
- * const db = new Kysely<Database>({
- *   dialect: new PostgresDialect({
- *     database: 'kysely_test',
- *     host: 'localhost',
+ * const db = new Kysely<CamelCasedDatabase>({
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:'),
  *   }),
- *   plugins: [
- *     new CamelCasePlugin()
- *   ]
+ *   plugins: [new CamelCasePlugin()],
  * })
  *
- * const person = await db.selectFrom('personTable')
+ * const person = await db.selectFrom('userMetadata')
  *   .where('firstName', '=', 'Arnold')
  *   .select(['firstName', 'lastName'])
  *   .executeTakeFirst()
- *
- * // generated sql:
- * // select first_name, last_name from person_table where first_name = $1
  *
  * if (person) {
  *   console.log(person.firstName)
  * }
  * ```
  *
+ * The generated SQL (SQLite):
+ *
+ * ```sql
+ * select "first_name", "last_name" from "user_metadata" where "first_name" = ?
+ * ```
+ *
  * As you can see from the example, __everything__ needs to be defined
- * in camelCase in the typescript code: table names, columns, schemas,
+ * in camelCase in the TypeScript code: table names, columns, schemas,
  * __everything__. When using the `CamelCasePlugin` Kysely works as if
  * the database was defined in camelCase.
  *
@@ -104,11 +105,15 @@ export interface CamelCasePluginOptions {
  * ```ts
  * class MyCamelCasePlugin extends CamelCasePlugin {
  *   protected override snakeCase(str: string): string {
- *     return mySnakeCase(str)
+ *     // ...
+ *
+ *     return str
  *   }
  *
  *   protected override camelCase(str: string): string {
- *     return myCamelCase(str)
+ *     // ...
+ *
+ *     return str
  *   }
  * }
  * ```

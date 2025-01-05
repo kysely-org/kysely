@@ -1,4 +1,3 @@
-import React from 'react'
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Heading from '@theme/Heading'

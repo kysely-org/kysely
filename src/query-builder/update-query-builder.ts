@@ -327,7 +327,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
@@ -468,15 +468,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Update the first 2 rows in the 'person' table:
    *
    * ```ts
-   * return await db
+   * await db
    *   .updateTable('person')
    *   .set({ first_name: 'Foo' })
-   *   .limit(2);
+   *   .limit(2)
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
+   *
    * ```sql
-   * update `person` set `first_name` = 'Foo' limit 2
+   * update `person` set `first_name` = ? limit ?
    * ```
    */
   limit(
@@ -519,7 +521,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .where('id', '=', '1')
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
    *
    * console.log(result.numUpdatedRows)
@@ -544,7 +546,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: eb.selectFrom('pet').select('name').limit(1),
    *     last_name: 'updated',
    *   }))
-   *   .where('id', '=', '1')
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
    *
    * console.log(result.numUpdatedRows)
@@ -566,13 +568,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * (or other target) and the second as the value:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .updateTable('person')
    *   .set('first_name', 'Foo')
    *   // As always, both arguments can be arbitrary expressions or
    *   // callbacks that give you access to an expression builder:
-   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710))
-   *   .where('id', '=', '1')
+   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710'))
+   *   .where('id', '=', 1)
    *   .executeTakeFirst()
    * ```
    *
@@ -682,18 +686,28 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): UpdateQueryBuilder<DB, UT, TB, Selectable<DB[TB]>> {
+  returningAll<T extends TB>(
+    tables: ReadonlyArray<T>,
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll<T extends TB>(
+    table: T,
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll(): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>>
+
+  returningAll(table?: any): any {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectAll(),
+        parseSelectAll(table),
       ),
     })
   }
 
   output<OE extends OutputExpression<DB, UT>>(
-    selections: readonly OE[]
+    selections: readonly OE[],
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -702,7 +716,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >
 
   output<CB extends OutputCallback<DB, TB>>(
-    callback: CB
+    callback: CB,
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -711,7 +725,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >
 
   output<OE extends OutputExpression<DB, TB>>(
-    selection: OE
+    selection: OE,
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -724,19 +738,52 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectArg(args)
+        parseSelectArg(args),
       ),
     })
   }
 
   outputAll(
-    table: OutputPrefix
+    table: OutputPrefix,
   ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectAll(table)
+        parseSelectAll(table),
+      ),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.updateTable('person')
+   *   .set({ age: 39 })
+   *   .where('first_name', '=', 'John')
+   *   .modifyEnd(sql.raw('-- This is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update `person`
+   * set `age` = 39
+   * where `first_name` = "John" -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
       ),
     })
   }
@@ -779,10 +826,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   * import type { PersonUpdate } from 'type-editor' // imaginary module
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
+   *
+   * const values = {
+   *   first_name: 'John',
+   * } satisfies PersonUpdate
    *
    * db.updateTable('person')
    *   .set(values)
@@ -807,7 +861,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * async function updatePerson(id: number, updates: UpdateablePerson, returnLastName: boolean) {
+   * import type { PersonUpdate } from 'type-editor' // imaginary module
+   *
+   * async function updatePerson(id: number, updates: PersonUpdate, returnLastName: boolean) {
    *   return await db
    *     .updateTable('person')
    *     .set(updates)
@@ -823,11 +879,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `updatePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(
@@ -836,8 +892,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E
-    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
-    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
+      ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+      : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -875,27 +931,41 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
+   * const id = 1
+   * const now = new Date().toISOString()
+   *
    * const person = await db.updateTable('person')
-   *   .set({ deletedAt: now })
+   *   .set({ deleted_at: now })
    *   .where('id', '=', id)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (person.nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
+   * const id = 1
+   * const now = new Date().toISOString()
+   *
    * const person = await db.updateTable('person')
-   *   .set({ deletedAt: now })
+   *   .set({ deleted_at: now })
    *   .where('id', '=', id)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
-   *   .$narrowType<{ deletedAt: Date; nullable_column: string }>()
+   *   .$narrowType<{ deleted_at: Date; nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -908,17 +978,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   /**
    * Asserts that query's output row type equals the given type `T`.
    *
-   * This method can be used to simplify excessively complex types to make typescript happy
+   * This method can be used to simplify excessively complex types to make TypeScript happy
    * and much faster.
    *
    * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
-   * for typescript and you get errors like this:
+   * for TypeScript and you get errors like this:
    *
    * ```
    * error TS2589: Type instantiation is excessively deep and possibly infinite.
    * ```
    *
-   * In these case you can often use this method to help typescript a little bit. When you use this
+   * In these case you can often use this method to help TypeScript a little bit. When you use this
    * method to assert the output type of a query, Kysely can drop the complex output type that
    * consists of multiple nested helper types and replace it with the simple asserted type.
    *
@@ -928,6 +998,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
+   * import type { PersonUpdate, PetUpdate, Species } from 'type-editor' // imaginary module
+   *
+   * const person = {
+   *   id: 1,
+   *   gender: 'other',
+   * } satisfies PersonUpdate
+   *
+   * const pet = {
+   *   name: 'Fluffy',
+   * } satisfies PetUpdate
+   *
    * const result = await db
    *   .with('updated_person', (qb) => qb
    *     .updateTable('person')
@@ -1099,12 +1180,12 @@ export type UpdateQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? UpdateQueryBuilder<DB, UT, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? UpdateQueryBuilder<DB, UT, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -1133,12 +1214,12 @@ export type UpdateQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -1156,8 +1237,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type UpdateQueryBuilderWithRightJoin<
@@ -1171,12 +1252,12 @@ export type UpdateQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -1196,10 +1277,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type UpdateQueryBuilderWithFullJoin<
@@ -1213,12 +1294,12 @@ export type UpdateQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -1238,8 +1319,8 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>

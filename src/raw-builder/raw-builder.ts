@@ -33,6 +33,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * this method also provides strict typing:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .selectFrom('person')
    *   .select(
@@ -46,7 +48,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select concat(first_name, ' ', last_name) as "full_name"
    * from "person"
    * ```
@@ -55,6 +57,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * provide the alias as the only type argument:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const values = sql<{ a: number, b: string }>`(values (1, 'foo'))`
    *
    * // The alias is `t(a, b)` which specifies the column names
@@ -69,11 +73,12 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *   .expression(
    *     db.selectFrom(aliasedValues).select(['t.a', 't.b'])
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * insert into "person" ("first_name", "last_name")
    * from (values (1, 'foo')) as t(a, b)
    * select "t"."a", "t"."b"
@@ -112,8 +117,10 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * ### Examples
    *
    * ```ts
-   * const { sql } = sql`select * from ${sql.table('person')}`.compile(db)
-   * console.log(sql)
+   * import { sql } from 'kysely'
+   *
+   * const compiledQuery = sql`select * from ${sql.table('person')}`.compile(db)
+   * console.log(compiledQuery.sql)
    * ```
    */
   compile(executorProvider: QueryExecutorProvider): CompiledQuery<O>
@@ -124,6 +131,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await sql`select * from ${sql.table('person')}`.execute(db)
    * ```
    */

@@ -38,37 +38,27 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  * The main Kysely class.
  *
  * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains it's own connection pool.
+ * constructor. Each `Kysely` instance maintains its own connection pool.
  *
  * ### Examples
  *
- * This example assumes your database has tables `person` and `pet`:
+ * This example assumes your database has a "person" table:
  *
  * ```ts
- * import { Kysely, Generated, PostgresDialect } from 'kysely'
- *
- * interface PersonTable {
- *   id: Generated<number>
- *   first_name: string
- *   last_name: string
- * }
- *
- * interface PetTable {
- *   id: Generated<number>
- *   owner_id: number
- *   name: string
- *   species: 'cat' | 'dog'
- * }
+ * import * as Sqlite from 'better-sqlite3'
+ * import { type Generated, Kysely, SqliteDialect } from 'kysely'
  *
  * interface Database {
- *   person: PersonTable,
- *   pet: PetTable
+ *   person: {
+ *     id: Generated<number>
+ *     first_name: string
+ *     last_name: string | null
+ *   }
  * }
  *
  * const db = new Kysely<Database>({
- *   dialect: new PostgresDialect({
- *     host: 'localhost',
- *     database: 'kysely_test',
+ *   dialect: new SqliteDialect({
+ *     database: new Sqlite(':memory:'),
  *   })
  * })
  * ```
@@ -165,8 +155,40 @@ export class Kysely<DB>
   }
 
   /**
-   * Returns a {@link FunctionModule} that can be used to write type safe function
+   * Returns a {@link FunctionModule} that can be used to write somewhat type-safe function
    * calls.
+   *
+   * ```ts
+   * const { count } = db.fn
+   *
+   * await db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select([
+   *     'id',
+   *     count('pet.id').as('person_count'),
+   *   ])
+   *   .groupBy('person.id')
+   *   .having(count('pet.id'), '>', 10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."id", count("pet"."id") as "person_count"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."id"
+   * having count("pet"."id") > $1
+   * ```
+   *
+   * Why "somewhat" type-safe? Because the function calls are not bound to the
+   * current query context. They allow you to reference columns and tables that
+   * are not in the current query. E.g. remove the `innerJoin` from the previous
+   * query and TypeScript won't even complain.
+   *
+   * If you want to make the function calls fully type-safe, you can use the
+   * {@link ExpressionBuilder.fn} getter for a query context-aware, stricter {@link FunctionModule}.
    *
    * ```ts
    * await db.selectFrom('person')
@@ -179,16 +201,6 @@ export class Kysely<DB>
    *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
    *   .execute()
    * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person"."id", count("pet"."id") as "pet_count"
-   * from "person"
-   * inner join "pet" on "pet"."owner_id" = "person"."id"
-   * group by "person"."id"
-   * having count("pet"."id") > $1
-   * ```
    */
   get fn(): FunctionModule<DB, keyof DB> {
     return createFunctionModule()
@@ -200,8 +212,11 @@ export class Kysely<DB>
    * The returned {@link TransactionBuilder} can be used to configure the transaction. The
    * {@link TransactionBuilder.execute} method can then be called to run the transaction.
    * {@link TransactionBuilder.execute} takes a function that is run inside the
-   * transaction. If the function throws, the transaction is rolled back. Otherwise
-   * the transaction is committed.
+   * transaction. If the function throws an exception,
+   * 1. the exception is caught,
+   * 2. the transaction is rolled back, and
+   * 3. the exception is thrown again.
+   * Otherwise the transaction is committed.
    *
    * The callback function passed to the {@link TransactionBuilder.execute | execute}
    * method gets the transaction object as its only argument. The transaction is
@@ -212,9 +227,12 @@ export class Kysely<DB>
    *
    * <!-- siteExample("transactions", "Simple transaction", 10) -->
    *
-   * This example inserts two rows in a transaction. If an error is thrown inside
-   * the callback passed to the `execute` method, the transaction is rolled back.
-   * Otherwise it's committed.
+   * This example inserts two rows in a transaction. If an exception is thrown inside
+   * the callback passed to the `execute` method,
+   * 1. the exception is caught,
+   * 2. the transaction is rolled back, and
+   * 3. the exception is thrown again.
+   * Otherwise the transaction is committed.
    *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
@@ -242,12 +260,18 @@ export class Kysely<DB>
    * Setting the isolation level:
    *
    * ```ts
+   * import type { Kysely } from 'kysely'
+   *
    * await db
    *   .transaction()
    *   .setIsolationLevel('serializable')
    *   .execute(async (trx) => {
    *     await doStuff(trx)
    *   })
+   *
+   * async function doStuff(kysely: typeof db) {
+   *   // ...
+   * }
    * ```
    */
   transaction(): TransactionBuilder<DB> {
@@ -268,6 +292,10 @@ export class Kysely<DB>
    *     // the same connection.
    *     await doStuff(db)
    *   })
+   *
+   * async function doStuff(kysely: typeof db) {
+   *   // ...
+   * }
    * ```
    */
   connection(): ConnectionBuilder<DB> {
@@ -297,7 +325,7 @@ export class Kysely<DB>
   /**
    * @override
    */
-  withSchema(schema: string): Kysely<DB> {
+  override withSchema(schema: string): Kysely<DB> {
     return new Kysely({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
@@ -317,7 +345,6 @@ export class Kysely<DB>
    *
    * The following example adds and uses a temporary table:
    *
-   * @example
    * ```ts
    * await db.schema
    *   .createTable('temp_table')
@@ -372,7 +399,7 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
@@ -395,23 +422,23 @@ export class Transaction<DB> extends Kysely<DB> {
   // The return type is `true` instead of `boolean` to make Kysely<DB>
   // unassignable to Transaction<DB> while allowing assignment the
   // other way around.
-  get isTransaction(): true {
+  override get isTransaction(): true {
     return true
   }
 
-  transaction(): TransactionBuilder<DB> {
+  override transaction(): TransactionBuilder<DB> {
     throw new Error(
       'calling the transaction method for a Transaction is not supported',
     )
   }
 
-  connection(): ConnectionBuilder<DB> {
+  override connection(): ConnectionBuilder<DB> {
     throw new Error(
       'calling the connection method for a Transaction is not supported',
     )
   }
 
-  async destroy(): Promise<void> {
+  override async destroy(): Promise<void> {
     throw new Error(
       'calling the destroy method for a Transaction is not supported',
     )
@@ -431,10 +458,7 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
-  /**
-   * @override
-   */
-  withSchema(schema: string): Transaction<DB> {
+  override withSchema(schema: string): Transaction<DB> {
     return new Transaction({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
@@ -479,16 +503,32 @@ export interface KyselyConfig {
    *
    * ### Examples
    *
+   * Setting up built-in logging for preferred log levels:
+   *
    * ```ts
+   * import * as Sqlite from 'better-sqlite3'
+   * import { Kysely, SqliteDialect } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
    * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect(postgresConfig),
+   *   dialect: new SqliteDialect({
+   *     database: new Sqlite(':memory:'),
+   *   }),
    *   log: ['query', 'error']
    * })
    * ```
    *
+   * Setting up custom logging:
+   *
    * ```ts
+   * import * as Sqlite from 'better-sqlite3'
+   * import { Kysely, SqliteDialect } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
    * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect(postgresConfig),
+   *   dialect: new SqliteDialect({
+   *     database: new Sqlite(':memory:'),
+   *   }),
    *   log(event): void {
    *     if (event.level === 'query') {
    *       console.log(event.query.sql)

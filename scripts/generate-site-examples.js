@@ -71,6 +71,24 @@ const moreExamplesByCategory = {
     'returning method':
       'https://kysely-org.github.io/kysely-apidoc/classes/DeleteQueryBuilder.html#returning',
   },
+  merge: {
+    'mergeInto method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#mergeInto',
+    'using method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MergeQueryBuilder.html#using',
+    'whenMatched method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/WheneableMergeQueryBuilder.html#whenMatched',
+    'thenUpdateSet method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenUpdateSet',
+    'thenDelete method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenDelete',
+    'thenDoNothing method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenDoNothing',
+    'whenNotMatched method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/WheneableMergeQueryBuilder.html#whenNotMatched',
+    'thenInsertValues method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/NotMatchedThenableMergeQueryBuilder.html#thenInsertValues',
+  },
   transactions: {
     'transaction method':
       'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#transaction',
@@ -88,6 +106,7 @@ function main() {
     const lines = readLines(filePath)
     const state = {
       filePath,
+      /** @type {string | null} */
       line: null,
       lineIndex: 0,
       annotation: null,
@@ -153,7 +172,8 @@ function writeSiteExample(state) {
   const codeVariable = _.camelCase(name)
 
   const fileName = `${priority.padStart(4, '0')}-${_.kebabCase(name)}`
-  const filePath = path.join(SITE_EXAMPLE_PATH, category, fileName)
+  const folderPath = path.join(SITE_EXAMPLE_PATH, category)
+  const filePath = path.join(folderPath, fileName)
 
   const codeFile = `export const ${codeVariable} = \`${deindent(code)
     .replaceAll('`', '\\`')
@@ -187,7 +207,7 @@ function writeSiteExample(state) {
       <div style={{ marginBottom: '1em' }}>
         <Playground code={${codeVariable}} setupCode={exampleSetup} />
       </div>
-    `)
+    `),
   )
 
   const moreExamples = buildMoreExamplesMarkdown(category)
@@ -197,7 +217,22 @@ function writeSiteExample(state) {
 
   const exampleFile = parts.join('\n')
 
-  fs.writeFileSync(filePath + '.js', codeFile)
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true })
+    fs.writeFileSync(
+      path.join(folderPath, '_category_.json'),
+      `{
+  "label": "${_.startCase(category)}",
+  "position": 0, // TODO: set the position of the category.
+  "link": {
+    "type": "generated-index",
+    "description": "Short and simple examples of using the ${category} functionality." // TODO: review this.
+  }
+}`,
+    )
+  }
+
+  fs.writeFileSync(filePath + '.js', codeFile, {})
   fs.writeFileSync(filePath + '.mdx', exampleFile)
 }
 
@@ -208,8 +243,8 @@ function buildMoreExamplesMarkdown(category) {
   }
 
   const lines = [
-    ':::info More examples',
-    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/)',
+    ':::info[More examples]',
+    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),',
     'but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always',
     'just one hover away!',
     '',
@@ -220,7 +255,7 @@ function buildMoreExamplesMarkdown(category) {
     lines.push(` - [${linkName}](${links[linkName]})`)
   }
 
-  lines.push(':::')
+  lines.push(':::\n')
 
   return lines.join('\n')
 }
@@ -238,7 +273,7 @@ function addCodeLine(state) {
 
   if (!code) {
     console.error(
-      `found invalid code block in a site example in ${state.filePath}:${state.lineIndex}`
+      `found invalid code block in a site example in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)
@@ -260,7 +295,7 @@ function addCommentLine(state) {
 
   if (!comment) {
     console.error(
-      `found invalid comment in a site example in ${state.filePath}:${state.lineIndex}`
+      `found invalid comment in a site example in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)
@@ -278,7 +313,7 @@ function enterExample(state) {
 
   if (!state.annotation) {
     console.error(
-      `found invalid site example annotation in ${state.filePath}:${state.lineIndex}`
+      `found invalid site example annotation in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)
@@ -298,10 +333,10 @@ function deindent(str) {
   let ws = Number.MAX_SAFE_INTEGER
   for (const line of lines) {
     if (line.trim().length > 0) {
-      const wsExec = /^(\s*)/.exec(line)
+      const [, wsExec] = /^(\s*)/.exec(line) || []
 
-      if (wsExec[1].length < ws) {
-        ws = wsExec[1].length
+      if (wsExec != null && wsExec.length < ws) {
+        ws = wsExec.length
       }
     }
   }

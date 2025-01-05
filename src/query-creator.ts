@@ -171,7 +171,7 @@ export class QueryCreator<DB> {
     from: TE[],
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+  selectFrom<TE extends TableExpression<DB, never>>(
     from: TE[],
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
@@ -187,7 +187,7 @@ export class QueryCreator<DB> {
     {}
   >
 
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+  selectFrom<TE extends TableExpression<DB, never>>(
     from: TE,
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
@@ -214,20 +214,19 @@ export class QueryCreator<DB> {
    * ### Examples
    *
    * ```ts
-   * const result = db.selectNoFrom((eb) => [
+   * const result = await db.selectNoFrom((eb) => [
    *   eb.selectFrom('person')
    *     .select('id')
    *     .where('first_name', '=', 'Jennifer')
    *     .limit(1)
    *     .as('jennifer_id'),
-   *
    *   eb.selectFrom('pet')
    *     .select('id')
    *     .where('name', '=', 'Doggo')
    *     .limit(1)
    *     .as('doggo_id')
-   *   ])
-   *   .executeTakeFirstOrThrow()
+   * ])
+   * .executeTakeFirstOrThrow()
    *
    * console.log(result.jennifer_id)
    * console.log(result.doggo_id)
@@ -309,7 +308,7 @@ export class QueryCreator<DB> {
    *     last_name: 'Aniston'
    *   })
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    */
   insertInto<T extends keyof DB & string>(
@@ -382,7 +381,7 @@ export class QueryCreator<DB> {
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
-   *   .where('person.id', '=', '1')
+   *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    *
    * console.log(result.numDeletedRows)
@@ -400,7 +399,7 @@ export class QueryCreator<DB> {
    * const result = await db
    *   .deleteFrom(['person', 'pet'])
    *   .using('person')
-   *   .innerJoin('pet', 'pet.owner_id', '=', 'person.id')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    * ```
@@ -512,14 +511,18 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
+   * <!-- siteExample("merge", "Source row existence", 10) -->
+   *
+   * Update a target column based on the existence of a source row:
+   *
    * ```ts
    * const result = await db
-   *   .mergeInto('person')
-   *   .using('pet', 'pet.owner_id', 'person.id')
-   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .mergeInto('person as target')
+   *   .using('pet as source', 'source.owner_id', 'target.id')
+   *   .whenMatchedAnd('target.has_pets', '!=', 'Y')
    *   .thenUpdateSet({ has_pets: 'Y' })
-   *   .whenNotMatched()
-   *   .thenDoNothing()
+   *   .whenNotMatchedBySourceAnd('target.has_pets', '=', 'Y')
+   *   .thenUpdateSet({ has_pets: 'N' })
    *   .executeTakeFirstOrThrow()
    *
    * console.log(result.numChangedRows)
@@ -529,11 +532,56 @@ export class QueryCreator<DB> {
    *
    * ```sql
    * merge into "person"
-   * using "pet" on "pet"."owner_id" = "person"."id"
-   * when matched and "has_pets" != $1 then
-   *   update set "has_pets" = $2
-   * when not matched then
-   *   do nothing
+   * using "pet"
+   * on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1
+   * then update set "has_pets" = $2
+   * when not matched by source and "has_pets" = $3
+   * then update set "has_pets" = $4
+   * ```
+   *
+   * <!-- siteExample("merge", "Temporary changes table", 20) -->
+   *
+   * Merge new entries from a temporary changes table:
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('wine as target')
+   *   .using(
+   *     'wine_stock_change as source',
+   *     'source.wine_name',
+   *     'target.name',
+   *   )
+   *   .whenNotMatchedAnd('source.stock_delta', '>', 0)
+   *   .thenInsertValues(({ ref }) => ({
+   *     name: ref('source.wine_name'),
+   *     stock: ref('source.stock_delta'),
+   *   }))
+   *   .whenMatchedAnd(
+   *     (eb) => eb('target.stock', '+', eb.ref('source.stock_delta')),
+   *     '>',
+   *     0,
+   *   )
+   *   .thenUpdateSet('stock', (eb) =>
+   *     eb('target.stock', '+', eb.ref('source.stock_delta')),
+   *   )
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "wine" as "target"
+   * using "wine_stock_change" as "source"
+   * on "source"."wine_name" = "target"."name"
+   * when not matched and "source"."stock_delta" > $1
+   * then insert ("name", "stock") values ("source"."wine_name", "source"."stock_delta")
+   * when matched and "target"."stock" + "source"."stock_delta" > $2
+   * then update set "stock" = "target"."stock" + "source"."stock_delta"
+   * when matched
+   * then delete
    * ```
    */
   mergeInto<TR extends keyof DB & string>(
@@ -738,7 +786,7 @@ export class QueryCreator<DB> {
    * This only affects the query created through the builder returned from
    * this method and doesn't modify the `db` instance.
    *
-   * See [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/schemas.md)
+   * See [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0007-schemas.md)
    * for a more detailed explanation.
    *
    * ### Examples

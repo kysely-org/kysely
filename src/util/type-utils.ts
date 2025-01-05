@@ -148,11 +148,10 @@ export type IsAny<T> = 0 extends T & 1 ? true : false
 /**
  * Evaluates to `true` if the types `T` and `U` are equal.
  */
-export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
-  G,
->() => G extends U ? 1 : 2
-  ? true
-  : false
+export type Equals<T, U> =
+  (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U ? 1 : 2
+    ? true
+    : false
 
 export type NarrowPartial<O, T> = DrainOuterGeneric<
   T extends object
@@ -174,7 +173,9 @@ export type NarrowPartial<O, T> = DrainOuterGeneric<
  * Example:
  *
  * ```ts
- * const person = await db.selectFrom('person')
+ * import type { NotNull } from 'kysely'
+ *
+ * await db.selectFrom('person')
  *   .where('nullable_column', 'is not', null)
  *   .selectAll()
  *   .$narrowType<{ nullable_column: NotNull }>()
@@ -197,7 +198,7 @@ export type SqlBool = boolean | 0 | 1
  *   A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<T>>>>>>>>>>>>>>>>>>>>>>>>
  * >
  *
- * type Error = Test<number> // Type instantiation is excessively deep and possibly infinite.ts (2589)
+ * // type Error = Test<number> // Type instantiation is excessively deep and possibly infinite.ts (2589)
  * ```
  *
  * To fix this, we can use `DrainOuterGeneric`:

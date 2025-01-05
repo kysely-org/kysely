@@ -7,15 +7,15 @@ const LOCK_ID = 'ea586330-2c93-47c8-908d-981d9d270f9d'
 const LOCK_TIMEOUT_SECONDS = 60 * 60
 
 export class MysqlAdapter extends DialectAdapterBase {
-  get supportsTransactionalDdl(): boolean {
+  override get supportsTransactionalDdl(): boolean {
     return false
   }
 
-  get supportsReturning(): boolean {
+  override get supportsReturning(): boolean {
     return false
   }
 
-  async acquireMigrationLock(
+  override async acquireMigrationLock(
     db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {
@@ -30,7 +30,7 @@ export class MysqlAdapter extends DialectAdapterBase {
     )})`.execute(db)
   }
 
-  async releaseMigrationLock(
+  override async releaseMigrationLock(
     db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {

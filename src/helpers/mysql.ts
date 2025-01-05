@@ -10,13 +10,15 @@ import { Simplify } from '../util/type-utils.js'
  * A MySQL helper for aggregating a subquery into a JSON array.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into arrays. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/mysql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -30,9 +32,9 @@ import { Simplify } from '../util/type-utils.js'
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
+ * result[0]?.id
+ * result[0]?.pets[0]?.pet_id
+ * result[0]?.pets[0]?.name
  * ```
  *
  * The generated SQL (MySQL):
@@ -66,13 +68,15 @@ export function jsonArrayFrom<O>(
  * The subquery must only return one row.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/mysql'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -86,9 +90,9 @@ export function jsonArrayFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
+ * result[0]?.id
+ * result[0]?.favorite_pet?.pet_id
+ * result[0]?.favorite_pet?.name
  * ```
  *
  * The generated SQL (MySQL):
@@ -120,7 +124,7 @@ export function jsonObjectFrom<O>(
  * The MySQL `json_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -139,10 +143,10 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  *
- * result[0].id
- * result[0].name.first
- * result[0].name.last
- * result[0].name.full
+ * result[0]?.id
+ * result[0]?.name.first
+ * result[0]?.name.last
+ * result[0]?.name.full
  * ```
  *
  * The generated SQL (MySQL):

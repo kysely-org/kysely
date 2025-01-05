@@ -79,7 +79,7 @@ async function testIfInInsert(db: Kysely<Database>) {
 
   expectType<{ first_name: string; last_name?: string | null }>(r2)
 
-  // Conditional ingore in insert
+  // Conditional ignore in insert
   const [r3] = await db
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })

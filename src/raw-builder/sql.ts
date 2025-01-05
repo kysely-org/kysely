@@ -15,6 +15,7 @@ export interface Sql {
    *
    * ```ts
    * import { sql } from 'kysely'
+   * import type { Person } from 'type-editor' // imaginary module
    *
    * const id = 123
    * const snippet = sql<Person[]>`select * from person where id = ${id}`
@@ -36,6 +37,12 @@ export interface Sql {
    * of methods:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const nicknames = ['johnny', 'john', 'jon']
+   * const date1 = new Date('2000-01-01')
+   * const date2 = new Date('2001-01-01')
+   *
    * const persons = await db
    *   .selectFrom('person')
    *   .select(
@@ -66,19 +73,24 @@ export interface Sql {
    * instance as the only argument:
    *
    * ```ts
-   * const result = await sql<Person[]>`select * from person`.execute(db)
+   * import { sql } from 'kysely'
+   * import type { Person } from 'type-editor'
+   *
+   * const { rows: results } = await sql<Person[]>`select * from person`.execute(db)
    * ```
    *
    * You can merge other `sql` expressions and queries using substitutions:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const petName = db.selectFrom('pet').select('name').limit(1)
    * const fullName = sql<string>`concat(first_name, ' ', last_name)`
    *
-   * sql`
+   * sql<{ full_name: string; pet_name: string }[]>`
    *   select ${fullName} as full_name, ${petName} as pet_name
    *   from person
-   * `
+   * `.execute(db)
    * ```
    *
    * Substitutions also handle {@link ExpressionBuilder.ref},
@@ -115,6 +127,11 @@ export interface Sql {
    * `sql.val(value)` is a shortcut for:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const value = 123
+   * type ValueType = typeof value
+   *
    * sql<ValueType>`${value}`
    * ```
    */
@@ -147,7 +164,7 @@ export interface Sql {
    * select "first_name" from person
    * ```
    *
-   * The refefences can also include a table name:
+   * The references can also include a table name:
    *
    * ```ts
    * const columnRef = 'person.first_name'
@@ -161,7 +178,7 @@ export interface Sql {
    * select "person"."first_name" from person
    * ```
    *
-   * The refefences can also include a schema on supported databases:
+   * The references can also include a schema on supported databases:
    *
    * ```ts
    * const columnRef = 'public.person.first_name'
@@ -222,7 +239,7 @@ export interface Sql {
    * but can also be used for any other identifiers like index names.
    *
    * You should use {@link Sql.ref | ref} and {@link Sql.table | table}
-   * instead of this whenever possible as they produce a more sematic
+   * instead of this whenever possible as they produce a more semantic
    * operation node tree.
    *
    * WARNING! Using this with unchecked inputs WILL lead to SQL injection
@@ -247,7 +264,7 @@ export interface Sql {
    * const columnName = 'first_name'
    * const table = 'person'
    *
-   * sql`select ${sql.id(schema, table, columnName)}} from ${sql.id(schema, table)}`
+   * sql`select ${sql.id(schema, table, columnName)} from ${sql.id(schema, table)}`
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -319,6 +336,8 @@ export interface Sql {
    * ### Examples
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
    * function findByNicknames(nicknames: string[]): Promise<Person[]> {
    *   return db
    *     .selectFrom('person')

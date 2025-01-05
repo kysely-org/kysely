@@ -299,6 +299,35 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
+      it('should delete from t1 using t2, t3 returning t2.*', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Bob')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "pet".*',
+            ],
+            parameters: ['Bob'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
       it('should delete from t1 returning *', async () => {
         const query = ctx.db
           .deleteFrom('pet')
@@ -841,6 +870,32 @@ for (const dialect of DIALECTS) {
         })
 
         await query.execute()
+      })
+    }
+
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('first_name', '=', 'Jennifer')
+          .modifyEnd(sql.raw('-- this is a comment'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'delete from "person" where "first_name" = $1 -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'delete from `person` where `first_name` = ? -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
       })
     }
 

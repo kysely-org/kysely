@@ -30,6 +30,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    *
    * Some dialects like PostgreSQL don't support this. On PostgreSQL
    * you can use the `serial` or `bigserial` data type instead.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key auto_increment
+   * )
+   * ```
    */
   autoIncrement(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -43,10 +60,27 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * This only works on some dialects like MS SQL Server (MSSQL).
    *
    * For PostgreSQL's `generated always as identity` use {@link generatedAlwaysAsIdentity}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.identity().primaryKey())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MSSQL):
+   *
+   * ```sql
+   * create table "person" (
+   *   "id" integer identity primary key
+   * )
+   * ```
    */
   identity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { identity: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { identity: true }),
     )
   }
 
@@ -55,6 +89,22 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    *
    * If you want to specify a composite primary key use the
    * {@link CreateTableBuilder.addPrimaryKeyConstraint} method.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key
+   * )
    */
   primaryKey(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -72,7 +122,18 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * col.references('person.id')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id', 'integer', (col) => col.references('person.id'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer references "person" ("id")
+   * )
    * ```
    */
   references(ref: string): ColumnDefinitionBuilder {
@@ -103,7 +164,22 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * col.references('person.id').onDelete('cascade')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn(
+   *     'owner_id',
+   *     'integer',
+   *     (col) => col.references('person.id').onDelete('cascade')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer references "person" ("id") on delete cascade
+   * )
    * ```
    */
   onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilder {
@@ -124,10 +200,29 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   /**
    * Adds an `on update` constraint for the foreign key column.
    *
+   * If your database engine doesn't support foreign key constraints in the
+   * column definition (like MySQL 5) you need to call the table level
+   * {@link CreateTableBuilder.addForeignKeyConstraint} method instead.
+   *
    * ### Examples
    *
    * ```ts
-   * col.references('person.id').onUpdate('cascade')
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn(
+   *     'owner_id',
+   *     'integer',
+   *     (col) => col.references('person.id').onUpdate('cascade')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer references "person" ("id") on update cascade
+   * )
    * ```
    */
   onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilder {
@@ -147,6 +242,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
 
   /**
    * Adds a unique constraint for the column.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('email', 'varchar(255)', col => col.unique())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `email` varchar(255) unique
+   * )
+   * ```
    */
   unique(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -156,6 +268,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
 
   /**
    * Adds a `not null` constraint for the column.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(255)', col => col.notNull())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `first_name` varchar(255) not null
+   * )
+   * ```
    */
   notNull(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -167,6 +296,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * Adds a `unsigned` modifier for the column.
    *
    * This only works on some dialects like MySQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('age', 'integer', col => col.unsigned())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `age` integer unsigned
+   * )
+   * ```
    */
   unsigned(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -180,10 +326,18 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn('number_of_legs', 'integer', (col) => col.defaultTo(4))
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `pet` (
+   *   `number_of_legs` integer default 4
+   * )
    * ```
    *
    * Values passed to `defaultTo` are interpreted as value literals by default. You can define
@@ -192,14 +346,22 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn(
-   *     'number_of_legs',
-   *     'integer',
-   *     (col) => col.defaultTo(sql`any SQL here`)
+   *     'created_at',
+   *     'timestamp',
+   *     (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`)
    *   )
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `pet` (
+   *   `created_at` timestamp default CURRENT_TIMESTAMP
+   * )
    * ```
    */
   defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilder {
@@ -218,12 +380,20 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('pet')
    *   .addColumn('number_of_legs', 'integer', (col) =>
    *     col.check(sql`number_of_legs < 5`)
    *   )
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `pet` (
+   *   `number_of_legs` integer check (number_of_legs < 5)
+   * )
    * ```
    */
   check(expression: Expression<any>): ColumnDefinitionBuilder {
@@ -242,12 +412,20 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * import { sql } from 'kysely'
    *
-   * db.schema
+   * await db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)',
    *     (col) => col.generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
    *   )
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `full_name` varchar(255) generated always as (concat(first_name, ' ', last_name))
+   * )
    * ```
    */
   generatedAlwaysAs(expression: Expression<any>): ColumnDefinitionBuilder {
@@ -266,6 +444,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * This only works on some dialects like PostgreSQL.
    *
    * For MS SQL Server (MSSQL)'s identity column use {@link identity}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.generatedAlwaysAsIdentity().primaryKey())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "person" (
+   *   "id" integer generated always as identity primary key
+   * )
+   * ```
    */
   generatedAlwaysAsIdentity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -277,6 +472,27 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
 
   /**
    * Adds the `generated by default as identity` specifier on supported dialects.
+   *
+   * This only works on some dialects like PostgreSQL.
+   *
+   * For MS SQL Server (MSSQL)'s identity column use {@link identity}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.generatedByDefaultAsIdentity().primaryKey())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "person" (
+   *   "id" integer generated by default as identity primary key
+   * )
+   * ```
    */
   generatedByDefaultAsIdentity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -293,13 +509,23 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)', (col) => col
-   *     .generatedAlwaysAs("concat(first_name, ' ', last_name)")
+   *     .generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
    *     .stored()
    *   )
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `full_name` varchar(255) generated always as (concat(first_name, ' ', last_name)) stored
+   * )
    * ```
    */
   stored(): ColumnDefinitionBuilder {
@@ -322,10 +548,17 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('first_name', 'varchar(36)', col => col.modifyFront(sql`collate utf8mb4_general_ci`).notNull())
-   *  .execute()
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn(
+   *     'first_name',
+   *     'varchar(36)',
+   *     (col) => col.modifyFront(sql`collate utf8mb4_general_ci`).notNull()
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -355,10 +588,11 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
-   *  .execute()
+   * db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -377,8 +611,22 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds `if not exists` specifier.
-   * This only works for PostgreSQL.
+   * Adds `if not exists` specifier. This only works for PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .addColumn('email', 'varchar(255)', col => col.unique().ifNotExists())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" add column if not exists "email" varchar(255) unique
+   * ```
    */
   ifNotExists(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
@@ -392,10 +640,19 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`))
-   *  .execute()
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
+   *   .addColumn(
+   *     'age',
+   *     'integer',
+   *     col => col.unsigned()
+   *       .notNull()
+   *       .modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`)
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
