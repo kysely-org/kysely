@@ -63,7 +63,13 @@ Examples of being an asshole or entitled include:
 * Probably not the best idea to not search existing issues, and then ask the maintainer to spend time doing it.
   > could you please provide numbers of duplicated issues to explore the topic? - https://github.com/kysely-org/kysely/issues/762#issuecomment-1801951960
 * Probably not the best idea to sarcastically suggest the maintainer is not helpful while using his hard work for free.
-  > https://github.com/kysely-org/kysely/issues/762#issuecomment-2404599281
+  > Most helpful man in the world - https://github.com/kysely-org/kysely/issues/762#issuecomment-2404599281
+* Probably not the best idea to side with the asshole/entitled by upvoting them or downvoting us.
+
+  ![image](https://github.com/user-attachments/assets/ca6efd57-d8db-428a-a274-7b45b380887f)
+  ![image](https://github.com/user-attachments/assets/62356fa3-7cea-4b82-9967-d56c76f0beee)
+
+
 
 ## Enforcement Responsibilities
 
