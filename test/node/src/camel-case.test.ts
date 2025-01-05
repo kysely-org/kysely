@@ -313,7 +313,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    it.only('should respect `underscoreBeforeDigits` and not add a second underscore in a nested query', async () => {
+    it('should respect `underscoreBeforeDigits` and not add a second underscore in a nested query', async () => {
       const db = camelDb
         .withoutPlugins()
         .withPlugin(new CamelCasePlugin({ underscoreBeforeDigits: true }))
