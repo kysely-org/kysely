@@ -151,15 +151,6 @@ for (const dialect of DIALECTS) {
                   hasDefaultValue: true,
                   comment: undefined,
                 },
-                {
-                  name: 'created_at',
-                  dataType: 'timestamptz',
-                  dataTypeSchema: 'pg_catalog',
-                  isNullable: false,
-                  isAutoIncrementing: false,
-                  hasDefaultValue: true,
-                  comment: undefined,
-                },
               ],
             },
             {
@@ -370,14 +361,6 @@ for (const dialect of DIALECTS) {
                   hasDefaultValue: true,
                   comment: undefined,
                 },
-                {
-                  name: 'created_at',
-                  dataType: 'datetime',
-                  isNullable: false,
-                  isAutoIncrementing: false,
-                  hasDefaultValue: true,
-                  comment: undefined,
-                },
               ],
             },
             {
@@ -488,15 +471,6 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'children',
-                  comment: undefined,
-                },
-                {
-                  dataType: 'datetime',
-                  dataTypeSchema: 'sys',
-                  hasDefaultValue: true,
-                  isAutoIncrementing: false,
-                  isNullable: false,
-                  name: 'created_at',
                   comment: undefined,
                 },
                 {
@@ -741,14 +715,6 @@ for (const dialect of DIALECTS) {
                 {
                   name: 'children',
                   dataType: 'INTEGER',
-                  isNullable: false,
-                  isAutoIncrementing: false,
-                  hasDefaultValue: true,
-                  comment: undefined,
-                },
-                {
-                  name: 'created_at',
-                  dataType: 'TEXT',
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: true,
