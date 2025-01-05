@@ -111,6 +111,7 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
 
 export class DefaultQueryCompiler
@@ -127,6 +128,7 @@ export class DefaultQueryCompiler
   compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sql = ''
     this.#parameters = []
+    this.nodeStack.splice(0, this.nodeStack.length)
 
     this.visitNode(node)
 
@@ -371,6 +373,11 @@ export class DefaultQueryCompiler
     if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
     }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
+    }
   }
 
   protected override visitValues(node: ValuesNode): void {
@@ -441,6 +448,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery) {
       this.append(')')
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
@@ -806,6 +818,12 @@ export class DefaultQueryCompiler
     }
 
     if (node.joins) {
+      if (!node.from) {
+        throw new Error(
+          "Joins in an update query are only supported as a part of a PostgreSQL 'update set from join' query. If you want to create a MySQL 'update join set' query, see https://kysely.dev/docs/examples/update/my-sql-joins",
+        )
+      }
+
       this.append(' ')
       this.compileList(node.joins, ' ')
     }
@@ -827,6 +845,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
@@ -1243,6 +1266,24 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected override visitRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): void {
+    this.append('refresh materialized view ')
+
+    if (node.concurrently) {
+      this.append('concurrently ')
+    }
+
+    this.visitNode(node.name)
+
+    if (node.withNoData) {
+      this.append(' with no data')
+    } else {
+      this.append(' with data')
+    }
+  }
+
   protected override visitDropView(node: DropViewNode): void {
     this.append('drop ')
 
@@ -1367,6 +1408,12 @@ export class DefaultQueryCompiler
     }
 
     this.compileList(node.aggregated)
+
+    if (node.orderBy) {
+      this.append(' ')
+      this.visitNode(node.orderBy)
+    }
+
     this.append(')')
 
     if (node.filter) {
@@ -1547,9 +1594,19 @@ export class DefaultQueryCompiler
       this.compileList(node.whens, ' ')
     }
 
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
+    }
+
     if (node.output) {
       this.append(' ')
       this.visitNode(node.output)
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 

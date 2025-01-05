@@ -106,9 +106,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll('person')
    *   .where(db.fn('upper', ['first_name']), '=', 'JENNIFER')
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -122,9 +123,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * If you prefer readability over type-safety, you can always use raw `sql`:
    *
    * ```ts
-   * db.selectFrom('person')
+   * import { sql } from 'kysely'
+   *
+   * await db.selectFrom('person')
    *   .selectAll('person')
    *   .where(sql<string>`upper(first_name)`, '=', 'JENNIFER')
+   *   .execute()
    * ```
    */
   <O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
@@ -145,11 +149,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(({ fn }) => [
    *     fn.agg<number>('rank').over().as('rank'),
    *     fn.agg<string>('group_concat', ['first_name']).distinct().as('first_names')
    *   ])
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -177,7 +182,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.avg('price').as('avg_price'))
    *   .execute()
    * ```
@@ -186,14 +191,6 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *
    * ```sql
    * select avg("price") as "avg_price" from "toy"
-   * ```
-   *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.avg('price').as('avg_price'))
-   *   .execute()
    * ```
    *
    * If this function is used in a `select` statement, the type of the selected
@@ -207,7 +204,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the first type argument:
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.avg<number>('price').as('avg_price'))
    *   .execute()
    * ```
@@ -218,7 +215,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.avg<number | null>('price').as('avg_price'))
    *   .execute()
    * ```
@@ -251,35 +248,25 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('participant')
-   *   .select((eb) => eb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname'))
-   *   .where('room_id', '=', roomId)
+   * import { sql } from 'kysely'
+   *
+   * await db.selectFrom('person')
+   *   .select((eb) => eb.fn.coalesce('nullable_column', sql.lit('<unknown>')).as('column'))
+   *   .where('first_name', '=', 'Jessie')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select coalesce("nickname", '<anonymous>') as "nickname"
-   * from "participant" where "room_id" = $1
-   * ```
-   *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('participant')
-   *   .select((eb) =>
-   *     eb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname')
-   *   )
-   *   .where('room_id', '=', roomId)
-   *   .execute()
+   * select coalesce("nullable_column", '<unknown>') as "column" from "person" where "first_name" = $1
    * ```
    *
    * You can combine this function with other helpers in this module:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .select((eb) => eb.fn.coalesce(eb.fn.avg<number | null>('age'), sql<number>`0`).as('avg_age'))
+   * await db.selectFrom('person')
+   *   .select((eb) => eb.fn.coalesce(eb.fn.avg<number | null>('age'), eb.lit(0)).as('avg_age'))
    *   .where('first_name', '=', 'Jennifer')
    *   .execute()
    * ```
@@ -357,7 +344,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.count('id').as('num_toys'))
    *   .execute()
    * ```
@@ -379,16 +366,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the type as the first type argument:
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.count<number>('id').as('num_toys'))
-   *   .execute()
-   * ```
-   *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.count('id').as('num_toys'))
    *   .execute()
    * ```
    */
@@ -415,7 +394,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.countAll().as('num_toys'))
    *   .execute()
    * ```
@@ -437,7 +416,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the type as the first type argument:
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.countAll<number>().as('num_toys'))
    *   .execute()
    * ```
@@ -446,7 +425,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * table:
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
    *   .select((eb) => eb.fn.countAll('toy').as('num_toys'))
    *   .execute()
@@ -457,15 +436,6 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```sql
    * select count("toy".*) as "num_toys"
    * from "toy" inner join "pet" on "pet"."id" = "toy"."pet_id"
-   * ```
-   *
-   * You can limit table range to only tables participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
-   *   .select((eb) => eb.fn.countAll('toy').as('num_toys'))
-   *   .execute()
    * ```
    */
   countAll<O extends number | string | bigint, T extends TB = TB>(
@@ -494,7 +464,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.max('price').as('max_price'))
    *   .execute()
    * ```
@@ -505,27 +475,19 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * select max("price") as "max_price" from "toy"
    * ```
    *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.max('price').as('max_price'))
-   *   .execute()
-   * ```
-   *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
    * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.max<number | null>('price').as('max_price'))
    *   .execute()
    * ```
    */
   max<
-    O extends number | string | bigint | null = never,
+    O extends number | string | Date | bigint | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
@@ -533,7 +495,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      ? ExtractTypeFromReferenceExpression<
+          DB,
+          TB,
+          RE,
+          number | string | Date | bigint
+        >
       : O
   >
 
@@ -553,7 +520,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.min('price').as('min_price'))
    *   .execute()
    * ```
@@ -564,27 +531,19 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * select min("price") as "min_price" from "toy"
    * ```
    *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.min('price').as('min_price'))
-   *   .execute()
-   * ```
-   *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
    * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.min<number | null>('price').as('min_price'))
    *   .execute()
    * ```
    */
   min<
-    O extends number | string | bigint | null = never,
+    O extends number | string | Date | bigint | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
@@ -592,7 +551,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      ? ExtractTypeFromReferenceExpression<
+          DB,
+          TB,
+          RE,
+          number | string | Date | bigint
+        >
       : O
   >
 
@@ -608,7 +572,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.sum('price').as('total_price'))
    *   .execute()
    * ```
@@ -617,14 +581,6 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *
    * ```sql
    * select sum("price") as "total_price" from "toy"
-   * ```
-   *
-   * You can limit column range to only columns participating in current query:
-   *
-   * ```ts
-   * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.sum('price').as('total_price'))
-   *   .execute()
    * ```
    *
    * If this function is used in a `select` statement, the type of the selected
@@ -638,7 +594,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the first type argument:
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.sum<number>('price').as('total_price'))
    *   .execute()
    * ```
@@ -649,7 +605,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * db.selectFrom('toy')
+   * await db.selectFrom('toy')
    *   .select((eb) => eb.fn.sum<number | null>('price').as('total_price'))
    *   .execute()
    * ```
@@ -671,11 +627,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * In the following example, `nicknames` is assumed to be a column of type `string[]`:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll('person')
    *   .where((eb) => eb(
    *     eb.val('Jen'), '=', eb.fn.any('person.nicknames')
    *   ))
+   *   .execute()
    * ```
    *
    *
@@ -711,7 +668,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * This function is only available on PostgreSQL.
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .select((eb) => ['first_name', eb.fn.jsonAgg('pet').as('pets')])
    *   .groupBy('person.first_name')
@@ -745,7 +702,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * This function is only available on PostgreSQL.
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .select((eb) => ['first_name', eb.fn.toJson('pet').as('pet')])
    *   .execute()

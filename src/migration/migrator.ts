@@ -36,16 +36,29 @@ export interface Migration {
  * other way.
  *
  * ```ts
- * import { promises as fs } from 'fs'
- * import path from 'path'
+ * import { promises as fs } from 'node:fs'
+ * import path from 'node:path'
+ * import * as Sqlite from 'better-sqlite3'
+ * import {
+ *   FileMigrationProvider,
+ *   Kysely,
+ *   Migrator,
+ *   SqliteDialect
+ * } from 'kysely'
+ *
+ * const db = new Kysely<any>({
+ *   dialect: new SqliteDialect({
+ *     database: Sqlite(':memory:')
+ *   })
+ * })
  *
  * const migrator = new Migrator({
  *   db,
  *   provider: new FileMigrationProvider({
  *     fs,
- *     path,
  *     // Path to the folder that contains all your migrations.
- *     migrationFolder: 'some/path/to/migrations'
+ *     migrationFolder: 'some/path/to/migrations',
+ *     path,
  *   })
  * })
  * ```
@@ -70,6 +83,7 @@ export class Migrator {
           .withPlugin(this.#schemaPlugin)
           .selectFrom(this.#migrationTable)
           .select(['name', 'timestamp'])
+          .$narrowType<{ name: string; timestamp: string }>()
           .execute()
       : []
 
@@ -102,19 +116,18 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect({
-   *     host: 'localhost',
-   *     database: 'kysely_test',
-   *   }),
-   * })
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import * as Sqlite from 'better-sqlite3'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
    *
    * const migrator = new Migrator({
    *   db,
-   *   provider: new FileMigrationProvider(
-   *     // Path to the folder that contains all your migrations.
-   *     'some/path/to/migrations'
-   *   )
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
    * })
    *
    * const { error, results } = await migrator.migrateToLatest()
@@ -148,6 +161,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateTo('some_migration')
    * ```
    *
@@ -157,6 +184,20 @@ export class Migrator {
    * you can use a special constant `NO_MIGRATIONS`:
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateTo(NO_MIGRATIONS)
    * ```
    */
@@ -213,6 +254,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateUp()
    * ```
    */
@@ -231,6 +286,20 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
    * await migrator.migrateDown()
    * ```
    */
@@ -509,11 +578,27 @@ export class Migrator {
     const executedMigrations = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
-      .select('name')
-      .orderBy(['timestamp', 'name'])
+      .select(['name', 'timestamp'])
+      .$narrowType<{ name: string; timestamp: string }>()
       .execute()
 
-    return executedMigrations.map((it) => it.name)
+    const nameComparator =
+      this.#props.nameComparator || ((a, b) => a.localeCompare(b))
+
+    return (
+      executedMigrations
+        // https://github.com/kysely-org/kysely/issues/843
+        .sort((a, b) => {
+          if (a.timestamp === b.timestamp) {
+            return nameComparator(a.name, b.name)
+          }
+
+          return (
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          )
+        })
+        .map((it) => it.name)
+    )
   }
 
   #ensureNoMissingMigrations(
@@ -729,6 +814,14 @@ export interface MigratorProps {
    * order.
    */
   readonly allowUnorderedMigrations?: boolean
+
+  /**
+   * A function that compares migration names, used when sorting migrations in
+   * ascending order.
+   *
+   * Default is `name0.localeCompare(name1)`.
+   */
+  readonly nameComparator?: (name0: string, name1: string) => number
 }
 
 /**

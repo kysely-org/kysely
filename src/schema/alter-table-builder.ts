@@ -8,7 +8,6 @@ import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze, noop } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import {
   ColumnDefinitionBuilder,
   ColumnDefinitionBuilderCallback,
@@ -468,11 +467,3 @@ export class AlterTableColumnAlteringBuilder
 
 export interface AlterTableColumnAlteringBuilderProps
   extends AlterTableBuilderProps {}
-
-preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
-preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
-
-preventAwait(
-  AlterTableColumnAlteringBuilder,
-  "don't await AlterTableColumnAlteringBuilder instances directly. To execute the query you need to call `execute`",
-)

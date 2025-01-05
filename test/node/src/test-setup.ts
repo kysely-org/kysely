@@ -29,7 +29,6 @@ import {
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
-  Logger,
   Generated,
   sql,
   ColumnType,
@@ -41,6 +40,7 @@ import {
   OrderByDirection,
   UndirectedOrderByExpression,
 } from '../../../dist/cjs/parser/order-by-parser'
+import type { ConnectionConfiguration } from 'tedious'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -121,48 +121,53 @@ if (process.env.TEST_TRANSFORMER) {
 
 export const POOL_SIZE = 20
 
-export const DIALECT_CONFIGS = {
-  postgres: {
-    database: 'kysely_test',
-    host: 'localhost',
-    user: 'kysely',
-    port: 5434,
-    max: POOL_SIZE,
-  } satisfies PoolConfig,
+const POSTGRES_CONFIG: PoolConfig = {
+  database: 'kysely_test',
+  host: 'localhost',
+  user: 'kysely',
+  port: 5434,
+  max: POOL_SIZE,
+}
 
-  mysql: {
-    database: 'kysely_test',
-    host: 'localhost',
-    user: 'kysely',
-    password: 'kysely',
-    port: 3308,
-    // Return big numbers as strings just like pg does.
-    supportBigNumbers: true,
-    bigNumberStrings: true,
+const MYSQL_CONFIG: PoolOptions = {
+  database: 'kysely_test',
+  host: 'localhost',
+  user: 'kysely',
+  password: 'kysely',
+  port: 3308,
+  // Return big numbers as strings just like pg does.
+  supportBigNumbers: true,
+  bigNumberStrings: true,
 
-    connectionLimit: POOL_SIZE,
-  } satisfies PoolOptions,
+  connectionLimit: POOL_SIZE,
+}
 
-  mssql: {
-    authentication: {
-      options: {
-        password: 'KyselyTest0',
-        userName: 'sa',
-      },
-      type: 'default',
-    },
+const MSSQL_CONFIG: ConnectionConfiguration = {
+  authentication: {
     options: {
-      connectTimeout: 3000,
-      database: 'kysely_test',
-      port: 21433,
-      trustServerCertificate: true,
+      password: 'KyselyTest0',
+      userName: 'sa',
     },
-    server: 'localhost',
-  } satisfies Tedious.ConnectionConfig,
-
-  sqlite: {
-    databasePath: ':memory:',
+    type: 'default',
   },
+  options: {
+    connectTimeout: 3000,
+    database: 'kysely_test',
+    port: 21433,
+    trustServerCertificate: true,
+  },
+  server: 'localhost',
+}
+
+const SQLITE_CONFIG = {
+  databasePath: ':memory:',
+}
+
+export const DIALECT_CONFIGS = {
+  postgres: POSTGRES_CONFIG,
+  mysql: MYSQL_CONFIG,
+  mssql: MSSQL_CONFIG,
+  sqlite: SQLITE_CONFIG,
 }
 
 export const DB_CONFIGS: PerDialect<KyselyConfig> = {
@@ -187,12 +192,14 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
         options: {
           max: POOL_SIZE,
           min: 0,
+          validateConnections: false,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
+        resetConnectionOnRelease: false,
       },
     }),
     plugins: PLUGINS,
@@ -209,15 +216,12 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 export async function initTest(
   ctx: Mocha.Context,
   dialect: BuiltInDialect,
-  log?: Logger,
+  overrides?: Omit<KyselyConfig, 'dialect'>,
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
-  const db = await connect({
-    ...config,
-    log,
-  })
+  const db = await connect({ ...config, ...overrides })
 
   await createDatabase(db, dialect)
   return { config, db, dialect }
@@ -373,7 +377,7 @@ export function createTableWithId(
 
   if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col.identity().notNull().primaryKey()
+      col.identity().notNull().primaryKey(),
     )
   }
 

@@ -6,7 +6,6 @@ import {
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
@@ -95,7 +94,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey()),
+   *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
@@ -103,7 +102,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   // don't include it.
    *   .addColumn('data', sql`any_type_here`)
    *   .addColumn('parent_id', 'integer', (col) =>
-   *     col.references('person.id').onDelete('cascade'))
+   *     col.references('person.id').onDelete('cascade')
    *   )
    * ```
    *
@@ -114,11 +113,18 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * `create table` query. See the next example:
    *
    * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', (col) => col.primaryKey())
    *   .addColumn('parent_id', 'integer')
    *   .addForeignKeyConstraint(
-   *     'person_parent_id_fk', ['parent_id'], 'person', ['id'],
+   *     'person_parent_id_fk',
+   *     ['parent_id'],
+   *     'person',
+   *     ['id'],
    *     (cb) => cb.onDelete('cascade')
    *   )
+   *   .execute()
    * ```
    *
    * Another good example is that PostgreSQL doesn't support the `auto_increment`
@@ -128,7 +134,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'serial', (col) => col.primaryKey()),
+   *   .addColumn('id', 'serial', (col) => col.primaryKey())
+   *   .execute()
    * ```
    */
   addColumn<CN extends string>(
@@ -163,7 +170,12 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * addPrimaryKeyConstraint('primary_key', ['first_name', 'last_name'])
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addPrimaryKeyConstraint('primary_key', ['first_name', 'last_name'])
+   *   .execute()
    * ```
    */
   addPrimaryKeyConstraint(
@@ -188,12 +200,30 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addUniqueConstraint(
+   *     'first_name_last_name_unique',
+   *     ['first_name', 'last_name']
+   *   )
+   *   .execute()
    * ```
    *
    * In dialects such as PostgreSQL you can specify `nulls not distinct` as follows:
+   *
    * ```ts
-   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'], (builder) => builder.nullsNotDistinct())
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addUniqueConstraint(
+   *     'first_name_last_name_unique',
+   *     ['first_name', 'last_name'],
+   *     (cb) => cb.nullsNotDistinct()
+   *   )
+   *   .execute()
    * ```
    */
   addUniqueConstraint(
@@ -227,7 +257,11 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * import { sql } from 'kysely'
    *
-   * addCheckConstraint('check_legs', sql`number_of_legs < 5`)
+   * await db.schema
+   *   .createTable('animal')
+   *   .addColumn('number_of_legs', 'integer')
+   *   .addCheckConstraint('check_legs', sql`number_of_legs < 5`)
+   *   .execute()
    * ```
    */
   addCheckConstraint(
@@ -255,24 +289,33 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * addForeignKeyConstraint(
-   *   'owner_id_foreign',
-   *   ['owner_id'],
-   *   'person',
-   *   ['id'],
-   * )
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'owner_id_foreign',
+   *     ['owner_id'],
+   *     'person',
+   *     ['id'],
+   *   )
+   *   .execute()
    * ```
    *
    * Add constraint for multiple columns:
    *
    * ```ts
-   * addForeignKeyConstraint(
-   *   'owner_id_foreign',
-   *   ['owner_id1', 'owner_id2'],
-   *   'person',
-   *   ['id1', 'id2'],
-   *   (cb) => cb.onDelete('cascade')
-   * )
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id1', 'integer')
+   *   .addColumn('owner_id2', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'owner_id_foreign',
+   *     ['owner_id1', 'owner_id2'],
+   *     'person',
+   *     ['id1', 'id2'],
+   *     (cb) => cb.onDelete('cascade')
+   *   )
+   *   .execute()
    * ```
    */
   addForeignKeyConstraint(
@@ -310,11 +353,14 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
    *   .modifyFront(sql`global temporary`)
    *   .addColumn('id', 'integer', col => col.primaryKey())
    *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
-   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64)', col => col.notNull())
    *   .execute()
    * ```
    *
@@ -346,10 +392,13 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
-   *   .addColumn('id', 'integer', col => col => primaryKey())
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'integer', col => col.primaryKey())
    *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
-   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64)', col => col.notNull())
    *   .modifyEnd(sql`collate utf8_unicode_ci`)
    *   .execute()
    * ```
@@ -380,7 +429,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('copy')
+   * await db.schema
+   *   .createTable('copy')
    *   .temporary()
    *   .as(db.selectFrom('person').select(['first_name', 'last_name']))
    *   .execute()
@@ -408,17 +458,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema
+   * await db.schema
    *   .createTable('test')
    *   .$call((builder) => builder.addColumn('id', 'integer'))
    *   .execute()
    * ```
    *
+   * This is useful for creating reusable functions that can be called with a builder.
+   *
    * ```ts
-   * const addDefaultColumns = <T extends string, C extends string = never>(
-   *   builder: CreateTableBuilder<T, C>
-   * ) => {
-   *   return builder
+   * import { type CreateTableBuilder, sql } from 'kysely'
+   *
+   * const addDefaultColumns = (ctb: CreateTableBuilder<any, any>) => {
+   *   return ctb
    *     .addColumn('id', 'integer', (col) => col.notNull())
    *     .addColumn('created_at', 'date', (col) =>
    *       col.notNull().defaultTo(sql`now()`)
@@ -428,7 +480,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *     )
    * }
    *
-   * db.schema
+   * await db.schema
    *   .createTable('test')
    *   .$call(addDefaultColumns)
    *   .execute()
@@ -456,11 +508,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
-
-preventAwait(
-  CreateTableBuilder,
-  "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`",
-)
 
 export interface CreateTableBuilderProps {
   readonly queryId: QueryId

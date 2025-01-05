@@ -94,6 +94,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 import { OrActionNode } from './or-action-node.js'
 
 /**
@@ -110,9 +111,12 @@ import { OrActionNode } from './or-action-node.js'
  * snake_case, you'd do something like this:
  *
  * ```ts
+ * import { type IdentifierNode, OperationNodeTransformer } from 'kysely'
+ * import snakeCase from 'lodash/snakeCase'
+ *
  * class CamelCaseTransformer extends OperationNodeTransformer {
- *   transformIdentifier(node: IdentifierNode): IdentifierNode {
- *     node = super.transformIdentifier(node),
+ *   override transformIdentifier(node: IdentifierNode): IdentifierNode {
+ *     node = super.transformIdentifier(node)
  *
  *     return {
  *       ...node,
@@ -122,7 +126,10 @@ import { OrActionNode } from './or-action-node.js'
  * }
  *
  * const transformer = new CamelCaseTransformer()
- * const tree = transformer.transformNode(tree)
+ *
+ * const query = db.selectFrom('person').select(['first_name', 'last_name'])
+ *
+ * const tree = transformer.transformNode(query.toOperationNode())
  * ```
  */
 export class OperationNodeTransformer {
@@ -190,6 +197,8 @@ export class OperationNodeTransformer {
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
+    RefreshMaterializedViewNode:
+      this.transformRefreshMaterializedView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedNode: this.transformGenerated.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
@@ -382,6 +391,7 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       onConflict: this.transformNode(node.onConflict),
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
       or: this.transformNode(node.or),
@@ -408,6 +418,7 @@ export class OperationNodeTransformer {
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
@@ -517,6 +528,7 @@ export class OperationNodeTransformer {
       where: this.transformNode(node.where),
       updates: this.transformNodeList(node.updates),
       returning: this.transformNode(node.returning),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
       limit: this.transformNode(node.limit),
@@ -796,6 +808,17 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): RefreshMaterializedViewNode {
+    return requireAllProps<RefreshMaterializedViewNode>({
+      kind: 'RefreshMaterializedViewNode',
+      name: this.transformNode(node.name),
+      concurrently: node.concurrently,
+      withNoData: node.withNoData,
+    })
+  }
+
   protected transformDropView(node: DropViewNode): DropViewNode {
     return requireAllProps<DropViewNode>({
       kind: 'DropViewNode',
@@ -883,6 +906,7 @@ export class OperationNodeTransformer {
       kind: 'AggregateFunctionNode',
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
+      orderBy: this.transformNode(node.orderBy),
       filter: this.transformNode(node.filter),
       func: node.func,
       over: this.transformNode(node.over),
@@ -1016,7 +1040,9 @@ export class OperationNodeTransformer {
       whens: this.transformNodeList(node.whens),
       with: this.transformNode(node.with),
       top: this.transformNode(node.top),
+      endModifiers: this.transformNodeList(node.endModifiers),
       output: this.transformNode(node.output),
+      returning: this.transformNode(node.returning),
     })
   }
 

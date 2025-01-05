@@ -1,4 +1,3 @@
-import React from 'react'
 import Link from '@docusaurus/Link'
 import { PRETTY_PACKAGE_MANAGER_NAMES, type PackageManager } from './shared'
 
@@ -8,7 +7,7 @@ export interface IUseADifferentPackageManagerProps {
 }
 
 export function IUseADifferentPackageManager(
-  props: IUseADifferentPackageManagerProps
+  props: IUseADifferentPackageManagerProps,
 ) {
   const packageManagerName =
     PRETTY_PACKAGE_MANAGER_NAMES[props.packageManager || 'npm']

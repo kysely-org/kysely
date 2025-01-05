@@ -1,5 +1,6 @@
 import {
   Expression,
+  ExpressionWrapper,
   Kysely,
   NotNull,
   RawBuilder,
@@ -132,6 +133,12 @@ async function testSelectSingle(db: Kysely<Database>) {
 
   expectType<string>(r17.callback_url)
   expectType<string>(r17.queue_id)
+
+  const expr1 = db.selectFrom('person').select('first_name').$asScalar()
+  expectType<ExpressionWrapper<Database, 'person', string>>(expr1)
+
+  const expr2 = db.selectFrom('person').select('deleted_at').$asScalar()
+  expectType<ExpressionWrapper<Database, 'person', Date | null>>(expr2)
 }
 
 async function testSelectAll(db: Kysely<Database>) {

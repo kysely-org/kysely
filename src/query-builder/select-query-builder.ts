@@ -40,7 +40,6 @@ import {
   UndirectedOrderByExpression,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
@@ -243,7 +242,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ eb, selectFrom, or }) => [
+   *   .select(({ eb, selectFrom, or, val, lit }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -260,7 +259,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
-   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
+   *
+   *     // Select a static string value
+   *     val('Some value').as('string_value'),
+   *
+   *     // Select a literal value
+   *     lit(42).as('literal_value'),
    *   ])
    *   .execute()
    * ```
@@ -277,7 +282,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     limit $1
    *   ) as "pet_name",
    *   ("first_name" = $2 or "first_name" = $3) as "jennifer_or_arnold",
-   *   concat(first_name, ' ', last_name) as "full_name"
+   *   concat(first_name, ' ', last_name) as "full_name",
+   *   $4 as "string_value",
+   *   42 as "literal_value"
    * from "person"
    * ```
    *
@@ -335,16 +342,16 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * const { ref } = db.dynamic
    *
    * // Some column name provided by the user. Value not known at compile time.
-   * const columnFromUserInput = req.query.select;
+   * const columnFromUserInput: string = 'first_name';
    *
    * // A type that lists all possible values `columnFromUserInput` can have.
    * // You can use `keyof Person` if any column of an interface is allowed.
-   * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
+   * type PossibleColumns = 'last_name' | 'first_name' | 'birthdate'
    *
-   * const spersons = await db
+   * const people = await db
    *   .selectFrom('person')
    *   .select([
-   *     ref<PossibleColumns>(columnFromUserInput)
+   *     ref<PossibleColumns>(columnFromUserInput),
    *     'id'
    *   ])
    *   .execute()
@@ -352,12 +359,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * // The resulting type contains all `PossibleColumns` as optional fields
    * // because we cannot know which field was actually selected before
    * // running the code.
-   * const lastName: string | undefined = persons[0].last_name
-   * const firstName: string | undefined = persons[0].first_name
-   * const birthDate: string | undefined = persons[0].birth_date
+   * const lastName: string | null | undefined = people[0].last_name
+   * const firstName: string | undefined = people[0].first_name
+   * const birthDate: Date | null | undefined = people[0].birthdate
    *
    * // The result type also contains the compile time selection `id`.
-   * persons[0].id
+   * people[0].id
    * ```
    */
   select<SE extends SelectExpression<DB, TB>>(
@@ -411,7 +418,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * import { sql } from 'kysely'
+   *
+   * await db.selectFrom('person')
    *   .modifyFront(sql`sql_no_cache`)
    *   .select('first_name')
    *   .execute()
@@ -435,7 +444,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * import { sql } from 'kysely'
+   *
+   * await db.selectFrom('person')
    *   .select('first_name')
    *   .modifyEnd(sql`for update`)
    *   .execute()
@@ -454,9 +465,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Makes the selection distinct.
    *
-   * <!-- siteExample("select", "Distinct", 70) -->
-   *
    * ### Examples
+   *
+   * <!-- siteExample("select", "Distinct", 70) -->
    *
    * ```ts
    * const persons = await db.selectFrom('person')
@@ -778,7 +789,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .innerJoinLateral(
    *     (eb) =>
    *       eb.selectFrom('pet')
@@ -789,6 +800,20 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .select(['first_name', 'p.name'])
    *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * inner join lateral (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p" on true
+   * order by "first_name"
    * ```
    */
   innerJoinLateral<
@@ -814,7 +839,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .leftJoinLateral(
    *     (eb) =>
    *       eb.selectFrom('pet')
@@ -825,6 +850,20 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .select(['first_name', 'p.name'])
    *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * left join lateral (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p" on true
+   * order by "first_name"
    * ```
    */
   leftJoinLateral<
@@ -1079,7 +1118,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select the first 10 rows of the result:
    *
    * ```ts
-   * return await db
+   * await db
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
@@ -1095,7 +1134,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
-   * return await db
+   * await db
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
@@ -1121,7 +1160,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
-   * return await db
+   * await db
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
@@ -1147,7 +1186,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * return await db
+   * await db
    *   .selectFrom('person')
    *   .select('first_name')
    *   .orderBy('first_name')
@@ -1181,7 +1220,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select 10 biggest ages:
    *
    * ```ts
-   * return await db
+   * await db
    *   .selectFrom('person')
    *   .select('age')
    *   .top(10)
@@ -1198,7 +1237,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select 10% first rows:
    *
    * ```ts
-   * return await db
+   * await db
    *  .selectFrom('person')
    *  .selectAll()
    *  .top(10, 'percent')
@@ -1224,22 +1263,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .union(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * union
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .union((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * union
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   union<E extends SetOperandExpression<DB, O>>(
@@ -1254,22 +1319,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .unionAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * union all
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .unionAll((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * union all
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   unionAll<E extends SetOperandExpression<DB, O>>(
@@ -1284,22 +1375,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersect(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * intersect
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersect((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * intersect
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   intersect<E extends SetOperandExpression<DB, O>>(
@@ -1314,22 +1431,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersectAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * intersect all
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersectAll((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * intersect all
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   intersectAll<E extends SetOperandExpression<DB, O>>(
@@ -1344,22 +1487,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .except(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * except
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .except((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * except
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   except<E extends SetOperandExpression<DB, O>>(
@@ -1374,22 +1543,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .exceptAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * except all
+   * select "id", "name"
+   * from "pet"
+   * order by "name"
    * ```
    *
    * You can provide a callback to get an expression builder.
    * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .exceptAll((eb) => eb.parens(
    *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name" as "name"
+   * from "person"
+   * except all
+   * (
+   *   select "id", "name"
+   *   from "pet"
+   * )
+   * order by "name"
    * ```
    */
   exceptAll<E extends SetOperandExpression<DB, O>>(
@@ -1414,6 +1609,17 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * pets[0].owner_first_name
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "pet".*, (
+   *   select "first_name"
+   *   from "person"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "owner_first_name"
+   * from "pet"
+   * ```
    */
   as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A>
 
@@ -1423,10 +1629,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .select(['id', 'first_name'])
    *   .clearSelect()
    *   .select(['id', 'gender'])
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1445,10 +1652,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll()
    *   .limit(10)
    *   .clearLimit()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1465,11 +1673,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll()
    *   .limit(10)
    *   .offset(20)
    *   .clearOffset()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1486,10 +1695,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll()
    *   .orderBy('id')
    *   .clearOrderBy()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1506,10 +1716,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll()
    *   .groupBy('id')
    *   .clearGroupBy()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1532,12 +1743,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
    *
-   * db.selectFrom('person')
+   * await db.selectFrom('person')
    *   .selectAll()
    *   .$call(log)
    *   .execute()
@@ -1553,24 +1766,26 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * like this:
    *
    * ```ts
-   * let query = db.selectFrom('person').selectAll()
+   * async function getPeople(firstName?: string, lastName?: string) {
+   *   let query = db.selectFrom('person').selectAll()
    *
-   * if (firstName) {
-   *   query = query.where('first_name', '=', firstName)
+   *   if (firstName) {
+   *     query = query.where('first_name', '=', firstName)
+   *   }
+   *
+   *   if (lastName) {
+   *     query = query.where('last_name', '=', lastName)
+   *   }
+   *
+   *   return await query.execute()
    * }
-   *
-   * if (lastName) {
-   *   query = query.where('last_name', '=', lastName)
-   * }
-   *
-   * const result = await query.execute()
    * ```
    *
    * This method is mainly useful with optional selects. Any `select` or `selectAll`
    * method called inside the callback add optional fields to the result type. This is
    * because we can't know if those selections were actually made before running the code.
    *
-   * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/conditional-selects.md)
+   * Also see [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0005-conditional-selects.md)
    *
    * ### Examples
    *
@@ -1590,24 +1805,27 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `getPerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    *
    * You can also call any other methods inside the callback:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .select('person.id')
-   *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
-   *   .$if(filterByPetCount, (qb) => qb
-   *     .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *     .having((eb) => eb.fn.count('pet.id'), '>', petCountLimit)
-   *     .groupBy('person.id')
-   *   )
+   * async function getPeople(firstName?: string, petCountLimit?: number) {
+   *   return await db.selectFrom('person')
+   *     .select('person.id')
+   *     .$if(firstName != null, (qb) => qb.where('first_name', '=', firstName!))
+   *     .$if(petCountLimit != null, (qb) => qb
+   *       .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *       .having((eb) => eb.fn.count('pet.id'), '>', petCountLimit!)
+   *       .groupBy('person.id')
+   *     )
+   *     .execute()
+   * }
    * ```
    */
   $if<O2>(
@@ -1648,6 +1866,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .where('pet.species', '!=', 'cat')
    *       .$asTuple('name', 'species')
    *   ))
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -1717,6 +1936,56 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   /**
+   * Plucks the value type of the output record.
+   *
+   * In SQL, any record type that only has one column can be used as a scalar.
+   * For example a query like this works:
+   *
+   * ```sql
+   * select
+   *   id,
+   *   first_name
+   * from
+   *   person as p
+   * where
+   *   -- This is ok since the query only selects one row
+   *   -- and one column.
+   *  (select name from pet where pet.owner_id = p.id limit 1) = 'Doggo'
+   * ```
+   *
+   * In many cases Kysely handles this automatically and picks the correct
+   * scalar type instead of the record type, but sometimes you need to give
+   * Kysely a hint.
+   *
+   * One such case are custom helper functions that take `Expression<T>`
+   * instances as inputs:
+   *
+   * ```ts
+   * import type { Expression } from 'kysely'
+   *
+   * function doStuff(expr: Expression<string>) {
+   *   // ...
+   * }
+   *
+   * // Error! This is not ok because the expression type is
+   * // `{ first_name: string }` instead of `string`.
+   * // doStuff(db.selectFrom('person').select('first_name'))
+   *
+   * // Ok! This is ok since we've plucked the `string` type of the
+   * // only column in the output type.
+   * doStuff(db.selectFrom('person').select('first_name').$asScalar())
+   * ```
+   *
+   * This function has absolutely no effect on the generated SQL. It's
+   * purely a type-level helper.
+   *
+   * This method returns an `ExpressionWrapper` instead of a `SelectQueryBuilder`
+   * since the return value should only be used as a part of an expression
+   * and never executed as the main query.
+   */
+  $asScalar<K extends keyof O = keyof O>(): ExpressionWrapper<DB, TB, O[K]>
+
+  /**
    * Narrows (parts of) the output type of the query.
    *
    * Kysely tries to be as type-safe as possible, but in some cases we have to make
@@ -1734,23 +2003,31 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
    * const person = await db.selectFrom('person')
    *   .where('nullable_column', 'is not', null)
    *   .selectAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (person.nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
    * const person = await db.selectFrom('person')
    *   .where('nullable_column', 'is not', null)
    *   .selectAll()
-   *   .$narrowType<{ nullable_column: string }>()
+   *   .$narrowType<{ nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -1801,12 +2078,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .with('first_and_last', (qb) => qb
    *     .selectFrom('person')
    *     .select(['first_name', 'last_name'])
-   *     .$assertType<{ first_name: string, last_name: string }>()
+   *     .$assertType<{ first_name: string, last_name: string | null }>()
    *   )
    *   .with('age', (qb) => qb
    *     .selectFrom('person')
    *     .select('age')
-   *     .$assertType<{ age: number }>()
+   *     .$assertType<{ age: number | null }>()
    *   )
    *   .selectFrom(['first_and_last', 'age'])
    *   .selectAll()
@@ -1959,7 +2236,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.createWithExpression(modifier.toOperationNode()),
       ),
@@ -1979,7 +2256,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForUpdate',
@@ -1992,7 +2269,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForShare',
@@ -2005,7 +2282,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForKeyShare',
@@ -2018,7 +2295,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForNoKeyUpdate',
@@ -2031,7 +2308,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   skipLocked(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create('SkipLocked'),
       ),
@@ -2041,7 +2318,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   noWait(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create('NoWait'),
       ),
@@ -2341,6 +2618,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new ExpressionWrapper(this.toOperationNode())
   }
 
+  $asScalar(): ExpressionWrapper<DB, TB, any> {
+    return new ExpressionWrapper(this.toOperationNode())
+  }
+
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2427,11 +2708,6 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 }
 
-preventAwait(
-  SelectQueryBuilderImpl,
-  "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
-
 export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
   props: SelectQueryBuilderProps,
 ): SelectQueryBuilder<DB, TB, O> {
@@ -2489,11 +2765,6 @@ class AliasedSelectQueryBuilderImpl<
   }
 }
 
-preventAwait(
-  AliasedSelectQueryBuilderImpl,
-  "don't await AliasedSelectQueryBuilder instances directly. AliasedSelectQueryBuilder should never be executed directly since it's always a part of another query.",
-)
-
 export type SelectQueryBuilderWithInnerJoin<
   DB,
   TB extends keyof DB,
@@ -2504,12 +2775,12 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? SelectQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? SelectQueryBuilder<DB, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -2536,12 +2807,12 @@ export type SelectQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -2558,8 +2829,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type SelectQueryBuilderWithRightJoin<
@@ -2572,12 +2843,12 @@ export type SelectQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -2596,10 +2867,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type SelectQueryBuilderWithFullJoin<
@@ -2612,12 +2883,12 @@ export type SelectQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -2636,10 +2907,10 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 type TableOrList<TB extends keyof any> =

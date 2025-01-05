@@ -7,15 +7,15 @@ import { MigrationLockOptions } from '../dialect-adapter.js'
 const LOCK_ID = BigInt('3853314791062309107')
 
 export class PostgresAdapter extends DialectAdapterBase {
-  get supportsTransactionalDdl(): boolean {
+  override get supportsTransactionalDdl(): boolean {
     return true
   }
 
-  get supportsReturning(): boolean {
+  override get supportsReturning(): boolean {
     return true
   }
 
-  async acquireMigrationLock(
+  override async acquireMigrationLock(
     db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {
@@ -23,7 +23,7 @@ export class PostgresAdapter extends DialectAdapterBase {
     await sql`select pg_advisory_xact_lock(${sql.lit(LOCK_ID)})`.execute(db)
   }
 
-  async releaseMigrationLock(
+  override async releaseMigrationLock(
     _db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {

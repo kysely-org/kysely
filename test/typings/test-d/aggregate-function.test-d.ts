@@ -4,8 +4,8 @@ import {
   expectNotAssignable,
   expectType,
 } from 'tsd'
-import { Generated, Kysely, sql } from '..'
-import { Database } from '../shared'
+import { Generated, Kysely, Selectable, sql } from '..'
+import { Database, Pet } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn
@@ -339,13 +339,13 @@ async function testSelectWithDynamicReference(db: Kysely<Database>) {
   expectNotAssignable<null>(result.count)
   expectAssignable<bigint>(result.another_count)
   expectNotAssignable<string | number | null>(result.another_count)
-  expectAssignable<string | number | bigint>(result.max)
+  expectAssignable<number | string | Date | bigint>(result.max)
   expectNotAssignable<null>(result.max)
   expectAssignable<number>(result.another_max)
   expectNotAssignable<string | bigint>(result.another_max)
   expectAssignable<number | null>(result.nullable_max)
   expectNotAssignable<string | bigint>(result.nullable_max)
-  expectAssignable<string | number | bigint>(result.min)
+  expectAssignable<number | string | Date | bigint>(result.min)
   expectNotAssignable<null>(result.min)
   expectAssignable<string>(result.another_min)
   expectNotAssignable<number | bigint | null>(result.another_min)

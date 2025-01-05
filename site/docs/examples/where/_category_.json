@@ -1,0 +1,8 @@
+{
+  "label": "WHERE",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Short and simple examples of how to use the where method to add a WHERE statement. While most of the examples show a SELECT query, the where method works exactly the same in UPDATE and DELETE queries too."
+  }
+}

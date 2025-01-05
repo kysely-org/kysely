@@ -40,7 +40,7 @@ export class TestContext {
     await sql`create database ${sql.id(database!)}`.execute(adminDb)
     await adminDb.destroy()
 
-    // Now connect to the test databse and run the migrations
+    // Now connect to the test database and run the migrations
     const db = new Kysely<any>({
       dialect: new PostgresDialect({
         pool: new Pool(testConfig.database),

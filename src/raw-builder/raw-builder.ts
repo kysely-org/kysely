@@ -2,7 +2,6 @@ import { QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -33,6 +32,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * this method also provides strict typing:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .selectFrom('person')
    *   .select(
@@ -46,7 +47,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select concat(first_name, ' ', last_name) as "full_name"
    * from "person"
    * ```
@@ -55,6 +56,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * provide the alias as the only type argument:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const values = sql<{ a: number, b: string }>`(values (1, 'foo'))`
    *
    * // The alias is `t(a, b)` which specifies the column names
@@ -69,11 +72,12 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *   .expression(
    *     db.selectFrom(aliasedValues).select(['t.a', 't.b'])
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * insert into "person" ("first_name", "last_name")
    * from (values (1, 'foo')) as t(a, b)
    * select "t"."a", "t"."b"
@@ -112,8 +116,10 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * ### Examples
    *
    * ```ts
-   * const { sql } = sql`select * from ${sql.table('person')}`.compile(db)
-   * console.log(sql)
+   * import { sql } from 'kysely'
+   *
+   * const compiledQuery = sql`select * from ${sql.table('person')}`.compile(db)
+   * console.log(compiledQuery.sql)
    * ```
    */
   compile(executorProvider: QueryExecutorProvider): CompiledQuery<O>
@@ -124,6 +130,8 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await sql`select * from ${sql.table('person')}`.execute(db)
    * ```
    */
@@ -221,11 +229,6 @@ export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
   return new RawBuilderImpl(props)
 }
 
-preventAwait(
-  RawBuilderImpl,
-  "don't await RawBuilder instances directly. To execute the query you need to call `execute`",
-)
-
 /**
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
@@ -266,8 +269,3 @@ class AliasedRawBuilderImpl<O = unknown, A extends string = never>
     )
   }
 }
-
-preventAwait(
-  AliasedRawBuilderImpl,
-  "don't await AliasedRawBuilder instances directly. AliasedRawBuilder should never be executed directly since it's always a part of another query.",
-)

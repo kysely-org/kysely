@@ -58,6 +58,7 @@ export type OperationNodeKind =
   | 'AddConstraintNode'
   | 'DropConstraintNode'
   | 'CreateViewNode'
+  | 'RefreshMaterializedViewNode'
   | 'DropViewNode'
   | 'GeneratedNode'
   | 'DefaultValueNode'

@@ -2,19 +2,19 @@ name: tests
 
 on:
   push:
-    branches: [master]
+    branches: [master, v*]
   pull_request:
-    branches: [master]
+    branches: [master, v*]
 
 jobs:
-  run-tests:
+  node:
+    name: Node.js
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [18.x, 20.x, 22.x]
-        bun-version: [1.0.23]
-        deno-version: [1.42.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -25,21 +25,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Use Deno ${{ matrix.deno-version }}
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: ${{ matrix.deno-version }}
-
-      - name: Use Bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ matrix.bun-version }}
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Install playwright
-        run: npx playwright install
 
       - name: Run docker compose
         run: docker compose up -d
@@ -47,21 +34,216 @@ jobs:
       - name: Run node tests
         run: npm test
 
+      - name: Run esbuild test
+        run: npm run test:esbuild
+
+  node-with-transformer:
+    name: Node.js /w transformer
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
+
       - name: Run node tests with transformer
         run: TEST_TRANSFORMER=1 npm test
 
-      - name: Run browser tests
-        run: npm run test:browser
+  deno:
+    name: Deno
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        deno-version: [1.x.x, 2.0.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Use Deno ${{ matrix.deno-version }}
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ matrix.deno-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Build
+        run: npm run build
 
       - name: Run deno tests
         run: npm run test:deno
 
+  bun:
+    name: Bun
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        bun-version: [1.1.26]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Use Bun ${{ matrix.bun-version }}
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Run docker compose
+        run: docker compose up -d
+
       - name: Run bun tests
         run: npm run test:bun
 
-      - name: Run esbuild test
-        run: npm run test:esbuild
+  browser:
+    name: Browser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install playwright
+        run: npx playwright install chromium
+
+      - name: Run browser tests
+        run: npm run test:browser
+
+  cloudflare-workers:
+    name: Cloudflare Workers
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
 
       - name: Run cloudflare workers test
-        if: matrix.node-version != '18.x'
         run: npm run test:cloudflare-workers
+
+  older-typescript-version:
+    name: Older TypeScript version
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        typescript-version: [
+            ^4.6, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
+            ^4.7, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
+            ^4.8, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
+            ^4.9, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
+            ^5.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
+            ^5.2, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+            ^5.3, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
+            ^5.4, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+          ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build with newer TypeScript
+        run: npm run build
+
+      - run: |
+          echo "TS_VERSION=${{ matrix.typescript-version }}" >> $GITHUB_ENV
+          echo "TSD_VERSION=${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[env.TS_VERSION] }} >> $GITHUB_ENV"
+
+      - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
+        run: npm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
+
+      - name: Exclude non-backward compatible tests
+        run: npx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
+
+      - name: Run tests with older TypeScript version
+        run: npm run test:typings && npm run test:node:build
+
+  jsdocs:
+    name: JSDocs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Use Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.0.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type-check JSDocs code blocks
+        run: npm run test:jsdocs

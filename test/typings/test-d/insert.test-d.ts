@@ -235,7 +235,7 @@ async function testOutput(db: Kysely<Database>) {
     .output([
       'inserted.id',
       sql<string>`concat(inserted.first_name, ' ', inserted.last_name)`.as(
-        'full_name'
+        'full_name',
       ),
     ])
     .values(person)
@@ -253,7 +253,7 @@ async function testOutput(db: Kysely<Database>) {
 
   // Non-existent column
   expectError(
-    db.insertInto('person').output('inserted.not_column').values(person)
+    db.insertInto('person').output('inserted.not_column').values(person),
   )
 
   // Without prefix

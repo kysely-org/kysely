@@ -96,6 +96,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 import { OrActionNode } from './or-action-node.js'
 
 export abstract class OperationNodeVisitor {
@@ -167,6 +168,7 @@ export abstract class OperationNodeVisitor {
     DropConstraintNode: this.visitDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
     CreateViewNode: this.visitCreateView.bind(this),
+    RefreshMaterializedViewNode: this.visitRefreshMaterializedView.bind(this),
     DropViewNode: this.visitDropView.bind(this),
     GeneratedNode: this.visitGenerated.bind(this),
     DefaultValueNode: this.visitDefaultValue.bind(this),
@@ -279,6 +281,9 @@ export abstract class OperationNodeVisitor {
   protected abstract visitPrimitiveValueList(node: PrimitiveValueListNode): void
   protected abstract visitOperator(node: OperatorNode): void
   protected abstract visitCreateView(node: CreateViewNode): void
+  protected abstract visitRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): void
   protected abstract visitDropView(node: DropViewNode): void
   protected abstract visitGenerated(node: GeneratedNode): void
   protected abstract visitDefaultValue(node: DefaultValueNode): void

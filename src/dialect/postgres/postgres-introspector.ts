@@ -73,7 +73,11 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       ])
       // r == normal table
       .where((eb) =>
-        eb.or([eb('c.relkind', '=', 'r'), eb('c.relkind', '=', 'v')]),
+        eb.or([
+          eb('c.relkind', '=', 'r'),
+          eb('c.relkind', '=', 'v'),
+          eb('c.relkind', '=', 'p'),
+        ]),
       )
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')

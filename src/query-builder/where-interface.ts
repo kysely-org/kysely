@@ -40,6 +40,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * you can always use:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * sql`your operator`
    * ```
    *
@@ -51,7 +53,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll()
-   *   .where('id', 'in', ['1', '2', '3'])
+   *   .where('id', 'in', [1, 2, 3])
    *   .execute()
    * ```
    *
@@ -298,6 +300,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```ts
    * import { sql } from 'kysely'
    * const { ref } = db.dynamic
+   *
+   * const columnFromUserInput: string = 'id'
    *
    * const persons = await db
    *   .selectFrom('person')

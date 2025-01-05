@@ -1,0 +1,8 @@
+{
+  "label": "MERGE",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "description": "Short and simple examples of how to write MERGE queries."
+  }
+}

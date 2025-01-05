@@ -11,17 +11,8 @@ import { SelectQueryNode } from './operation-node/select-query-node.js'
 import { UpdateQueryNode } from './operation-node/update-query-node.js'
 import {
   parseTable,
-  parseTableExpression,
   parseTableExpressionOrList,
-  TableExpression,
-  From,
   TableExpressionOrList,
-  FromTables,
-  TableReference,
-  TableReferenceOrList,
-  ExtractTableAlias,
-  AnyAliasedTable,
-  PickTableWithAlias,
   SimpleTableReference,
   parseAliasedTable,
 } from './parser/table-parser.js'
@@ -52,6 +43,10 @@ import {
 import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
 import { MergeQueryNode } from './operation-node/merge-query-node.js'
 import { MergeResult } from './query-builder/merge-result.js'
+import { SelectFrom } from './parser/select-from-parser.js'
+import { DeleteFrom } from './parser/delete-from-parser.js'
+import { UpdateTable } from './parser/update-parser.js'
+import { MergeInto } from './parser/merge-into-parser.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -167,39 +162,17 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<TE extends keyof DB & string>(
-    from: TE[],
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
-    from: TE[],
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
-
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends TableExpressionOrList<DB, never>>(
     from: TE,
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE,
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
-    from: TE,
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
-
-  selectFrom(from: TableExpressionOrList<any, any>): any {
+  ): SelectFrom<DB, never, TE> {
     return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: SelectQueryNode.createFrom(
-        parseTableExpressionOrList(from),
+        parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as SelectFrom<DB, never, TE>
   }
 
   /**
@@ -214,20 +187,19 @@ export class QueryCreator<DB> {
    * ### Examples
    *
    * ```ts
-   * const result = db.selectNoFrom((eb) => [
+   * const result = await db.selectNoFrom((eb) => [
    *   eb.selectFrom('person')
    *     .select('id')
    *     .where('first_name', '=', 'Jennifer')
    *     .limit(1)
    *     .as('jennifer_id'),
-   *
    *   eb.selectFrom('pet')
    *     .select('id')
    *     .where('name', '=', 'Doggo')
    *     .limit(1)
    *     .as('doggo_id')
-   *   ])
-   *   .executeTakeFirstOrThrow()
+   * ])
+   * .executeTakeFirstOrThrow()
    *
    * console.log(result.jennifer_id)
    * console.log(result.doggo_id)
@@ -309,7 +281,7 @@ export class QueryCreator<DB> {
    *     last_name: 'Aniston'
    *   })
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    */
   insertInto<T extends keyof DB & string>(
@@ -382,7 +354,7 @@ export class QueryCreator<DB> {
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
-   *   .where('person.id', '=', '1')
+   *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    *
    * console.log(result.numDeletedRows)
@@ -400,7 +372,7 @@ export class QueryCreator<DB> {
    * const result = await db
    *   .deleteFrom(['person', 'pet'])
    *   .using('person')
-   *   .innerJoin('pet', 'pet.owner_id', '=', 'person.id')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
    * ```
@@ -414,31 +386,17 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
-  deleteFrom<TR extends keyof DB & string>(
-    from: TR[],
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
-
-  deleteFrom<TR extends TableReference<DB>>(
-    tables: TR[],
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
-
-  deleteFrom<TR extends keyof DB & string>(
-    from: TR,
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
-
-  deleteFrom<TR extends TableReference<DB>>(
-    table: TR,
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
-
-  deleteFrom(tables: TableReferenceOrList<DB>): any {
+  deleteFrom<TE extends TableExpressionOrList<DB, never>>(
+    from: TE,
+  ): DeleteFrom<DB, TE> {
     return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: DeleteQueryNode.create(
-        parseTableExpressionOrList(tables),
+        parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as DeleteFrom<DB, TE>
   }
 
   /**
@@ -464,42 +422,17 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
-  updateTable<TR extends keyof DB & string>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    DB,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends AnyAliasedTable<DB>>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends TableReference<DB>>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    From<DB, TR>,
-    FromTables<DB, never, TR>,
-    FromTables<DB, never, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends TableReference<DB>>(table: TR): any {
+  updateTable<TE extends TableExpressionOrList<DB, never>>(
+    tables: TE,
+  ): UpdateTable<DB, TE> {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(table),
+        parseTableExpressionOrList(tables as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as UpdateTable<DB, TE>
   }
 
   /**
@@ -512,14 +445,18 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
+   * <!-- siteExample("merge", "Source row existence", 10) -->
+   *
+   * Update a target column based on the existence of a source row:
+   *
    * ```ts
    * const result = await db
-   *   .mergeInto('person')
-   *   .using('pet', 'pet.owner_id', 'person.id')
-   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .mergeInto('person as target')
+   *   .using('pet as source', 'source.owner_id', 'target.id')
+   *   .whenMatchedAnd('target.has_pets', '!=', 'Y')
    *   .thenUpdateSet({ has_pets: 'Y' })
-   *   .whenNotMatched()
-   *   .thenDoNothing()
+   *   .whenNotMatchedBySourceAnd('target.has_pets', '=', 'Y')
+   *   .thenUpdateSet({ has_pets: 'N' })
    *   .executeTakeFirstOrThrow()
    *
    * console.log(result.numChangedRows)
@@ -529,26 +466,61 @@ export class QueryCreator<DB> {
    *
    * ```sql
    * merge into "person"
-   * using "pet" on "pet"."owner_id" = "person"."id"
-   * when matched and "has_pets" != $1 then
-   *   update set "has_pets" = $2
-   * when not matched then
-   *   do nothing
+   * using "pet"
+   * on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1
+   * then update set "has_pets" = $2
+   * when not matched by source and "has_pets" = $3
+   * then update set "has_pets" = $4
+   * ```
+   *
+   * <!-- siteExample("merge", "Temporary changes table", 20) -->
+   *
+   * Merge new entries from a temporary changes table:
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('wine as target')
+   *   .using(
+   *     'wine_stock_change as source',
+   *     'source.wine_name',
+   *     'target.name',
+   *   )
+   *   .whenNotMatchedAnd('source.stock_delta', '>', 0)
+   *   .thenInsertValues(({ ref }) => ({
+   *     name: ref('source.wine_name'),
+   *     stock: ref('source.stock_delta'),
+   *   }))
+   *   .whenMatchedAnd(
+   *     (eb) => eb('target.stock', '+', eb.ref('source.stock_delta')),
+   *     '>',
+   *     0,
+   *   )
+   *   .thenUpdateSet('stock', (eb) =>
+   *     eb('target.stock', '+', eb.ref('source.stock_delta')),
+   *   )
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "wine" as "target"
+   * using "wine_stock_change" as "source"
+   * on "source"."wine_name" = "target"."name"
+   * when not matched and "source"."stock_delta" > $1
+   * then insert ("name", "stock") values ("source"."wine_name", "source"."stock_delta")
+   * when matched and "target"."stock" + "source"."stock_delta" > $2
+   * then update set "stock" = "target"."stock" + "source"."stock_delta"
+   * when matched
+   * then delete
    * ```
    */
-  mergeInto<TR extends keyof DB & string>(
+  mergeInto<TR extends SimpleTableReference<DB>>(
     targetTable: TR,
-  ): MergeQueryBuilder<DB, TR, MergeResult>
-
-  mergeInto<TR extends AnyAliasedTable<DB>>(
-    targetTable: TR,
-  ): MergeQueryBuilder<
-    DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    MergeResult
-  >
-
-  mergeInto<TR extends SimpleTableReference<DB>>(targetTable: TR): any {
+  ): MergeInto<DB, TR> {
     return new MergeQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -556,7 +528,7 @@ export class QueryCreator<DB> {
         parseAliasedTable(targetTable),
         this.#props.withNode,
       ),
-    })
+    }) as MergeInto<DB, TR>
   }
 
   /**
@@ -738,7 +710,7 @@ export class QueryCreator<DB> {
    * This only affects the query created through the builder returned from
    * this method and doesn't modify the `db` instance.
    *
-   * See [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/schemas.md)
+   * See [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0007-schemas.md)
    * for a more detailed explanation.
    *
    * ### Examples

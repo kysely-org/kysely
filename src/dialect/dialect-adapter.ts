@@ -57,8 +57,13 @@ export interface DialectAdapter {
    * have explicit locks but supports `FOR UPDATE` row locks and transactional DDL:
    *
    * ```ts
-   * {
-   *   async acquireMigrationLock(db, options): Promise<void> {
+   * import { DialectAdapterBase, type MigrationLockOptions, Kysely } from 'kysely'
+   *
+   * export class MyAdapter extends DialectAdapterBase {
+   *   override async acquireMigrationLock(
+   *     db: Kysely<any>,
+   *     options: MigrationLockOptions
+   *   ): Promise<void> {
    *     const queryDb = options.lockTableSchema
    *       ? db.withSchema(options.lockTableSchema)
    *       : db
@@ -73,6 +78,10 @@ export interface DialectAdapter {
    *       .where('id', '=', options.lockRowId)
    *       .forUpdate()
    *       .execute()
+   *   }
+   *
+   *   override async releaseMigrationLock() {
+   *     // noop
    *   }
    * }
    * ```

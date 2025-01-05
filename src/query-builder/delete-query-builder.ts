@@ -35,14 +35,13 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -83,7 +82,7 @@ import {
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
@@ -300,7 +299,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name'])
    *   .execute()
    *
    * result[0].id
@@ -372,7 +371,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
@@ -536,7 +535,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from all tables
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -560,7 +559,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from a single table.
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -584,7 +583,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Return all columns from multiple tables.
    *
    * ```ts
-   * const result = ctx.db
+   * const result = await db
    *   .deleteFrom('toy')
    *   .using(['pet', 'person'])
    *   .whereRef('toy.pet_id', '=', 'pet.id')
@@ -626,7 +625,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   output<OE extends OutputExpression<DB, TB, 'deleted'>>(
-    selections: readonly OE[]
+    selections: readonly OE[],
   ): DeleteQueryBuilder<
     DB,
     TB,
@@ -634,7 +633,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >
 
   output<CB extends OutputCallback<DB, TB, 'deleted'>>(
-    callback: CB
+    callback: CB,
   ): DeleteQueryBuilder<
     DB,
     TB,
@@ -642,7 +641,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >
 
   output<OE extends OutputExpression<DB, TB, 'deleted'>>(
-    selection: OE
+    selection: OE,
   ): DeleteQueryBuilder<
     DB,
     TB,
@@ -654,19 +653,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectArg(args)
+        parseSelectArg(args),
       ),
     })
   }
 
   outputAll(
-    table: 'deleted'
+    table: 'deleted',
   ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectAll(table)
+        parseSelectAll(table),
       ),
     })
   }
@@ -677,10 +676,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .clearReturning()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -702,11 +702,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .limit(5)
    *   .clearLimit()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -728,11 +729,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.deleteFrom('pet')
+   * await db.deleteFrom('pet')
    *   .returningAll()
    *   .where('name', '=', 'Max')
    *   .orderBy('id')
    *   .clearOrderBy()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
@@ -812,6 +814,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(5)
    *   .execute()
    * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `pet` order by `created_at` limit ?
+   * ```
    */
   limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
@@ -819,6 +827,37 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: DeleteQueryNode.cloneWithLimit(
         this.#props.queryNode,
         LimitNode.create(parseValueExpression(limit)),
+      ),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.deleteFrom('person')
+   *   .where('first_name', '=', 'John')
+   *   .modifyEnd(sql`-- This is a comment`)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `person`
+   * where `first_name` = "John" -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
       ),
     })
   }
@@ -835,12 +874,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
    *
-   * db.deleteFrom('person')
+   * await db.deleteFrom('person')
    *   .$call(log)
    *   .execute()
    * ```
@@ -877,11 +918,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `deletePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(
@@ -890,8 +931,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): O2 extends DeleteResult
     ? DeleteQueryBuilder<DB, TB, DeleteResult>
     : O2 extends O & infer E
-    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
-    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
+      ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+      : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -928,25 +969,33 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
    * const person = await db.deleteFrom('person')
-   *   .where('id', '=', id)
+   *   .where('id', '=', 3)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (person.nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
    * const person = await db.deleteFrom('person')
-   *   .where('id', '=', id)
+   *   .where('id', '=', 3)
    *   .where('nullable_column', 'is not', null)
    *   .returningAll()
-   *   .$narrowType<{ nullable_column: string }>()
+   *   .$narrowType<{ nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -979,22 +1028,26 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * const result = await db
-   *   .with('deleted_person', (qb) => qb
-   *     .deleteFrom('person')
-   *     .where('id', '=', person.id)
-   *     .returning('first_name')
-   *     .$assertType<{ first_name: string }>()
-   *   )
-   *   .with('deleted_pet', (qb) => qb
-   *     .deleteFrom('pet')
-   *     .where('owner_id', '=', person.id)
-   *     .returning(['name as pet_name', 'species'])
-   *     .$assertType<{ pet_name: string, species: Species }>()
-   *   )
-   *   .selectFrom(['deleted_person', 'deleted_pet'])
-   *   .selectAll()
-   *   .executeTakeFirstOrThrow()
+   * import type { Species } from 'type-editor' // imaginary module
+   *
+   * async function deletePersonAndPets(personId: number) {
+   *   return await db
+   *     .with('deleted_person', (qb) => qb
+   *        .deleteFrom('person')
+   *        .where('id', '=', personId)
+   *        .returning('first_name')
+   *        .$assertType<{ first_name: string }>()
+   *     )
+   *     .with('deleted_pets', (qb) => qb
+   *       .deleteFrom('pet')
+   *       .where('owner_id', '=', personId)
+   *       .returning(['name as pet_name', 'species'])
+   *       .$assertType<{ pet_name: string, species: Species }>()
+   *     )
+   *     .selectFrom(['deleted_person', 'deleted_pets'])
+   *     .selectAll()
+   *     .execute()
+   * }
    * ```
    */
   $assertType<T extends O>(): O extends T
@@ -1124,11 +1177,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 }
 
-preventAwait(
-  DeleteQueryBuilder,
-  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
-
 export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: DeleteQueryNode
@@ -1145,12 +1193,12 @@ export type DeleteQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? DeleteQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? DeleteQueryBuilder<DB, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -1177,12 +1225,12 @@ export type DeleteQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -1199,8 +1247,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type DeleteQueryBuilderWithRightJoin<
@@ -1213,12 +1261,12 @@ export type DeleteQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -1237,10 +1285,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type DeleteQueryBuilderWithFullJoin<
@@ -1253,12 +1301,12 @@ export type DeleteQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -1277,8 +1325,8 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>

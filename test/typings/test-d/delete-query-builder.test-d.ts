@@ -52,6 +52,15 @@ async function testDelete(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r7)
 
+  const r8 = await db
+    .deleteFrom('pet')
+    .using('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .where('person.id', '=', 1)
+    .returningAll('person')
+    .executeTakeFirstOrThrow()
+  expectType<Selectable<Person>>(r8)
+
   expectError(db.deleteFrom('NO_SUCH_TABLE'))
   expectError(db.deleteFrom('pet').where('NO_SUCH_COLUMN', '=', '1'))
   expectError(db.deleteFrom('pet').whereRef('owner_id', '=', 'NO_SUCH_COLUMN'))

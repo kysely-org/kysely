@@ -17,7 +17,6 @@ import {
 } from '../parser/update-set-parser.js'
 import { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn, SqlBool } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
@@ -157,21 +156,25 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ### Examples
    *
    * ```ts
+   * const id = 1
+   * const first_name = 'John'
+   *
    * await db
    *   .insertInto('person')
-   *   .values({ first_name, pic })
+   *   .values({ first_name, id })
    *   .onConflict((oc) => oc
-   *     .column('pic')
+   *     .column('id')
    *     .doNothing()
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "pic")
+   * insert into "person" ("first_name", "id")
    * values ($1, $2)
-   * on conflict ("pic") do nothing
+   * on conflict ("id") do nothing
    * ```
    */
   doNothing(): OnConflictDoNothingBuilder<DB, TB> {
@@ -189,21 +192,25 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ### Examples
    *
    * ```ts
+   * const id = 1
+   * const first_name = 'John'
+   *
    * await db
    *   .insertInto('person')
-   *   .values({ first_name, pic })
+   *   .values({ first_name, id })
    *   .onConflict((oc) => oc
-   *     .column('pic')
+   *     .column('id')
    *     .doUpdateSet({ first_name })
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "pic")
+   * insert into "person" ("first_name", "id")
    * values ($1, $2)
-   * on conflict ("pic")
+   * on conflict ("id")
    * do update set "first_name" = $3
    * ```
    *
@@ -212,15 +219,32 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * to create an upsert operation:
    *
    * ```ts
-   * db.insertInto('person')
-   *   .values(person)
-   *   .onConflict((oc) => oc
-   *     .column('id')
-   *     .doUpdateSet((eb) => ({
-   *       first_name: eb.ref('excluded.first_name'),
-   *       last_name: eb.ref('excluded.last_name')
-   *     }))
+   * import type { NewPerson } from 'type-editor' // imaginary module
+   *
+   * async function upsertPerson(person: NewPerson): Promise<void> {
+   *   await db.insertInto('person')
+   *     .values(person)
+   *     .onConflict((oc) => oc
+   *       .column('id')
+   *       .doUpdateSet((eb) => ({
+   *         first_name: eb.ref('excluded.first_name'),
+   *         last_name: eb.ref('excluded.last_name')
+   *       })
+   *     )
    *   )
+   *   .execute()
+   * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name")
+   * values ($1, $2)
+   * on conflict ("id")
+   * do update set
+   *  "first_name" = excluded."first_name",
+   *  "last_name" = excluded."last_name"
    * ```
    */
   doUpdateSet(
@@ -251,8 +275,6 @@ export interface OnConflictBuilderProps {
   readonly onConflictNode: OnConflictNode
 }
 
-preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
-
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
@@ -272,11 +294,6 @@ export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
     return this.#props.onConflictNode
   }
 }
-
-preventAwait(
-  OnConflictDoNothingBuilder,
-  "don't await OnConflictDoNothingBuilder instances.",
-)
 
 export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   implements WhereInterface<DB, TB>, OperationNodeSource
@@ -358,8 +375,3 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
     return this.#props.onConflictNode
   }
 }
-
-preventAwait(
-  OnConflictUpdateBuilder,
-  "don't await OnConflictUpdateBuilder instances.",
-)

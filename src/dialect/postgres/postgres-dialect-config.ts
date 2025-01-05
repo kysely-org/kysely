@@ -15,13 +15,16 @@ export interface PostgresDialectConfig {
 
   /**
    * https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor
+   *
    * ```ts
+   * import { PostgresDialect } from 'kysely'
+   * import { Pool } from 'pg'
    * import Cursor from 'pg-cursor'
-   * // or
-   * import * as Cursor from 'pg-cursor'
+   * // or import * as Cursor from 'pg-cursor'
    *
    * new PostgresDialect({
-   *  cursor: Cursor
+   *  cursor: Cursor,
+   *  pool: new Pool('postgres://localhost:5432/mydb')
    * })
    * ```
    */
@@ -31,6 +34,11 @@ export interface PostgresDialectConfig {
    * Called once for each created connection.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * Called every time a connection is acquired from the pool.
+   */
+  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
 }
 
 /**

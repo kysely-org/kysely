@@ -23,7 +23,7 @@ export const OutputNode = freeze({
 
   cloneWithSelections(
     output: OutputNode,
-    selections: ReadonlyArray<OperationNode>
+    selections: ReadonlyArray<OperationNode>,
   ): OutputNode {
     return freeze({
       ...output,

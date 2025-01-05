@@ -8,7 +8,7 @@ export interface Streamable<O> {
    * ### Examples
    *
    * ```ts
-   * const stream = db.
+   * const stream = db
    *   .selectFrom('person')
    *   .select(['first_name', 'last_name'])
    *   .where('gender', '=', 'other')

@@ -5,8 +5,14 @@
     "test": "bun bun.test.ts"
   },
   "dependencies": {
-    "kysely": "^0.25.0",
-    "mysql2": "^3.3.3",
-    "pg": "^8.11.0"
+    "kysely": "link:kysely",
+    "mysql2": "^3.11.0",
+    "pg": "^8.12.0",
+    "tarn": "^3.0.2",
+    "tedious": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.8",
+    "typescript": "^5.5.4"
   }
 }

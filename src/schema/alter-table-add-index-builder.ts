@@ -12,7 +12,6 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryId } from '../util/query-id.js'
 
 export class AlterTableAddIndexBuilder
@@ -26,6 +25,23 @@ export class AlterTableAddIndexBuilder
 
   /**
    * Makes the index unique.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .addIndex('person_first_name_index')
+   *   .unique()
+   *   .column('email')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` add unique index `person_first_name_index` (`email`)
+   * ```
    */
   unique(): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
@@ -48,11 +64,11 @@ export class AlterTableAddIndexBuilder
    *
    * ```ts
    * await db.schema
-   *         .alterTable('person')
-   *         .createIndex('person_first_name_and_age_index')
-   *         .column('first_name')
-   *         .column('age desc')
-   *         .execute()
+   *   .alterTable('person')
+   *   .addIndex('person_first_name_and_age_index')
+   *   .column('first_name')
+   *   .column('age desc')
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -84,10 +100,10 @@ export class AlterTableAddIndexBuilder
    *
    * ```ts
    * await db.schema
-   *         .alterTable('person')
-   *         .addIndex('person_first_name_and_age_index')
-   *         .columns(['first_name', 'age desc'])
-   *         .execute()
+   *   .alterTable('person')
+   *   .addIndex('person_first_name_and_age_index')
+   *   .columns(['first_name', 'age desc'])
+   *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
@@ -144,6 +160,23 @@ export class AlterTableAddIndexBuilder
 
   /**
    * Specifies the index type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .addIndex('person_first_name_index')
+   *   .column('first_name')
+   *   .using('hash')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` add index `person_first_name_index` (`first_name`) using hash
+   * ```
    */
   using(indexType: IndexType): AlterTableAddIndexBuilder
   using(indexType: string): AlterTableAddIndexBuilder
@@ -190,8 +223,3 @@ export interface AlterTableAddIndexBuilderProps {
   readonly executor: QueryExecutor
   readonly node: AlterTableNode
 }
-
-preventAwait(
-  AlterTableAddIndexBuilder,
-  "don't await AlterTableAddIndexBuilder instances directly. To execute the query you need to call `execute`",
-)

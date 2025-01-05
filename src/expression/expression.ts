@@ -12,7 +12,11 @@ import { isObject, isString } from '../util/object-utils.js'
  * Most Kysely methods accept instances of `Expression` and most classes like `SelectQueryBuilder`
  * and the return value of the {@link sql} template tag implement it.
  *
+ * ### Examples
+ *
  * ```ts
+ * import { type Expression, sql } from 'kysely'
+ *
  * const exp1: Expression<string> = sql<string>`CONCAT('hello', ' ', 'world')`
  * const exp2: Expression<{ first_name: string }> = db.selectFrom('person').select('first_name')
  * ```
@@ -24,10 +28,18 @@ export interface Expression<T> extends OperationNodeSource {
    * All expressions need to have this getter for complicated type-related reasons.
    * Simply add this getter for your expression and always return `undefined` from it:
    *
+   * ### Examples
+   *
    * ```ts
+   * import { type Expression, type OperationNode, sql } from 'kysely'
+   *
    * class SomeExpression<T> implements Expression<T> {
    *   get expressionType(): T | undefined {
    *     return undefined
+   *   }
+   *
+   *   toOperationNode(): OperationNode {
+   *     return sql`some sql here`.toOperationNode()
    *   }
    * }
    * ```
@@ -41,11 +53,19 @@ export interface Expression<T> extends OperationNodeSource {
   /**
    * Creates the OperationNode that describes how to compile this expression into SQL.
    *
+   * ### Examples
+   *
    * If you are creating a custom expression, it's often easiest to use the {@link sql}
    * template tag to build the node:
    *
    * ```ts
+   * import { type Expression, type OperationNode, sql } from 'kysely'
+   *
    * class SomeExpression<T> implements Expression<T> {
+   *   get expressionType(): T | undefined {
+   *     return undefined
+   *   }
+   *
    *   toOperationNode(): OperationNode {
    *     return sql`some sql here`.toOperationNode()
    *   }
@@ -62,6 +82,8 @@ export interface AliasableExpression<T> extends Expression<T> {
   /**
    * Returns an aliased version of the expression.
    *
+   * ### Examples
+   *
    * In addition to slapping `as "the_alias"` at the end of the expression,
    * this method also provides strict typing:
    *
@@ -70,7 +92,7 @@ export interface AliasableExpression<T> extends Expression<T> {
    *   .selectFrom('person')
    *   .select((eb) =>
    *     // `eb.fn<string>` returns an AliasableExpression<string>
-   *     eb.fn<string>('concat', ['first_name' eb.val(' '), 'last_name']).as('full_name')
+   *     eb.fn<string>('concat', ['first_name', eb.val(' '), 'last_name']).as('full_name')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -80,7 +102,7 @@ export interface AliasableExpression<T> extends Expression<T> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select
    *   concat("first_name", $1, "last_name") as "full_name"
    * from
@@ -91,6 +113,8 @@ export interface AliasableExpression<T> extends Expression<T> {
    * provide the alias as the only type argument:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const values = sql<{ a: number, b: string }>`(values (1, 'foo'))`
    *
    * // The alias is `t(a, b)` which specifies the column names
@@ -105,11 +129,12 @@ export interface AliasableExpression<T> extends Expression<T> {
    *   .expression(
    *     db.selectFrom(aliasedValues).select(['t.a', 't.b'])
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * insert into "person" ("first_name", "last_name")
    * from (values (1, 'foo')) as t(a, b)
    * select "t"."a", "t"."b"
@@ -127,9 +152,16 @@ export interface AliasableExpression<T> extends Expression<T> {
  * needs to implement an `AliasedExpression<T, A>`. `A` becomes the name of the selected expression
  * in the result and `T` becomes its type.
  *
- * @example
+ * ### Examples
  *
  * ```ts
+ * import {
+ *   AliasNode,
+ *   type AliasedExpression,
+ *   type Expression,
+ *   IdentifierNode
+ * } from 'kysely'
+ *
  * class SomeAliasedExpression<T, A extends string> implements AliasedExpression<T, A> {
  *   #expression: Expression<T>
  *   #alias: A
@@ -148,7 +180,10 @@ export interface AliasableExpression<T> extends Expression<T> {
  *   }
  *
  *   toOperationNode(): AliasNode {
- *     return AliasNode.create(this.#expression.toOperationNode(), IdentifierNode.create(this.#alias))
+ *     return AliasNode.create(
+ *       this.#expression.toOperationNode(),
+ *       IdentifierNode.create(this.#alias)
+ *     )
  *   }
  * }
  * ```

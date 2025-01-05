@@ -22,7 +22,6 @@ import {
   UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
@@ -203,7 +202,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .insertInto('person')
    *   .values(({ ref, selectFrom, fn }) => ({
    *     first_name: 'Jennifer',
-   *     last_name: sql<string>`>concat(${ani}, ${ston})`,
+   *     last_name: sql<string>`concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
    *       .select(fn.avg<number>('age').as('avg_age')),
@@ -231,7 +230,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * You can also use the callback version of subqueries or raw expressions:
    *
    * ```ts
-   * db.with('jennifer', (db) => db
+   * await db.with('jennifer', (db) => db
    *   .selectFrom('person')
    *   .where('first_name', '=', 'Jennifer')
    *   .select(['id', 'first_name', 'gender'])
@@ -241,6 +240,24 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   name: eb.selectFrom('jennifer').select('first_name'),
    *   species: 'cat',
    * }))
+   * .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * with "jennifer" as (
+   *   select "id", "first_name", "gender"
+   *   from "person"
+   *   where "first_name" = $1
+   *   limit $2
+   * )
+   * insert into "pet" ("owner_id", "name", "species")
+   * values (
+   *  (select "id" from "jennifer"),
+   *  (select "first_name" from "jennifer"),
+   *  $3
+   * )
    * ```
    */
   values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
@@ -265,9 +282,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.insertInto('person')
+   * await db.insertInto('person')
    *   .columns(['first_name'])
    *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -341,6 +359,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .defaultValues()
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" default values
+   * ```
    */
   defaultValues(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
@@ -348,6 +372,41 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         defaultValues: true,
       }),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.insertInto('person')
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male',
+   *   })
+   *   .modifyEnd(sql`-- This is a comment`)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person` ("first_name", "last_name", "gender")
+   * values (?, ?, ?) -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
     })
   }
 
@@ -369,8 +428,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db.insertInto('person')
    *   .ignore()
-   *   .values(values)
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert ignore into `person` ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   ignore(): InsertQueryBuilder<DB, TB, O> {
@@ -514,6 +583,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Insert the first 5 rows:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.insertInto('person')
    *   .top(5)
    *   .columns(['first_name', 'gender'])
@@ -532,6 +603,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Insert the first 50 percent of rows:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.insertInto('person')
    *   .top(50, 'percent')
    *   .columns(['first_name', 'gender'])
@@ -574,6 +647,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .values({
    *     name: 'Catto',
    *     species: 'cat',
+   *     owner_id: 3,
    *   })
    *   .onConflict((oc) => oc
    *     .column('name')
@@ -585,10 +659,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
+   * insert into "pet" ("name", "species", "owner_id")
+   * values ($1, $2, $3)
    * on conflict ("name")
-   * do update set "species" = $3
+   * do update set "species" = $4
    * ```
    *
    * You can provide the name of the constraint instead of a column name:
@@ -599,6 +673,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .values({
    *     name: 'Catto',
    *     species: 'cat',
+   *     owner_id: 3,
    *   })
    *   .onConflict((oc) => oc
    *     .constraint('pet_name_key')
@@ -610,10 +685,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
+   * insert into "pet" ("name", "species", "owner_id")
+   * values ($1, $2, $3)
    * on conflict on constraint "pet_name_key"
-   * do update set "species" = $3
+   * do update set "species" = $4
    * ```
    *
    * You can also specify an expression as the conflict target in case
@@ -627,6 +702,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .values({
    *     name: 'Catto',
    *     species: 'cat',
+   *     owner_id: 3,
    *   })
    *   .onConflict((oc) => oc
    *     .expression(sql<string>`lower(name)`)
@@ -638,10 +714,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
+   * insert into "pet" ("name", "species", "owner_id")
+   * values ($1, $2, $3)
    * on conflict (lower(name))
-   * do update set "species" = $3
+   * do update set "species" = $4
    * ```
    *
    * You can add a filter for the update statement like this:
@@ -652,11 +728,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .values({
    *     name: 'Catto',
    *     species: 'cat',
+   *     owner_id: 3,
    *   })
    *   .onConflict((oc) => oc
    *     .column('name')
    *     .doUpdateSet({ species: 'hamster' })
-   *     .where('excluded.name', '!=', 'Catto'')
+   *     .where('excluded.name', '!=', 'Catto')
    *   )
    *   .execute()
    * ```
@@ -664,11 +741,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
+   * insert into "pet" ("name", "species", "owner_id")
+   * values ($1, $2, $3)
    * on conflict ("name")
-   * do update set "species" = $3
-   * where "excluded"."name" != $4
+   * do update set "species" = $4
+   * where "excluded"."name" != $5
    * ```
    *
    * You can create an `on conflict do nothing` clauses like this:
@@ -679,6 +756,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .values({
    *     name: 'Catto',
    *     species: 'cat',
+   *     owner_id: 3,
    *   })
    *   .onConflict((oc) => oc
    *     .column('name')
@@ -690,8 +768,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
+   * insert into "pet" ("name", "species", "owner_id")
+   * values ($1, $2, $3)
    * on conflict ("name") do nothing
    * ```
    *
@@ -700,8 +778,13 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * `ExpressionBuilder`:
    *
    * ```ts
-   * db.insertInto('person')
-   *   .values(person)
+   * await db.insertInto('person')
+   *   .values({
+   *     id: 1,
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male',
+   *   })
    *   .onConflict(oc => oc
    *     .column('id')
    *     .doUpdateSet({
@@ -709,6 +792,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *       last_name: (eb) => eb.ref('excluded.last_name')
    *     })
    *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("id", "first_name", "last_name", "gender")
+   * values ($1, $2, $3, $4)
+   * on conflict ("id")
+   * do update set
+   *  "first_name" = "excluded"."first_name",
+   *  "last_name" = "excluded"."last_name"
    * ```
    */
   onConflict(
@@ -747,8 +842,22 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db
    *   .insertInto('person')
-   *   .values(values)
-   *   .onDuplicateKeyUpdate({ species: 'hamster' })
+   *   .values({
+   *     id: 1,
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male',
+   *   })
+   *   .onDuplicateKeyUpdate({ updated_at: new Date().toISOString() })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person` (`id`, `first_name`, `last_name`, `gender`)
+   * values (?, ?, ?, ?)
+   * on duplicate key update `updated_at` = ?
    * ```
    */
   onDuplicateKeyUpdate(
@@ -850,16 +959,17 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * db.insertInto('person')
-   *   .values({ first_name: 'James', last_name: 'Smith', age: 42 })
+   * await db.insertInto('person')
+   *   .values({ first_name: 'James', last_name: 'Smith', gender: 'male' })
    *   .returning(['first_name'])
    *   .clearReturning()
+   *   .execute()
    * ```
    *
    * The generated SQL(PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("James", "Smith", 42)
+   * insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)
    * ```
    */
   clearReturning(): InsertQueryBuilder<DB, TB, InsertResult> {
@@ -881,13 +991,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The next example uses a helper function `log` to log a query:
    *
    * ```ts
+   * import type { Compilable } from 'kysely'
+   *
    * function log<T extends Compilable>(qb: T): T {
    *   console.log(qb.compile())
    *   return qb
    * }
    *
-   * db.updateTable('person')
-   *   .set(values)
+   * await db.insertInto('person')
+   *   .values({ first_name: 'John', last_name: 'Doe', gender: 'male' })
    *   .$call(log)
    *   .execute()
    * ```
@@ -909,7 +1021,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * async function insertPerson(values: InsertablePerson, returnLastName: boolean) {
+   * import type { NewPerson } from 'type-editor' // imaginary module
+   *
+   * async function insertPerson(values: NewPerson, returnLastName: boolean) {
    *   return await db
    *     .insertInto('person')
    *     .values(values)
@@ -924,11 +1038,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `insertPerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(
@@ -976,23 +1090,41 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Turn this code:
    *
    * ```ts
+   * import type { Person } from 'type-editor' // imaginary module
+   *
    * const person = await db.insertInto('person')
-   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male',
+   *     nullable_column: 'hell yeah!'
+   *   })
    *   .returningAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (nullable_column) {
+   * if (isWithNoNullValue(person)) {
    *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   *
+   * function isWithNoNullValue(person: Person): person is Person & { nullable_column: string } {
+   *   return person.nullable_column != null
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
+   * import type { NotNull } from 'kysely'
+   *
    * const person = await db.insertInto('person')
-   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male',
+   *     nullable_column: 'hell yeah!'
+   *   })
    *   .returningAll()
-   *   .$narrowType<{ nullable_column: string }>()
+   *   .$narrowType<{ nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -1025,22 +1157,29 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * const result = await db
-   *   .with('new_person', (qb) => qb
-   *     .insertInto('person')
-   *     .values(person)
-   *     .returning('id')
-   *     .$assertType<{ id: string }>()
-   *   )
-   *   .with('new_pet', (qb) => qb
-   *     .insertInto('pet')
-   *     .values((eb) => ({ owner_id: eb.selectFrom('new_person').select('id'), ...pet }))
-   *     .returning(['name as pet_name', 'species'])
-   *     .$assertType<{ pet_name: string, species: Species }>()
-   *   )
-   *   .selectFrom(['new_person', 'new_pet'])
-   *   .selectAll()
-   *   .executeTakeFirstOrThrow()
+   * import type { NewPerson, NewPet, Species } from 'type-editor' // imaginary module
+   *
+   * async function insertPersonAndPet(person: NewPerson, pet: Omit<NewPet, 'owner_id'>) {
+   *   return await db
+   *     .with('new_person', (qb) => qb
+   *       .insertInto('person')
+   *       .values(person)
+   *       .returning('id')
+   *       .$assertType<{ id: number }>()
+   *     )
+   *     .with('new_pet', (qb) => qb
+   *       .insertInto('pet')
+   *       .values((eb) => ({
+   *         owner_id: eb.selectFrom('new_person').select('id'),
+   *         ...pet
+   *       }))
+   *       .returning(['name as pet_name', 'species'])
+   *       .$assertType<{ pet_name: string, species: Species }>()
+   *     )
+   *     .selectFrom(['new_person', 'new_pet'])
+   *     .selectAll()
+   *     .executeTakeFirstOrThrow()
+   * }
    * ```
    */
   $assertType<T extends O>(): O extends T
@@ -1170,11 +1309,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  InsertQueryBuilder,
-  "don't await InsertQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface InsertQueryBuilderProps {
   readonly queryId: QueryId

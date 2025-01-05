@@ -62,11 +62,11 @@ export class DynamicModule {
    * const { ref } = db.dynamic
    *
    * // Some column name provided by the user. Value not known at compile time.
-   * const columnFromUserInput = req.query.select;
+   * const columnFromUserInput: PossibleColumns = 'birthdate';
    *
    * // A type that lists all possible values `columnFromUserInput` can have.
    * // You can use `keyof Person` if any column of an interface is allowed.
-   * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
+   * type PossibleColumns = 'last_name' | 'first_name' | 'birthdate'
    *
    * const [person] = await db.selectFrom('person')
    *   .select([
@@ -78,12 +78,12 @@ export class DynamicModule {
    * // The resulting type contains all `PossibleColumns` as optional fields
    * // because we cannot know which field was actually selected before
    * // running the code.
-   * const lastName: string | undefined = person.last_name
-   * const firstName: string | undefined = person.first_name
-   * const birthDate: string | undefined = person.birth_date
+   * const lastName: string | null | undefined = person?.last_name
+   * const firstName: string | undefined = person?.first_name
+   * const birthDate: Date | null | undefined = person?.birthdate
    *
    * // The result type also contains the compile time selection `id`.
-   * person.id
+   * person?.id
    * ```
    */
   ref<R extends string = never>(reference: string): DynamicReferenceBuilder<R> {

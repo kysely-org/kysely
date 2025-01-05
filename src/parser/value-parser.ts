@@ -24,11 +24,10 @@ export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
   | ValueExpression<DB, TB, V>
   | ReadonlyArray<ValueExpression<DB, TB, V>>
 
-export type ExtractTypeFromValueExpressionOrList<VE> = VE extends ReadonlyArray<
-  infer AV
->
-  ? ExtractTypeFromValueExpression<AV>
-  : ExtractTypeFromValueExpression<VE>
+export type ExtractTypeFromValueExpressionOrList<VE> =
+  VE extends ReadonlyArray<infer AV>
+    ? ExtractTypeFromValueExpression<AV>
+    : ExtractTypeFromValueExpression<VE>
 
 export type ExtractTypeFromValueExpression<VE> =
   VE extends SelectQueryBuilderExpression<Record<string, infer SV>>
