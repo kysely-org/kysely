@@ -29,7 +29,6 @@ import {
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
-  Logger,
   Generated,
   sql,
   ColumnType,
