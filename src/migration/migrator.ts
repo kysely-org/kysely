@@ -83,6 +83,7 @@ export class Migrator {
           .withPlugin(this.#schemaPlugin)
           .selectFrom(this.#migrationTable)
           .select(['name', 'timestamp'])
+          .$narrowType<{ name: string; timestamp: string }>()
           .execute()
       : []
 
@@ -577,11 +578,27 @@ export class Migrator {
     const executedMigrations = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
-      .select('name')
-      .orderBy(['timestamp', 'name'])
+      .select(['name', 'timestamp'])
+      .$narrowType<{ name: string; timestamp: string }>()
       .execute()
 
-    return executedMigrations.map((it) => it.name)
+    const nameComparator =
+      this.#props.nameComparator || ((a, b) => a.localeCompare(b))
+
+    return (
+      executedMigrations
+        // https://github.com/kysely-org/kysely/issues/843
+        .sort((a, b) => {
+          if (a.timestamp === b.timestamp) {
+            return nameComparator(a.name, b.name)
+          }
+
+          return (
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          )
+        })
+        .map((it) => it.name)
+    )
   }
 
   #ensureNoMissingMigrations(
@@ -797,6 +814,14 @@ export interface MigratorProps {
    * order.
    */
   readonly allowUnorderedMigrations?: boolean
+
+  /**
+   * A function that compares migration names, used when sorting migrations in
+   * ascending order.
+   *
+   * Default is `name0.localeCompare(name1)`.
+   */
+  readonly nameComparator?: (name0: string, name1: string) => number
 }
 
 /**
