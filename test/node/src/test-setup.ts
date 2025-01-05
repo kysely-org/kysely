@@ -29,13 +29,14 @@ import {
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
-  Logger,
   Generated,
   sql,
   ColumnType,
   InsertObject,
   MssqlDialect,
   SelectQueryBuilder,
+  GeneratedAlways,
+  ColumnDataType,
 } from '../../../'
 import {
   OrderByDirection,
@@ -55,6 +56,7 @@ export interface Person {
   gender: Gender
   marital_status: MaritalStatus | null
   children: Generated<number>
+  created_at: GeneratedAlways<Date | string>
 }
 
 export interface Pet {
@@ -313,6 +315,18 @@ async function createDatabase(
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .addColumn('marital_status', 'varchar(50)')
     .addColumn('children', 'integer', (col) => col.notNull().defaultTo(0))
+    .addColumn(
+      'created_at',
+      (
+        {
+          postgres: 'timestamptz',
+          mysql: 'datetime',
+          mssql: 'datetime',
+          sqlite: 'text',
+        } satisfies Record<BuiltInDialect, ColumnDataType>
+      )[dialect],
+      (col) => col.notNull().defaultTo(sql`current_timestamp`),
+    )
     .execute()
 
   await createTableWithId(db.schema, dialect, 'pet')
