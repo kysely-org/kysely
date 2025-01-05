@@ -30,10 +30,12 @@ for (const dialect of DIALECTS) {
     >
 
     before(async function () {
-      ctx = await initTest(this, dialect, (event) => {
-        if (event.level === 'query') {
-          executedQueries.push(event.query)
-        }
+      ctx = await initTest(this, dialect, {
+        log(event) {
+          if (event.level === 'query') {
+            executedQueries.push(event.query)
+          }
+        },
       })
     })
 
