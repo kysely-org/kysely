@@ -1,9 +1,15 @@
 import { DefaultInsertValueNode } from '../../operation-node/default-insert-value-node.js'
+import { OrActionNode } from '../../operation-node/or-action-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /"/g
 
 export class SqliteQueryCompiler extends DefaultQueryCompiler {
+  protected override visitOrAction(node: OrActionNode): void {
+    this.append('or ')
+    this.append(node.action)
+  }
+
   protected override getCurrentParameterPlaceholder() {
     return '?'
   }
