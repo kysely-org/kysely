@@ -22,8 +22,10 @@ export interface InsertQueryNode extends OperationNode {
   readonly onConflict?: OnConflictNode
   readonly onDuplicateKey?: OnDuplicateKeyNode
   readonly with?: WithNode
-  readonly or?: OrActionNode
+  // TODO: remove in 0.29
+  /** @deprecated use {@link orAction} instead. */
   readonly ignore?: boolean
+  readonly orAction?: OrActionNode
   readonly replace?: boolean
   readonly explain?: ExplainNode
   readonly defaultValues?: boolean

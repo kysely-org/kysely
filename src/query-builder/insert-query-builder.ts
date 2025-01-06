@@ -413,15 +413,17 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
+   * This is only supported by some dialects like MySQL.
+   *
+   * To avoid a footgun, when invoked with the SQLite dialect, this method will
+   * be handled like {@link orIgnore}. See also, {@link orAbort}, {@link orFail},
+   * {@link orReplace}, and {@link orRollback}.
+   *
    * If you use the ignore modifier, ignorable errors that occur while executing the
    * insert statement are ignored. For example, without ignore, a row that duplicates
    * an existing unique index or primary key value in the table causes a duplicate-key
    * error and the statement is aborted. With ignore, the row is discarded and no error
    * occurs.
-   *
-   * This is only supported on some dialects like MySQL. On most dialects you should
-   * use the {@link onConflict} method. Calls to this method for the SQLite dialect will
-   * be treated like a call to {@link orIgnore}.
    *
    * ### Examples
    *
@@ -439,14 +441,20 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (MySQL):
    *
    * ```sql
-   * insert ignore into `person` ("first_name", "last_name", "gender") values (?, ?, ?)
+   * insert ignore into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or ignore into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   ignore(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        ignore: true,
+        orAction: OrActionNode.create('ignore'),
       }),
     })
   }
@@ -454,29 +462,43 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert or ignore into` query.
    *
-   * If you use the ignore modifier, ignorable errors that occur while executing the
-   * insert statement are ignored. For example, without ignore, a row that duplicates
-   * an existing unique index or primary key value in the table causes a duplicate-key
-   * error and the statement is aborted. With ignore, the row is discarded and no error
-   * occurs.
+   * This is only supported by some dialects like SQLite.
    *
-   * This is only supported on some dialects like SQLite. On most dialects you should
-   * use the {@link onConflict} method.
+   * To avoid a footgun, when invoked with the MySQL dialect, this method will
+   * be handled like {@link ignore}.
+   *
+   * See also, {@link orAbort}, {@link orFail}, {@link orReplace}, and {@link orRollback}.
    *
    * ### Examples
    *
    * ```ts
    * await db.insertInto('person')
-   *   .ignore()
-   *   .values(values)
+   *   .orIgnore()
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or ignore into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert ignore into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)
    * ```
    */
   orIgnore(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrActionNode.create('ignore'),
+        orAction: OrActionNode.create('ignore'),
       }),
     })
   }
@@ -484,22 +506,34 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert or abort into` query.
    *
-   * This is only supported on some dialects like SQLite.
+   * This is only supported by some dialects like SQLite.
+   *
+   * See also, {@link orIgnore}, {@link orFail}, {@link orReplace}, and {@link orRollback}.
    *
    * ### Examples
    *
    * ```ts
    * await db.insertInto('person')
    *   .orAbort()
-   *   .values(values)
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or abort into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   orAbort(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrActionNode.create('abort'),
+        orAction: OrActionNode.create('abort'),
       }),
     })
   }
@@ -507,22 +541,34 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert or fail into` query.
    *
-   * This is only supported on some dialects like SQLite.
+   * This is only supported by some dialects like SQLite.
+   *
+   * See also, {@link orIgnore}, {@link orAbort}, {@link orReplace}, and {@link orRollback}.
    *
    * ### Examples
    *
    * ```ts
    * await db.insertInto('person')
    *   .orFail()
-   *   .values(values)
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or fail into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   orFail(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrActionNode.create('fail'),
+        orAction: OrActionNode.create('fail'),
       }),
     })
   }
@@ -530,22 +576,36 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert or replace into` query.
    *
-   * This is only supported on some dialects like SQLite.
+   * This is only supported by some dialects like SQLite.
+   *
+   * You can also use {@link Kysely.replaceInto} to achieve the same result.
+   *
+   * See also, {@link orIgnore}, {@link orAbort}, {@link orFail}, and {@link orRollback}.
    *
    * ### Examples
    *
    * ```ts
    * await db.insertInto('person')
    *   .orReplace()
-   *   .values(values)
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or replace into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   orReplace(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrActionNode.create('replace'),
+        orAction: OrActionNode.create('replace'),
       }),
     })
   }
@@ -553,22 +613,34 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Changes an `insert into` query to an `insert or rollback into` query.
    *
-   * This is only supported on some dialects like SQLite.
+   * This is only supported by some dialects like SQLite.
+   *
+   * See also, {@link orIgnore}, {@link orAbort}, {@link orFail}, and {@link orReplace}.
    *
    * ### Examples
    *
    * ```ts
    * await db.insertInto('person')
    *   .orRollback()
-   *   .values(values)
+   *   .values({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'female',
+   *   })
    *   .execute()
+   * ```
+   *
+   * The generated SQL (SQLite):
+   *
+   * ```sql
+   * insert or rollback into "person" ("first_name", "last_name", "gender") values (?, ?, ?)
    * ```
    */
   orRollback(): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrActionNode.create('rollback'),
+        orAction: OrActionNode.create('rollback'),
       }),
     })
   }

@@ -394,7 +394,7 @@ export class OperationNodeTransformer {
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
-      or: this.transformNode(node.or),
+      orAction: this.transformNode(node.orAction),
       replace: node.replace,
       explain: this.transformNode(node.explain),
       defaultValues: node.defaultValues,

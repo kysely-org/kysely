@@ -113,6 +113,7 @@ import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
+import { logOnce } from '../util/log-once.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -292,16 +293,6 @@ export class DefaultQueryCompiler
     this.visitNode(node.having)
   }
 
-  protected handleInsertIgnoreAndOrAction(node: InsertQueryNode): void {
-    if (node.ignore) {
-      this.append(' ignore')
-    }
-
-    if (node.or) {
-      this.visitNode(node.or)
-    }
-  }
-
   protected override visitInsertQuery(node: InsertQueryNode): void {
     const rootQueryNode = this.nodeStack.find(QueryNode.is)!
     const isSubQuery = rootQueryNode !== node
@@ -322,7 +313,18 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
-    this.handleInsertIgnoreAndOrAction(node)
+    // TODO: remove in 0.29.
+    if (node.ignore) {
+      logOnce(
+        '`InsertQueryNode.ignore` is deprecated. Use `InsertQueryNode.orAction` instead.',
+      )
+      this.append(' ignore')
+    }
+
+    if (node.orAction) {
+      this.append(' ')
+      this.visitNode(node.orAction)
+    }
 
     if (node.top) {
       this.append(' ')
@@ -1673,7 +1675,6 @@ export class DefaultQueryCompiler
   }
 
   protected override visitOrAction(node: OrActionNode): void {
-    this.append(' or ')
     this.append(node.action)
   }
 
