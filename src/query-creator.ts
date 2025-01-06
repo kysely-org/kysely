@@ -298,10 +298,14 @@ export class QueryCreator<DB> {
   }
 
   /**
-   * Creates a replace query.
+   * Creates a "replace into" query.
    *
-   * A MySQL-only statement similar to {@link InsertQueryBuilder.onDuplicateKeyUpdate}
-   * that deletes and inserts values on collision instead of updating existing rows.
+   * This is only supported by some dialects like MySQL or SQLite.
+   *
+   * Similar to MySQL's {@link InsertQueryBuilder.onDuplicateKeyUpdate} that deletes
+   * and inserts values on collision instead of updating existing rows.
+   *
+   * An alias of SQLite's {@link InsertQueryBuilder.orReplace}.
    *
    * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
    * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
@@ -318,9 +322,15 @@ export class QueryCreator<DB> {
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    *
    * console.log(result.insertId)
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * replace into `person` (`first_name`, `last_name`) values (?, ?)
    * ```
    */
   replaceInto<T extends keyof DB & string>(
