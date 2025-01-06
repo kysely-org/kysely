@@ -16,7 +16,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: insert`, () => {
+  describe(`${dialect}: insert into`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -317,7 +317,36 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    if (dialect === 'mysql') {
+    if (dialect === 'sqlite') {
+      for (const { method, action } of [
+        { method: 'orAbort', action: 'abort' },
+        { method: 'orFail', action: 'fail' },
+        { method: 'orIgnore', action: 'ignore' },
+        { method: 'orReplace', action: 'replace' },
+        { method: 'orRollback', action: 'rollback' },
+      ] as const) {
+        it(`should insert or ${action}`, async () => {
+          const query = ctx.db.insertInto('person')[method]().values({
+            first_name: 'foo',
+            gender: 'other',
+          })
+
+          testSql(query, dialect, {
+            mysql: NOT_SUPPORTED,
+            postgres: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: `insert or ${action} into "person" ("first_name", "gender") values (?, ?)`,
+              parameters: ['foo', 'other'],
+            },
+          })
+
+          await query.execute()
+        })
+      }
+    }
+
+    if (dialect === 'mysql' || dialect == 'sqlite') {
       it('should insert one row and ignore conflicts using insert ignore', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -338,14 +367,26 @@ for (const dialect of DIALECTS) {
           },
           postgres: NOT_SUPPORTED,
           mssql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert or ignore into "pet" ("name", "owner_id", "species") values (?, ?, ?)',
+            parameters: [
+              existingPet.name,
+              existingPet.owner_id,
+              existingPet.species,
+            ],
+          },
         })
 
         const result = await query.executeTakeFirst()
 
         expect(result).to.be.instanceOf(InsertResult)
-        expect(result.insertId).to.be.undefined
         expect(result.numInsertedOrUpdatedRows).to.equal(0n)
+        if (dialect === 'sqlite') {
+          // SQLite seems to return the last inserted id even if nothing got inserted.
+          expect(result.insertId! > 0n).to.be.equal(true)
+        } else {
+          expect(result.insertId).to.be.undefined
+        }
       })
     }
 

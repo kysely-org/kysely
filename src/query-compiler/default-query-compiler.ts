@@ -112,6 +112,8 @@ import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
+import { OrActionNode } from '../operation-node/or-action-node.js'
+import { logOnce } from '../util/log-once.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -311,8 +313,17 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
+    // TODO: remove in 0.29.
     if (node.ignore) {
+      logOnce(
+        '`InsertQueryNode.ignore` is deprecated. Use `InsertQueryNode.orAction` instead.',
+      )
       this.append(' ignore')
+    }
+
+    if (node.orAction) {
+      this.append(' ')
+      this.visitNode(node.orAction)
     }
 
     if (node.top) {
@@ -1661,6 +1672,10 @@ export class DefaultQueryCompiler
     if (node.modifiers) {
       this.append(` ${node.modifiers}`)
     }
+  }
+
+  protected override visitOrAction(node: OrActionNode): void {
+    this.append(node.action)
   }
 
   protected append(str: string): void {

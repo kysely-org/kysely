@@ -95,6 +95,7 @@ import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
+import { OrActionNode } from './or-action-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -231,6 +232,7 @@ export class OperationNodeTransformer {
     FetchNode: this.transformFetch.bind(this),
     TopNode: this.transformTop.bind(this),
     OutputNode: this.transformOutput.bind(this),
+    OrActionNode: this.transformOrAction.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -392,6 +394,7 @@ export class OperationNodeTransformer {
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
+      orAction: this.transformNode(node.orAction),
       replace: node.replace,
       explain: this.transformNode(node.explain),
       defaultValues: node.defaultValues,
@@ -1128,6 +1131,11 @@ export class OperationNodeTransformer {
   protected transformDefaultInsertValue(
     node: DefaultInsertValueNode,
   ): DefaultInsertValueNode {
+    // An Object.freezed leaf node. No need to clone.
+    return node
+  }
+
+  protected transformOrAction(node: OrActionNode): OrActionNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }
