@@ -16,7 +16,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: insert`, () => {
+  describe(`${dialect}: insert into`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -325,7 +325,7 @@ for (const dialect of DIALECTS) {
         { method: 'orReplace', action: 'replace' },
         { method: 'orRollback', action: 'rollback' },
       ] as const) {
-        it(`should support insert or ${action}`, async () => {
+        it(`should insert or ${action}`, async () => {
           const query = ctx.db.insertInto('person')[method]().values({
             first_name: 'foo',
             gender: 'other',
