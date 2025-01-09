@@ -11,7 +11,7 @@ import {
 } from '../expression/expression.js'
 import {
   ReferenceExpression,
-  StringReference,
+  SimpleReferenceExpression,
 } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
@@ -21,7 +21,6 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import {
   OrderByDirectionExpression,
   parseOrderBy,
@@ -125,7 +124,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * ```
    */
-  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+  orderBy<OE extends SimpleReferenceExpression<DB, TB>>(
     orderBy: OE,
     direction?: OrderByDirectionExpression,
   ): AggregateFunctionBuilder<DB, TB, O> {
@@ -134,6 +133,48 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
         this.#props.aggregateFunctionNode,
         parseOrderBy([orderBy, direction]),
+      ),
+    })
+  }
+
+  /**
+   * Adds a `withing group` clause with a nested `order by` clause after the function.
+   *
+   * This is only supported by some dialects like PostgreSQL or MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Most frequent person name:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select((eb) => [
+   *     eb.fn
+   *       .agg<string>('mode')
+   *       .withinGroupOrderBy('person.first_name')
+   *       .as('most_frequent_name')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select mode() within group (order by "person"."first_name") as "most_frequent_name"
+   * from "person"
+   * ```
+   */
+  withinGroupOrderBy<OE extends SimpleReferenceExpression<DB, TB>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
+        true,
       ),
     })
   }
