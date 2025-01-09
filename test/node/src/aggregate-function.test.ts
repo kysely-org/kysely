@@ -14,7 +14,6 @@ import {
   TestContext,
   testSql,
   DIALECTS,
-  BuiltInDialect,
 } from './test-setup.js'
 
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
@@ -1165,39 +1164,31 @@ for (const dialect of DIALECTS) {
       }
 
       if (dialect === 'postgres' || dialect === 'mssql') {
-        const percentileAgg = 'percentile_cont'
-        const fraction = 0.5
-        const medianFunc = `${percentileAgg}(${fraction})`
-
-        let medianAggExpression = expressionBuilder<Database, 'toy'>()
-          .fn.agg(percentileAgg, [sql.lit(fraction)])
-          .withinGroupOrderBy('toy.price')
-
-        if (dialect === 'mssql') {
-          medianAggExpression = medianAggExpression.over()
-        }
-
-        it(`should execute a query with ${medianFunc} within group (order by column) in select clause`, async () => {
-          const query = ctx.db
-            .selectFrom('toy')
-            .select(() => medianAggExpression.as('median_price'))
+        it(`should execute a query with within group (order by column) in select clause`, async () => {
+          const query = ctx.db.selectFrom('toy').select((eb) =>
+            eb.fn
+              .agg('percentile_cont', [sql.lit(0.5)])
+              .withinGroupOrderBy('toy.price')
+              .$call((ab) => (dialect === 'mssql' ? ab.over() : ab))
+              .as('median_price'),
+          )
 
           testSql(query, dialect, {
             postgres: {
               sql: [
-                `select ${medianFunc} within group (order by "toy"."price") as "median_price"`,
-                `from "toy"`,
-              ],
-              parameters: [],
-            },
-            mssql: {
-              sql: [
-                `select ${medianFunc} within group (order by "toy"."price") over() as "median_price"`,
+                `select percentile_cont(0.5) within group (order by "toy"."price") as "median_price"`,
                 `from "toy"`,
               ],
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select percentile_cont(0.5) within group (order by "toy"."price") over() as "median_price"`,
+                `from "toy"`,
+              ],
+              parameters: [],
+            },
             sqlite: NOT_SUPPORTED,
           })
 
