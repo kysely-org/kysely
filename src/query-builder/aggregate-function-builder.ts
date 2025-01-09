@@ -171,9 +171,10 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithWithinGroup(
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
         this.#props.aggregateFunctionNode,
         parseOrderBy([orderBy, direction]),
+        true,
       ),
     })
   }

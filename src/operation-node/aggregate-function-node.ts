@@ -47,26 +47,14 @@ export const AggregateFunctionNode = freeze({
   cloneWithOrderBy(
     aggregateFunctionNode: AggregateFunctionNode,
     orderItems: ReadonlyArray<OrderByItemNode>,
+    withinGroup = false,
   ): AggregateFunctionNode {
-    return freeze({
-      ...aggregateFunctionNode,
-      orderBy: aggregateFunctionNode.orderBy
-        ? OrderByNode.cloneWithItems(aggregateFunctionNode.orderBy, orderItems)
-        : OrderByNode.create(orderItems),
-    })
-  },
+    const prop = withinGroup ? 'withinGroup' : 'orderBy'
 
-  cloneWithWithinGroup(
-    aggregateFunctionNode: AggregateFunctionNode,
-    orderItems: ReadonlyArray<OrderByItemNode>,
-  ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
-      withinGroup: aggregateFunctionNode.withinGroup
-        ? OrderByNode.cloneWithItems(
-            aggregateFunctionNode.withinGroup,
-            orderItems,
-          )
+      [prop]: aggregateFunctionNode[prop]
+        ? OrderByNode.cloneWithItems(aggregateFunctionNode[prop], orderItems)
         : OrderByNode.create(orderItems),
     })
   },
