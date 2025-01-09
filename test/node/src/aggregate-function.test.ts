@@ -4,6 +4,7 @@ import {
   SimpleReferenceExpression,
   ReferenceExpression,
   sql,
+  expressionBuilder,
 } from '../../../'
 import {
   Database,
@@ -1108,8 +1109,12 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    describe(`should execute order-sensitive aggregate functions`, () => {
-      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    describe('should execute order-sensitive aggregate functions', () => {
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
         const isMySql = dialect === 'mysql'
         const funcName = isMySql ? 'group_concat' : 'string_agg'
         const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
@@ -1152,6 +1157,39 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+          })
+
+          await query.execute()
+        })
+      }
+
+      if (dialect === 'postgres' || dialect === 'mssql') {
+        it(`should execute a query with within group (order by column) in select clause`, async () => {
+          const query = ctx.db.selectFrom('toy').select((eb) =>
+            eb.fn
+              .agg('percentile_cont', [sql.lit(0.5)])
+              .withinGroupOrderBy('toy.price')
+              .$call((ab) => (dialect === 'mssql' ? ab.over() : ab))
+              .as('median_price'),
+          )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select percentile_cont(0.5) within group (order by "toy"."price") as "median_price"`,
+                `from "toy"`,
+              ],
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select percentile_cont(0.5) within group (order by "toy"."price") over() as "median_price"`,
+                `from "toy"`,
+              ],
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
           })
 
           await query.execute()
