@@ -565,6 +565,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * inner join "pet" on "pet"."owner_id" = "person"."id"
    * group by "person"."id"
    * ```
+   *
+   * If you need a column reference, use {@link ref}.
    */
   table<T extends TB & string>(
     table: T,
