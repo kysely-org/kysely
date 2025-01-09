@@ -140,6 +140,8 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * Adds a `withing group` clause with a nested `order by` clause after the function.
    *
+   * This is only supported by some dialects like PostgreSQL or MS SQL Server.
+   *
    * ### Examples
    *
    * Most frequent person name:
@@ -150,7 +152,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    *   .select((eb) => [
    *     eb.fn
    *       .agg<string>('mode')
-   *       .withinGroupOrderBy('person.name')
+   *       .withinGroupOrderBy('person.first_name')
    *       .as('most_frequent_name')
    *   ])
    *   .executeTakeFirstOrThrow()
@@ -159,7 +161,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select mode() within group (order by "person"."name") as "most_frequent_name"
+   * select mode() within group (order by "person"."first_name") as "most_frequent_name"
    * from "person"
    * ```
    */
