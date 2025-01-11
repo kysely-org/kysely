@@ -47,6 +47,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
+    "bench:ts": "npm run build && cd ./test/ts-benchmarks && tsx ./index.ts",
     "test": "npm run build && npm run test:node:build && npm run test:node:run && npm run test:typings && npm run test:esmimports && npm run test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "npm run build && npm run test:node:build && npm run test:node:run",
@@ -82,6 +83,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.0",
+    "@ark/attest": "^0.36.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",
