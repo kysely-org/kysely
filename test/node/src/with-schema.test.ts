@@ -227,11 +227,12 @@ for (const dialect of DIALECTS.filter(
             .select((eb) => [
               eb.fn.jsonAgg('pet').as('one'),
               eb.fn.jsonAgg(eb.table('pet')).as('two'),
+              eb.fn.jsonAgg('pet').orderBy('pet.name', 'desc').as('three'),
             ])
 
           testSql(query, dialect, {
             postgres: {
-              sql: 'select json_agg("pet") as "one", json_agg("pet") as "two" from "mammals"."pet"',
+              sql: 'select json_agg("pet") as "one", json_agg("pet") as "two", json_agg("pet" order by "mammals"."pet"."name" desc) as "three" from "mammals"."pet"',
               parameters: [],
             },
             mysql: NOT_SUPPORTED,

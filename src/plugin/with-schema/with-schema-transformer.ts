@@ -113,42 +113,37 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   }
 
   protected override transformAggregateFunction(
-    node: AggregateFunctionNode
+    node: AggregateFunctionNode,
   ): AggregateFunctionNode {
-    const transformed = super.transformAggregateFunction(node)
-
-    return SCHEMALESS_FUNCTIONS[node.func]
-      ? {
-          ...transformed,
-          aggregated: this.#revertTableTransformations(
-            node.aggregated,
-            transformed.aggregated
-          ),
-        }
-      : transformed
+    return {
+      ...super.transformAggregateFunction({ ...node, aggregated: [] }),
+      aggregated: this.#transformTableArgsWithoutSchemas(node, 'aggregated'),
+    }
   }
 
   protected override transformFunction(node: FunctionNode): FunctionNode {
-    const transformed = super.transformFunction(node)
-
-    return SCHEMALESS_FUNCTIONS[node.func]
-      ? {
-          ...transformed,
-          arguments: this.#revertTableTransformations(
-            node.arguments,
-            transformed.arguments
-          ),
-        }
-      : transformed
+    return {
+      ...super.transformFunction({ ...node, arguments: [] }),
+      arguments: this.#transformTableArgsWithoutSchemas(node, 'arguments'),
+    }
   }
 
-  #revertTableTransformations(
-    before: readonly OperationNode[],
-    after: readonly OperationNode[]
-  ): OperationNode[] {
-    return after.map((transformed, index) =>
-      TableNode.is(before[index]) ? before[index] : transformed
-    )
+  #transformTableArgsWithoutSchemas<
+    A extends string,
+    N extends { func: string } & {
+      [K in A]: readonly OperationNode[]
+    },
+  >(node: N, argsKey: A): readonly OperationNode[] {
+    return SCHEMALESS_FUNCTIONS[node.func]
+      ? node[argsKey].map((arg) =>
+          !TableNode.is(arg) || arg.table.schema
+            ? this.transformNode(arg)
+            : {
+                ...arg,
+                table: this.transformIdentifier(arg.table.identifier),
+              },
+        )
+      : this.transformNodeList(node[argsKey])
   }
 
   #isRootOperationNode(node: OperationNode): node is RootOperationNode {
