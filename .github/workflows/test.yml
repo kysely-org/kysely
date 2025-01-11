@@ -247,3 +247,22 @@ jobs:
 
       - name: Type-check JSDocs code blocks
         run: npm run test:jsdocs
+
+  typescript-benchmarks:
+    name: TypeScript Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run benchmarks
+        run: npm run bench:ts
