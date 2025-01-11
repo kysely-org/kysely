@@ -69,6 +69,9 @@ function parseSingleOnJoin(
   )
 }
 
-function parseOnlessJoin(joinType: JoinType, from: TableExpression<any, any>) {
-  return createJoinBuilder(joinType, from).toOperationNode()
+function parseOnlessJoin(
+  joinType: JoinType,
+  from: TableExpression<any, any>,
+): JoinNode {
+  return JoinNode.create(joinType, parseTableExpression(from))
 }
