@@ -579,13 +579,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
   /**
-   * Joins another table to the query using an inner join.
+   * Joins another table to the query using an `inner join`.
    *
    * ### Examples
    *
    * <!-- siteExample("join", "Simple inner join", 10) -->
    *
-   * Simple inner joins can be done by providing a table name and two columns to join:
+   * Simple `inner join`s can be done by providing a table name and two columns to join:
    *
    * ```ts
    * const result = await db
@@ -721,7 +721,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a left join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `left join` instead of an `inner join`.
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
@@ -742,7 +742,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a right join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `right join` instead of an `inner join`.
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
@@ -763,7 +763,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a full join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `full join` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL, MS SQL Server and SQLite.
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
@@ -785,6 +787,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
+   *
+   * This is only supported by some dialects like PostgreSQL and MySQL.
    *
    * ### Examples
    *
@@ -835,7 +839,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a lateral left join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `left join lateral` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL and MySQL.
+   *
    * ### Examples
    *
    * ```ts
@@ -882,6 +889,53 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   >(
     table: TE,
     callback: FN,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  /**
+   * Joins another table to the query using a `cross apply`.
+   *
+   * This is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .crossApply(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p')
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * cross apply (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p"
+   * order by "first_name"
+   * ```
+   */
+  crossApply<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  /**
+   * Just like {@link crossApply} but adds an `outer apply` instead of a `cross apply`.
+   *
+   * This is only supported by some dialects like MS SQL Server.
+   */
+  outerApply<TE extends TableExpression<DB, TB>>(
+    table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
@@ -2391,6 +2445,26 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
         parseJoin('LateralLeftJoin', args),
+      ),
+    })
+  }
+
+  crossApply(table: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('CrossApply', [table]),
+      ),
+    })
+  }
+
+  outerApply(table: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('OuterApply', [table]),
       ),
     })
   }
