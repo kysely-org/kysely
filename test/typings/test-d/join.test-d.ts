@@ -158,9 +158,51 @@ async function testJoin(db: Kysely<Database>) {
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .set({ last_name: 'Jennifer' })
     .where('pet.id', '=', '1')
+    .execute()
 
-  // Cross apply
   const r9 = await db
+    .selectFrom('person')
+    .innerJoinLateral(
+      (eb) =>
+        eb
+          .selectFrom('pet')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .select('pet.name')
+          .as('pets'),
+      (jb) => jb.onTrue(),
+    )
+    .select(['person.first_name', 'pets.name'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      name: string
+    }[]
+  >(r9)
+
+  const r10 = await db
+    .selectFrom('person')
+    .leftJoinLateral(
+      (eb) =>
+        eb
+          .selectFrom('pet')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .select('pet.name')
+          .as('pets'),
+      (jb) => jb.onTrue(),
+    )
+    .select(['person.first_name', 'pets.name'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      name: string | null
+    }[]
+  >(r10)
+
+  const r11 = await db
     .selectFrom('person')
     .crossApply((eb) =>
       eb
@@ -177,10 +219,9 @@ async function testJoin(db: Kysely<Database>) {
       first_name: string
       name: string
     }[]
-  >(r9)
+  >(r11)
 
-  // Outer apply
-  const r10 = await db
+  const r12 = await db
     .selectFrom('person')
     .outerApply((eb) =>
       eb
@@ -197,7 +238,7 @@ async function testJoin(db: Kysely<Database>) {
       first_name: string
       name: string | null
     }[]
-  >(r10)
+  >(r12)
 
   // Refer to table that's not joined
   expectError(
