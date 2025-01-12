@@ -664,11 +664,13 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
 
   /**
-   * Creates a json_agg function call.
+   * Creates a `json_agg` function call.
    *
-   * This function is only available on PostgreSQL.
+   * This is only supported by some dialects like PostgreSQL.
    *
-   * You can use it either on a table:
+   * ### Examples
+   *
+   * You can use it on table expressions:
    *
    * ```ts
    * await db.selectFrom('person')
@@ -687,42 +689,26 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * group by "person"."first_name"
    * ```
    *
-   * ... or on a column:
+   * or on columns:
    *
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *   .select((eb) => ['first_name', eb.fn.jsonAgg('pet.names').as('pet_names')])
-   *   .groupBy('person.first_name')
-   *   .execute()
-   *
-   * await db.selectFrom('person')
    *   .select((eb) => [
    *     'first_name',
-   *     eb
-   *       .selectFrom('pet')
-   *       .select((eb) => [eb.fn.jsonAgg("pet.owner_id")])
-   *       .whereRef('pet.owner_id', '=', 'person.id')
-   *       .as('petnames'),
+   *     eb.fn.jsonAgg('pet.name').as('pet_names'),
    *   ])
+   *   .groupBy('person.first_name')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "first_name", json_agg("pet"."names") AS "pet_names"
+   * select "first_name", json_agg("pet"."name") AS "pet_names"
    * from "person"
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * group by "person"."first_name"
-   *
-   * select "first_name",
-   *   (
-   *     select json_agg("pet"."owner_id")
-   *     from "pet"
-   *     where "pet"."owner_id" = "person"."id"
-   *   ) as "petnames"
-   * from "person"
    * ```
    */
   jsonAgg<T extends (TB & string) | Expression<unknown>>(
@@ -736,6 +722,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
         ? O[]
         : never
   >
+
   jsonAgg<RE extends StringReference<DB, TB>>(
     column: RE,
   ): RawBuilder<ExtractTypeFromStringReference<DB, TB, RE>[] | null>
