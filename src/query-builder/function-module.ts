@@ -725,7 +725,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
 
   jsonAgg<RE extends StringReference<DB, TB>>(
     column: RE,
-  ): RawBuilder<ExtractTypeFromStringReference<DB, TB, RE>[] | null>
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromStringReference<DB, TB, RE>[] | null
+  >
 
   /**
    * Creates a to_json function call.
