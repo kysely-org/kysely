@@ -169,6 +169,39 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
       status: string | null
     }[]
   }>(r4)
+
+  const r5 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select((eb) => ['first_name', eb.fn.jsonAgg('owner_id').as('pet_names')])
+    .groupBy('person.first_name')
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pet_names: number[] | null
+    }[]
+  >(r5)
+
+  const r6 = await db
+    .selectFrom('person')
+    .select((eb) => [
+      'first_name',
+      eb
+        .selectFrom('pet')
+        .select((eb) => [eb.fn.jsonAgg('pet.owner_id').as('pet_names')])
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .as('pet_names'),
+    ])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pet_names: number[] | null
+    }[]
+  >(r6)
 }
 
 async function testPostgresToJson(db: Kysely<Database>) {
