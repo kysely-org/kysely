@@ -37,3 +37,4 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | Capacitor SQLite Kysely       | https://github.com/DawidWetzler/capacitor-sqlite-kysely                     |
 | BigQuery                      | https://github.com/maktouch/kysely-bigquery                                 |
 | Clickhouse                    | https://github.com/founderpathcom/kysely-clickhouse                         |
+| PGLite                        | https://github.com/czeidler/kysely-pglite-dialect                           |
