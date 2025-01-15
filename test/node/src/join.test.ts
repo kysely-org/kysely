@@ -780,5 +780,73 @@ for (const dialect of DIALECTS) {
         })
       })
     }
+
+    if (dialect === 'mssql') {
+      describe('apply', () => {
+        it('should cross apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .crossApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .select(['person.first_name', 'pets.name'])
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select "person"."first_name", "pets"."name" from "person" cross apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.deep.equal([
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+
+        it('should outer apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .outerApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .select(['person.first_name', 'pets.name'])
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select "person"."first_name", "pets"."name" from "person" outer apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.deep.equal([
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+      })
+    }
   })
 }

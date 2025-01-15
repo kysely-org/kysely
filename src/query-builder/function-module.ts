@@ -487,7 +487,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null = never,
+    O extends number | string | Date | bigint | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
@@ -495,7 +495,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      ? ExtractTypeFromReferenceExpression<
+          DB,
+          TB,
+          RE,
+          number | string | Date | bigint
+        >
       : O
   >
 
@@ -538,7 +543,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   min<
-    O extends number | string | bigint | null = never,
+    O extends number | string | Date | bigint | null = never,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
   >(
     expr: RE,
@@ -546,7 +551,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     IsNever<O> extends true
-      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      ? ExtractTypeFromReferenceExpression<
+          DB,
+          TB,
+          RE,
+          number | string | Date | bigint
+        >
       : O
   >
 

@@ -58,6 +58,7 @@ export type OperationNodeKind =
   | 'AddConstraintNode'
   | 'DropConstraintNode'
   | 'CreateViewNode'
+  | 'RefreshMaterializedViewNode'
   | 'DropViewNode'
   | 'GeneratedNode'
   | 'DefaultValueNode'
@@ -92,6 +93,7 @@ export type OperationNodeKind =
   | 'FetchNode'
   | 'TopNode'
   | 'OutputNode'
+  | 'OrActionNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
