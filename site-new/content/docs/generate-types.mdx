@@ -1,0 +1,27 @@
+---
+title: Generate Types
+description: Generate TypeScript types from your database schema.
+icon: Code
+---
+
+Kysely requires a TypeScript interface that describes your database schema. While you can write these type definitions manually, it's recommended to generate them automatically to ensure they stay in sync with your actual database schema.
+
+These tools help maintain type safety by keeping your TypeScript types synchronized with your database structure. For production applications, using one of these generators is highly recommended over manual type definitions.
+
+Here are the available tools for automatically generating Kysely type definitions:
+
+### Kysely Codegen
+
+[kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) generates types by introspecting your database schema. Works with PostgreSQL, MySQL, SQLite and SQL Server.
+
+### Kanel Kysely
+
+[kanel-kysely](https://github.com/kristiandupont/kanel/tree/main/packages/kanel-kysely) is a mature PostgreSQL-specific type generator built on top of Kanel.
+
+### Kysely Schema Generator
+
+[kysely-schema-generator](https://github.com/deanc/kysely-schema-generator) generates types by introspecting MySQL databases.
+
+### Prisma Kysely
+
+[prisma-kysely](https://github.com/valtyr/prisma-kysely) generates Kysely types from your existing Prisma schema, allowing you to maintain a single source of truth.
