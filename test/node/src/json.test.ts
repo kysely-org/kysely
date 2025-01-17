@@ -319,6 +319,34 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should aggregate a column using json_agg', async () => {
+        const res = await db
+          .selectFrom('pet')
+          .leftJoin('person', 'person.id', 'pet.owner_id')
+          .select((eb) => [
+            eb.fn.jsonAgg('pet.name').as('petName'),
+            'person.first_name',
+          ])
+          .groupBy('person.first_name')
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            petName: ['Catto'],
+          },
+          {
+            first_name: 'Arnold',
+            petName: ['Doggo'],
+          },
+          {
+            first_name: 'Sylvester',
+            petName: ['Hammo'],
+          },
+        ])
+      })
+
       it('should jsonify a joined table using to_json', async () => {
         const res = await db
           .selectFrom('person')
