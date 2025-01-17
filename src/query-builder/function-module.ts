@@ -663,9 +663,13 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
 
   /**
-   * Creates a json_agg function call.
+   * Creates a `json_agg` function call.
    *
-   * This function is only available on PostgreSQL.
+   * This is only supported by some dialects like PostgreSQL.
+   *
+   * ### Examples
+   *
+   * You can use it on table expressions:
    *
    * ```ts
    * await db.selectFrom('person')
@@ -683,6 +687,28 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * inner join "pet" on "pet"."owner_id" = "person"."id"
    * group by "person"."first_name"
    * ```
+   *
+   * or on columns:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => [
+   *     'first_name',
+   *     eb.fn.jsonAgg('pet.name').as('pet_names'),
+   *   ])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", json_agg("pet"."name") AS "pet_names"
+   * from "person"
+   * inner join "pet" ON "pet"."owner_id" = "person"."id"
+   * group by "person"."first_name"
+   * ```
    */
   jsonAgg<T extends (TB & string) | Expression<unknown>>(
     table: T,
@@ -694,6 +720,14 @@ export interface FunctionModule<DB, TB extends keyof DB> {
       : T extends Expression<infer O>
         ? O[]
         : never
+  >
+
+  jsonAgg<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromStringReference<DB, TB, RE>[] | null
   >
 
   /**
