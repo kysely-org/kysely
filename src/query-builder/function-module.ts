@@ -24,7 +24,6 @@ import { SelectQueryBuilderExpression } from '../query-builder/select-query-buil
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { Selectable } from '../util/column-type.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 
 /**
  * Helpers for type safe SQL function calls.
