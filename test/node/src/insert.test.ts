@@ -729,7 +729,7 @@ for (const dialect of DIALECTS) {
         {
           first_name: 'Foo',
           last_name: 'Spam',
-          middle_name: undefined,
+          middle_name: 'Bo',
           gender: 'other',
         },
         {
@@ -742,20 +742,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values ($1, $2, default, $3), ($4, default, default, $5)',
-          parameters: ['Foo', 'Spam', 'other', 'Baz', 'other'],
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values ($1, $2, $3, $4), ($5, default, default, $6)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
         },
         mysql: {
-          sql: 'insert into `person` (`first_name`, `last_name`, `middle_name`, `gender`) values (?, ?, default, ?), (?, default, default, ?)',
-          parameters: ['Foo', 'Spam', 'other', 'Baz', 'other'],
+          sql: 'insert into `person` (`first_name`, `last_name`, `middle_name`, `gender`) values (?, ?, ?, ?), (?, default, default, ?)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
         },
         mssql: {
-          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (@1, @2, default, @3), (@4, default, default, @5)',
-          parameters: ['Foo', 'Spam', 'other', 'Baz', 'other'],
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (@1, @2, @3, @4), (@5, default, default, @6)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
         },
         sqlite: {
-          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (?, ?, null, ?), (?, null, null, ?)',
-          parameters: ['Foo', 'Spam', 'other', 'Baz', 'other'],
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (?, ?, ?, ?), (?, null, null, ?)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
         },
       })
 
