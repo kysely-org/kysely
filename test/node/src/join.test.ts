@@ -711,6 +711,37 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    describe('cross join', () => {
+      it(`should cross join a table`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .crossJoin('pet')
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+          mysql: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+          mssql: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+          sqlite: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
+    })
+
     if (dialect === 'postgres') {
       describe('lateral join', () => {
         it('should join an expression laterally', async () => {
@@ -775,6 +806,41 @@ for (const dialect of DIALECTS) {
           expect(res).to.eql([
             { first_name: 'Arnold', name: 'Doggo' },
             { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+
+        it('should cross join an expression laterally', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .crossJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('pet')
+                  .innerJoin('person as owner', 'owner.id', 'pet.owner_id')
+                  .select('name')
+                  .whereRef('owner.gender', '=', 'person.gender')
+                  .as('p'),
+            )
+            .select(['first_name', 'p.name'])
+            .orderBy(['first_name', 'p.name'])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select "first_name", "p"."name" from "person" cross join lateral (select "name" from "pet" inner join "person" as "owner" on "owner"."id" = "pet"."owner_id" where "owner"."gender" = "person"."gender") as "p" order by "first_name", "p"."name"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const res = await query.execute()
+          expect(res).to.eql([
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Arnold', name: 'Hammo' },
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Doggo' },
             { first_name: 'Sylvester', name: 'Hammo' },
           ])
         })
