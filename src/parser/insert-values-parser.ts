@@ -80,10 +80,7 @@ function parseColumnNamesAndIndexes(
     const cols = Object.keys(row)
 
     for (const col of cols) {
-      const shouldIncludeColumnWithUndefined =
-        (rows.length === 1 && row[col] !== undefined) || rows.length > 1
-
-      if (!columns.has(col) && shouldIncludeColumnWithUndefined) {
+      if (!columns.has(col) && row[col] !== undefined) {
         columns.set(col, columns.size)
       }
     }
