@@ -82,6 +82,7 @@ import { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
+import { JoinType } from '../operation-node/join-node.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -2435,101 +2436,51 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   innerJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args),
-      ),
-    })
+    return this.#join('InnerJoin', args)
   }
 
   leftJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args),
-      ),
-    })
+    return this.#join('LeftJoin', args)
   }
 
   rightJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args),
-      ),
-    })
+    return this.#join('RightJoin', args)
   }
 
   fullJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('FullJoin', args),
-      ),
-    })
+    return this.#join('FullJoin', args)
   }
 
   crossJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('CrossJoin', args),
-      ),
-    })
+    return this.#join('CrossJoin', args)
   }
 
   innerJoinLateral(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralInnerJoin', args),
-      ),
-    })
+    return this.#join('LateralInnerJoin', args)
   }
 
   leftJoinLateral(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralLeftJoin', args),
-      ),
-    })
+    return this.#join('LateralLeftJoin', args)
   }
 
   crossJoinLateral(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralCrossJoin', args),
-      ),
-    })
+    return this.#join('LateralCrossJoin', args)
   }
 
-  crossApply(table: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('CrossApply', [table]),
-      ),
-    })
+  crossApply(...args: any): any {
+    return this.#join('CrossApply', args)
   }
 
-  outerApply(table: any): any {
+  outerApply(...args: any[]): any {
+    return this.#join('OuterApply', args)
+  }
+
+  #join(joinType: JoinType, args: any[]): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('OuterApply', [table]),
+        parseJoin(joinType, args),
       ),
     })
   }
