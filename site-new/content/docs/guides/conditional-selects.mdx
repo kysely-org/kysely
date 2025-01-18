@@ -1,0 +1,128 @@
+---
+title: Conditional Selects
+description: Learn how to use conditional selects in Kysely.
+---
+
+When building dynamic queries, you often need to conditionally select columns based on runtime conditions. This guide covers the best practices for handling conditional selects while maintaining type safety.
+
+## The Challenge
+
+Consider this common scenario:
+
+```typescript
+async function getPerson(id: number, withLastName: boolean) {
+  // How do we conditionally select last_name?
+}
+```
+
+## Common Pitfalls
+
+### ❌ Incorrect Approach: Reassigning Query
+
+```typescript
+async function getPerson(id: number, withLastName: boolean) {
+  let query = db.selectFrom('person').select('first_name').where('id', '=', id)
+
+  if (withLastName) {
+    // Type problem: query type doesn't change
+    query = query.select('last_name')
+  }
+
+  // Wrong return type: { first_name: string }
+  return await query.executeTakeFirstOrThrow()
+}
+```
+
+**Why this fails:**
+
+- The query's type gets downcast when reassigned
+- Return type doesn't include conditional columns
+- TypeScript can't track the conditional type changes
+
+### ✅ Simple Solution: Separate Returns
+
+For a single condition, you can use separate return statements:
+
+```typescript
+async function getPerson(id: number, withLastName: boolean) {
+  const query = db
+    .selectFrom('person')
+    .select('first_name')
+    .where('id', '=', id)
+
+  if (withLastName) {
+    // Return type: { first_name: string, last_name: string }
+    return await query.select('last_name').executeTakeFirstOrThrow()
+  }
+
+  // Return type: { first_name: string }
+  return await query.executeTakeFirstOrThrow()
+}
+```
+
+**Limitations:**
+
+- Code complexity grows exponentially with multiple conditions
+- Requires separate branches for each combination
+- Not maintainable for complex queries
+
+## Recommended Solution: The $if Method
+
+Use the `$if` method for type-safe conditional selects:
+
+```typescript
+async function getPerson(id: number, withLastName: boolean) {
+  return await db
+    .selectFrom('person')
+    .select('first_name')
+    .$if(withLastName, (qb) => qb.select('last_name'))
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow()
+}
+
+// Return type: { first_name: string, last_name?: string }
+```
+
+### Benefits
+
+- Type-safe: conditional columns are correctly typed as optional
+- Scales well with multiple conditions
+- Clean and maintainable code
+
+### Multiple Conditions Example
+
+```typescript
+async function getPerson(
+  id: number,
+  options: {
+    withLastName?: boolean
+    withEmail?: boolean
+    withAddress?: boolean
+  },
+) {
+  return await db
+    .selectFrom('person')
+    .select('first_name')
+    .$if(options.withLastName, (qb) => qb.select('last_name'))
+    .$if(options.withEmail, (qb) => qb.select('email'))
+    .$if(options.withAddress, (qb) => qb.select(['street', 'city', 'country']))
+    .where('id', '=', id)
+    .executeTakeFirstOrThrow()
+}
+```
+
+## Important Notes
+
+1. **Query Builder Types:**
+
+   - `select`, `returning`, `innerJoin` change the query builder type
+   - `where`, `groupBy`, `orderBy` don't affect the type
+
+2. **Optional Fields:**
+
+   - Fields selected in `$if` are always optional in the return type
+   - This reflects runtime uncertainty about selected columns
+
+3. **Type Safety:**
+   - `$if` maintains type safety without code complexity
+   - Return types accurately reflect possible selections
