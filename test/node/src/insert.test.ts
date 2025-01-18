@@ -790,7 +790,7 @@ for (const dialect of DIALECTS) {
           parameters: ['female', 'divorced', 'female'],
         },
         sqlite: {
-          sql: `insert into "person" ("gender", "marital_status") values (?, ?), (?, default)`,
+          sql: `insert into "person" ("gender", "marital_status") values (?, ?), (?, null)`,
           parameters: ['female', 'divorced', 'female'],
         },
       })
