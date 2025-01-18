@@ -29,7 +29,7 @@
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
     "@types/react": "^18.3.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.7.2"
   },
   "browserslist": {
     "production": [
