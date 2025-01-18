@@ -2,9 +2,34 @@ name: tests
 
 on:
   push:
-    branches: [master, v*]
+    branches:
+      - master
+    paths-ignore:
+      - '.github/workflows/preview.yml'
+      - 'assets/**'
+      - 'docs/**'
+      - 'example/**'
+      - 'site/**'
+      - '.npmignore'
+      - '.prettierignore'
+      - '.prettierrc'
+      - '.renovaterc.json'
+      - '*.md'
+      - 'LICENSE'
   pull_request:
-    branches: [master, v*]
+    paths-ignore:
+      - '.github/workflows/preview.yml'
+      - 'assets/**'
+      - 'docs/**'
+      - 'example/**'
+      - 'site/**'
+      - '.npmignore'
+      - '.prettierignore'
+      - '.prettierrc'
+      - '.renovaterc.json'
+      - '*.md'
+      - 'LICENSE'
+  workflow_dispatch:
 
 jobs:
   node:
@@ -14,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 23.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x, 22.x, 23.x]
 
     steps:
       - uses: actions/checkout@v4
