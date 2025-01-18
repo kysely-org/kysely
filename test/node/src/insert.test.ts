@@ -762,6 +762,42 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
+    // https://github.com/kysely-org/kysely/issues/1310
+    it('should insert multiple rows while falling back to default values in partial rows - different shapes edge case issue - issue #1310', async () => {
+      const query = ctx.db.insertInto('person').values([
+        {
+          gender: 'female',
+          marital_status: 'divorced', // <--- only exists here.
+          children: undefined, // <--- always undefined explicitly.
+        },
+        {
+          gender: 'female',
+          children: undefined, // <--- always undefined explicitly.
+        },
+      ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `insert into "person" ("gender", "marital_status") values ($1, $2), ($3, default)`,
+          parameters: ['female', 'divorced', 'female'],
+        },
+        mysql: {
+          sql: `insert into \`person\` (\`gender\`, \`marital_status\`) values (?, ?), (?, default)`,
+          parameters: ['female', 'divorced', 'female'],
+        },
+        mssql: {
+          sql: `insert into "person" ("gender", "marital_status") values (@1, @2), (@3, default)`,
+          parameters: ['female', 'divorced', 'female'],
+        },
+        sqlite: {
+          sql: `insert into "person" ("gender", "marital_status") values (?, ?), (?, null)`,
+          parameters: ['female', 'divorced', 'female'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('should insert multiple rows while falling back to default values in partial rows - undefined/missing columns', async () => {
       const query = ctx.db.insertInto('person').values([
         {

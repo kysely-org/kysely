@@ -100,11 +100,13 @@ function parseRowValues(
   })
 
   let hasUndefinedOrComplexColumns = false
+  let indexedRowColumns = rowColumns.length
 
   for (const col of rowColumns) {
     const columnIdx = columns.get(col)
 
     if (isUndefined(columnIdx)) {
+      indexedRowColumns--
       continue
     }
 
@@ -117,7 +119,7 @@ function parseRowValues(
     rowValues[columnIdx] = value
   }
 
-  const hasMissingColumns = rowColumns.length < columns.size
+  const hasMissingColumns = indexedRowColumns < columns.size
 
   if (hasMissingColumns || hasUndefinedOrComplexColumns) {
     const defaultValue = DefaultInsertValueNode.create()
