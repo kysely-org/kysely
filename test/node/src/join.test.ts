@@ -725,7 +725,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: {
-            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            sql: 'select * from `person` cross join `pet` order by `person`.`first_name`',
             parameters: [],
           },
           mssql: {
