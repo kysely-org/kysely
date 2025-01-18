@@ -786,6 +786,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   /**
+   * Just like {@link innerJoin} but adds a `cross join` instead of an `inner join`.
+   */
+  crossJoin<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
    *
    * This is only supported by some dialects like PostgreSQL and MySQL.
@@ -890,6 +897,44 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     callback: FN,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  /**
+   * Just like {@link innerJoin} but adds a `cross join lateral` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .crossJoinLateral(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p')
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * cross join lateral (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p"
+   * order by "first_name"
+   * ```
+   */
+  crossJoinLateral<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Joins another table to the query using a `cross apply`.
@@ -2429,6 +2474,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
+  crossJoin(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('CrossJoin', args),
+      ),
+    })
+  }
+
   innerJoinLateral(...args: any): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2445,6 +2500,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
         parseJoin('LateralLeftJoin', args),
+      ),
+    })
+  }
+
+  crossJoinLateral(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LateralCrossJoin', args),
       ),
     })
   }
