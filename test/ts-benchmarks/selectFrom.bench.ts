@@ -5,6 +5,8 @@ import type { Kysely } from '../../dist/esm/index.js'
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
 
+console.log('selectFrom.bench.ts:\n')
+
 bench.baseline(() => {})
 
 bench('kysely.selectFrom(table)', () => {
@@ -66,7 +68,7 @@ bench('kyselyAny.selectFrom(table as alias)', () => {
 
 bench('kyselyAny.selectFrom([table])', () => {
   return kyselyAny.selectFrom(['my_table'])
-}).types([165, 'instantiations'])
+}).types([179, 'instantiations'])
 
 bench('kyselyAny.selectFrom([~table])', () => {
   return kyselyAny.selectFrom(['my_table2'])
