@@ -35,14 +35,13 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -79,11 +78,12 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
+import { JoinType } from '../operation-node/join-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
@@ -408,13 +408,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args),
-      ),
-    })
+    return this.#join('InnerJoin', args)
   }
 
   /**
@@ -432,13 +426,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args),
-      ),
-    })
+    return this.#join('LeftJoin', args)
   }
 
   /**
@@ -456,13 +444,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args),
-      ),
-    })
+    return this.#join('RightJoin', args)
   }
 
   /**
@@ -480,11 +462,15 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
+    return this.#join('FullJoin', args)
+  }
+
+  #join(joinType: JoinType, args: any[]): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('FullJoin', args),
+        parseJoin(joinType, args),
       ),
     })
   }
@@ -1177,11 +1163,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  DeleteQueryBuilder,
-  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId

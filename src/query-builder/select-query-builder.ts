@@ -40,7 +40,6 @@ import {
   UndirectedOrderByExpression,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
@@ -83,6 +82,7 @@ import { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
+import { JoinType } from '../operation-node/join-node.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -243,7 +243,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ eb, selectFrom, or }) => [
+   *   .select(({ eb, selectFrom, or, val, lit }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -260,7 +260,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
-   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
+   *
+   *     // Select a static string value
+   *     val('Some value').as('string_value'),
+   *
+   *     // Select a literal value
+   *     lit(42).as('literal_value'),
    *   ])
    *   .execute()
    * ```
@@ -277,7 +283,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     limit $1
    *   ) as "pet_name",
    *   ("first_name" = $2 or "first_name" = $3) as "jennifer_or_arnold",
-   *   concat(first_name, ' ', last_name) as "full_name"
+   *   concat(first_name, ' ', last_name) as "full_name",
+   *   $4 as "string_value",
+   *   42 as "literal_value"
    * from "person"
    * ```
    *
@@ -572,13 +580,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
   /**
-   * Joins another table to the query using an inner join.
+   * Joins another table to the query using an `inner join`.
    *
    * ### Examples
    *
    * <!-- siteExample("join", "Simple inner join", 10) -->
    *
-   * Simple inner joins can be done by providing a table name and two columns to join:
+   * Simple `inner join`s can be done by providing a table name and two columns to join:
    *
    * ```ts
    * const result = await db
@@ -714,7 +722,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a left join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `left join` instead of an `inner join`.
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
@@ -735,7 +743,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a right join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `right join` instead of an `inner join`.
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
@@ -756,7 +764,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a full join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `full join` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL, MS SQL Server and SQLite.
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
@@ -775,9 +785,18 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     callback: FN,
   ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
+  /**
+   * Just like {@link innerJoin} but adds a `cross join` instead of an `inner join`.
+   */
+  crossJoin<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
+   *
+   * This is only supported by some dialects like PostgreSQL and MySQL.
    *
    * ### Examples
    *
@@ -828,7 +847,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
-   * Just like {@link innerJoin} but adds a lateral left join instead of an inner join.
+   * Just like {@link innerJoin} but adds a `left join lateral` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL and MySQL.
+   *
    * ### Examples
    *
    * ```ts
@@ -875,6 +897,91 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   >(
     table: TE,
     callback: FN,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  /**
+   * Just like {@link innerJoin} but adds a `cross join lateral` instead of an `inner join`.
+   *
+   * This is only supported by some dialects like PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .crossJoinLateral(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p')
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * cross join lateral (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p"
+   * order by "first_name"
+   * ```
+   */
+  crossJoinLateral<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  /**
+   * Joins another table to the query using a `cross apply`.
+   *
+   * This is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .crossApply(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p')
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select "person"."first_name", "p"."name"
+   * from "person"
+   * cross apply (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as "p"
+   * order by "first_name"
+   * ```
+   */
+  crossApply<TE extends TableExpression<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  /**
+   * Just like {@link crossApply} but adds an `outer apply` instead of a `cross apply`.
+   *
+   * This is only supported by some dialects like MS SQL Server.
+   */
+  outerApply<TE extends TableExpression<DB, TB>>(
+    table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
@@ -1929,6 +2036,56 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   /**
+   * Plucks the value type of the output record.
+   *
+   * In SQL, any record type that only has one column can be used as a scalar.
+   * For example a query like this works:
+   *
+   * ```sql
+   * select
+   *   id,
+   *   first_name
+   * from
+   *   person as p
+   * where
+   *   -- This is ok since the query only selects one row
+   *   -- and one column.
+   *  (select name from pet where pet.owner_id = p.id limit 1) = 'Doggo'
+   * ```
+   *
+   * In many cases Kysely handles this automatically and picks the correct
+   * scalar type instead of the record type, but sometimes you need to give
+   * Kysely a hint.
+   *
+   * One such case are custom helper functions that take `Expression<T>`
+   * instances as inputs:
+   *
+   * ```ts
+   * import type { Expression } from 'kysely'
+   *
+   * function doStuff(expr: Expression<string>) {
+   *   // ...
+   * }
+   *
+   * // Error! This is not ok because the expression type is
+   * // `{ first_name: string }` instead of `string`.
+   * // doStuff(db.selectFrom('person').select('first_name'))
+   *
+   * // Ok! This is ok since we've plucked the `string` type of the
+   * // only column in the output type.
+   * doStuff(db.selectFrom('person').select('first_name').$asScalar())
+   * ```
+   *
+   * This function has absolutely no effect on the generated SQL. It's
+   * purely a type-level helper.
+   *
+   * This method returns an `ExpressionWrapper` instead of a `SelectQueryBuilder`
+   * since the return value should only be used as a part of an expression
+   * and never executed as the main query.
+   */
+  $asScalar<K extends keyof O = keyof O>(): ExpressionWrapper<DB, TB, O[K]>
+
+  /**
    * Narrows (parts of) the output type of the query.
    *
    * Kysely tries to be as type-safe as possible, but in some cases we have to make
@@ -2279,61 +2436,51 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   innerJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args),
-      ),
-    })
+    return this.#join('InnerJoin', args)
   }
 
   leftJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args),
-      ),
-    })
+    return this.#join('LeftJoin', args)
   }
 
   rightJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args),
-      ),
-    })
+    return this.#join('RightJoin', args)
   }
 
   fullJoin(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('FullJoin', args),
-      ),
-    })
+    return this.#join('FullJoin', args)
+  }
+
+  crossJoin(...args: any): any {
+    return this.#join('CrossJoin', args)
   }
 
   innerJoinLateral(...args: any): any {
-    return new SelectQueryBuilderImpl({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralInnerJoin', args),
-      ),
-    })
+    return this.#join('LateralInnerJoin', args)
   }
 
   leftJoinLateral(...args: any): any {
+    return this.#join('LateralLeftJoin', args)
+  }
+
+  crossJoinLateral(...args: any): any {
+    return this.#join('LateralCrossJoin', args)
+  }
+
+  crossApply(...args: any): any {
+    return this.#join('CrossApply', args)
+  }
+
+  outerApply(...args: any[]): any {
+    return this.#join('OuterApply', args)
+  }
+
+  #join(joinType: JoinType, args: any[]): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('LateralLeftJoin', args),
+        parseJoin(joinType, args),
       ),
     })
   }
@@ -2561,6 +2708,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new ExpressionWrapper(this.toOperationNode())
   }
 
+  $asScalar(): ExpressionWrapper<DB, TB, any> {
+    return new ExpressionWrapper(this.toOperationNode())
+  }
+
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2647,11 +2798,6 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 }
 
-preventAwait(
-  SelectQueryBuilderImpl,
-  "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
-
 export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
   props: SelectQueryBuilderProps,
 ): SelectQueryBuilder<DB, TB, O> {
@@ -2708,11 +2854,6 @@ class AliasedSelectQueryBuilderImpl<
     )
   }
 }
-
-preventAwait(
-  AliasedSelectQueryBuilderImpl,
-  "don't await AliasedSelectQueryBuilder instances directly. AliasedSelectQueryBuilder should never be executed directly since it's always a part of another query.",
-)
 
 export type SelectQueryBuilderWithInnerJoin<
   DB,

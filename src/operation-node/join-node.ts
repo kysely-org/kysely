@@ -7,9 +7,13 @@ export type JoinType =
   | 'LeftJoin'
   | 'RightJoin'
   | 'FullJoin'
+  | 'CrossJoin'
   | 'LateralInnerJoin'
   | 'LateralLeftJoin'
+  | 'LateralCrossJoin'
   | 'Using'
+  | 'OuterApply'
+  | 'CrossApply'
 
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'

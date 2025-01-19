@@ -12,7 +12,6 @@ import {
 } from '../parser/partition-by-parser.js'
 import { StringReference } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 
 export class OverBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
@@ -106,11 +105,6 @@ export class OverBuilder<DB, TB extends keyof DB>
     return this.#props.overNode
   }
 }
-
-preventAwait(
-  OverBuilder,
-  "don't await OverBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 export interface OverBuilderProps {
   readonly overNode: OverNode

@@ -94,6 +94,8 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
+import { OrActionNode } from './or-action-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -195,6 +197,8 @@ export class OperationNodeTransformer {
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
+    RefreshMaterializedViewNode:
+      this.transformRefreshMaterializedView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedNode: this.transformGenerated.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
@@ -228,6 +232,7 @@ export class OperationNodeTransformer {
     FetchNode: this.transformFetch.bind(this),
     TopNode: this.transformTop.bind(this),
     OutputNode: this.transformOutput.bind(this),
+    OrActionNode: this.transformOrAction.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -389,6 +394,7 @@ export class OperationNodeTransformer {
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
+      orAction: this.transformNode(node.orAction),
       replace: node.replace,
       explain: this.transformNode(node.explain),
       defaultValues: node.defaultValues,
@@ -802,6 +808,17 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): RefreshMaterializedViewNode {
+    return requireAllProps<RefreshMaterializedViewNode>({
+      kind: 'RefreshMaterializedViewNode',
+      name: this.transformNode(node.name),
+      concurrently: node.concurrently,
+      withNoData: node.withNoData,
+    })
+  }
+
   protected transformDropView(node: DropViewNode): DropViewNode {
     return requireAllProps<DropViewNode>({
       kind: 'DropViewNode',
@@ -887,11 +904,12 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
+      func: node.func,
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       orderBy: this.transformNode(node.orderBy),
+      withinGroup: this.transformNode(node.withinGroup),
       filter: this.transformNode(node.filter),
-      func: node.func,
       over: this.transformNode(node.over),
     })
   }
@@ -1025,6 +1043,7 @@ export class OperationNodeTransformer {
       top: this.transformNode(node.top),
       endModifiers: this.transformNodeList(node.endModifiers),
       output: this.transformNode(node.output),
+      returning: this.transformNode(node.returning),
     })
   }
 
@@ -1113,6 +1132,11 @@ export class OperationNodeTransformer {
   protected transformDefaultInsertValue(
     node: DefaultInsertValueNode,
   ): DefaultInsertValueNode {
+    // An Object.freezed leaf node. No need to clone.
+    return node
+  }
+
+  protected transformOrAction(node: OrActionNode): OrActionNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }

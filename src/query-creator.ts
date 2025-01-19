@@ -11,17 +11,8 @@ import { SelectQueryNode } from './operation-node/select-query-node.js'
 import { UpdateQueryNode } from './operation-node/update-query-node.js'
 import {
   parseTable,
-  parseTableExpression,
   parseTableExpressionOrList,
-  TableExpression,
-  From,
   TableExpressionOrList,
-  FromTables,
-  TableReference,
-  TableReferenceOrList,
-  ExtractTableAlias,
-  AnyAliasedTable,
-  PickTableWithAlias,
   SimpleTableReference,
   parseAliasedTable,
 } from './parser/table-parser.js'
@@ -52,6 +43,10 @@ import {
 import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
 import { MergeQueryNode } from './operation-node/merge-query-node.js'
 import { MergeResult } from './query-builder/merge-result.js'
+import { SelectFrom } from './parser/select-from-parser.js'
+import { DeleteFrom } from './parser/delete-from-parser.js'
+import { UpdateTable } from './parser/update-parser.js'
+import { MergeInto } from './parser/merge-into-parser.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -167,39 +162,17 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<TE extends keyof DB & string>(
-    from: TE[],
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends TableExpression<DB, never>>(
-    from: TE[],
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
-
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends TableExpressionOrList<DB, never>>(
     from: TE,
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE,
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, never>>(
-    from: TE,
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
-
-  selectFrom(from: TableExpressionOrList<any, any>): any {
+  ): SelectFrom<DB, never, TE> {
     return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: SelectQueryNode.createFrom(
-        parseTableExpressionOrList(from),
+        parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as SelectFrom<DB, never, TE>
   }
 
   /**
@@ -325,10 +298,14 @@ export class QueryCreator<DB> {
   }
 
   /**
-   * Creates a replace query.
+   * Creates a "replace into" query.
    *
-   * A MySQL-only statement similar to {@link InsertQueryBuilder.onDuplicateKeyUpdate}
-   * that deletes and inserts values on collision instead of updating existing rows.
+   * This is only supported by some dialects like MySQL or SQLite.
+   *
+   * Similar to MySQL's {@link InsertQueryBuilder.onDuplicateKeyUpdate} that deletes
+   * and inserts values on collision instead of updating existing rows.
+   *
+   * An alias of SQLite's {@link InsertQueryBuilder.orReplace}.
    *
    * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
    * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
@@ -345,9 +322,15 @@ export class QueryCreator<DB> {
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    *
    * console.log(result.insertId)
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * replace into `person` (`first_name`, `last_name`) values (?, ?)
    * ```
    */
   replaceInto<T extends keyof DB & string>(
@@ -413,31 +396,17 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
-  deleteFrom<TR extends keyof DB & string>(
-    from: TR[],
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
-
-  deleteFrom<TR extends TableReference<DB>>(
-    tables: TR[],
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
-
-  deleteFrom<TR extends keyof DB & string>(
-    from: TR,
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
-
-  deleteFrom<TR extends TableReference<DB>>(
-    table: TR,
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
-
-  deleteFrom(tables: TableReferenceOrList<DB>): any {
+  deleteFrom<TE extends TableExpressionOrList<DB, never>>(
+    from: TE,
+  ): DeleteFrom<DB, TE> {
     return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: DeleteQueryNode.create(
-        parseTableExpressionOrList(tables),
+        parseTableExpressionOrList(from as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as DeleteFrom<DB, TE>
   }
 
   /**
@@ -463,42 +432,17 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
-  updateTable<TR extends keyof DB & string>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    DB,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends AnyAliasedTable<DB>>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends TableReference<DB>>(
-    table: TR,
-  ): UpdateQueryBuilder<
-    From<DB, TR>,
-    FromTables<DB, never, TR>,
-    FromTables<DB, never, TR>,
-    UpdateResult
-  >
-
-  updateTable<TR extends TableReference<DB>>(table: TR): any {
+  updateTable<TE extends TableExpressionOrList<DB, never>>(
+    tables: TE,
+  ): UpdateTable<DB, TE> {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(table),
+        parseTableExpressionOrList(tables as TableExpressionOrList<any, any>),
         this.#props.withNode,
       ),
-    })
+    }) as UpdateTable<DB, TE>
   }
 
   /**
@@ -584,19 +528,9 @@ export class QueryCreator<DB> {
    * then delete
    * ```
    */
-  mergeInto<TR extends keyof DB & string>(
+  mergeInto<TR extends SimpleTableReference<DB>>(
     targetTable: TR,
-  ): MergeQueryBuilder<DB, TR, MergeResult>
-
-  mergeInto<TR extends AnyAliasedTable<DB>>(
-    targetTable: TR,
-  ): MergeQueryBuilder<
-    DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    MergeResult
-  >
-
-  mergeInto<TR extends SimpleTableReference<DB>>(targetTable: TR): any {
+  ): MergeInto<DB, TR> {
     return new MergeQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -604,7 +538,7 @@ export class QueryCreator<DB> {
         parseAliasedTable(targetTable),
         this.#props.withNode,
       ),
-    })
+    }) as MergeInto<DB, TR>
   }
 
   /**

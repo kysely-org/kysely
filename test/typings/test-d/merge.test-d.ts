@@ -7,12 +7,14 @@ import {
   MergeQueryBuilder,
   MergeResult,
   NotMatchedThenableMergeQueryBuilder,
+  SelectType,
   Selectable,
   UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
+  mergeAction,
   sql,
 } from '..'
-import { Database, Person } from '../shared'
+import { Database, Person, Pet } from '../shared'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')
@@ -422,35 +424,105 @@ async function testThenInsert(
   )
 }
 
-async function testOutput(db: Kysely<Database>) {
-  // One returning expression
-  const r1 = await db
-    .mergeInto('person')
-    .using('pet', 'pet.owner_id', 'person.id')
-    .whenMatched()
-    .thenDelete()
-    .output('deleted.id')
-    .executeTakeFirst()
+async function testReturning(
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
+) {
+  // One returning expression, target table
+  const r1 = await baseQuery.returning('person.id').execute()
 
-  expectType<{ id: number } | undefined>(r1)
+  expectType<{ id: number }[]>(r1)
+
+  // One returning expression, source table
+  const r2 = await baseQuery.returning('pet.name').execute()
+
+  expectType<{ name: string }[]>(r2)
 
   // Multiple returning expressions
-  const r2 = await db
-    .mergeInto('person')
-    .using('pet', 'pet.owner_id', 'person.id')
-    .whenMatched()
-    .thenDelete()
-    .output(['deleted.id', 'deleted.first_name as fn'])
+  const r3 = await baseQuery
+    .returning(['person.id', 'pet.name as pet_name'])
     .execute()
 
-  expectType<{ id: number; fn: string }[]>(r2)
+  expectType<{ id: number; pet_name: string }[]>(r3)
 
   // Non-column reference returning expressions
-  const r3 = await db
-    .mergeInto('person')
-    .using('pet', 'pet.owner_id', 'person.id')
-    .whenMatched()
-    .thenUpdateSet('age', (eb) => eb(eb.ref('age'), '+', 20))
+  const r4 = await baseQuery
+    .returning([
+      'person.age',
+      sql<string>`concat(person.first_name, ' ', person.last_name)`.as(
+        'full_name',
+      ),
+    ])
+    .execute()
+
+  expectType<{ age: number; full_name: string }[]>(r4)
+
+  // Return all columns
+  const r5 = await baseQuery.returningAll().executeTakeFirstOrThrow()
+
+  expectType<{
+    [K in keyof Person | keyof Pet]:
+      | (K extends keyof Person ? SelectType<Person[K]> : never)
+      | (K extends keyof Pet ? SelectType<Pet[K]> : never)
+  }>(r5)
+
+  // Return all target columns
+  const r6 = await baseQuery.returningAll('person').executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r6)
+
+  // Return all source columns
+  const r7 = await baseQuery.returningAll('pet').executeTakeFirstOrThrow()
+
+  expectType<Selectable<Pet>>(r7)
+
+  // Return single merge_action
+  const r8 = await baseQuery.returning(mergeAction().as('action')).execute()
+
+  expectType<{ action: 'INSERT' | 'UPDATE' | 'DELETE' }[]>(r8)
+
+  // Return multi merge_action
+  const r9 = await baseQuery
+    .returning([mergeAction().as('action'), 'person.id'])
+    .execute()
+
+  expectType<{ action: 'INSERT' | 'UPDATE' | 'DELETE'; id: number }[]>(r9)
+
+  // Non-existent column
+  expectError(baseQuery.returning('not_column'))
+  expectError(baseQuery.returning('person.not_column'))
+  expectError(baseQuery.returning('pet.not_column'))
+
+  // Non-existent prefix
+  expectError(baseQuery.returning('foo.age'))
+  expectError(baseQuery.returningAll('foo'))
+
+  // unaliased merge_action
+  expectError(baseQuery.returning(mergeAction()).execute())
+  expectError(baseQuery.returning([mergeAction(), 'person.id']).execute())
+}
+
+async function testOutput(
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
+) {
+  // One returning expression, deleted values
+  const r1 = await baseQuery.output('deleted.id').execute()
+
+  expectType<{ id: number }[]>(r1)
+
+  // One returning expression, inserted values
+  const r2 = await baseQuery.output('inserted.id').execute()
+
+  expectType<{ id: number }[]>(r2)
+
+  // Multiple returning expressions
+  const r3 = await baseQuery
+    .output(['deleted.id', 'inserted.first_name as fn'])
+    .execute()
+
+  expectType<{ id: number; fn: string }[]>(r3)
+
+  // Non-column reference returning expressions
+  const r4 = await baseQuery
     .output([
       'inserted.age',
       sql<string>`concat(deleted.first_name, ' ', deleted.last_name)`.as(
@@ -459,66 +531,21 @@ async function testOutput(db: Kysely<Database>) {
     ])
     .execute()
 
-  expectType<{ age: number; full_name: string }[]>(r3)
+  expectType<{ age: number; full_name: string }[]>(r4)
 
   // Return all columns
-  const r4 = await db
-    .mergeInto('person')
-    .using('pet', 'person.id', 'pet.owner_id')
-    .whenNotMatched()
-    .thenInsertValues({
-      gender: 'female',
-      age: 15,
-      first_name: 'Jane',
-    })
-    .outputAll('inserted')
-    .executeTakeFirstOrThrow()
+  const r5 = await baseQuery.outputAll('inserted').executeTakeFirstOrThrow()
 
-  expectType<Selectable<Person>>(r4)
+  expectType<Selectable<Person>>(r5)
 
   // Non-existent column
-  expectError(
-    db
-      .mergeInto('person')
-      .using('pet', 'pet.owner_id', 'person.id')
-      .whenMatched()
-      .thenDelete()
-      .output('inserted.not_column'),
-  )
+  expectError(baseQuery.output('inserted.not_column'))
 
   // Without prefix
-  expectError(
-    db
-      .mergeInto('person')
-      .using('pet', 'pet.owner_id', 'person.id')
-      .whenMatched()
-      .thenDelete()
-      .output('age'),
-  )
-  expectError(
-    db
-      .mergeInto('person')
-      .using('pet', 'pet.owner_id', 'person.id')
-      .whenMatched()
-      .thenDelete()
-      .outputAll(),
-  )
+  expectError(baseQuery.output('age'))
+  expectError(baseQuery.outputAll())
 
   // Non-existent prefix
-  expectError(
-    db
-      .mergeInto('person')
-      .using('pet', 'pet.owner_id', 'person.id')
-      .whenMatched()
-      .thenDelete()
-      .output('foo.age'),
-  )
-  expectError(
-    db
-      .mergeInto('person')
-      .using('pet', 'pet.owner_id', 'person.id')
-      .whenMatched()
-      .thenDelete()
-      .outputAll('foo'),
-  )
+  expectError(baseQuery.output('foo.age'))
+  expectError(baseQuery.outputAll('foo'))
 }
