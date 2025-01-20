@@ -846,6 +846,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.where)
     }
 
+    if (node.orderBy) {
+      this.append(' ')
+      this.visitNode(node.orderBy)
+    }
+
     if (node.limit) {
       this.append(' ')
       this.visitNode(node.limit)
