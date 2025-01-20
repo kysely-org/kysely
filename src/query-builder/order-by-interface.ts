@@ -171,4 +171,28 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
     expr: OE,
     modifiers: Expression<any>,
   ): OrderByInterface<DB, TB, O>
+
+  /**
+   * Clears the `order by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const query = db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .orderBy('id', 'desc')
+   *
+   * const results = await query
+   *   .clearOrderBy()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearOrderBy(): OrderByInterface<DB, TB, O>
 }
