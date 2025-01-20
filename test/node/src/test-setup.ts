@@ -38,7 +38,7 @@ import {
 } from '../../../'
 import {
   OrderByDirection,
-  UndirectedOrderByExpression,
+  OrderByExpression,
 } from '../../../dist/cjs/parser/order-by-parser'
 import type { ConnectionConfiguration } from 'tedious'
 
@@ -509,7 +509,7 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
 
 export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
   orderBy: QB extends SelectQueryBuilder<infer DB, infer TB, infer O>
-    ? UndirectedOrderByExpression<DB, TB, O>
+    ? OrderByExpression<DB, TB, O>
     : never,
   direction: OrderByDirection | undefined,
   dialect: BuiltInDialect,

@@ -22,12 +22,17 @@ import {
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
-  OrderByDirectionExpression,
+  DirectedOrderByStringReference,
+  OrderByDirection,
+  OrderByExpression,
+  OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
+import { OrderByInterface } from './order-by-interface.js'
+import { QueryNode } from '../operation-node/query-node.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements AliasableExpression<O>
+  implements OrderByInterface<DB, TB, never>, AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
@@ -124,15 +129,53 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * ```
    */
-  orderBy<OE extends SimpleReferenceExpression<DB, TB>>(
-    orderBy: OE,
-    direction?: OrderByDirectionExpression,
-  ): AggregateFunctionBuilder<DB, TB, O> {
+  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, never>
+      | DirectedOrderByStringReference<DB, TB, never>,
+  >(exprs: ReadonlyArray<OE>): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, never>>(
+    expr: OE,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  orderBy(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+      aggregateFunctionNode: QueryNode.cloneWithOrderByItems(
         this.#props.aggregateFunctionNode,
-        parseOrderBy([orderBy, direction]),
+        parseOrderBy(args),
+      ),
+    })
+  }
+
+  clearOrderBy(): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: QueryNode.cloneWithoutOrderBy(
+        this.#props.aggregateFunctionNode,
       ),
     })
   }
@@ -165,9 +208,9 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  withinGroupOrderBy<OE extends SimpleReferenceExpression<DB, TB>>(
-    orderBy: OE,
-    direction?: OrderByDirectionExpression,
+  withinGroupOrderBy(
+    orderBy: SimpleReferenceExpression<DB, TB>,
+    direction?: OrderByDirection,
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,

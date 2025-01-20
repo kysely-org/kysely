@@ -51,9 +51,10 @@ import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import {
-  OrderByDirectionExpression,
   OrderByExpression,
   parseOrderBy,
+  OrderByModifiers,
+  DirectedOrderByStringReference,
 } from '../parser/order-by-parser.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
@@ -79,12 +80,14 @@ import {
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
 import { JoinType } from '../operation-node/join-node.js'
+import { OrderByInterface } from './order-by-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'deleted'>,
+    OrderByInterface<DB, TB, never>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -711,76 +714,57 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Clears the `order by` clause from the query.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.deleteFrom('pet')
-   *   .returningAll()
-   *   .where('name', '=', 'Max')
-   *   .orderBy('id')
-   *   .clearOrderBy()
-   *   .execute()
-   * ```
-   *
-   * The generated SQL(PostgreSQL):
-   *
-   * ```sql
-   * delete from "pet" where "name" = "Max" returning *
-   * ```
+   * @description This is only supported by some dialects like MySQL.
    */
-  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder<DB, TB, O>({
+  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL.
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, never>
+      | DirectedOrderByStringReference<DB, TB, never>,
+  >(exprs: ReadonlyArray<OE>): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL.
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, never>>(
+    expr: OE,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL.
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  orderBy(...args: any[]): any {
+    return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+      queryNode: QueryNode.cloneWithOrderByItems(
+        this.#props.queryNode,
+        parseOrderBy(args),
+      ),
     })
   }
 
-  /**
-   * Adds an `order by` clause to the query.
-   *
-   * `orderBy` calls are additive. To order by multiple columns, call `orderBy`
-   * multiple times.
-   *
-   * The first argument is the expression to order by and the second is the
-   * order (`asc` or `desc`).
-   *
-   * An `order by` clause in a delete query is only supported by some dialects
-   * like MySQL.
-   *
-   * See {@link SelectQueryBuilder.orderBy} for more examples.
-   *
-   * ### Examples
-   *
-   * Delete 5 oldest items in a table:
-   *
-   * ```ts
-   * await db
-   *   .deleteFrom('pet')
-   *   .orderBy('created_at')
-   *   .limit(5)
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * delete from `pet`
-   * order by `created_at`
-   * limit ?
-   * ```
-   */
-  orderBy(
-    orderBy: OrderByExpression<DB, TB, O>,
-    direction?: OrderByDirectionExpression,
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
+  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithOrderByItems(
-        this.#props.queryNode,
-        parseOrderBy([orderBy, direction]),
-      ),
+      queryNode: QueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
 
