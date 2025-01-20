@@ -1,3 +1,4 @@
+import { Expression } from '../expression/expression.js'
 import {
   OrderByExpression,
   DirectedOrderByStringReference,
@@ -160,5 +161,14 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
    */
   orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
     expr: OE,
+  ): OrderByInterface<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(
+    expr: OE,
+    modifiers: Expression<any>,
   ): OrderByInterface<DB, TB, O>
 }
