@@ -503,8 +503,8 @@ export class OperationNodeTransformer {
     return requireAllProps<OrderByItemNode>({
       kind: 'OrderByItemNode',
       orderBy: this.transformNode(node.orderBy),
-      direction: node.direction,
-      collation: node.collation,
+      direction: this.transformNode(node.direction),
+      collation: this.transformNode(node.collation),
       nulls: node.nulls,
     })
   }
