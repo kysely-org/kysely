@@ -768,6 +768,11 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.direction)
     }
+
+    if (node.nulls) {
+      this.append(' nulls ')
+      this.append(node.nulls)
+    }
   }
 
   protected override visitGroupBy(node: GroupByNode): void {
