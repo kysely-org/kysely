@@ -22,6 +22,8 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
    * (`asc` or `desc`), a callback that accepts and returns an {@link OrderByItemBuilder}
    * or an expression.
    *
+   * See {@link clearOrderBy} to remove the `order by` clause from a query.
+   *
    * ### Examples
    *
    * Single column/expression per call:
@@ -174,6 +176,8 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
 
   /**
    * Clears the `order by` clause from the query.
+   *
+   * See {@link orderBy} for adding an `order by` clause or item to a query.
    *
    * ### Examples
    *
