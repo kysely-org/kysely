@@ -14,6 +14,7 @@ bench('kysely.selectFrom(table)', () => {
 }).types([372, 'instantiations'])
 
 bench('kysely.selectFrom(~table)', () => {
+  // @ts-expect-error
   return kysely.selectFrom('my_table2')
 }).types([6864, 'instantiations'])
 
@@ -26,6 +27,7 @@ bench('kysely.selectFrom([table])', () => {
 }).types([427, 'instantiations'])
 
 bench('kysely.selectFrom([~table])', () => {
+  // @ts-expect-error
   return kysely.selectFrom(['my_table2'])
 }).types([6914, 'instantiations'])
 
@@ -43,6 +45,7 @@ bench('kysely.selectFrom([table, table])', () => {
 bench('kysely.selectFrom([table, ~table])', () => {
   return kysely.selectFrom([
     'my_table',
+    // @ts-expect-error
     'table_000a8a0cb7f265a624c851d3e7f8b9462',
   ])
 }).types([6917, 'instantiations'])
