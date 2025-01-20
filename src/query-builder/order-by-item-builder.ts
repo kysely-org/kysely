@@ -1,5 +1,4 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { Collation } from '../parser/order-by-parser.js'
 import { freeze } from '../util/object-utils.js'
@@ -68,7 +67,7 @@ export class OrderByItemBuilder implements OperationNodeSource {
     })
   }
 
-  toOperationNode(): OperationNode {
+  toOperationNode(): OrderByItemNode {
     return this.#props.node
   }
 }
