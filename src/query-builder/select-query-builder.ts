@@ -1119,7 +1119,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   orderBy<OE extends OrderByExpression<DB, TB, O>>(
     expr: OE,
     modifiers: Expression<any>,
-  ): OrderByInterface<DB, TB, O>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a limit clause to the query.

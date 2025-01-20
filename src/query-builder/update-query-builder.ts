@@ -489,7 +489,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   orderBy<OE extends OrderByExpression<DB, TB, never>>(
     expr: OE,
     modifiers: Expression<any>,
-  ): OrderByInterface<DB, TB, O>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
 
   orderBy(...args: any[]): any {
     return new UpdateQueryBuilder({
