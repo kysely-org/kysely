@@ -96,6 +96,7 @@ import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 import { OrActionNode } from './or-action-node.js'
+import { CollateNode } from './collate-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -233,6 +234,7 @@ export class OperationNodeTransformer {
     TopNode: this.transformTop.bind(this),
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
+    CollateNode: this.transformCollate.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -501,7 +503,9 @@ export class OperationNodeTransformer {
     return requireAllProps<OrderByItemNode>({
       kind: 'OrderByItemNode',
       orderBy: this.transformNode(node.orderBy),
-      direction: this.transformNode(node.direction),
+      direction: node.direction,
+      collation: node.collation,
+      nulls: node.nulls,
     })
   }
 
@@ -534,6 +538,7 @@ export class OperationNodeTransformer {
       limit: this.transformNode(node.limit),
       top: this.transformNode(node.top),
       output: this.transformNode(node.output),
+      orderBy: this.transformNode(node.orderBy),
     })
   }
 
@@ -1137,6 +1142,11 @@ export class OperationNodeTransformer {
   }
 
   protected transformOrAction(node: OrActionNode): OrActionNode {
+    // An Object.freezed leaf node. No need to clone.
+    return node
+  }
+
+  protected transformCollate(node: CollateNode): CollateNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }

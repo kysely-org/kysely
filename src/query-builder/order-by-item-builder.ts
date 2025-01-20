@@ -1,5 +1,7 @@
+import { CollateNode } from '../operation-node/collate-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import { Collation } from '../parser/order-by-parser.js'
 import { freeze } from '../util/object-utils.js'
 
@@ -17,7 +19,9 @@ export class OrderByItemBuilder implements OperationNodeSource {
    */
   desc(): OrderByItemBuilder {
     return new OrderByItemBuilder({
-      node: OrderByItemNode.cloneWith(this.#props.node, { direction: 'desc' }),
+      node: OrderByItemNode.cloneWith(this.#props.node, {
+        direction: RawNode.createWithSql('desc'),
+      }),
     })
   }
 
@@ -28,7 +32,9 @@ export class OrderByItemBuilder implements OperationNodeSource {
    */
   asc(): OrderByItemBuilder {
     return new OrderByItemBuilder({
-      node: OrderByItemNode.cloneWith(this.#props.node, { direction: 'asc' }),
+      node: OrderByItemNode.cloneWith(this.#props.node, {
+        direction: RawNode.createWithSql('asc'),
+      }),
     })
   }
 
@@ -63,7 +69,9 @@ export class OrderByItemBuilder implements OperationNodeSource {
    */
   collate(collation: Collation): OrderByItemBuilder {
     return new OrderByItemBuilder({
-      node: OrderByItemNode.cloneWith(this.#props.node, { collation }),
+      node: OrderByItemNode.cloneWith(this.#props.node, {
+        collation: CollateNode.create(collation),
+      }),
     })
   }
 

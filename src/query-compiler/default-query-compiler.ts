@@ -114,6 +114,7 @@ import { OutputNode } from '../operation-node/output-node.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
 import { logOnce } from '../util/log-once.js'
+import { CollateNode } from '../operation-node/collate-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -757,6 +758,11 @@ export class DefaultQueryCompiler
 
   protected override visitOrderByItem(node: OrderByItemNode): void {
     this.visitNode(node.orderBy)
+
+    if (node.collation) {
+      this.append(' ')
+      this.visitNode(node.collation)
+    }
 
     if (node.direction) {
       this.append(' ')
@@ -1682,6 +1688,11 @@ export class DefaultQueryCompiler
 
   protected override visitOrAction(node: OrActionNode): void {
     this.append(node.action)
+  }
+
+  protected override visitCollate(node: CollateNode): void {
+    this.append('collate ')
+    this.append(node.collation)
   }
 
   protected append(str: string): void {
