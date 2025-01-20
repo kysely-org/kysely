@@ -51,12 +51,12 @@ bench('kysely..orderBy(column, asc)', () =>
 bench('kysely..orderBy(~column, asc)', () =>
   // @ts-expect-error
   query.orderBy('col_164b7896ec8e770207febe0812c5f052_', 'asc'),
-).types([136, 'instantiations'])
+).types([183, 'instantiations'])
 
 bench('kysely..orderBy(column, ~asc)', () =>
   // @ts-expect-error
   query.orderBy('col_164b7896ec8e770207febe0812c5f052', 'asc_'),
-).types([124, 'instantiations'])
+).types([171, 'instantiations'])
 
 bench('kysely..orderBy(column, desc)', () =>
   query.orderBy('col_164b7896ec8e770207febe0812c5f052', 'desc'),
@@ -169,7 +169,7 @@ bench('kyselyAny..orderBy(~column, asc)', () =>
 bench('kyselyAny..orderBy(column, ~asc)', () =>
   // @ts-expect-error
   queryAny.orderBy('col_164b7896ec8e770207febe0812c5f052', 'asc_'),
-).types([124, 'instantiations'])
+).types([171, 'instantiations'])
 
 bench('kyselyAny..orderBy(column, desc)', () =>
   queryAny.orderBy('col_164b7896ec8e770207febe0812c5f052', 'desc'),
