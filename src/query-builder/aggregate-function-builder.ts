@@ -9,10 +9,7 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import {
-  ReferenceExpression,
-  SimpleReferenceExpression,
-} from '../parser/reference-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -23,7 +20,6 @@ import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   DirectedOrderByStringReference,
-  OrderByDirection,
   OrderByExpression,
   OrderByModifiers,
   parseOrderBy,
@@ -208,15 +204,44 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  withinGroupOrderBy(
-    orderBy: SimpleReferenceExpression<DB, TB>,
-    direction?: OrderByDirection,
-  ): AggregateFunctionBuilder<DB, TB, O> {
+  withinGroupOrderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `withinGroupOrderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  withinGroupOrderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `withinGroupOrderBy(expr, direction)` call.
+   */
+  withinGroupOrderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `withinGroupOrderBy(expr, (ob) => ...)` instead.
+   */
+  withinGroupOrderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  withinGroupOrderBy(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
         this.#props.aggregateFunctionNode,
-        parseOrderBy([orderBy, direction]),
+        parseOrderBy(args),
         true,
       ),
     })
