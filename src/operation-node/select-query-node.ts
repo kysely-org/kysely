@@ -106,7 +106,10 @@ export const SelectQueryNode = freeze({
   /**
    * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
    */
-  cloneWithOrderByItems: QueryNode.cloneWithOrderByItems<SelectQueryNode>,
+  cloneWithOrderByItems: (
+    node: SelectQueryNode,
+    items: ReadonlyArray<OrderByItemNode>,
+  ) => QueryNode.cloneWithOrderByItems(node, items),
 
   cloneWithGroupByItems(
     selectNode: SelectQueryNode,
@@ -199,7 +202,8 @@ export const SelectQueryNode = freeze({
   /**
    * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
    */
-  cloneWithoutOrderBy: QueryNode.cloneWithoutOrderBy<SelectQueryNode>,
+  cloneWithoutOrderBy: (node: SelectQueryNode) =>
+    QueryNode.cloneWithoutOrderBy(node),
 
   cloneWithoutGroupBy(select: SelectQueryNode): SelectQueryNode {
     return freeze({
