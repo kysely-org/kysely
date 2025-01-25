@@ -17,7 +17,7 @@ import { freeze } from '../util/object-utils.js'
 import { OrderByInterface } from './order-by-interface.js'
 
 export class OverBuilder<DB, TB extends keyof DB>
-  implements OrderByInterface<DB, TB, never>, OperationNodeSource
+  implements OrderByInterface<DB, TB, {}>, OperationNodeSource
 {
   readonly #props: OverBuilderProps
 
@@ -46,7 +46,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * from "person"
    * ```
    */
-  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
     expr: OE,
     modifiers?: OrderByModifiers,
   ): OverBuilder<DB, TB>
@@ -57,15 +57,15 @@ export class OverBuilder<DB, TB extends keyof DB>
    */
   orderBy<
     OE extends
-      | OrderByExpression<DB, TB, never>
-      | DirectedOrderByStringReference<DB, TB, never>,
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
   >(exprs: ReadonlyArray<OE>): OverBuilder<DB, TB>
 
   // TODO: remove in v0.29
   /**
    * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
    */
-  orderBy<OE extends DirectedOrderByStringReference<DB, TB, never>>(
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
     expr: OE,
   ): OverBuilder<DB, TB>
 
@@ -73,7 +73,7 @@ export class OverBuilder<DB, TB extends keyof DB>
   /**
    * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
    */
-  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
     expr: OE,
     modifiers: Expression<any>,
   ): OverBuilder<DB, TB>

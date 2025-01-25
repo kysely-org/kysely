@@ -32,7 +32,7 @@ import { OrderByInterface } from './order-by-interface.js'
 import { QueryNode } from '../operation-node/query-node.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements OrderByInterface<DB, TB, never>, AliasableExpression<O>
+  implements OrderByInterface<DB, TB, {}>, AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
@@ -129,7 +129,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * ```
    */
-  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
     expr: OE,
     modifiers?: OrderByModifiers,
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -140,15 +140,15 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   orderBy<
     OE extends
-      | OrderByExpression<DB, TB, never>
-      | DirectedOrderByStringReference<DB, TB, never>,
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
   >(exprs: ReadonlyArray<OE>): AggregateFunctionBuilder<DB, TB, O>
 
   // TODO: remove in v0.29
   /**
    * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
    */
-  orderBy<OE extends DirectedOrderByStringReference<DB, TB, never>>(
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
     expr: OE,
   ): AggregateFunctionBuilder<DB, TB, O>
 
@@ -156,7 +156,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
    */
-  orderBy<OE extends OrderByExpression<DB, TB, never>>(
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
     expr: OE,
     modifiers: Expression<any>,
   ): AggregateFunctionBuilder<DB, TB, O>
