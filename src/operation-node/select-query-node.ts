@@ -17,6 +17,7 @@ import { ExplainNode } from './explain-node.js'
 import { SetOperationNode } from './set-operation-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
+import { QueryNode } from './query-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -100,6 +101,12 @@ export const SelectQueryNode = freeze({
         : freeze([modifier]),
     })
   },
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithOrderByItems: QueryNode.cloneWithOrderByItems<SelectQueryNode>,
 
   cloneWithGroupByItems(
     selectNode: SelectQueryNode,
@@ -187,6 +194,12 @@ export const SelectQueryNode = freeze({
       offset: undefined,
     })
   },
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithoutOrderBy: QueryNode.cloneWithoutOrderBy<SelectQueryNode>,
 
   cloneWithoutGroupBy(select: SelectQueryNode): SelectQueryNode {
     return freeze({

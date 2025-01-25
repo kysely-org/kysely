@@ -50,13 +50,13 @@ export const DeleteQueryNode = freeze({
   /**
    * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
    */
-  cloneWithOrderByItems: QueryNode.cloneWithOrderByItems,
+  cloneWithOrderByItems: QueryNode.cloneWithOrderByItems<DeleteQueryNode>,
 
   // TODO: remove in v0.29
   /**
    * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
    */
-  cloneWithoutOrderBy: QueryNode.cloneWithoutOrderBy,
+  cloneWithoutOrderBy: QueryNode.cloneWithoutOrderBy<DeleteQueryNode>,
 
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
