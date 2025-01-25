@@ -12,6 +12,7 @@ import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { QueryNode } from './query-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -44,6 +45,18 @@ export const DeleteQueryNode = freeze({
       ...(withNode && { with: withNode }),
     })
   },
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithOrderByItems: QueryNode.cloneWithOrderByItems,
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithoutOrderBy: QueryNode.cloneWithoutOrderBy,
 
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
