@@ -13,6 +13,7 @@ import { LimitNode } from './limit-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 import { ListNode } from './list-node.js'
+import { OrderByNode } from './order-by-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -30,6 +31,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly limit?: LimitNode
   readonly top?: TopNode
   readonly output?: OutputNode
+  readonly orderBy?: OrderByNode
 }
 
 /**
