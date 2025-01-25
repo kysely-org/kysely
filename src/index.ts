@@ -273,6 +273,8 @@ export {
   OrderByExpression,
   OrderByDirectionExpression,
   OrderByModifiers,
+  OrderByDirection,
+  OrderByModifiersCallbackExpression,
 } from './parser/order-by-parser.js'
 export {
   ComparisonOperatorExpression,
