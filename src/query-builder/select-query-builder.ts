@@ -34,10 +34,9 @@ import {
   SqlBool,
 } from '../util/type-utils.js'
 import {
-  OrderByDirectionExpression,
-  OrderByExpression,
   DirectedOrderByStringReference,
-  UndirectedOrderByExpression,
+  OrderByExpression,
+  OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import { LimitNode } from '../operation-node/limit-node.js'
@@ -83,10 +82,12 @@ import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 import { JoinType } from '../operation-node/join-node.js'
+import { OrderByInterface } from './order-by-interface.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
+    OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
     Explainable,
@@ -985,130 +986,6 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
-   * Adds an `order by` clause to the query.
-   *
-   * `orderBy` calls are additive. Meaning, additional `orderBy` calls append to
-   * the existing order by clause.
-   *
-   * In a single call you can add a single column/expression or multiple columns/expressions.
-   *
-   * Single column/expression calls can have 1-2 arguments. The first argument is
-   * the expression to order by (optionally including the direction) while the second
-   * optional argument is the direction (`asc` or `desc`).
-   *
-   * ### Examples
-   *
-   * Single column/expression per call:
-   *
-   * ```ts
-   * await db
-   *   .selectFrom('person')
-   *   .select('person.first_name as fn')
-   *   .orderBy('id')
-   *   .orderBy('fn desc')
-   *   .execute()
-   * ```
-   *
-   * ```ts
-   * await db
-   *   .selectFrom('person')
-   *   .select('person.first_name as fn')
-   *   .orderBy('id')
-   *   .orderBy('fn', 'desc')
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person"."first_name" as "fn"
-   * from "person"
-   * order by "id" asc, "fn" desc
-   * ```
-   *
-   * Multiple columns/expressions per call:
-   *
-   * ```ts
-   * await db
-   *   .selectFrom('person')
-   *   .select('person.first_name as fn')
-   *   .orderBy(['id', 'fn desc'])
-   *   .execute()
-   * ```
-   *
-   * The order by expression can also be a raw sql expression or a subquery
-   * in addition to column references:
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .orderBy((eb) => eb.selectFrom('pet')
-   *     .select('pet.name')
-   *     .whereRef('pet.owner_id', '=', 'person.id')
-   *     .limit(1)
-   *   )
-   *   .orderBy(
-   *     sql<string>`concat(first_name, last_name)`
-   *   )
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select *
-   * from "person"
-   * order by
-   *   ( select "pet"."name"
-   *     from "pet"
-   *     where "pet"."owner_id" = "person"."id"
-   *     limit 1
-   *   ) asc,
-   *   concat(first_name, last_name) asc
-   * ```
-   *
-   * `dynamic.ref` can be used to refer to columns not known at
-   * compile time:
-   *
-   * ```ts
-   * async function someQuery(orderBy: string) {
-   *   const { ref } = db.dynamic
-   *
-   *   return await db
-   *     .selectFrom('person')
-   *     .select('person.first_name as fn')
-   *     .orderBy(ref(orderBy))
-   *     .execute()
-   * }
-   *
-   * someQuery('fn')
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person"."first_name" as "fn"
-   * from "person"
-   * order by "fn" asc
-   * ```
-   */
-  orderBy<OE extends UndirectedOrderByExpression<DB, TB, O>>(
-    orderBy: OE,
-    direction?: OrderByDirectionExpression,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
-    ref: OE,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orderBy<OE extends OrderByExpression<DB, TB, O>>(
-    refs: ReadonlyArray<OE>,
-  ): SelectQueryBuilder<DB, TB, O>
-
-  /**
    * Adds a `group by` clause to the query.
    *
    * ### Examples
@@ -1208,6 +1085,40 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   groupBy<GE extends GroupByArg<DB, TB, O>>(
     groupBy: GE,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.5x more compile-time instantiations than multiple `orderBy(expr, modifiers?)` calls, and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, O>
+      | DirectedOrderByStringReference<DB, TB, O>,
+  >(
+    exprs: ReadonlyArray<OE>,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use orderBy(expr, direction) instead.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
+    expr: OE,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(
+    expr: OE,
+    modifiers: Expression<any>,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -2488,7 +2399,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrderByItems(
+      queryNode: QueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
         parseOrderBy(args),
       ),
@@ -2662,7 +2573,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+      queryNode: QueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
 

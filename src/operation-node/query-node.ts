@@ -14,6 +14,8 @@ import { Expression } from '../expression/expression.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { OrderByNode } from './order-by-node.js'
+import { OrderByItemNode } from './order-by-item-node.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -29,6 +31,7 @@ type HasExplain = { explain?: ExplainNode }
 type HasTop = { top?: TopNode }
 type HasOutput = { output?: OutputNode }
 type HasEndModifiers = { endModifiers?: ReadonlyArray<OperationNode> }
+type HasOrderBy = { orderBy?: OrderByNode }
 
 /**
  * @internal
@@ -125,6 +128,25 @@ export const QueryNode = freeze({
       output: node.output
         ? OutputNode.cloneWithSelections(node.output, selections)
         : OutputNode.create(selections),
+    })
+  },
+
+  cloneWithOrderByItems<T extends HasOrderBy>(
+    node: T,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): T {
+    return freeze({
+      ...node,
+      orderBy: node.orderBy
+        ? OrderByNode.cloneWithItems(node.orderBy, items)
+        : OrderByNode.create(items),
+    })
+  },
+
+  cloneWithoutOrderBy<T extends HasOrderBy>(node: T): T {
+    return freeze({
+      ...node,
+      orderBy: undefined,
     })
   },
 })

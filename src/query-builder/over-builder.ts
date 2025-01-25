@@ -1,8 +1,11 @@
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import { Expression } from '../expression/expression.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OverNode } from '../operation-node/over-node.js'
+import { QueryNode } from '../operation-node/query-node.js'
 import {
-  OrderByDirectionExpression,
+  DirectedOrderByStringReference,
+  OrderByExpression,
+  OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import {
@@ -10,11 +13,11 @@ import {
   PartitionByExpression,
   PartitionByExpressionOrList,
 } from '../parser/partition-by-parser.js'
-import { StringReference } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
+import { OrderByInterface } from './order-by-interface.js'
 
 export class OverBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
+  implements OrderByInterface<DB, TB, {}>, OperationNodeSource
 {
   readonly #props: OverBuilderProps
 
@@ -23,7 +26,7 @@ export class OverBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Adds an order by clause item inside the over function.
+   * Adds an `order by` clause or item inside the `over` function.
    *
    * ```ts
    * const result = await db
@@ -43,15 +46,50 @@ export class OverBuilder<DB, TB extends keyof DB>
    * from "person"
    * ```
    */
-  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
-    orderBy: OE,
-    direction?: OrderByDirectionExpression,
-  ): OverBuilder<DB, TB> {
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): OverBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): OverBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): OverBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): OverBuilder<DB, TB>
+
+  orderBy(...args: any[]): any {
     return new OverBuilder({
       overNode: OverNode.cloneWithOrderByItems(
         this.#props.overNode,
-        parseOrderBy([orderBy, direction]),
+        parseOrderBy(args),
       ),
+    })
+  }
+
+  clearOrderBy(): OverBuilder<DB, TB> {
+    return new OverBuilder({
+      overNode: QueryNode.cloneWithoutOrderBy(this.#props.overNode),
     })
   }
 
