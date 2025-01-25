@@ -547,16 +547,17 @@ for (const dialect of DIALECTS) {
         expect(result.numChangedRows).to.equal(0n)
       })
 
-      it('should limit the amount of updated rows', async () => {
+      it('should order and limit the amount of updated rows', async () => {
         const query = ctx.db
           .updateTable('person')
           .set({ first_name: 'Foo' })
+          .orderBy('first_name')
           .limit(2)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
           mysql: {
-            sql: 'update `person` set `first_name` = ? limit ?',
+            sql: 'update `person` set `first_name` = ? order by `first_name` limit ?',
             parameters: ['Foo', 2],
           },
           mssql: NOT_SUPPORTED,

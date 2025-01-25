@@ -1,11 +1,15 @@
 import { freeze } from '../util/object-utils.js'
+import { CollateNode } from './collate-node.js'
 import { OperationNode } from './operation-node.js'
+
+export type OrderByItemNodeProps = Omit<OrderByItemNode, 'kind' | 'orderBy'>
 
 export interface OrderByItemNode extends OperationNode {
   readonly kind: 'OrderByItemNode'
   readonly orderBy: OperationNode
-  // TODO(samiko): Do we need an OrderByDirectionNode for consistency?
   readonly direction?: OperationNode
+  readonly nulls?: 'first' | 'last'
+  readonly collation?: CollateNode
 }
 
 /**
@@ -21,6 +25,16 @@ export const OrderByItemNode = freeze({
       kind: 'OrderByItemNode',
       orderBy,
       direction,
+    })
+  },
+
+  cloneWith(
+    node: OrderByItemNode,
+    props: OrderByItemNodeProps,
+  ): OrderByItemNode {
+    return freeze({
+      ...node,
+      ...props,
     })
   },
 })
