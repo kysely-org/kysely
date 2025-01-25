@@ -1702,7 +1702,7 @@ export class DefaultQueryCompiler
 
   protected override visitCollate(node: CollateNode): void {
     this.append('collate ')
-    this.append(node.collation)
+    this.visitNode(node.collation)
   }
 
   protected append(str: string): void {
