@@ -272,6 +272,7 @@ export { UpdateObject } from './parser/update-set-parser.js'
 export {
   OrderByExpression,
   OrderByDirectionExpression,
+  OrderByModifiers,
 } from './parser/order-by-parser.js'
 export {
   ComparisonOperatorExpression,
