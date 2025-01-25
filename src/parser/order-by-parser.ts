@@ -13,7 +13,11 @@ import {
   isExpressionOrFactory,
   parseExpression,
 } from './expression-parser.js'
-import { StringReference, parseStringReference } from './reference-parser.js'
+import {
+  ReferenceExpression,
+  StringReference,
+  parseStringReference,
+} from './reference-parser.js'
 
 export type OrderByExpression<DB, TB extends keyof DB, O> =
   | StringReference<DB, TB>
@@ -45,17 +49,27 @@ export type Collation =
   // otherwise, allow any string, while still providing autocompletion.
   | (string & {})
 
+// TODO: remove in v0.29
 /**
- * @deprecated performance reasons, use `OrderByExpression` instead.
+ * @deprecated performance reasons, use {@link OrderByExpression} instead.
  */
 export type DirectedOrderByStringReference<DB, TB extends keyof DB, O> = `${
   | StringReference<DB, TB>
   | (keyof O & string)} ${OrderByDirection}`
 
+// TODO: remove in v0.29
 /**
  * @deprecated replaced with {@link OrderByModifiers}
  */
 export type OrderByDirectionExpression = OrderByDirection | Expression<any>
+
+// TODO: remove in v0.29
+/**
+ * @deprecated use {@link OrderByExpression} instead.
+ */
+export type UndirectedOrderByExpression<DB, TB extends keyof DB, O> =
+  | ReferenceExpression<DB, TB>
+  | (keyof O & string)
 
 export function parseOrderBy(args: any[]): OrderByItemNode[] {
   if (args.length === 2) {
