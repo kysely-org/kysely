@@ -98,6 +98,7 @@ import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 import { OrActionNode } from './or-action-node.js'
+import { CollateNode } from './collate-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -203,6 +204,7 @@ export abstract class OperationNodeVisitor {
     TopNode: this.visitTop.bind(this),
     OutputNode: this.visitOutput.bind(this),
     OrActionNode: this.visitOrAction.bind(this),
+    CollateNode: this.visitCollate.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -318,4 +320,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitTop(node: TopNode): void
   protected abstract visitOutput(node: OutputNode): void
   protected abstract visitOrAction(node: OrActionNode): void
+  protected abstract visitCollate(node: CollateNode): void
 }
