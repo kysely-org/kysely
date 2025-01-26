@@ -7,6 +7,7 @@ import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   MysqlDialectConfig,
@@ -98,7 +99,10 @@ export class MysqlDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('savepoint', savepointName)),
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -108,7 +112,10 @@ export class MysqlDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('rollback to', savepointName)),
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -118,7 +125,10 @@ export class MysqlDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('release savepoint', savepointName)),
+      compileQuery(
+        parseSavepointCommand('release savepoint', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -157,16 +167,6 @@ class MysqlConnection implements DatabaseConnection {
       if (isOkPacket(result)) {
         const { insertId, affectedRows, changedRows } = result
 
-        const numAffectedRows =
-          affectedRows !== undefined && affectedRows !== null
-            ? BigInt(affectedRows)
-            : undefined
-
-        const numChangedRows =
-          changedRows !== undefined && changedRows !== null
-            ? BigInt(changedRows)
-            : undefined
-
         return {
           insertId:
             insertId !== undefined &&
@@ -174,10 +174,14 @@ class MysqlConnection implements DatabaseConnection {
             insertId.toString() !== '0'
               ? BigInt(insertId)
               : undefined,
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          numChangedRows,
+          numAffectedRows:
+            affectedRows !== undefined && affectedRows !== null
+              ? BigInt(affectedRows)
+              : undefined,
+          numChangedRows:
+            changedRows !== undefined && changedRows !== null
+              ? BigInt(changedRows)
+              : undefined,
           rows: [],
         }
       } else if (Array.isArray(result)) {
