@@ -8,6 +8,7 @@ import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
@@ -58,7 +59,10 @@ export class SqliteDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('savepoint', savepointName)),
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -68,7 +72,10 @@ export class SqliteDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('rollback to', savepointName)),
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -78,7 +85,10 @@ export class SqliteDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('release', savepointName)),
+      compileQuery(
+        parseSavepointCommand('release', savepointName),
+        createQueryId(),
+      ),
     )
   }
 

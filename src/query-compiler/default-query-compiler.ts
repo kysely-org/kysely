@@ -115,6 +115,7 @@ import { RefreshMaterializedViewNode } from '../operation-node/refresh-materiali
 import { OrActionNode } from '../operation-node/or-action-node.js'
 import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
+import { QueryId } from '../util/query-id.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -127,7 +128,7 @@ export class DefaultQueryCompiler
     return this.#parameters.length
   }
 
-  compileQuery(node: RootOperationNode): CompiledQuery {
+  compileQuery(node: RootOperationNode, queryId: QueryId): CompiledQuery {
     this.#sql = ''
     this.#parameters = []
     this.nodeStack.splice(0, this.nodeStack.length)
@@ -136,6 +137,7 @@ export class DefaultQueryCompiler
 
     return freeze({
       query: node,
+      queryId,
       sql: this.getSql(),
       parameters: [...this.#parameters],
     })

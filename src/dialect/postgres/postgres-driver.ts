@@ -12,6 +12,7 @@ import {
   RootOperationNode,
 } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   PostgresCursorConstructor,
@@ -91,7 +92,10 @@ export class PostgresDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('savepoint', savepointName)),
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -101,7 +105,10 @@ export class PostgresDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('rollback to', savepointName)),
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
@@ -111,7 +118,10 @@ export class PostgresDriver implements Driver {
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     await connection.executeQuery(
-      compileQuery(parseSavepointCommand('release', savepointName)),
+      compileQuery(
+        parseSavepointCommand('release', savepointName),
+        createQueryId(),
+      ),
     )
   }
 
