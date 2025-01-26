@@ -270,7 +270,10 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node,
-        transformer.transformNode(parseValueBinaryOperationOrExpression(args)),
+        transformer.transformNode(
+          parseValueBinaryOperationOrExpression(args),
+          this.#props.queryId,
+        ),
       ),
     })
   }

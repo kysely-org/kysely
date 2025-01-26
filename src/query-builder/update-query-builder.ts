@@ -1165,9 +1165,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
     return [
       new UpdateResult(
-        // TODO: remove numUpdatedOrDeletedRows.
-        // TODO: https://github.com/kysely-org/kysely/pull/431#discussion_r1172330899
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0),
+        result.numAffectedRows ?? BigInt(0),
         result.numChangedRows,
       ) as any,
     ]
