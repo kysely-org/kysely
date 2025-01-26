@@ -116,23 +116,19 @@ class SqliteConnection implements DatabaseConnection {
       return Promise.resolve({
         rows: stmt.all(parameters) as O[],
       })
-    } else {
-      const { changes, lastInsertRowid } = stmt.run(parameters)
-
-      const numAffectedRows =
-        changes !== undefined && changes !== null ? BigInt(changes) : undefined
-
-      return Promise.resolve({
-        // TODO: remove.
-        numUpdatedOrDeletedRows: numAffectedRows,
-        numAffectedRows,
-        insertId:
-          lastInsertRowid !== undefined && lastInsertRowid !== null
-            ? BigInt(lastInsertRowid)
-            : undefined,
-        rows: [],
-      })
     }
+
+    const { changes, lastInsertRowid } = stmt.run(parameters)
+
+    return Promise.resolve({
+      numAffectedRows:
+        changes !== undefined && changes !== null ? BigInt(changes) : undefined,
+      insertId:
+        lastInsertRowid !== undefined && lastInsertRowid !== null
+          ? BigInt(lastInsertRowid)
+          : undefined,
+      rows: [],
+    })
   }
 
   async *streamQuery<R>(

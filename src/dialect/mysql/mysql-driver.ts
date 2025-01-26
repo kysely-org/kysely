@@ -167,16 +167,6 @@ class MysqlConnection implements DatabaseConnection {
       if (isOkPacket(result)) {
         const { insertId, affectedRows, changedRows } = result
 
-        const numAffectedRows =
-          affectedRows !== undefined && affectedRows !== null
-            ? BigInt(affectedRows)
-            : undefined
-
-        const numChangedRows =
-          changedRows !== undefined && changedRows !== null
-            ? BigInt(changedRows)
-            : undefined
-
         return {
           insertId:
             insertId !== undefined &&
@@ -184,10 +174,14 @@ class MysqlConnection implements DatabaseConnection {
             insertId.toString() !== '0'
               ? BigInt(insertId)
               : undefined,
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          numChangedRows,
+          numAffectedRows:
+            affectedRows !== undefined && affectedRows !== null
+              ? BigInt(affectedRows)
+              : undefined,
+          numChangedRows:
+            changedRows !== undefined && changedRows !== null
+              ? BigInt(changedRows)
+              : undefined,
           rows: [],
         }
       } else if (Array.isArray(result)) {

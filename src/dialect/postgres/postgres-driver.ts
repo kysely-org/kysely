@@ -3,14 +3,9 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
-import { IdentifierNode } from '../../operation-node/identifier-node.js'
-import { RawNode } from '../../operation-node/raw-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import {
-  QueryCompiler,
-  RootOperationNode,
-} from '../../query-compiler/query-compiler.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -153,28 +148,20 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const result = await this.#client.query<O>(compiledQuery.sql, [
-        ...compiledQuery.parameters,
-      ])
-
-      if (
-        result.command === 'INSERT' ||
-        result.command === 'UPDATE' ||
-        result.command === 'DELETE' ||
-        result.command === 'MERGE'
-      ) {
-        const numAffectedRows = BigInt(result.rowCount)
-
-        return {
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          rows: result.rows ?? [],
-        }
-      }
+      const { command, rowCount, rows } = await this.#client.query<O>(
+        compiledQuery.sql,
+        [...compiledQuery.parameters],
+      )
 
       return {
-        rows: result.rows ?? [],
+        numAffectedRows:
+          command === 'INSERT' ||
+          command === 'UPDATE' ||
+          command === 'DELETE' ||
+          command === 'MERGE'
+            ? BigInt(rowCount)
+            : undefined,
+        rows: rows ?? [],
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
