@@ -1,5 +1,6 @@
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { ValueNode } from '../../operation-node/value-node.js'
+import { QueryId } from '../../util/query-id.js'
 
 /**
  * Transforms all ValueNodes to immediate.
@@ -10,9 +11,9 @@ import { ValueNode } from '../../operation-node/value-node.js'
  * @internal
  */
 export class ImmediateValueTransformer extends OperationNodeTransformer {
-  override transformValue(node: ValueNode): ValueNode {
+  override transformValue(node: ValueNode, queryId: QueryId): ValueNode {
     return {
-      ...super.transformValue(node),
+      ...super.transformValue(node, queryId),
       immediate: true,
     }
   }

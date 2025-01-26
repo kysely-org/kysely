@@ -1,4 +1,9 @@
-import { sql, CompiledQuery, DefaultQueryCompiler } from '../../../'
+import {
+  sql,
+  CompiledQuery,
+  DefaultQueryCompiler,
+  createQueryId,
+} from '../../../'
 
 import {
   clearDatabase,
@@ -66,7 +71,7 @@ for (const dialect of DIALECTS) {
       let node = sql`before ${ctx.db
         .selectFrom('person')
         .selectAll()} after`.toOperationNode()
-      expect(compiler.compileQuery(node).sql).to.equal(
+      expect(compiler.compileQuery(node, createQueryId()).sql).to.equal(
         `before (select * from "person") after`,
       )
 
@@ -75,21 +80,21 @@ for (const dialect of DIALECTS) {
         last_name: 'Aniston',
         gender: 'female',
       })} after`.toOperationNode()
-      expect(compiler.compileQuery(node).sql).to.equal(
+      expect(compiler.compileQuery(node, createQueryId()).sql).to.equal(
         `before insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3) after`,
       )
 
       node = sql`before ${ctx.db
         .deleteFrom('person')
         .where('id', '=', 1)} after`.toOperationNode()
-      expect(compiler.compileQuery(node).sql).to.equal(
+      expect(compiler.compileQuery(node, createQueryId()).sql).to.equal(
         `before delete from "person" where "id" = $1 after`,
       )
 
       node = sql`before ${ctx.db
         .updateTable('person')
         .set('first_name', 'Jennifer')} after`.toOperationNode()
-      expect(compiler.compileQuery(node).sql).to.equal(
+      expect(compiler.compileQuery(node, createQueryId()).sql).to.equal(
         `before update "person" set "first_name" = $1 after`,
       )
     })
