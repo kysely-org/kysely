@@ -11,6 +11,7 @@ import { TableNode } from '../../operation-node/table-node.js'
 import { WithNode } from '../../operation-node/with-node.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { freeze } from '../../util/object-utils.js'
+import { QueryId } from '../../util/query-id.js'
 
 // This object exist only so that we get a type error when a new RootOperationNode
 // is added. If you get a type error here, make sure to add the new root node and
@@ -53,9 +54,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     this.#schema = schema
   }
 
-  protected override transformNodeImpl<T extends OperationNode>(node: T): T {
+  protected override transformNodeImpl<T extends OperationNode>(
+    node: T,
+    queryId: QueryId,
+  ): T {
     if (!this.#isRootOperationNode(node)) {
-      return super.transformNodeImpl(node)
+      return super.transformNodeImpl(node, queryId)
     }
 
     const ctes = this.#collectCTEs(node)
@@ -70,7 +74,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       this.#schemableIds.add(table)
     }
 
-    const transformed = super.transformNodeImpl(node)
+    const transformed = super.transformNodeImpl(node, queryId)
 
     for (const table of tables) {
       this.#schemableIds.delete(table)
@@ -85,8 +89,9 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
   protected override transformSchemableIdentifier(
     node: SchemableIdentifierNode,
+    queryId: QueryId,
   ): SchemableIdentifierNode {
-    const transformed = super.transformSchemableIdentifier(node)
+    const transformed = super.transformSchemableIdentifier(node, queryId)
 
     if (transformed.schema || !this.#schemableIds.has(node.identifier.name)) {
       return transformed
@@ -98,8 +103,11 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  protected override transformReferences(node: ReferencesNode): ReferencesNode {
-    const transformed = super.transformReferences(node)
+  protected override transformReferences(
+    node: ReferencesNode,
+    queryId: QueryId,
+  ): ReferencesNode {
+    const transformed = super.transformReferences(node, queryId)
 
     if (transformed.table.table.schema) {
       return transformed
@@ -116,17 +124,29 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
   protected override transformAggregateFunction(
     node: AggregateFunctionNode,
+    queryId: QueryId,
   ): AggregateFunctionNode {
     return {
-      ...super.transformAggregateFunction({ ...node, aggregated: [] }),
-      aggregated: this.#transformTableArgsWithoutSchemas(node, 'aggregated'),
+      ...super.transformAggregateFunction({ ...node, aggregated: [] }, queryId),
+      aggregated: this.#transformTableArgsWithoutSchemas(
+        node,
+        queryId,
+        'aggregated',
+      ),
     }
   }
 
-  protected override transformFunction(node: FunctionNode): FunctionNode {
+  protected override transformFunction(
+    node: FunctionNode,
+    queryId: QueryId,
+  ): FunctionNode {
     return {
-      ...super.transformFunction({ ...node, arguments: [] }),
-      arguments: this.#transformTableArgsWithoutSchemas(node, 'arguments'),
+      ...super.transformFunction({ ...node, arguments: [] }, queryId),
+      arguments: this.#transformTableArgsWithoutSchemas(
+        node,
+        queryId,
+        'arguments',
+      ),
     }
   }
 
@@ -135,17 +155,17 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     N extends { func: string } & {
       [K in A]: readonly OperationNode[]
     },
-  >(node: N, argsKey: A): readonly OperationNode[] {
+  >(node: N, queryId: QueryId, argsKey: A): readonly OperationNode[] {
     return SCHEMALESS_FUNCTIONS[node.func]
       ? node[argsKey].map((arg) =>
           !TableNode.is(arg) || arg.table.schema
-            ? this.transformNode(arg)
+            ? this.transformNode(arg, queryId)
             : {
                 ...arg,
-                table: this.transformIdentifier(arg.table.identifier),
+                table: this.transformIdentifier(arg.table.identifier, queryId),
               },
         )
-      : this.transformNodeList(node[argsKey])
+      : this.transformNodeList(node[argsKey], queryId)
   }
 
   #isRootOperationNode(node: OperationNode): node is RootOperationNode {

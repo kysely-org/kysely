@@ -8,6 +8,7 @@ import {
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryExecutorBase } from './query-executor-base.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { QueryId } from '../util/query-id.js'
 
 export class DefaultQueryExecutor extends QueryExecutorBase {
   #compiler: QueryCompiler
@@ -31,8 +32,8 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
     return this.#adapter
   }
 
-  compileQuery(node: RootOperationNode): CompiledQuery {
-    return this.#compiler.compileQuery(node)
+  compileQuery(node: RootOperationNode, queryId: QueryId): CompiledQuery {
+    return this.#compiler.compileQuery(node, queryId)
   }
 
   provideConnection<T>(
