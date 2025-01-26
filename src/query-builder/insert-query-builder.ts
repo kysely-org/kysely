@@ -1310,8 +1310,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return [
       new InsertResult(
         result.insertId,
-        // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows,
+        result.numAffectedRows ?? BigInt(0),
       ) as any,
     ]
   }

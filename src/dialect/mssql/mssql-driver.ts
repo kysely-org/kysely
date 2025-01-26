@@ -339,7 +339,6 @@ class MssqlRequest<O> {
     (event: 'completed' | 'chunkReady' | 'error', error?: unknown) => void
   >
   readonly #tedious: Tedious
-  #error: Error | any[] | undefined
   #rowCount: number | undefined
 
   constructor(props: MssqlRequestProps<O>) {
