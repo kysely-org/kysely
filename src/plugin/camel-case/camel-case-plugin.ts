@@ -133,7 +133,7 @@ export class CamelCasePlugin implements KyselyPlugin {
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    return this.#snakeCaseTransformer.transformNode(args.node)
+    return this.#snakeCaseTransformer.transformNode(args.node, args.queryId)
   }
 
   async transformResult(

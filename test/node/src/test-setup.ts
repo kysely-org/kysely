@@ -35,6 +35,7 @@ import {
   InsertObject,
   MssqlDialect,
   SelectQueryBuilder,
+  QueryId,
 } from '../../../'
 import {
   OrderByDirection,
@@ -483,7 +484,7 @@ function createNoopTransformerPlugin(): KyselyPlugin {
 
   return {
     transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-      return transformer.transformNode(args.node)
+      return transformer.transformNode(args.node, args.queryId)
     },
 
     async transformResult(

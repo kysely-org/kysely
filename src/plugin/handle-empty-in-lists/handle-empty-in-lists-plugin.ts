@@ -160,7 +160,7 @@ export class HandleEmptyInListsPlugin implements KyselyPlugin {
   }
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    return this.#transformer.transformNode(args.node)
+    return this.#transformer.transformNode(args.node, args.queryId)
   }
 
   async transformResult(
