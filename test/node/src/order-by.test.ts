@@ -268,6 +268,119 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
+    it('order by a direction via builder', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .orderBy('last_name', (ob) => ob.desc())
+        .orderBy('first_name', (ob) => ob.asc())
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" order by "last_name" desc, "first_name" asc',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select * from `person` order by `last_name` desc, `first_name` asc',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select * from "person" order by "last_name" desc, "first_name" asc',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select * from "person" order by "last_name" desc, "first_name" asc',
+          parameters: [],
+        },
+      })
+
+      await query.execute()
+    })
+
+    if (dialect === 'postgres' || dialect === 'sqlite') {
+      it('order by nulls first', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .orderBy('last_name', (ob) => ob.desc().nullsFirst())
+          .orderBy('first_name', (ob) => ob.nullsFirst())
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" order by "last_name" desc nulls first, "first_name" nulls first',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select * from "person" order by "last_name" desc nulls first, "first_name" nulls first',
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it('order by nulls last', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .orderBy('last_name', (ob) => ob.desc().nullsLast())
+          .orderBy('first_name', (ob) => ob.nullsLast())
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" order by "last_name" desc nulls last, "first_name" nulls last',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select * from "person" order by "last_name" desc nulls last, "first_name" nulls last',
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
+    }
+
+    it('order by collate', async () => {
+      const collation = {
+        postgres: 'pg_c_utf8',
+        mysql: 'utf8mb4_general_ci',
+        mssql: 'Latin1_General_CI_AS',
+        sqlite: 'nocase',
+      }[dialect]
+
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .orderBy('last_name', (ob) => ob.collate(collation).desc())
+        .orderBy('first_name', (ob) => ob.collate(collation))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" order by "last_name" collate "pg_c_utf8" desc, "first_name" collate "pg_c_utf8"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select * from `person` order by `last_name` collate `utf8mb4_general_ci` desc, `first_name` collate `utf8mb4_general_ci`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select * from "person" order by "last_name" collate Latin1_General_CI_AS desc, "first_name" collate Latin1_General_CI_AS',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select * from "person" order by "last_name" collate "nocase" desc, "first_name" collate "nocase"',
+          parameters: [],
+        },
+      })
+
+      await query.execute()
+    })
+
     if (dialect === 'postgres') {
       it('order by raw expression in direction', async () => {
         const query = ctx.db

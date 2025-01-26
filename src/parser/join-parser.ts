@@ -1,18 +1,18 @@
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
+import { JoinBuilder } from '../query-builder/join-builder.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
 } from '../util/type-utils.js'
+import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
+import { createJoinBuilder } from './parse-utils.js'
 import {
-  TableExpression,
-  parseTableExpression,
   From,
   FromTables,
+  TableExpression,
+  parseTableExpression,
 } from './table-parser.js'
-import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
-import { JoinBuilder } from '../query-builder/join-builder.js'
-import { createJoinBuilder } from './parse-utils.js'
 
 export type JoinReferenceExpression<
   DB,
@@ -41,6 +41,8 @@ export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
     return parseSingleOnJoin(joinType, args[0], args[1], args[2])
   } else if (args.length === 2) {
     return parseCallbackJoin(joinType, args[0], args[1])
+  } else if (args.length === 1) {
+    return parseOnlessJoin(joinType, args[0])
   } else {
     throw new Error('not implemented')
   }
@@ -65,4 +67,11 @@ function parseSingleOnJoin(
     parseTableExpression(from),
     parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn),
   )
+}
+
+function parseOnlessJoin(
+  joinType: JoinType,
+  from: TableExpression<any, any>,
+): JoinNode {
+  return JoinNode.create(joinType, parseTableExpression(from))
 }
