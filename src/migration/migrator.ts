@@ -824,7 +824,14 @@ export interface MigratorProps {
   readonly nameComparator?: (name0: string, name1: string) => number
 
   /**
-   *
+   * Whether to skip running the migration in a transaction. Only relevant to databases
+   * that support a transactional DDL (i.e. postgres and mssql).
+   * 
+   * When true, migrations will not be run in a transaction, even if the dialect 
+   * supports transactions in their DDL.
+   * 
+   * When false, migrations will be run in a transaction if that is supported by
+   * the dialect.
    */
   readonly disableTransactions?: boolean
 }
