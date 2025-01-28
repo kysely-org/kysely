@@ -523,7 +523,7 @@ export class Migrator {
       }
     }
 
-    if (adapter.supportsTransactionalDdl) {
+    if (adapter.supportsTransactionalDdl && !this.#props.disableTransactions) {
       return this.#props.db.transaction().execute(run)
     } else {
       return this.#props.db.connection().execute(run)
@@ -822,6 +822,11 @@ export interface MigratorProps {
    * Default is `name0.localeCompare(name1)`.
    */
   readonly nameComparator?: (name0: string, name1: string) => number
+
+  /**
+   *
+   */
+  readonly disableTransactions?: boolean
 }
 
 /**

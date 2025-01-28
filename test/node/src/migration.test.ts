@@ -10,6 +10,8 @@ import {
   Migrator,
   NO_MIGRATIONS,
   MigratorProps,
+  type QueryExecutor,
+  type Kysely,
 } from '../../../'
 
 import {
@@ -19,7 +21,9 @@ import {
   initTest,
   TestContext,
   DIALECTS,
+  type Database,
 } from './test-setup.js'
+import { createSandbox, type SinonSpy } from 'sinon'
 
 const CUSTOM_MIGRATION_SCHEMA = 'migrate'
 const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
@@ -652,6 +656,20 @@ for (const dialect of DIALECTS) {
     })
 
     describe('migrateUp', () => {
+      const sandbox = createSandbox()
+      let transactionSpy: SinonSpy<
+        Parameters<Kysely<Database>['transaction']>,
+        ReturnType<Kysely<Database>['transaction']>
+      >
+
+      beforeEach(() => {
+        transactionSpy = sandbox.spy(ctx.db, 'transaction')
+      })
+
+      afterEach(() => {
+        sandbox.restore()
+      })
+
       it('should migrate up one step', async () => {
         const [migrator, executedUpMethods] = createMigrations([
           'migration1',
@@ -737,6 +755,42 @@ for (const dialect of DIALECTS) {
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
         expect(executedUpMethods2).to.eql(['migration2', 'migration4'])
+      })
+
+      it('should not execute in transaction if disableTransactions is true', async () => {
+        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
+          disableTransactions: true,
+        })
+
+        const { results } = await migrator.migrateUp()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should execute in transaction if disableTransactions is false and transactionDdl supported', async () => {
+        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
+          disableTransactions: false,
+        })
+
+        const { results } = await migrator.migrateUp()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        if (ctx.config.dialect.createAdapter().supportsTransactionalDdl) {
+          expect(transactionSpy.called).to.be.true
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
       })
     })
 
