@@ -786,7 +786,7 @@ for (const dialect of DIALECTS) {
 
         expect(executedUpMethods).to.eql(['migration1'])
 
-        if (ctx.config.dialect.createAdapter().supportsTransactionalDdl) {
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
           expect(transactionSpy.called).to.be.true
         } else {
           expect(transactionSpy.called).to.be.false
