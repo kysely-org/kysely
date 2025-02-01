@@ -523,7 +523,7 @@ export class Migrator {
       }
     }
 
-    if (adapter.supportsTransactionalDdl) {
+    if (adapter.supportsTransactionalDdl && !this.#props.disableTransactions) {
       return this.#props.db.transaction().execute(run)
     } else {
       return this.#props.db.connection().execute(run)
@@ -822,6 +822,15 @@ export interface MigratorProps {
    * Default is `name0.localeCompare(name1)`.
    */
   readonly nameComparator?: (name0: string, name1: string) => number
+
+  /**
+   * When `true`, don't run migrations in transactions even if the dialect supports transactional DDL.
+   *
+   * Default is `false`.
+   *
+   * This is useful when some migrations include queries that would fail otherwise.
+   */
+  readonly disableTransactions?: boolean
 }
 
 /**
