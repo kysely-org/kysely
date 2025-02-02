@@ -25,3 +25,7 @@ A plugin that removes duplicate joins from queries. You can read more about it i
 ### Handle `in ()` and `not in ()` plugin
 
 A plugin that allows handling `in ()` and `not in ()` with a chosen strategy. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/HandleEmptyInListsPlugin.html).
+
+### Safe null comparison plugin
+
+A plugin that automatically converts `=`, `!=` and `<>` to the equivalent `is` and `is not` predicates depending on the value of the variable. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/SafeNullComparisonPlugin.html).
