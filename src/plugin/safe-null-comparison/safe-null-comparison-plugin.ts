@@ -9,9 +9,20 @@ import {
 import { SafeNullComparisonTransformer } from './safe-null-comparison-transformer.js'
 
 /**
- * Plugin that removes duplicate joins from queries.
+ * Plugin that handles NULL comparisons to prevent common SQL mistakes.
  *
- * See [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0008-deduplicate-joins.md)
+ * In SQL, comparing values with NULL using standard comparison operators (=, !=, <>)
+ * always yields NULL, which is usually not what developers expect. The correct way
+ * to compare with NULL is using IS NULL and IS NOT NULL.
+ *
+ * When working with nullable variables (e.g. string | null), you need to be careful to
+ * manually handle these cases with conditional WHERE clauses. This plugins automatically
+ * applies the correct operator based on the value, allowing you to simply write `query.where('name', '=', name)`.
+ *
+ * The plugin transforms the following operators when comparing with NULL:
+ * - `=` becomes `IS`
+ * - `!=` becomes `IS NOT`
+ * - `<>` becomes `IS NOT`
  */
 export class SafeNullComparisonPlugin implements KyselyPlugin {
   readonly #transformer = new SafeNullComparisonTransformer()

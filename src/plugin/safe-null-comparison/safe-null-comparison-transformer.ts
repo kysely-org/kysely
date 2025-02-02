@@ -28,20 +28,5 @@ export class SafeNullComparisonTransformer extends OperationNodeTransformer {
       OperatorNode.create(op === '=' ? 'is' : 'is not'),
       rightOperand,
     )
-
-    // if (
-    //   OperatorNode.is(transformed.operator) &&
-    //   transformed.operator.operator === '=' &&
-    //   ValueNode.is(transformed.rightOperand) &&
-    //   transformed.rightOperand.value === null
-    // ) {
-    //   return BinaryOperationNode.create(
-    //     transformed.leftOperand,
-    //     OperatorNode.create('is'),
-    //     ValueNode.createImmediate(null),
-    //   )
-    // }
-
-    // return transformed
   }
 }
