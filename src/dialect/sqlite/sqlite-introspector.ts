@@ -12,6 +12,15 @@ import {
 } from '../../migration/migrator.js'
 import { sql } from '../../raw-builder/sql.js'
 
+interface PragmaTableInfo {
+  cid: number
+  name: string
+  type: string
+  notnull: 0 | 1
+  dflt_value: any
+  pk: number
+}
+
 export class SqliteIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
 
@@ -27,22 +36,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
-    let query = this.#db
-      .selectFrom('sqlite_master')
-      .where('type', 'in', ['table', 'view'])
-      .where('name', 'not like', 'sqlite_%')
-      .select('name')
-      .orderBy('name')
-      .$castTo<{ name: string }>()
-
-    if (!options.withInternalKyselyTables) {
-      query = query
-        .where('name', '!=', DEFAULT_MIGRATION_TABLE)
-        .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
-    }
-
-    const tables = await query.execute()
-    return Promise.all(tables.map(({ name }) => this.#getTableMetadata(name)))
+    return await this.#getTableMetadata(options)
   }
 
   async getMetadata(
@@ -53,49 +47,92 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     }
   }
 
-  async #getTableMetadata(table: string): Promise<TableMetadata> {
-    const db = this.#db
-
-    // Get the SQL that was used to create the table.
-    const tableDefinition = await db
-      .selectFrom('sqlite_master')
-      .where('name', '=', table)
-      .select(['sql', 'type'])
-      .$castTo<{ sql: string | undefined; type: string }>()
-      .executeTakeFirstOrThrow()
-
-    // Try to find the name of the column that has `autoincrement` 🤦
-    const autoIncrementCol = tableDefinition.sql
-      ?.split(/[\(\),]/)
-      ?.find((it) => it.toLowerCase().includes('autoincrement'))
-      ?.trimStart()
-      ?.split(/\s+/)?.[0]
-      ?.replace(/["`]/g, '')
-
-    const columns = await db
+  #metaQuery(table: string) {
+    return this.#db
       .selectFrom(
-        sql<{
-          name: string
-          type: string
-          notnull: 0 | 1
-          dflt_value: any
-        }>`pragma_table_info(${table})`.as('table_info'),
+        sql<PragmaTableInfo>`pragma_table_info(${table})`.as(`table_info`),
       )
-      .select(['name', 'type', 'notnull', 'dflt_value'])
-      .orderBy('cid')
+      .select([
+        sql.val(table).$castTo<string>().as('table'),
+        'cid',
+        'name',
+        'type',
+        'notnull',
+        'dflt_value',
+        'pk',
+      ])
+  }
+
+  async #getTableMetadata(
+    options: DatabaseMetadataOptions,
+  ): Promise<TableMetadata[]> {
+    let tablesQuery = this.#db
+      .selectFrom('sqlite_master')
+      .where('type', 'in', ['table', 'view'])
+      .where('name', 'not like', 'sqlite_%')
+      .select(['name', 'sql', 'type'])
+      .orderBy('name')
+      .$castTo<{ name: string; sql: string; type: string }>()
+
+    if (!options.withInternalKyselyTables) {
+      tablesQuery = tablesQuery
+        .where('name', '!=', DEFAULT_MIGRATION_TABLE)
+        .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+    }
+
+    const tablesResult = await tablesQuery.execute()
+    const [firstTable, ...otherTables] = tablesResult
+
+    if (!firstTable) {
+      return []
+    }
+
+    let metadataQuery = this.#metaQuery(firstTable.name)
+    for (const otherTable of otherTables) {
+      metadataQuery = metadataQuery.unionAll(this.#metaQuery(otherTable.name))
+    }
+    const tableMetadata = await metadataQuery
+      .orderBy(['table', 'cid'])
       .execute()
 
-    return {
-      name: table,
-      isView: tableDefinition.type === 'view',
-      columns: columns.map((col) => ({
-        name: col.name,
-        dataType: col.type,
-        isNullable: !col.notnull,
-        isAutoIncrementing: col.name === autoIncrementCol,
-        hasDefaultValue: col.dflt_value != null,
-        comment: undefined,
-      })),
+    const columnsByTable: Record<string, typeof tableMetadata> = {}
+    for (const row of tableMetadata) {
+      columnsByTable[row.table] ??= []
+      columnsByTable[row.table].push(row)
     }
+
+    return tablesResult.map(({ name, sql, type }) => {
+      // // Try to find the name of the column that has `autoincrement` 🤦
+      let autoIncrementCol = sql
+        ?.split(/[\(\),]/)
+        ?.find((it) => it.toLowerCase().includes('autoincrement'))
+        ?.trimStart()
+        ?.split(/\s+/)?.[0]
+        ?.replace(/["`]/g, '')
+
+      const columns = columnsByTable[name] ?? []
+
+      // Otherwise, check for an INTEGER PRIMARY KEY
+      // https://www.sqlite.org/autoinc.html
+      if (!autoIncrementCol) {
+        const pkCols = columns.filter((r) => r.pk > 0)
+        if (pkCols.length === 1 && pkCols[0].type.toLowerCase() === 'integer') {
+          autoIncrementCol = pkCols[0].name
+        }
+      }
+
+      return {
+        name: name,
+        isView: type === 'view',
+        columns: columns.map((col) => ({
+          name: col.name,
+          dataType: col.type,
+          isNullable: !col.notnull,
+          isAutoIncrementing: col.name === autoIncrementCol,
+          hasDefaultValue: col.dflt_value != null,
+          comment: undefined,
+        })),
+      }
+    })
   }
 }
