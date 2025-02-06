@@ -713,6 +713,13 @@ export class TransactionBuilder<DB> {
     })
   }
 
+  setAccessMode(accessMode: 'read write' | 'read only'): TransactionBuilder<DB> {
+    return new TransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
+  }
+
   async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
     const { isolationLevel, ...kyselyProps } = this.#props
     const settings = { isolationLevel }
@@ -745,6 +752,7 @@ export class TransactionBuilder<DB> {
 
 interface TransactionBuilderProps extends KyselyProps {
   readonly isolationLevel?: IsolationLevel
+  readonly accessMode?: 'read write' | 'read only'
 }
 
 function validateTransactionSettings(settings: TransactionSettings): void {
@@ -774,9 +782,16 @@ export class ControlledTransactionBuilder<DB> {
     })
   }
 
+  setAccessMode(accessMode: 'read write' | 'read only'): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
+  }
+
   async execute(): Promise<ControlledTransaction<DB>> {
-    const { isolationLevel, ...props } = this.#props
-    const settings = { isolationLevel }
+    const { isolationLevel, accessMode, ...props } = this.#props
+    const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
 
