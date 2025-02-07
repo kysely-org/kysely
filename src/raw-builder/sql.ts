@@ -216,7 +216,7 @@ export interface Sql {
    * select first_name from "person"
    * ```
    *
-   * The refefences can also include a schema on supported databases:
+   * The references can also include a schema on supported databases:
    *
    * ```ts
    * const table = 'public.person'
