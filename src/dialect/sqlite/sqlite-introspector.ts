@@ -12,17 +12,32 @@ import {
 } from '../../migration/migrator.js'
 import { sql } from '../../raw-builder/sql.js'
 
+interface SqliteSystemDatabase {
+  // https://www.sqlite.org/schematab.html#alternative_names
+  sqlite_master: SQliteMasterTable
+}
+
+// https://www.sqlite.org/schematab.html#interpretation_of_the_schema_table
+interface SQliteMasterTable {
+  name: string
+  rootpage: number | null
+  sql: string
+  tbl_name: string
+  type: 'index' | 'table' | 'trigger' | 'view'
+}
+
+// https://www.sqlite.org/pragma.html#pragma_table_info
 interface PragmaTableInfo {
   cid: number
+  dflt_value: unknown
   name: string
-  type: string
   notnull: 0 | 1
-  dflt_value: any
   pk: number
+  type: string
 }
 
 export class SqliteIntrospector implements DatabaseIntrospector {
-  readonly #db: Kysely<any>
+  readonly #db: Kysely<SqliteSystemDatabase>
 
   constructor(db: Kysely<any>) {
     this.#db = db
@@ -50,10 +65,10 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   #metaQuery(table: string) {
     return this.#db
       .selectFrom(
-        sql<PragmaTableInfo>`pragma_table_info(${table})`.as(`table_info`),
+        sql<PragmaTableInfo>`pragma_table_info(${table})`.as('table_info'),
       )
       .select([
-        sql.val(table).$castTo<string>().as('table'),
+        sql.val(table).as('table'),
         'cid',
         'name',
         'type',
@@ -72,7 +87,6 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .where('name', 'not like', 'sqlite_%')
       .select(['name', 'sql', 'type'])
       .orderBy('name')
-      .$castTo<{ name: string; sql: string; type: string }>()
 
     if (!options.withInternalKyselyTables) {
       tablesQuery = tablesQuery
