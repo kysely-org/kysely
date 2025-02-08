@@ -1160,7 +1160,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   limit(
-    limit: ValueExpression<DB, TB, number | bigint>,
+    limit: ValueExpression<DB, TB, number | bigint | null>,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -2417,7 +2417,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   limit(
-    limit: ValueExpression<DB, TB, number | bigint>,
+    limit: ValueExpression<DB, TB, number | bigint | null>,
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
