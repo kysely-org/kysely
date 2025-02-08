@@ -805,7 +805,7 @@ export interface MigratorProps {
    *
    * When false, migrations must be run in their exact alpha-numeric order.
    * This is checked against the migrations already run in the database
-   * (`migrationTableName'). This ensures your migrations are always run in
+   * (`migrationTableName`). This ensures your migrations are always run in
    * the same order and is the safest option.
    *
    * When true, migrations are still run in alpha-numeric order, but
