@@ -11,6 +11,7 @@ import {
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { sql } from '../../raw-builder/sql.js'
+import { QueryCreator } from '../../query-creator.js'
 
 interface SqliteSystemDatabase {
   // https://www.sqlite.org/schematab.html#alternative_names
@@ -62,26 +63,11 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     }
   }
 
-  #metaQuery(table: string) {
-    return this.#db
-      .selectFrom(
-        sql<PragmaTableInfo>`pragma_table_info(${table})`.as('table_info'),
-      )
-      .select([
-        sql.val(table).as('table'),
-        'cid',
-        'name',
-        'type',
-        'notnull',
-        'dflt_value',
-        'pk',
-      ])
-  }
-
-  async #getTableMetadata(
+  #tablesQuery(
+    qb: QueryCreator<SqliteSystemDatabase> | Kysely<SqliteSystemDatabase>,
     options: DatabaseMetadataOptions,
-  ): Promise<TableMetadata[]> {
-    let tablesQuery = this.#db
+  ) {
+    let tablesQuery = qb
       .selectFrom('sqlite_master')
       .where('type', 'in', ['table', 'view'])
       .where('name', 'not like', 'sqlite_%')
@@ -93,20 +79,30 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         .where('name', '!=', DEFAULT_MIGRATION_TABLE)
         .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
+    return tablesQuery
+  }
 
-    const tablesResult = await tablesQuery.execute()
-    const [firstTable, ...otherTables] = tablesResult
+  async #getTableMetadata(
+    options: DatabaseMetadataOptions,
+  ): Promise<TableMetadata[]> {
+    const tablesResult = await this.#tablesQuery(this.#db, options).execute()
 
-    if (!firstTable) {
-      return []
-    }
-
-    let metadataQuery = this.#metaQuery(firstTable.name)
-    for (const otherTable of otherTables) {
-      metadataQuery = metadataQuery.unionAll(this.#metaQuery(otherTable.name))
-    }
-    const tableMetadata = await metadataQuery
-      .orderBy(['table', 'cid'])
+    const tableMetadata = await this.#db
+      .with('table_list', (qb) => this.#tablesQuery(qb, options))
+      .selectFrom([
+        'table_list as tl',
+        sql<PragmaTableInfo>`pragma_table_info(tl.name)`.as('p'),
+      ])
+      .select([
+        'tl.name as table',
+        'p.cid',
+        'p.name',
+        'p.type',
+        'p.notnull',
+        'p.dflt_value',
+        'p.pk',
+      ])
+      .orderBy(['tl.name', 'p.cid'])
       .execute()
 
     const columnsByTable: Record<string, typeof tableMetadata> = {}
