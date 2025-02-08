@@ -1124,6 +1124,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds a limit clause to the query.
    *
+   * Passing a `null` value is only supported by some dialects like PostgreSQL,
+   * and will result in a no-op limit clause.
+   *
    * ### Examples
    *
    * Select the first 10 rows of the result:

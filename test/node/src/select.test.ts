@@ -1123,6 +1123,28 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres') {
+      it('should create a select query with limit null', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .limit(null)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "first_name" from "person" limit $1`,
+            parameters: [null],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(3)
+      })
+    }
+
     it('should create a select statement without a `from` clause', async () => {
       const query = ctx.db.selectNoFrom((eb) => [
         eb
@@ -1235,26 +1257,6 @@ for (const dialect of DIALECTS) {
         })
 
         await query.execute()
-      })
-
-      it('should create a select query with limit null', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .select('first_name')
-          .limit(null)
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: `select "first_name" from "person" limit $1`,
-            parameters: [null],
-          },
-          mysql: NOT_SUPPORTED,
-          mssql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
-        })
-
-        const result = await query.execute()
-        expect(result).to.have.length(3)
       })
     }
 
