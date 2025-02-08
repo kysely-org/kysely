@@ -7,6 +7,7 @@ import {
   expect,
   insertDefaultDataSet,
   DIALECTS,
+  createTableWithId,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -815,6 +816,45 @@ for (const dialect of DIALECTS) {
           ])
         }
       })
+
+      if (dialect === 'sqlite') {
+        describe('implicit autoincrement', () => {
+          const testTableName = 'implicit_increment_test'
+
+          before(async () => {
+            await createTableWithId(ctx.db.schema, dialect, testTableName, true)
+              .ifNotExists()
+              .execute()
+          })
+
+          after(async () => {
+            await ctx.db.schema.dropTable(testTableName).ifExists().execute()
+          })
+
+          it('should detect autoincrement on implicitly auto incrementing columns', async () => {
+            const tables = await ctx.db.introspection.getTables()
+
+            const testTable = tables.find(
+              (table) => table.name === testTableName,
+            )
+
+            expect(testTable).to.eql({
+              name: testTableName,
+              isView: false,
+              columns: [
+                {
+                  name: 'id',
+                  dataType: 'INTEGER',
+                  isNullable: true,
+                  isAutoIncrementing: true,
+                  hasDefaultValue: false,
+                  comment: undefined,
+                },
+              ],
+            })
+          })
+        })
+      }
     })
 
     async function createView() {

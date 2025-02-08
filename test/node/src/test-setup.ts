@@ -318,7 +318,7 @@ async function createDatabase(
     .addColumn('children', 'integer', (col) => col.notNull().defaultTo(0))
     .execute()
 
-  await createTableWithId(db.schema, dialect, 'pet')
+  await createTableWithId(db.schema, dialect, 'pet', true)
     .addColumn('name', 'varchar(255)', (col) => col.unique().notNull())
     .addColumn('owner_id', 'integer', (col) =>
       col.references('person.id').onDelete('cascade').notNull(),
@@ -372,6 +372,7 @@ export function createTableWithId(
   schema: SchemaModule,
   dialect: BuiltInDialect,
   tableName: string,
+  implicitIncrement: boolean = false,
 ) {
   const builder = schema.createTable(tableName)
 
@@ -385,9 +386,12 @@ export function createTableWithId(
     )
   }
 
-  return builder.addColumn('id', 'integer', (col) =>
-    col.autoIncrement().primaryKey(),
-  )
+  return builder.addColumn('id', 'integer', (col) => {
+    if (implicitIncrement && dialect === 'sqlite') {
+      return col.primaryKey()
+    }
+    return col.autoIncrement().primaryKey()
+  })
 }
 
 async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
@@ -406,7 +410,7 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
       }
 
       console.log(
-        'Waiting for the database to become available. Did you remember to run `docker-compose up`?',
+        'Waiting for the database to become available. Did you remember to run `docker compose up`?',
       )
 
       await sleep(1000)

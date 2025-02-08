@@ -163,6 +163,6 @@ PR's description. E.g. `closes #123` will link the PR to issue/pull request #123
 
 1. install docker.
 
-1. run `docker-compose up` in your terminal to spin up database instances.
+1. run `docker compose up` in your terminal to spin up database instances.
 
 1. run `npm test` in another terminal to run tests.
