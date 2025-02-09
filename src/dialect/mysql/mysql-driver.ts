@@ -73,15 +73,15 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     settings: TransactionSettings,
   ): Promise<void> {
-    if (settings.isolationLevel || settings.readOnly) {
+    if (settings.isolationLevel || settings.accessMode) {
       let sql = 'set transaction'
 
       if (settings.isolationLevel) {
         sql += ` isolation level ${settings.isolationLevel}`
       }
 
-      if (settings.readOnly) {
-        sql += ` read only`
+      if (settings.accessMode) {
+        sql += ` ${settings.accessMode}`
       }
 
       // On MySQL this sets the isolation level of the next transaction.
