@@ -62,12 +62,18 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     settings: TransactionSettings,
   ): Promise<void> {
-    if (settings.isolationLevel) {
-      await connection.executeQuery(
-        CompiledQuery.raw(
-          `start transaction isolation level ${settings.isolationLevel}`,
-        ),
-      )
+    if (settings.isolationLevel || settings.accessMode) {
+      let sql = 'start transaction'
+
+      if (settings.isolationLevel) {
+        sql += ` isolation level ${settings.isolationLevel}`
+      }
+
+      if (settings.accessMode) {
+        sql += ` ${settings.accessMode}`
+      }
+
+      await connection.executeQuery(CompiledQuery.raw(sql))
     } else {
       await connection.executeQuery(CompiledQuery.raw('begin'))
     }
