@@ -721,8 +721,8 @@ export class TransactionBuilder<DB> {
   }
 
   async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
-    const { isolationLevel, ...kyselyProps } = this.#props
-    const settings = { isolationLevel }
+    const { isolationLevel, accessMode, ...kyselyProps } = this.#props
+    const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
 

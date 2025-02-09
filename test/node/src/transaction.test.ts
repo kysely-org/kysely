@@ -150,6 +150,65 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      for (const accessMode of [
+        'read write',
+        'read only',
+      ] as const) {
+        it(`should set the transaction access mode as "${accessMode}"`, async () => {
+          await ctx.db
+            .transaction()
+            .setAccessMode(accessMode)
+            .execute(async (trx) => {
+              await trx
+                .selectFrom('person')
+                .select(['first_name', 'last_name', 'gender'])
+                .execute()
+            })
+
+          if (dialect == 'postgres') {
+            expect(
+              executedQueries.map((it) => ({
+                sql: it.sql,
+                parameters: it.parameters,
+              })),
+            ).to.eql([
+              {
+                sql: `start transaction ${accessMode}`,
+                parameters: [],
+              },
+              {
+                sql: 'select "first_name", "last_name", "gender" from "person"',
+                parameters: [],
+              },
+              { sql: 'commit', parameters: [] },
+            ])
+          } else if (dialect === 'mysql') {
+            expect(
+              executedQueries.map((it) => ({
+                sql: it.sql,
+                parameters: it.parameters,
+              })),
+            ).to.eql([
+              {
+                sql: `set transaction ${accessMode}`,
+                parameters: [],
+              },
+              {
+                sql: 'begin',
+                parameters: [],
+              },
+              {
+                sql: 'select `first_name`, `last_name`, `gender` from `person`',
+                parameters: [],
+              },
+              { sql: 'commit', parameters: [] },
+            ])
+          }
+        })
+      }
+    }
+
     if (dialect === 'postgres') {
       it('should be able to start a transaction with a single connection', async () => {
         const result = await ctx.db.connection().execute((db) => {
