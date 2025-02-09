@@ -74,15 +74,17 @@ export class MysqlDriver implements Driver {
     settings: TransactionSettings,
   ): Promise<void> {
     if (settings.isolationLevel || settings.accessMode) {
-      let sql = 'set transaction'
+      const parts: string[] = []
 
       if (settings.isolationLevel) {
-        sql += ` isolation level ${settings.isolationLevel}`
+        parts.push(`isolation level ${settings.isolationLevel}`)
       }
 
       if (settings.accessMode) {
-        sql += ` ${settings.accessMode}`
+        parts.push(settings.accessMode)
       }
+
+      const sql = `set transaction ${parts.join(', ')}`
 
       // On MySQL this sets the isolation level of the next transaction.
       await connection.executeQuery(CompiledQuery.raw(sql))
