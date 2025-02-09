@@ -110,8 +110,8 @@ export default {
               href: 'https://discord.gg/xyBJ3GwvAm',
             },
             {
-              label: 'Twitter',
-              href: 'https://twitter.com/kysely_',
+              label: 'Bluesky',
+              href: 'https://bsky.app/profile/kysely.dev',
             },
           ],
           title: 'Community',
