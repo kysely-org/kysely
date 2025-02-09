@@ -77,8 +77,13 @@ export interface Driver {
 }
 
 export interface TransactionSettings {
+  readonly accessMode?: AccessMode
   readonly isolationLevel?: IsolationLevel
 }
+
+export const TRANSACTION_ACCESS_MODES = ['read only', 'read write'] as const
+
+export type AccessMode = ArrayItemType<typeof TRANSACTION_ACCESS_MODES>
 
 export const TRANSACTION_ISOLATION_LEVELS = [
   'read uncommitted',
@@ -89,3 +94,23 @@ export const TRANSACTION_ISOLATION_LEVELS = [
 ] as const
 
 export type IsolationLevel = ArrayItemType<typeof TRANSACTION_ISOLATION_LEVELS>
+
+export function validateTransactionSettings(
+  settings: TransactionSettings,
+): void {
+  if (
+    settings.accessMode &&
+    !TRANSACTION_ACCESS_MODES.includes(settings.accessMode)
+  ) {
+    throw new Error(`invalid transaction access mode ${settings.accessMode}`)
+  }
+
+  if (
+    settings.isolationLevel &&
+    !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
+  ) {
+    throw new Error(
+      `invalid transaction isolation level ${settings.isolationLevel}`,
+    )
+  }
+}
