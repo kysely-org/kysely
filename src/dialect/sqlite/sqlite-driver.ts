@@ -4,8 +4,11 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
@@ -50,6 +53,45 @@ export class SqliteDriver implements Driver {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('release', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
   async releaseConnection(): Promise<void> {
     this.#connectionMutex.unlock()
   }
@@ -74,23 +116,19 @@ class SqliteConnection implements DatabaseConnection {
       return Promise.resolve({
         rows: stmt.all(parameters) as O[],
       })
-    } else {
-      const { changes, lastInsertRowid } = stmt.run(parameters)
-
-      const numAffectedRows =
-        changes !== undefined && changes !== null ? BigInt(changes) : undefined
-
-      return Promise.resolve({
-        // TODO: remove.
-        numUpdatedOrDeletedRows: numAffectedRows,
-        numAffectedRows,
-        insertId:
-          lastInsertRowid !== undefined && lastInsertRowid !== null
-            ? BigInt(lastInsertRowid)
-            : undefined,
-        rows: [],
-      })
     }
+
+    const { changes, lastInsertRowid } = stmt.run(parameters)
+
+    return Promise.resolve({
+      numAffectedRows:
+        changes !== undefined && changes !== null ? BigInt(changes) : undefined,
+      insertId:
+        lastInsertRowid !== undefined && lastInsertRowid !== null
+          ? BigInt(lastInsertRowid)
+          : undefined,
+      rows: [],
+    })
   }
 
   async *streamQuery<R>(

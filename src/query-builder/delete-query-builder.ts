@@ -35,14 +35,13 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -52,9 +51,10 @@ import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import {
-  OrderByDirectionExpression,
   OrderByExpression,
   parseOrderBy,
+  OrderByModifiers,
+  DirectedOrderByStringReference,
 } from '../parser/order-by-parser.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
@@ -79,12 +79,15 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
+import { JoinType } from '../operation-node/join-node.js'
+import { OrderByInterface } from './order-by-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'deleted'>,
+    OrderByInterface<DB, TB, {}>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -408,13 +411,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args),
-      ),
-    })
+    return this.#join('InnerJoin', args)
   }
 
   /**
@@ -432,13 +429,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args),
-      ),
-    })
+    return this.#join('LeftJoin', args)
   }
 
   /**
@@ -456,13 +447,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args),
-      ),
-    })
+    return this.#join('RightJoin', args)
   }
 
   /**
@@ -480,11 +465,15 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
+    return this.#join('FullJoin', args)
+  }
+
+  #join(joinType: JoinType, args: any[]): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('FullJoin', args),
+        parseJoin(joinType, args),
       ),
     })
   }
@@ -725,76 +714,57 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Clears the `order by` clause from the query.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.deleteFrom('pet')
-   *   .returningAll()
-   *   .where('name', '=', 'Max')
-   *   .orderBy('id')
-   *   .clearOrderBy()
-   *   .execute()
-   * ```
-   *
-   * The generated SQL(PostgreSQL):
-   *
-   * ```sql
-   * delete from "pet" where "name" = "Max" returning *
-   * ```
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
    */
-  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder<DB, TB, O>({
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): DeleteQueryBuilder<DB, TB, O>
+
+  orderBy(...args: any[]): any {
+    return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+      queryNode: QueryNode.cloneWithOrderByItems(
+        this.#props.queryNode,
+        parseOrderBy(args),
+      ),
     })
   }
 
-  /**
-   * Adds an `order by` clause to the query.
-   *
-   * `orderBy` calls are additive. To order by multiple columns, call `orderBy`
-   * multiple times.
-   *
-   * The first argument is the expression to order by and the second is the
-   * order (`asc` or `desc`).
-   *
-   * An `order by` clause in a delete query is only supported by some dialects
-   * like MySQL.
-   *
-   * See {@link SelectQueryBuilder.orderBy} for more examples.
-   *
-   * ### Examples
-   *
-   * Delete 5 oldest items in a table:
-   *
-   * ```ts
-   * await db
-   *   .deleteFrom('pet')
-   *   .orderBy('created_at')
-   *   .limit(5)
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * delete from `pet`
-   * order by `created_at`
-   * limit ?
-   * ```
-   */
-  orderBy(
-    orderBy: OrderByExpression<DB, TB, O>,
-    direction?: OrderByDirectionExpression,
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
+  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithOrderByItems(
-        this.#props.queryNode,
-        parseOrderBy([orderBy, direction]),
-      ),
+      queryNode: QueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
 
@@ -1104,12 +1074,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       return result.rows as any
     }
 
-    return [
-      new DeleteResult(
-        // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0),
-      ) as any,
-    ]
+    return [new DeleteResult(result.numAffectedRows ?? BigInt(0)) as any]
   }
 
   /**
@@ -1177,11 +1142,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  DeleteQueryBuilder,
-  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId

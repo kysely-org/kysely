@@ -1,4 +1,5 @@
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { Log } from '../util/log.js'
 import { performanceNow } from '../util/performance-now.js'
 import { DatabaseConnection, QueryResult } from './database-connection.js'
@@ -83,6 +84,54 @@ export class RuntimeDriver implements Driver {
 
   rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     return this.#driver.rollbackTransaction(connection)
+  }
+
+  savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    if (this.#driver.savepoint) {
+      return this.#driver.savepoint(connection, savepointName, compileQuery)
+    }
+
+    throw new Error('The `savepoint` method is not supported by this driver')
+  }
+
+  rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    if (this.#driver.rollbackToSavepoint) {
+      return this.#driver.rollbackToSavepoint(
+        connection,
+        savepointName,
+        compileQuery,
+      )
+    }
+
+    throw new Error(
+      'The `rollbackToSavepoint` method is not supported by this driver',
+    )
+  }
+
+  releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    if (this.#driver.releaseSavepoint) {
+      return this.#driver.releaseSavepoint(
+        connection,
+        savepointName,
+        compileQuery,
+      )
+    }
+
+    throw new Error(
+      'The `releaseSavepoint` method is not supported by this driver',
+    )
   }
 
   async destroy(): Promise<void> {

@@ -10,7 +10,6 @@ import {
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { SqlBool } from '../util/type-utils.js'
 
 export class JoinBuilder<DB, TB extends keyof DB>
@@ -91,11 +90,6 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return this.#props.joinNode
   }
 }
-
-preventAwait(
-  JoinBuilder,
-  "don't await JoinBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 export interface JoinBuilderProps {
   readonly joinNode: JoinNode

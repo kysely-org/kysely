@@ -4,7 +4,13 @@ import {
   expectError,
   expectType,
 } from 'tsd'
-import { Expression, ExpressionBuilder, Kysely, SqlBool } from '..'
+import {
+  Expression,
+  ExpressionBuilder,
+  Kysely,
+  SqlBool,
+  expressionBuilder,
+} from '..'
 import { Database } from '../shared'
 import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
 
@@ -259,4 +265,17 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
       .select(['first_name', 'last_name'])
       .$asTuple('first_name', 'last_name', 'last_name'),
   )
+}
+
+function testExpressionBuilderConstructor(db: Kysely<Database>) {
+  const eb1 = expressionBuilder<Database, 'person'>()
+  expectType<ExpressionBuilder<Database, 'person'>>(eb1)
+
+  const eb2 = expressionBuilder<Database>()
+  expectType<ExpressionBuilder<Database, never>>(eb2)
+
+  const eb3 = expressionBuilder(
+    db.selectFrom('action').innerJoin('pet', (join) => join.onTrue()),
+  )
+  expectType<ExpressionBuilder<Database, 'action' | 'pet'>>(eb3)
 }

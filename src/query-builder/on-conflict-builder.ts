@@ -17,7 +17,6 @@ import {
 } from '../parser/update-set-parser.js'
 import { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn, SqlBool } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
@@ -276,8 +275,6 @@ export interface OnConflictBuilderProps {
   readonly onConflictNode: OnConflictNode
 }
 
-preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
-
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
@@ -297,11 +294,6 @@ export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
     return this.#props.onConflictNode
   }
 }
-
-preventAwait(
-  OnConflictDoNothingBuilder,
-  "don't await OnConflictDoNothingBuilder instances.",
-)
 
 export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   implements WhereInterface<DB, TB>, OperationNodeSource
@@ -383,8 +375,3 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
     return this.#props.onConflictNode
   }
 }
-
-preventAwait(
-  OnConflictUpdateBuilder,
-  "don't await OnConflictUpdateBuilder instances.",
-)
