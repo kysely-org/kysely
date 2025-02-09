@@ -1,6 +1,6 @@
 import * as sinon from 'sinon'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
-import { CompiledQuery, IsolationLevel, Transaction } from '../../../'
+import { CompiledQuery, Transaction, TRANSACTION_ACCESS_MODES } from '../../../'
 
 import {
   clearDatabase,
@@ -84,45 +84,7 @@ for (const dialect of DIALECTS) {
                 .execute()
             })
 
-          if (dialect == 'postgres') {
-            expect(
-              executedQueries.map((it) => ({
-                sql: it.sql,
-                parameters: it.parameters,
-              })),
-            ).to.eql([
-              {
-                sql: `start transaction isolation level ${isolationLevel}`,
-                parameters: [],
-              },
-              {
-                sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-                parameters: ['Foo', 'Barson', 'male'],
-              },
-              { sql: 'commit', parameters: [] },
-            ])
-          } else if (dialect === 'mysql') {
-            expect(
-              executedQueries.map((it) => ({
-                sql: it.sql,
-                parameters: it.parameters,
-              })),
-            ).to.eql([
-              {
-                sql: `set transaction isolation level ${isolationLevel}`,
-                parameters: [],
-              },
-              {
-                sql: 'begin',
-                parameters: [],
-              },
-              {
-                sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-                parameters: ['Foo', 'Barson', 'male'],
-              },
-              { sql: 'commit', parameters: [] },
-            ])
-          } else if (dialect === 'mssql') {
+          if (dialect === 'mssql') {
             expect(tediousBeginTransactionSpy.calledOnce).to.be.true
             expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.not.be
               .undefined
@@ -131,21 +93,81 @@ for (const dialect of DIALECTS) {
                 isolationLevel.replace(' ', '_').toUpperCase() as any
               ],
             )
-
-            expect(
-              executedQueries.map((it) => ({
-                sql: it.sql,
-                parameters: it.parameters,
-              })),
-            ).to.eql([
-              {
-                sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
-                parameters: ['Foo', 'Barson', 'male'],
-              },
-            ])
-
             expect(tediousCommitTransactionSpy.calledOnce).to.be.true
           }
+
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            })),
+          ).to.eql(
+            {
+              postgres: [
+                {
+                  sql: `start transaction isolation level ${isolationLevel}`,
+                  parameters: [],
+                },
+                {
+                  sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+                { sql: 'commit', parameters: [] },
+              ],
+              mysql: [
+                {
+                  sql: `set transaction isolation level ${isolationLevel}`,
+                  parameters: [],
+                },
+                { sql: 'begin', parameters: [] },
+                {
+                  sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+                { sql: 'commit', parameters: [] },
+              ],
+              mssql: [
+                {
+                  sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+              ],
+            }[dialect],
+          )
+        })
+      }
+    }
+
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      for (const accessMode of TRANSACTION_ACCESS_MODES) {
+        it(`should set the transaction access mode as "${accessMode}"`, async () => {
+          await ctx.db
+            .transaction()
+            .setAccessMode(accessMode)
+            .execute(async (trx) => {
+              await trx.selectFrom('person').selectAll().execute()
+            })
+
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            })),
+          ).to.eql(
+            {
+              postgres: [
+                { sql: `start transaction ${accessMode}`, parameters: [] },
+                { sql: 'select * from "person"', parameters: [] },
+                { sql: 'commit', parameters: [] },
+              ],
+              mysql: [
+                { sql: `set transaction ${accessMode}`, parameters: [] },
+                { sql: 'begin', parameters: [] },
+                { sql: 'select * from `person`', parameters: [] },
+                { sql: 'commit', parameters: [] },
+              ],
+            }[dialect],
+          )
         })
       }
     }

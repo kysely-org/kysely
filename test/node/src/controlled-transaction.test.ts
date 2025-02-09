@@ -1,13 +1,13 @@
 import * as sinon from 'sinon'
-import { Connection } from 'tedious'
+import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
   ControlledTransaction,
   Driver,
   DummyDriver,
-  IsolationLevel,
   Kysely,
   SqliteDialect,
+  TRANSACTION_ACCESS_MODES,
 } from '../../../'
 import {
   DIALECTS,
@@ -249,6 +249,42 @@ for (const dialect of DIALECTS) {
       expect(person).to.be.undefined
     })
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      for (const accessMode of TRANSACTION_ACCESS_MODES) {
+        it(`should set the transaction access mode as "${accessMode}"`, async () => {
+          const trx = await ctx.db
+            .startTransaction()
+            .setAccessMode(accessMode)
+            .execute()
+
+          await trx.selectFrom('person').selectAll().execute()
+
+          await trx.commit().execute()
+
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            })),
+          ).to.eql(
+            {
+              postgres: [
+                { sql: `start transaction ${accessMode}`, parameters: [] },
+                { sql: 'select * from "person"', parameters: [] },
+                { sql: 'commit', parameters: [] },
+              ],
+              mysql: [
+                { sql: `set transaction ${accessMode}`, parameters: [] },
+                { sql: 'begin', parameters: [] },
+                { sql: 'select * from `person`', parameters: [] },
+                { sql: 'commit', parameters: [] },
+              ],
+            }[dialect],
+          )
+        })
+      }
+    }
+
     if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       for (const isolationLevel of [
         'read uncommitted',
@@ -263,16 +299,60 @@ for (const dialect of DIALECTS) {
             .setIsolationLevel(isolationLevel)
             .execute()
 
-          await trx
-            .insertInto('person')
-            .values({
-              first_name: 'Foo',
-              last_name: 'Barson',
-              gender: 'male',
-            })
-            .execute()
+          await insertSomething(trx)
 
           await trx.commit().execute()
+
+          if (dialect === 'mssql') {
+            expect(tediousBeginTransactionSpy.calledOnce).to.be.true
+            expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.not.be
+              .undefined
+            expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.equal(
+              ISOLATION_LEVEL[
+                isolationLevel.replace(' ', '_').toUpperCase() as any
+              ],
+            )
+            expect(tediousCommitTransactionSpy.calledOnce).to.be.true
+          }
+
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            })),
+          ).to.eql(
+            {
+              postgres: [
+                {
+                  sql: `start transaction isolation level ${isolationLevel}`,
+                  parameters: [],
+                },
+                {
+                  sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+                { sql: 'commit', parameters: [] },
+              ],
+              mysql: [
+                {
+                  sql: `set transaction isolation level ${isolationLevel}`,
+                  parameters: [],
+                },
+                { sql: 'begin', parameters: [] },
+                {
+                  sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+                { sql: 'commit', parameters: [] },
+              ],
+              mssql: [
+                {
+                  sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+                  parameters: ['Foo', 'Barson', 'male'],
+                },
+              ],
+            }[dialect],
+          )
         })
       }
     }
