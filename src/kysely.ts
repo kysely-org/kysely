@@ -13,8 +13,8 @@ import { SingleConnectionProvider } from './driver/single-connection-provider.js
 import {
   Driver,
   IsolationLevel,
-  TransactionSettings,
-  TRANSACTION_ISOLATION_LEVELS,
+  AccessMode,
+  validateTransactionSettings,
 } from './driver/driver.js'
 import {
   createFunctionModule,
@@ -706,6 +706,13 @@ export class TransactionBuilder<DB> {
     this.#props = freeze(props)
   }
 
+  setAccessMode(accessMode: AccessMode): TransactionBuilder<DB> {
+    return new TransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
+  }
+
   setIsolationLevel(isolationLevel: IsolationLevel): TransactionBuilder<DB> {
     return new TransactionBuilder({
       ...this.#props,
@@ -714,8 +721,8 @@ export class TransactionBuilder<DB> {
   }
 
   async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
-    const { isolationLevel, ...kyselyProps } = this.#props
-    const settings = { isolationLevel }
+    const { isolationLevel, accessMode, ...kyselyProps } = this.#props
+    const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
 
@@ -744,18 +751,8 @@ export class TransactionBuilder<DB> {
 }
 
 interface TransactionBuilderProps extends KyselyProps {
+  readonly accessMode?: AccessMode
   readonly isolationLevel?: IsolationLevel
-}
-
-function validateTransactionSettings(settings: TransactionSettings): void {
-  if (
-    settings.isolationLevel &&
-    !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
-  ) {
-    throw new Error(
-      `invalid transaction isolation level ${settings.isolationLevel}`,
-    )
-  }
 }
 
 export class ControlledTransactionBuilder<DB> {
@@ -763,6 +760,13 @@ export class ControlledTransactionBuilder<DB> {
 
   constructor(props: ControlledTransactionBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  setAccessMode(accessMode: AccessMode): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
   }
 
   setIsolationLevel(
@@ -775,8 +779,8 @@ export class ControlledTransactionBuilder<DB> {
   }
 
   async execute(): Promise<ControlledTransaction<DB>> {
-    const { isolationLevel, ...props } = this.#props
-    const settings = { isolationLevel }
+    const { isolationLevel, accessMode, ...props } = this.#props
+    const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
 
