@@ -1,0 +1,68 @@
+---
+title: Select
+description: Learn how to use the select method in Kysely.
+---
+
+## Basic usage
+
+```ts
+const persons = await db
+  .selectFrom('person')
+  .select('id')
+  .where('first_name', '=', 'Arnold')
+  .execute()
+```
+
+## Selecting multiple columns
+
+```ts
+const persons = await db
+  .selectFrom('person')
+  .select(['id', 'first_name', 'last_name'])
+  .execute()
+```
+
+## Selecting all columns
+
+```ts
+const persons = await db.selectFrom('person').selectAll().execute()
+```
+
+## Selecting with a custom alias
+
+```ts
+const persons = await db
+  .selectFrom('person as p')
+  .select(['first_name as fn', 'p.last_name as ln'])
+  .execute()
+```
+
+## Complex selection
+
+You can select arbitrary expression including subqueries and raw sql snippets. When you do that, you need to give a name for the selections using the `as` method:
+
+```ts
+import { sql } from 'kysely'
+
+const persons = await db
+  .selectFrom('person')
+  .select(({ eb, selectFrom, or }) => [
+    // Select a correlated subquery
+    selectFrom('pet')
+      .whereRef('person.id', '=', 'pet.owner_id')
+      .select('pet.name')
+      .orderBy('pet.name')
+      .limit(1)
+      .as('first_pet_name'),
+
+    // Build and select an expression using
+    // the expression builder
+    or([eb('first_name', '=', 'Jennifer'), eb('first_name', '=', 'Arnold')]).as(
+      'is_jennifer_or_arnold',
+    ),
+
+    // Select a raw sql expression
+    sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
+  ])
+  .execute()
+```
