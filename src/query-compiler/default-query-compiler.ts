@@ -111,6 +111,7 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
+import { AddIndexTableNode } from '../operation-node/add-index-table-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -127,7 +128,6 @@ export class DefaultQueryCompiler
     this.#sql = ''
     this.#parameters = []
     this.nodeStack.splice(0, this.nodeStack.length)
-
     this.visitNode(node)
 
     return freeze({
@@ -613,7 +613,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.selectQuery)
     } else {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.addIndexTable ?? []),
+      ])
       this.append(')')
 
       if (node.onCommit) {
@@ -1001,6 +1005,19 @@ export class DefaultQueryCompiler
 
     if (node.nullsNotDistinct) {
       this.append(' nulls not distinct')
+    }
+
+    this.append(' (')
+    this.compileList(node.columns)
+    this.append(')')
+  }
+
+  protected override visitAddIndexTable(node: AddIndexTableNode): void {
+    this.append('index')
+    if (node.name) {
+      this.append(' ')
+      this.visitNode(node.name)
+      this.append(' ')
     }
 
     this.append(' (')

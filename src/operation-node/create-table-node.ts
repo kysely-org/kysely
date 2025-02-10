@@ -4,6 +4,7 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ArrayItemType } from '../util/type-utils.js'
+import { AddIndexTableNode } from './add-index-table-node.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
@@ -23,6 +24,7 @@ export interface CreateTableNode extends OperationNode {
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
   readonly constraints?: ReadonlyArray<ConstraintNode>
+  readonly addIndexTable?: ReadonlyArray<AddIndexTableNode>
   readonly temporary?: boolean
   readonly ifNotExists?: boolean
   readonly onCommit?: OnCommitAction
@@ -90,6 +92,18 @@ export const CreateTableNode = freeze({
       endModifiers: createTable.endModifiers
         ? freeze([...createTable.endModifiers, modifier])
         : freeze([modifier]),
+    })
+  },
+
+  cloneWithAddIndexTable(
+    createTable: CreateTableNode,
+    addIndexTable: AddIndexTableNode,
+  ): CreateTableNode {
+    return freeze({
+      ...createTable,
+      addIndexTable: createTable.addIndexTable
+        ? freeze([...createTable.addIndexTable, addIndexTable])
+        : freeze([addIndexTable]),
     })
   },
 

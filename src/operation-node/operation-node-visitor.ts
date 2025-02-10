@@ -96,6 +96,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { AddIndexTableNode } from './add-index-table-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -199,6 +200,7 @@ export abstract class OperationNodeVisitor {
     FetchNode: this.visitFetch.bind(this),
     TopNode: this.visitTop.bind(this),
     OutputNode: this.visitOutput.bind(this),
+    AddIndexTableNode: this.visitAddIndexTable.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -245,6 +247,7 @@ export abstract class OperationNodeVisitor {
     node: PrimaryKeyConstraintNode,
   ): void
   protected abstract visitUniqueConstraint(node: UniqueConstraintNode): void
+  protected abstract visitAddIndexTable(node: AddIndexTableNode): void
   protected abstract visitReferences(node: ReferencesNode): void
   protected abstract visitCheckConstraint(node: CheckConstraintNode): void
   protected abstract visitWith(node: WithNode): void
