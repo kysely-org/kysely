@@ -243,7 +243,7 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
-    AddIndexTableNode: this.transformOutput.bind(this),
+    AddIndexTableNode: this.transformAddIndexTable.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
