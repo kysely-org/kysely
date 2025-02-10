@@ -1295,6 +1295,116 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create a table with index on nickname named nickname_key', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addIndex(['nickname'], 'nickname_key')
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: [
+                'create table `test`',
+                '(`id` integer not null,',
+                '`nickname` varchar(64) not null,',
+                '`country` varchar(2) not null,',
+                'index `nickname_key`  (`nickname`))',
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with indexes on nickname named nickname_key, and country names country_key', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addIndex(['nickname'], 'nickname_key')
+            .addIndex(['country'], 'country_key')
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: [
+                'create table `test`',
+                '(`id` integer not null,',
+                '`nickname` varchar(64) not null,',
+                '`country` varchar(2) not null,',
+                'index `nickname_key`  (`nickname`),',
+                'index `country_key`  (`country`))',
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with composite index on nickname and country without setting name', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addIndex(['nickname', 'country'])
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: [
+                'create table `test`',
+                '(`id` integer not null,',
+                '`nickname` varchar(64) not null,',
+                '`country` varchar(2) not null,',
+                'index (`nickname`, `country`))',
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with index on nickname without setting name', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addIndex(['nickname'])
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: [
+                'create table `test`',
+                '(`id` integer not null,',
+                '`nickname` varchar(64) not null,',
+                '`country` varchar(2) not null,',
+                'index (`nickname`))',
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       }
 
       if (sqlSpec === 'sqlite') {

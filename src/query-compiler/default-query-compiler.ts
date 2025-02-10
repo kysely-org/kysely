@@ -117,6 +117,7 @@ import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import { AddIndexTableNode } from '../operation-node/add-index-table-node.js'
 
 const LIT_WRAP_REGEX = /'/g
 
@@ -135,7 +136,6 @@ export class DefaultQueryCompiler
     this.#sql = ''
     this.#parameters = []
     this.nodeStack.splice(0, this.nodeStack.length)
-
     this.visitNode(node)
 
     return freeze({
@@ -637,7 +637,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.selectQuery)
     } else {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.addIndexTable ?? []),
+      ])
       this.append(')')
 
       if (node.onCommit) {
@@ -1085,6 +1089,19 @@ export class DefaultQueryCompiler
     this.append(')')
 
     this.buildDeferrable(node)
+  }
+
+  protected override visitAddIndexTable(node: AddIndexTableNode): void {
+    this.append('index')
+    if (node.name) {
+      this.append(' ')
+      this.visitNode(node.name)
+      this.append(' ')
+    }
+
+    this.append(' (')
+    this.compileList(node.columns)
+    this.append(')')
   }
 
   protected override visitCheckConstraint(node: CheckConstraintNode): void {

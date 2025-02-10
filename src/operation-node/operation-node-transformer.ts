@@ -99,6 +99,7 @@ import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
+import { AddIndexTableNode } from './add-index-table-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -242,6 +243,7 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    AddIndexTableNode: this.transformOutput.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -486,6 +488,7 @@ export class OperationNodeTransformer {
       frontModifiers: this.transformNodeList(node.frontModifiers, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       selectQuery: this.transformNode(node.selectQuery, queryId),
+      addIndexTable: this.transformNodeList(node.addIndexTable),
     })
   }
 
@@ -714,6 +717,14 @@ export class OperationNodeTransformer {
       nullsNotDistinct: node.nullsNotDistinct,
       deferrable: node.deferrable,
       initiallyDeferred: node.initiallyDeferred,
+    })
+  }
+
+  protected transformAddIndexTable(node: AddIndexTableNode): AddIndexTableNode {
+    return requireAllProps<AddIndexTableNode>({
+      kind: 'AddIndexTableNode',
+      columns: this.transformNodeList(node.columns),
+      name: this.transformNode(node.name),
     })
   }
 
