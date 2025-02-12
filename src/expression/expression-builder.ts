@@ -621,6 +621,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * This creates a tuple using column references by default. See {@link tuple}
    * if you need to create value tuples.
    *
+   * WARNING! Using this with unchecked inputs WILL lead to SQL injection
+   * vulnerabilities. The input is not checked or escaped by Kysely in any way.
+   *
    * ### Examples
    *
    * ```ts
