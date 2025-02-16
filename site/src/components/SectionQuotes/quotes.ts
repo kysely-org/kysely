@@ -32,7 +32,7 @@ export const quotes: QuoteProps[] = [
   {
     authorName: 'Marvin Hagemeister',
     authorTitle: 'Deno SWE',
-    avatar: '/img/avatars/marvinh.png',
+    avatar: '/img/avatars/marvinh.jpeg',
     link: 'https://www.reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1',
     text: "We're using Kysely as an ORM here at Deno. It's quite neat.",
   },
