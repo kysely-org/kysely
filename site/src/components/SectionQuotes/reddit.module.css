@@ -1,0 +1,57 @@
+.snoo1 {
+  fill: url(#snoo-radial-gragient) white;
+}
+
+.snoo1,
+.snoo2,
+.snoo3,
+.snoo4,
+.snoo5,
+.snoo6,
+.snoo7,
+.snoo8,
+.snoo9,
+.snoo10,
+.snoo11 {
+  stroke-width: 0px;
+}
+
+.snoo2 {
+  fill: url(#snoo-radial-gragient-2) white;
+}
+
+.snoo3 {
+  fill: url(#snoo-radial-gragient-3) white;
+}
+
+.snoo4 {
+  fill: url(#snoo-radial-gragient-4) #fc4301;
+}
+
+.snoo5 {
+  fill: url(#snoo-radial-gragient-6) black;
+}
+
+.snoo6 {
+  fill: url(#snoo-radial-gragient-8) black;
+}
+
+.snoo7 {
+  fill: url(#snoo-radial-gragient-5) #fc4301;
+}
+
+.snoo8 {
+  fill: url(#snoo-radial-gragient-7) white;
+}
+
+.snoo9 {
+  fill: #842123;
+}
+
+.snoo10 {
+  fill: #ff4500;
+}
+
+.snoo11 {
+  fill: #ffc49c;
+}

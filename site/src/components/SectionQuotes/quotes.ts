@@ -30,6 +30,13 @@ export const quotes: QuoteProps[] = [
     text: "I made a strong recommendation internally for using Kysely for a greenfield service that's in the works. Looks very solid. 👌🏻",
   },
   {
+    authorName: 'Marvin Hagemeister',
+    authorTitle: 'Deno SWE',
+    avatar: '/img/avatars/marvinh.jpeg',
+    link: 'https://reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1',
+    text: "We're using Kysely as an ORM here at Deno. It's quite neat.",
+  },
+  {
     authorName: 'Catalin Pit',
     authorTitle: 'Documenso SWE',
     avatar: '/img/avatars/catalin.png',
