@@ -29,6 +29,7 @@ import {
   UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
 import { parseExpression } from '../parser/expression-parser.js'
+import { AddIndexTableNode } from '../operation-node/add-index-table-node.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -243,6 +244,44 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
         uniqueConstraintBuilder.toOperationNode(),
+      ),
+    })
+  }
+
+  /**
+   * Adds index on one or more columns.
+   *
+   * This only works on some dialects like MySQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addIndex(['last_name'], 'last_name_key')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `first_name` varchar(64) not null,
+   *   `last_name` varchar(64) not null,
+   *   index `last_name_key` (`last_name`)
+   * )
+   * ```
+   *
+   */
+  addIndex(columns: C[], indexName?: string): CreateTableBuilder<TB, C> {
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWithAddIndexTable(
+        this.#props.node,
+        AddIndexTableNode.create(columns, indexName),
       ),
     })
   }
