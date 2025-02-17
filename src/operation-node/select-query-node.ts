@@ -17,6 +17,7 @@ import { ExplainNode } from './explain-node.js'
 import { SetOperationNode } from './set-operation-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
+import { QueryNode } from './query-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -101,17 +102,14 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItems(
-    selectNode: SelectQueryNode,
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithOrderByItems: (
+    node: SelectQueryNode,
     items: ReadonlyArray<OrderByItemNode>,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      orderBy: selectNode.orderBy
-        ? OrderByNode.cloneWithItems(selectNode.orderBy, items)
-        : OrderByNode.create(items),
-    })
-  },
+  ) => QueryNode.cloneWithOrderByItems(node, items),
 
   cloneWithGroupByItems(
     selectNode: SelectQueryNode,
@@ -200,12 +198,12 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithoutOrderBy(select: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...select,
-      orderBy: undefined,
-    })
-  },
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithoutOrderBy: (node: SelectQueryNode) =>
+    QueryNode.cloneWithoutOrderBy(node),
 
   cloneWithoutGroupBy(select: SelectQueryNode): SelectQueryNode {
     return freeze({
