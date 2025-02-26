@@ -38,3 +38,4 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | BigQuery                      | https://github.com/maktouch/kysely-bigquery                                 |
 | Clickhouse                    | https://github.com/founderpathcom/kysely-clickhouse                         |
 | PGLite                        | https://github.com/czeidler/kysely-pglite-dialect                           |
+| Oracle                        | https://github.com/griffiths-waite/kysely-oracledb                          |
