@@ -92,6 +92,7 @@ export type OperationNodeKind =
   | 'FetchNode'
   | 'TopNode'
   | 'OutputNode'
+  | 'AddIndexTableNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

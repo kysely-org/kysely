@@ -94,6 +94,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { AddIndexTableNode } from './add-index-table-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -228,6 +229,7 @@ export class OperationNodeTransformer {
     FetchNode: this.transformFetch.bind(this),
     TopNode: this.transformTop.bind(this),
     OutputNode: this.transformOutput.bind(this),
+    AddIndexTableNode: this.transformAddIndexTable.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -441,6 +443,7 @@ export class OperationNodeTransformer {
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
       selectQuery: this.transformNode(node.selectQuery),
+      addIndexTable: this.transformNodeList(node.addIndexTable),
     })
   }
 
@@ -624,6 +627,14 @@ export class OperationNodeTransformer {
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
       nullsNotDistinct: node.nullsNotDistinct,
+    })
+  }
+
+  protected transformAddIndexTable(node: AddIndexTableNode): AddIndexTableNode {
+    return requireAllProps<AddIndexTableNode>({
+      kind: 'AddIndexTableNode',
+      columns: this.transformNodeList(node.columns),
+      name: this.transformNode(node.name),
     })
   }
 
