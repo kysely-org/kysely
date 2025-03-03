@@ -1,0 +1,145 @@
+---
+title: Raw SQL
+description: Learn how to use raw SQL in Kysely.
+---
+
+The `sql` template tag lets you write raw SQL snippets while maintaining safety and type information:
+
+```typescript
+import { sql } from 'kysely'
+
+// Basic usage with parameters
+const id = 123
+const query = sql<Person[]>`select * from person where id = ${id}`
+
+// Execute the query
+const result = await query.execute(db)
+```
+
+## Key Features
+
+- All substitutions (`${}`) are automatically parameterized
+- SQL injection protection built-in
+- Supports values, expressions, queries, and other Kysely builders
+- Can be used in most Kysely query builder methods
+
+## Common Use Cases
+
+### In Select Statements
+
+```typescript
+const persons = await db
+  .selectFrom('person')
+  .select([
+    // Use .as() to alias SQL expressions
+    sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
+  ])
+  .execute()
+```
+
+### In Where Clauses
+
+```typescript
+const result = await db
+  .selectFrom('person')
+  .selectAll()
+  .where(sql`birthdate between ${startDate} and ${endDate}`)
+  .execute()
+```
+
+### Combining with Other Queries
+
+```typescript
+const petQuery = db.selectFrom('pet').select('name').limit(1)
+const nameExpr = sql`concat(first_name, ' ', last_name)`
+
+const combined = sql`
+  select ${nameExpr} as full_name, ${petQuery} as pet_name
+  from person
+`
+```
+
+## Utility Functions
+
+### sql.ref() - Column References
+
+Creates safe column references:
+
+```typescript
+const columnName = 'first_name'
+sql`select ${sql.ref(columnName)} from person`
+// Result: select "first_name" from person
+```
+
+### sql.table() - Table References
+
+Creates safe table references:
+
+```typescript
+const tableName = 'person'
+sql`select * from ${sql.table(tableName)}`
+// Result: select * from "person"
+```
+
+### sql.join() - Lists of Values
+
+Creates comma-separated lists:
+
+```typescript
+const nicknames = ['nick1', 'nick2', 'nick3']
+sql`select * from person where nickname in (${sql.join(nicknames)})`
+// Result: select * from person where nickname in ($1, $2, $3)
+
+// Custom separator
+sql.join(items, sql`::varchar, `)
+```
+
+### sql.lit() - Literal Values
+
+Adds literal values (use with caution):
+
+```typescript
+sql`select * from person where status = ${sql.lit('active')}`
+// Result: select * from person where status = 'active'
+```
+
+### sql.raw() - Raw SQL
+
+Adds raw SQL (use with caution):
+
+```typescript
+sql`select * from ${sql.raw('person')} where active = true`
+// Result: select * from person where active = true
+```
+
+## Type Safety Examples
+
+```typescript
+// Type-safe column references
+db.selectFrom('person')
+  .select((eb) => {
+    const firstName = eb.ref('first_name')
+    const lastName = eb.ref('last_name')
+    return sql<string>`concat(${firstName}, ' ', ${lastName})`.as('full_name')
+  })
+  .execute()
+```
+
+## Important Notes
+
+1. **Security**:
+
+   - Regular substitutions (`${}`) are safe and parameterized
+   - `sql.lit()`, `sql.raw()`, `sql.ref()`, and `sql.table()` are NOT safe with unchecked input
+
+2. **Best Practices**:
+
+   - Use the query builder when possible
+   - Use raw SQL only when necessary
+   - Always prefer parameterized values over literals
+   - Validate any input used with the unsafe utility functions
+
+3. **Type Safety**:
+   - Specify return types using the generic parameter: `sql<ReturnType>`
+   - Use builder expressions for maximum type safety
+   - TypeScript types don't affect runtime behavior
