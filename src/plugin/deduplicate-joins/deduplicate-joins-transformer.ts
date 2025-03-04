@@ -4,18 +4,28 @@ import { OperationNodeTransformer } from '../../operation-node/operation-node-tr
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { UpdateQueryNode } from '../../operation-node/update-query-node.js'
 import { compare, freeze } from '../../util/object-utils.js'
+import { QueryId } from '../../util/query-id.js'
 
 export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
-  protected transformSelectQuery(node: SelectQueryNode): SelectQueryNode {
-    return this.#transformQuery(super.transformSelectQuery(node))
+  protected transformSelectQuery(
+    node: SelectQueryNode,
+    queryId: QueryId,
+  ): SelectQueryNode {
+    return this.#transformQuery(super.transformSelectQuery(node, queryId))
   }
 
-  protected transformUpdateQuery(node: UpdateQueryNode): UpdateQueryNode {
-    return this.#transformQuery(super.transformUpdateQuery(node))
+  protected transformUpdateQuery(
+    node: UpdateQueryNode,
+    queryId: QueryId,
+  ): UpdateQueryNode {
+    return this.#transformQuery(super.transformUpdateQuery(node, queryId))
   }
 
-  protected transformDeleteQuery(node: DeleteQueryNode): DeleteQueryNode {
-    return this.#transformQuery(super.transformDeleteQuery(node))
+  protected transformDeleteQuery(
+    node: DeleteQueryNode,
+    queryId: QueryId,
+  ): DeleteQueryNode {
+    return this.#transformQuery(super.transformDeleteQuery(node, queryId))
   }
 
   #transformQuery<

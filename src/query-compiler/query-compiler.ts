@@ -12,6 +12,8 @@ import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
+import { QueryId } from '../util/query-id.js'
 import { CompiledQuery } from './compiled-query.js'
 
 export type RootOperationNode =
@@ -20,6 +22,7 @@ export type RootOperationNode =
   | CreateIndexNode
   | CreateSchemaNode
   | CreateViewNode
+  | RefreshMaterializedViewNode
   | DropTableNode
   | DropIndexNode
   | DropSchemaNode
@@ -34,5 +37,5 @@ export type RootOperationNode =
  * a `QueryCompiler` compiles a query expressed as a tree of `OperationNodes` into SQL.
  */
 export interface QueryCompiler {
-  compileQuery(node: RootOperationNode): CompiledQuery
+  compileQuery(node: RootOperationNode, queryId: QueryId): CompiledQuery
 }

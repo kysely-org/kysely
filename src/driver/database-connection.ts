@@ -15,12 +15,6 @@ export interface DatabaseConnection {
 
 export interface QueryResult<O> {
   /**
-   * @deprecated use {@link QueryResult.numAffectedRows} instead.
-   */
-  // TODO: remove.
-  readonly numUpdatedOrDeletedRows?: bigint
-
-  /**
    * This is defined for insert, update, delete and merge queries and contains
    * the number of rows the query inserted/updated/deleted.
    */

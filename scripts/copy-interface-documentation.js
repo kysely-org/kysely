@@ -22,7 +22,7 @@ const OBJECT_REGEXES = [
   /^(?:export )?declare (?:abstract )?class (\w+)/,
   /^(?:export )?interface (\w+)/,
 ]
-const GENERIC_ARGUMENTS_REGEX = /<[\w"'`,{}=| ]+>/g
+const GENERIC_ARGUMENTS_REGEX = /<[\w"'`,{}=|\[\] ]+>/g
 const JSDOC_START_REGEX = /^\s+\/\*\*/
 const JSDOC_END_REGEX = /^\s+\*\//
 
@@ -123,7 +123,7 @@ function parseObjects(file) {
 function parseImplements(line) {
   if (!line.endsWith('{')) {
     console.warn(
-      `skipping object declaration "${line}". Expected it to end with "{"'`
+      `skipping object declaration "${line}". Expected it to end with "{"'`,
     )
     return []
   }
@@ -225,7 +225,7 @@ function findDocProperty(files, object, propertyName) {
     }
 
     const interfaceProperty = interfaceObject.properties.find(
-      (it) => it.name === propertyName
+      (it) => it.name === propertyName,
     )
 
     if (interfaceProperty?.doc) {

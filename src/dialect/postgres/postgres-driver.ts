@@ -3,8 +3,11 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   PostgresCursorConstructor,
@@ -59,12 +62,18 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     settings: TransactionSettings,
   ): Promise<void> {
-    if (settings.isolationLevel) {
-      await connection.executeQuery(
-        CompiledQuery.raw(
-          `start transaction isolation level ${settings.isolationLevel}`,
-        ),
-      )
+    if (settings.isolationLevel || settings.accessMode) {
+      let sql = 'start transaction'
+
+      if (settings.isolationLevel) {
+        sql += ` isolation level ${settings.isolationLevel}`
+      }
+
+      if (settings.accessMode) {
+        sql += ` ${settings.accessMode}`
+      }
+
+      await connection.executeQuery(CompiledQuery.raw(sql))
     } else {
       await connection.executeQuery(CompiledQuery.raw('begin'))
     }
@@ -76,6 +85,45 @@ export class PostgresDriver implements Driver {
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
+  }
+
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('release', savepointName),
+        createQueryId(),
+      ),
+    )
   }
 
   async releaseConnection(connection: PostgresConnection): Promise<void> {
@@ -106,28 +154,20 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const result = await this.#client.query<O>(compiledQuery.sql, [
-        ...compiledQuery.parameters,
-      ])
-
-      if (
-        result.command === 'INSERT' ||
-        result.command === 'UPDATE' ||
-        result.command === 'DELETE' ||
-        result.command === 'MERGE'
-      ) {
-        const numAffectedRows = BigInt(result.rowCount)
-
-        return {
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          rows: result.rows ?? [],
-        }
-      }
+      const { command, rowCount, rows } = await this.#client.query<O>(
+        compiledQuery.sql,
+        [...compiledQuery.parameters],
+      )
 
       return {
-        rows: result.rows ?? [],
+        numAffectedRows:
+          command === 'INSERT' ||
+          command === 'UPDATE' ||
+          command === 'DELETE' ||
+          command === 'MERGE'
+            ? BigInt(rowCount)
+            : undefined,
+        rows: rows ?? [],
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())

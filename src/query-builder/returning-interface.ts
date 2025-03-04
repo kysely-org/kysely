@@ -1,4 +1,5 @@
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -10,7 +11,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * Allows you to return data from modified rows.
    *
    * On supported databases like PostgreSQL, this method can be chained to
-   * `insert`, `update` and `delete` queries to return data.
+   * `insert`, `update`, `delete` and `merge` queries to return data.
    *
    * Note that on SQLite you need to give aliases for the expressions to avoid
    * [this bug](https://sqlite.org/forum/forumpost/033daf0b32) in SQLite.
@@ -78,10 +79,29 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
   ): ReturningInterface<DB, TB, ReturningRow<DB, TB, O, SE>>
 
   /**
-   * Adds a `returning *` to an insert/update/delete query on databases
+   * Adds a `returning *` to an insert/update/delete/merge query on databases
    * that support `returning` such as PostgreSQL.
    *
    * Also see the {@link returning} method.
    */
+  returningAll(): ReturningInterface<DB, TB, Selectable<DB[TB]>>
+}
+
+export interface MultiTableReturningInterface<DB, TB extends keyof DB, O>
+  extends ReturningInterface<DB, TB, O> {
+  /**
+   * Adds a `returning *` or `returning table.*` to an insert/update/delete/merge
+   * query on databases that support `returning` such as PostgreSQL.
+   *
+   * Also see the {@link returning} method.
+   */
+  returningAll<T extends TB>(
+    tables: ReadonlyArray<T>,
+  ): MultiTableReturningInterface<DB, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll<T extends TB>(
+    table: T,
+  ): MultiTableReturningInterface<DB, TB, ReturningAllRow<DB, T, O>>
+
   returningAll(): ReturningInterface<DB, TB, Selectable<DB[TB]>>
 }

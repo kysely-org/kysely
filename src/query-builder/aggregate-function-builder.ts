@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import {
@@ -10,10 +9,7 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import {
-  ReferenceExpression,
-  StringReference,
-} from '../parser/reference-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -22,14 +18,17 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import {
-  OrderByDirectionExpression,
+  DirectedOrderByStringReference,
+  OrderByExpression,
+  OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
+import { OrderByInterface } from './order-by-interface.js'
+import { QueryNode } from '../operation-node/query-node.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements AliasableExpression<O>
+  implements OrderByInterface<DB, TB, {}>, AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
@@ -126,15 +125,124 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * inner join "pet" ON "pet"."owner_id" = "person"."id"
    * ```
    */
-  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
-    orderBy: OE,
-    direction?: OrderByDirectionExpression,
-  ): AggregateFunctionBuilder<DB, TB, O> {
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  orderBy(...args: any[]): any {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: QueryNode.cloneWithOrderByItems(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy(args),
+      ),
+    })
+  }
+
+  clearOrderBy(): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: QueryNode.cloneWithoutOrderBy(
+        this.#props.aggregateFunctionNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds a `withing group` clause with a nested `order by` clause after the function.
+   *
+   * This is only supported by some dialects like PostgreSQL or MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Most frequent person name:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select((eb) => [
+   *     eb.fn
+   *       .agg<string>('mode')
+   *       .withinGroupOrderBy('person.first_name')
+   *       .as('most_frequent_name')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select mode() within group (order by "person"."first_name") as "most_frequent_name"
+   * from "person"
+   * ```
+   */
+  withinGroupOrderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `withinGroupOrderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  withinGroupOrderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `withinGroupOrderBy(expr, direction)` call.
+   */
+  withinGroupOrderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `withinGroupOrderBy(expr, (ob) => ...)` instead.
+   */
+  withinGroupOrderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  withinGroupOrderBy(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
         this.#props.aggregateFunctionNode,
-        parseOrderBy([orderBy, direction]),
+        parseOrderBy(args),
+        true,
       ),
     })
   }
@@ -343,11 +451,6 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return this.#props.aggregateFunctionNode
   }
 }
-
-preventAwait(
-  AggregateFunctionBuilder,
-  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 /**
  * {@link AggregateFunctionBuilder} with an alias. The result of calling {@link AggregateFunctionBuilder.as}.

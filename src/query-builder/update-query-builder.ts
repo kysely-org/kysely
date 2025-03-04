@@ -41,7 +41,6 @@ import {
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
@@ -49,13 +48,12 @@ import { freeze } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { ReturningInterface } from './returning-interface.js'
+import { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
@@ -81,12 +79,21 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
+import { JoinType } from '../operation-node/join-node.js'
+import { OrderByInterface } from './order-by-interface.js'
+import {
+  DirectedOrderByStringReference,
+  OrderByExpression,
+  OrderByModifiers,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
-    ReturningInterface<DB, TB, O>,
+    MultiTableReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O>,
+    OrderByInterface<DB, TB, never>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -367,13 +374,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
 
   innerJoin(...args: any): any {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args),
-      ),
-    })
+    return this.#join('InnerJoin', args)
   }
 
   /**
@@ -395,13 +396,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
 
   leftJoin(...args: any): any {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args),
-      ),
-    })
+    return this.#join('LeftJoin', args)
   }
 
   /**
@@ -423,13 +418,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
 
   rightJoin(...args: any): any {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args),
-      ),
-    })
+    return this.#join('RightJoin', args)
   }
 
   /**
@@ -451,12 +440,71 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >(table: TE, callback: FN): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
 
   fullJoin(...args: any): any {
+    return this.#join('FullJoin', args)
+  }
+
+  #join(joinType: JoinType, args: any[]): any {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('FullJoin', args),
+        parseJoin(joinType, args),
       ),
+    })
+  }
+
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OrderByExpression<DB, TB, {}>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): UpdateQueryBuilder<DB, UT, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  // TODO: remove in v0.29
+  /**
+   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OrderByExpression<DB, TB, {}>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  orderBy(...args: any[]): any {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOrderByItems(
+        this.#props.queryNode,
+        parseOrderBy(args),
+      ),
+    })
+  }
+
+  clearOrderBy(): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
 
@@ -523,8 +571,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   })
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -548,8 +594,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   }))
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -633,6 +677,43 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * "age" = "age" + $2,
    * "last_name" = $3 || $4
    * where "id" = $5
+   * ```
+   *
+   * <!-- siteExample("update", "MySQL joins", 30) -->
+   *
+   * MySQL allows you to join tables directly to the "main" table and update
+   * rows of all joined tables. This is possible by passing all tables to the
+   * `updateTable` method as a list and adding the `ON` conditions as `WHERE`
+   * statements. You can then use the `set(column, value)` variant to update
+   * columns using table qualified names.
+   *
+   * The `UpdateQueryBuilder` also has `innerJoin` etc. join methods, but those
+   * can only be used as part of a PostgreSQL `update set from join` query.
+   * Due to type complexity issues, we unfortunately can't make the same
+   * methods work in both cases.
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable(['person', 'pet'])
+   *   .set('person.first_name', 'Updated person')
+   *   .set('pet.name', 'Updated doggo')
+   *   .whereRef('person.id', '=', 'pet.owner_id')
+   *   .where('person.id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update
+   *   `person`,
+   *   `pet`
+   * set
+   *   `person`.`first_name` = ?,
+   *   `pet`.`name` = ?
+   * where
+   *   `person`.`id` = `pet`.`owner_id`
+   *   and `person`.`id` = ?
    * ```
    */
   set(
@@ -1084,9 +1165,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
     return [
       new UpdateResult(
-        // TODO: remove numUpdatedOrDeletedRows.
-        // TODO: https://github.com/kysely-org/kysely/pull/431#discussion_r1172330899
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0),
+        result.numAffectedRows ?? BigInt(0),
         result.numChangedRows,
       ) as any,
     ]
@@ -1157,11 +1236,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  UpdateQueryBuilder,
-  "don't await UpdateQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface UpdateQueryBuilderProps {
   readonly queryId: QueryId
