@@ -15,8 +15,6 @@ import { OutputNode } from './output-node.js'
 import { ListNode } from './list-node.js'
 import { OrderByNode } from './order-by-node.js'
 
-export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
-
 export interface UpdateQueryNode extends OperationNode {
   readonly kind: 'UpdateQueryNode'
   readonly table?: OperationNode
