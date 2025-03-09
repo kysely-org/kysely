@@ -1,3 +1,4 @@
+import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { ArrayItemType } from '../util/type-utils.js'
 import { DatabaseConnection } from './database-connection.js'
 
@@ -38,6 +39,33 @@ export interface Driver {
   rollbackTransaction(connection: DatabaseConnection): Promise<void>
 
   /**
+   * Establishses a new savepoint within a transaction.
+   */
+  savepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
+
+  /**
+   * Rolls back to a savepoint within a transaction.
+   */
+  rollbackToSavepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
+
+  /**
+   * Releases a savepoint within a transaction.
+   */
+  releaseSavepoint?(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void>
+
+  /**
    * Releases a connection back to the pool.
    */
   releaseConnection(connection: DatabaseConnection): Promise<void>
@@ -49,8 +77,13 @@ export interface Driver {
 }
 
 export interface TransactionSettings {
+  readonly accessMode?: AccessMode
   readonly isolationLevel?: IsolationLevel
 }
+
+export const TRANSACTION_ACCESS_MODES = ['read only', 'read write'] as const
+
+export type AccessMode = ArrayItemType<typeof TRANSACTION_ACCESS_MODES>
 
 export const TRANSACTION_ISOLATION_LEVELS = [
   'read uncommitted',
@@ -61,3 +94,23 @@ export const TRANSACTION_ISOLATION_LEVELS = [
 ] as const
 
 export type IsolationLevel = ArrayItemType<typeof TRANSACTION_ISOLATION_LEVELS>
+
+export function validateTransactionSettings(
+  settings: TransactionSettings,
+): void {
+  if (
+    settings.accessMode &&
+    !TRANSACTION_ACCESS_MODES.includes(settings.accessMode)
+  ) {
+    throw new Error(`invalid transaction access mode ${settings.accessMode}`)
+  }
+
+  if (
+    settings.isolationLevel &&
+    !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
+  ) {
+    throw new Error(
+      `invalid transaction isolation level ${settings.isolationLevel}`,
+    )
+  }
+}

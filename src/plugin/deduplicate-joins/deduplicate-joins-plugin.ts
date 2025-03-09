@@ -17,7 +17,7 @@ export class DeduplicateJoinsPlugin implements KyselyPlugin {
   readonly #transformer = new DeduplicateJoinsTransformer()
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    return this.#transformer.transformNode(args.node)
+    return this.#transformer.transformNode(args.node, args.queryId)
   }
 
   transformResult(

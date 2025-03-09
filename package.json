@@ -7,10 +7,17 @@
     "url": "git://github.com/kysely-org/kysely.git"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
+  "typesVersions": {
+    "<4.6": {
+      "*": [
+        "outdated-typescript.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -40,6 +47,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
+    "bench:ts": "npm run build && cd ./test/ts-benchmarks && tsx ./index.ts",
     "test": "npm run build && npm run test:node:build && npm run test:node:run && npm run test:typings && npm run test:esmimports && npm run test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "npm run build && npm run test:node:build && npm run test:node:run",
@@ -54,6 +62,7 @@
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
     "test:exports": "attw --pack . && node scripts/check-exports.js",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
+    "test:outdatedts": "npm run build && cd test/outdated-ts && npm ci && npm test",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
     "build": "npm run clean && (npm run build:esm & npm run build:cjs) && npm run script:module-fixup && npm run script:copy-interface-doc",
     "build:esm": "tsc -p tsconfig.json && npm run script:add-deno-type-references",
@@ -74,6 +83,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.0",
+    "@ark/attest": "^0.36.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",
@@ -82,6 +92,7 @@
     "@types/node": "^22.5.0",
     "@types/pg": "^8.11.6",
     "@types/pg-cursor": "^2.7.2",
+    "@types/semver": "^7.5.8",
     "@types/sinon": "^17.0.2",
     "@types/tedious": "^4.0.9",
     "better-sqlite3": "^11.2.1",
@@ -92,15 +103,18 @@
     "lodash": "^4.17.21",
     "mocha": "^10.7.3",
     "mysql2": "^3.11.0",
+    "pathe": "^1.1.2",
     "pg": "^8.12.0",
     "pg-cursor": "^2.11.0",
     "pkg-pr-new": "^0.0.30",
     "playwright": "^1.46.1",
     "prettier": "^3.3.3",
+    "semver": "^7.6.3",
     "sinon": "^19.0.2",
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
     "tsd": "^0.31.1",
+    "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
 }

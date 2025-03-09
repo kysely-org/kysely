@@ -12,6 +12,7 @@ import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { QueryNode } from './query-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -45,24 +46,21 @@ export const DeleteQueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItems(
-    deleteNode: DeleteQueryNode,
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithOrderByItems: (
+    node: DeleteQueryNode,
     items: ReadonlyArray<OrderByItemNode>,
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      orderBy: deleteNode.orderBy
-        ? OrderByNode.cloneWithItems(deleteNode.orderBy, items)
-        : OrderByNode.create(items),
-    })
-  },
+  ) => QueryNode.cloneWithOrderByItems(node, items),
 
-  cloneWithoutOrderBy(deleteNode: DeleteQueryNode): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      orderBy: undefined,
-    })
-  },
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+   */
+  cloneWithoutOrderBy: (node: DeleteQueryNode) =>
+    QueryNode.cloneWithoutOrderBy(node),
 
   cloneWithLimit(
     deleteNode: DeleteQueryNode,

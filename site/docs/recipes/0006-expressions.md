@@ -6,9 +6,9 @@ An [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expre
 
 ## Expression builder
 
-Expressions are usually built using an instance of [`ExpressionBuilder<DB, TB>`](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can access `person` and `pet` tables and all their columns in the expression.
+Expressions are usually built using an instance of [`ExpressionBuilder<DB, TB>`](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can reference `person` and `pet` columns in the created expressions.
 
-You can get an instance of the expression builder by using a callback:
+You can get an instance of the expression builder using a callback:
 
 ```ts
 const person = await db
@@ -28,7 +28,13 @@ const person = await db
       .as('pet_name'),
 
     // Select a boolean expression
-    eb('first_name', '=', 'Jennifer').as('is_jennifer')
+    eb('first_name', '=', 'Jennifer').as('is_jennifer'),
+
+    // Select a static string value
+    eb.val('Some value').as('string_value'),
+
+    // Select a literal value
+    eb.lit(42).as('literal_value'),
   ])
   // You can also destructure the expression builder like this
   .where(({ and, or, eb, not, exists, selectFrom }) => or([
@@ -63,19 +69,21 @@ select
     limit 1
   ) as "pet_name",
 
-  "first_name" = $1 as "is_jennifer"
+  "first_name" = $1 as "is_jennifer",
+  $2 as "string_value",
+  42 as "literal_value"
 from
   "person"
 where (
   (
-    "first_name" = $2
-    and "last_name" = $3
+    "first_name" = $3
+    and "last_name" = $4
   )
   or not exists (
     select "pet.id"
     from "pet"
     where "pet"."owner_id" = "person"."id"
-    and "pet"."species" in ($4, $5)
+    and "pet"."species" in ($5, $6)
   )
 )
 ```
@@ -91,11 +99,17 @@ There's also a global function `expressionBuilder` you can use to create express
 ```ts
 import { expressionBuilder } from 'kysely'
 
-// `eb1` has type `ExpressionBuilder<DB, 'person'>`
-const eb1 = expressionBuilder<DB, 'person'>()
+// `eb1` has type `ExpressionBuilder<DB, never>` which means there are no tables in the
+// context. This variant should be used most of the time in helper functions since you
+// shouldn't make assumptions about the calling context.
+const eb1 = expressionBuilder<DB>()
+
+// `eb2` has type `ExpressionBuilder<DB, 'person'>`. You can reference `person` columns
+// directly in all expression builder methods.
+const eb2 = expressionBuilder<DB, 'person'>()
 
 // In this one you'd have access to tables `person` and `pet` and all their columns.
-const eb2 = expressionBuilder<DB, 'person' | 'pet'>()
+const eb3 = expressionBuilder<DB, 'person' | 'pet'>()
 
 let qb = query
   .selectFrom('person')
@@ -141,7 +155,7 @@ const doggoPersons = await db
   .execute()
 ```
 
-The above helper is not very type-safe. The following code would compile, but fail at runtime:
+However, the above helper is not very type-safe. The following code would compile, but fail at runtime:
 
 ```ts
 const bigFatFailure = await db
@@ -160,7 +174,7 @@ in arbitrary expressions instead of just values.
 function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
   // Create an expression builder without any tables in the context.
   // This way we make no assumptions about the calling context.
-  const eb = expressionBuilder<DB, never>()
+  const eb = expressionBuilder<DB>()
 
   return eb.exists(
     eb.selectFrom('pet')
@@ -182,11 +196,13 @@ const doggoPersons = await db
   .execute()
 ```
 
+Learn more about reusable helper functions [here](https://kysely.dev/docs/recipes/reusable-helpers).
+
 ## Conditional expressions
 
 In the following, we'll only cover `where` expressions. The same logic applies to `having`, `on`, `orderBy`, `groupBy` etc.
 
-> This section should not be confused with conditional selections in `select` clauses, which is a whole 'nother topic we discuss in [this recipe](https://www.kysely.dev/docs/recipes/conditional-selects).
+> This section should not be confused with conditional selections in `select` clauses, which is a whole 'nother topic we discuss in [this recipe](https://kysely.dev/docs/recipes/conditional-selects).
 
 Having a set of optional filters you want to combine using `and`, is the most basic and common use case of conditional `where` expressions.
 Since the `where`, `having` and other filter functions are additive, most of the time this is enough:
