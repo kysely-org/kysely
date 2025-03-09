@@ -113,6 +113,8 @@ export class RuntimeDriver implements Driver {
   // the best option in this case.
   #addLogging(connection: DatabaseConnection): void {
     const executeQuery = connection.executeQuery
+    const streamQuery = connection.streamQuery
+    const dis = this
 
     connection.executeQuery = async (
       compiledQuery,
@@ -124,11 +126,37 @@ export class RuntimeDriver implements Driver {
         return await executeQuery.call(connection, compiledQuery)
       } catch (error) {
         caughtError = error
-        await this.#logError(error, compiledQuery, startTime)
+        await dis.#logError(error, compiledQuery, startTime)
         throw error
       } finally {
         if (!caughtError) {
-          await this.#logQuery(compiledQuery, startTime)
+          await dis.#logQuery(compiledQuery, startTime)
+        }
+      }
+    }
+
+    connection.streamQuery = async function* (
+      compiledQuery,
+      chunkSize,
+    ): AsyncIterableIterator<QueryResult<any>> {
+      let caughtError: unknown
+      const startTime = performanceNow()
+
+      try {
+        for await (const result of streamQuery.call(
+          connection,
+          compiledQuery,
+          chunkSize,
+        )) {
+          yield result
+        }
+      } catch (error) {
+        caughtError = error
+        await dis.#logError(error, compiledQuery, startTime)
+        throw error
+      } finally {
+        if (!caughtError) {
+          await dis.#logQuery(compiledQuery, startTime, true)
         }
       }
     }
@@ -150,9 +178,11 @@ export class RuntimeDriver implements Driver {
   async #logQuery(
     compiledQuery: CompiledQuery,
     startTime: number,
+    isStream = false,
   ): Promise<void> {
     await this.#log.query(() => ({
       level: 'query',
+      isStream,
       query: compiledQuery,
       queryDurationMillis: this.#calculateDurationMillis(startTime),
     }))

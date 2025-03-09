@@ -8,6 +8,7 @@ export type LogLevel = ArrayItemType<typeof LOG_LEVELS>
 
 export interface QueryLogEvent {
   readonly level: 'query'
+  readonly isStream?: boolean
   readonly query: CompiledQuery
   readonly queryDurationMillis: number
 }
@@ -64,10 +65,9 @@ export class Log {
 
 function defaultLogger(event: LogEvent): void {
   if (event.level === 'query') {
-    console.log(`kysely:query: ${event.query.sql}`)
-    console.log(
-      `kysely:query: duration: ${event.queryDurationMillis.toFixed(1)}ms`,
-    )
+    const prefix = `kysely:query:${event.isStream ? 'stream:' : ''}`
+    console.log(`${prefix} ${event.query.sql}`)
+    console.log(`${prefix} duration: ${event.queryDurationMillis.toFixed(1)}ms`)
   } else if (event.level === 'error') {
     if (event.error instanceof Error) {
       console.error(`kysely:error: ${event.error.stack ?? event.error.message}`)
