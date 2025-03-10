@@ -1,0 +1,85 @@
+---
+title: Data Types
+description: Understand data types in Kysely
+---
+
+Kysely deals with two distinct types of data types:
+
+1. TypeScript types (compile-time)
+2. JavaScript types (runtime)
+
+## TypeScript Types
+
+- TypeScript types are compile-time only
+- They don't affect runtime behavior
+- You must manually align them with what your database driver returns
+- Example: If you define a column as `string` but the database returns a `number`, you'll see:
+  - TypeScript shows: `string`
+  - Runtime receives: `number`
+
+## JavaScript Runtime Types
+
+- Determined by your database driver (`pg`, `mysql2`, etc.)
+- Kysely doesn't modify the data returned by drivers
+- Exception: Plugins like `CamelCasePlugin` may modify column names
+
+## Configuring Runtime Types
+
+### PostgreSQL (pg driver)
+
+Use `pg-types` to configure return types:
+
+```typescript
+import { Kysely, PostgresDialect } from 'kysely'
+import * as pg from 'pg'
+
+// Configure bigint to return as number
+const int8TypeId = 20
+pg.types.setTypeParser(int8TypeId, (val) => parseInt(val, 10))
+
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect({
+    pool: new pg.Pool(config),
+  }),
+})
+```
+
+### MySQL (mysql2 driver)
+
+Use the `typeCast` pool property:
+
+```typescript
+import { Kysely, MysqlDialect } from 'kysely'
+import { createPool } from 'mysql2'
+
+const db = new Kysely<Database>({
+  dialect: new MysqlDialect({
+    pool: createPool({
+      ...config,
+      // Convert tinyint(1) to boolean
+      typeCast(field, next) {
+        if (field.type === 'TINY' && field.length === 1) {
+          return field.string() === '1'
+        }
+        return next()
+      },
+    }),
+  }),
+})
+```
+
+## Automatic Type Generation
+
+Third-party tools can generate TypeScript types from your database schema:
+
+- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen)
+- [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html)
+
+Note: These are external tools - refer to their documentation for issues with generated types.
+
+## Best Practices
+
+1. Always check your database driver's documentation for default type mappings
+2. Test runtime types in development to ensure TypeScript types match
+3. Use type generators to maintain type consistency
+4. Configure runtime type casting at the driver level, not in application code

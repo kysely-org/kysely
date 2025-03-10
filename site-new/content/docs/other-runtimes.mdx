@@ -1,0 +1,106 @@
+---
+title: Other Runtimes
+description: Kysely is also compatible with other runtimes.
+---
+
+## Deno
+
+Kysely doesn't include drivers for Deno, but you can still use Kysely as a query builder or implement your own driver:
+
+```ts
+// We use jsdeliver to get Kysely from npm.
+import {
+  DummyDriver,
+  Generated,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index.js'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter() {
+      return new PostgresAdapter()
+    },
+    createDriver() {
+      // You need a driver to be able to execute queries. In this example
+      // we use the dummy driver that never does anything.
+      return new DummyDriver()
+    },
+    createIntrospector(db: Kysely<unknown>) {
+      return new PostgresIntrospector(db)
+    },
+    createQueryCompiler() {
+      return new PostgresQueryCompiler()
+    },
+  },
+})
+
+const query = db.selectFrom('person').select('id')
+const sql = query.compile()
+
+console.log(sql.sql)
+```
+
+## Browser
+
+Kysely also runs in the browser. Here's a minimal example:
+
+```ts
+import {
+  Kysely,
+  Generated,
+  DummyDriver,
+  SqliteAdapter,
+  SqliteIntrospector,
+  SqliteQueryCompiler,
+} from 'kysely'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter() {
+      return new SqliteAdapter()
+    },
+    createDriver() {
+      return new DummyDriver()
+    },
+    createIntrospector(db: Kysely<unknown>) {
+      return new SqliteIntrospector(db)
+    },
+    createQueryCompiler() {
+      return new SqliteQueryCompiler()
+    },
+  },
+})
+
+window.addEventListener('load', () => {
+  const sql = db.selectFrom('person').select('id').compile()
+
+  const result = document.createElement('span')
+  result.id = 'result'
+  result.innerHTML = sql.sql
+
+  document.body.appendChild(result)
+})
+```

@@ -1,0 +1,30 @@
+---
+title: Case
+description: Learn how to use the case method in Kysely.
+---
+
+## Basic usage
+
+```ts
+const users = await db
+  .selectFrom('users')
+  .select((eb) => [
+    'name',
+    eb
+      .case()
+      .when('status', '=', 'active')
+      .then('Current')
+      .when('status', '=', 'pending')
+      .then('Waiting')
+      .else('Inactive')
+      .end()
+      .as('status_text'),
+  ])
+  .execute()
+```
+
+- Always end your CASE expression with .end()
+- Always give your CASE expression an alias with .as()
+- The .else() clause is optional but recommended to handle NULL cases
+- Use eb.fn for SQL functions like COUNT, SUM, etc.
+- You can use CASE expressions in SELECT, WHERE, ORDER BY, and GROUP BY clauses
