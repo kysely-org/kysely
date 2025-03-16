@@ -20,7 +20,7 @@ export class ImmediateValuePlugin implements KyselyPlugin {
   readonly #transformer = new ImmediateValueTransformer()
 
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-    return this.#transformer.transformNode(args.node)
+    return this.#transformer.transformNode(args.node, args.queryId)
   }
 
   transformResult(

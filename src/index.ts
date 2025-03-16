@@ -12,6 +12,7 @@ export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
 export * from './query-builder/output-interface.js'
 export * from './query-builder/having-interface.js'
+export * from './query-builder/order-by-interface.js'
 export * from './query-builder/select-query-builder.js'
 export * from './query-builder/insert-query-builder.js'
 export * from './query-builder/update-query-builder.js'
@@ -28,6 +29,7 @@ export * from './query-builder/case-builder.js'
 export * from './query-builder/json-path-builder.js'
 export * from './query-builder/merge-query-builder.js'
 export * from './query-builder/merge-result.js'
+export * from './query-builder/order-by-item-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
@@ -53,6 +55,7 @@ export * from './schema/column-definition-builder.js'
 export * from './schema/foreign-key-constraint-builder.js'
 export * from './schema/alter-table-builder.js'
 export * from './schema/create-view-builder.js'
+export * from './schema/refresh-materialized-view-builder.js'
 export * from './schema/drop-view-builder.js'
 export * from './schema/alter-column-builder.js'
 
@@ -109,6 +112,8 @@ export * from './plugin/camel-case/camel-case-plugin.js'
 export * from './plugin/deduplicate-joins/deduplicate-joins-plugin.js'
 export * from './plugin/with-schema/with-schema-plugin.js'
 export * from './plugin/parse-json-results/parse-json-results-plugin.js'
+export * from './plugin/handle-empty-in-lists/handle-empty-in-lists-plugin.js'
+export * from './plugin/handle-empty-in-lists/handle-empty-in-lists.js'
 
 export * from './operation-node/add-column-node.js'
 export * from './operation-node/add-constraint-node.js'
@@ -122,6 +127,7 @@ export * from './operation-node/binary-operation-node.js'
 export * from './operation-node/case-node.js'
 export * from './operation-node/cast-node.js'
 export * from './operation-node/check-constraint-node.js'
+export * from './operation-node/collate-node.js'
 export * from './operation-node/column-definition-node.js'
 export * from './operation-node/column-node.js'
 export * from './operation-node/column-update-node.js'
@@ -133,6 +139,7 @@ export * from './operation-node/create-schema-node.js'
 export * from './operation-node/create-table-node.js'
 export * from './operation-node/create-type-node.js'
 export * from './operation-node/create-view-node.js'
+export * from './operation-node/refresh-materialized-view-node.js'
 export * from './operation-node/data-type-node.js'
 export * from './operation-node/default-insert-value-node.js'
 export * from './operation-node/default-value-node.js'
@@ -174,6 +181,7 @@ export * from './operation-node/operation-node-transformer.js'
 export * from './operation-node/operation-node-visitor.js'
 export * from './operation-node/operation-node.js'
 export * from './operation-node/operator-node.js'
+export * from './operation-node/or-action-node.js'
 export * from './operation-node/or-node.js'
 export * from './operation-node/order-by-item-node.js'
 export * from './operation-node/order-by-node.js'
@@ -230,6 +238,7 @@ export {
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
+export { createQueryId, QueryId } from './util/query-id.js'
 
 export {
   SelectExpression,
@@ -264,6 +273,9 @@ export { UpdateObject } from './parser/update-set-parser.js'
 export {
   OrderByExpression,
   OrderByDirectionExpression,
+  OrderByModifiers,
+  OrderByDirection,
+  OrderByModifiersCallbackExpression,
 } from './parser/order-by-parser.js'
 export {
   ComparisonOperatorExpression,
@@ -276,3 +288,4 @@ export {
   OperandExpression,
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
+export { Collation } from './parser/collate-parser.js'

@@ -3,8 +3,11 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   MysqlDialectConfig,
@@ -70,13 +73,21 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     settings: TransactionSettings,
   ): Promise<void> {
-    if (settings.isolationLevel) {
+    if (settings.isolationLevel || settings.accessMode) {
+      const parts: string[] = []
+
+      if (settings.isolationLevel) {
+        parts.push(`isolation level ${settings.isolationLevel}`)
+      }
+
+      if (settings.accessMode) {
+        parts.push(settings.accessMode)
+      }
+
+      const sql = `set transaction ${parts.join(', ')}`
+
       // On MySQL this sets the isolation level of the next transaction.
-      await connection.executeQuery(
-        CompiledQuery.raw(
-          `set transaction isolation level ${settings.isolationLevel}`,
-        ),
-      )
+      await connection.executeQuery(CompiledQuery.raw(sql))
     }
 
     await connection.executeQuery(CompiledQuery.raw('begin'))
@@ -88,6 +99,45 @@ export class MysqlDriver implements Driver {
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
+  }
+
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('savepoint', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('rollback to', savepointName),
+        createQueryId(),
+      ),
+    )
+  }
+
+  async releaseSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('release savepoint', savepointName),
+        createQueryId(),
+      ),
+    )
   }
 
   async releaseConnection(connection: MysqlConnection): Promise<void> {
@@ -125,16 +175,6 @@ class MysqlConnection implements DatabaseConnection {
       if (isOkPacket(result)) {
         const { insertId, affectedRows, changedRows } = result
 
-        const numAffectedRows =
-          affectedRows !== undefined && affectedRows !== null
-            ? BigInt(affectedRows)
-            : undefined
-
-        const numChangedRows =
-          changedRows !== undefined && changedRows !== null
-            ? BigInt(changedRows)
-            : undefined
-
         return {
           insertId:
             insertId !== undefined &&
@@ -142,10 +182,14 @@ class MysqlConnection implements DatabaseConnection {
             insertId.toString() !== '0'
               ? BigInt(insertId)
               : undefined,
-          // TODO: remove.
-          numUpdatedOrDeletedRows: numAffectedRows,
-          numAffectedRows,
-          numChangedRows,
+          numAffectedRows:
+            affectedRows !== undefined && affectedRows !== null
+              ? BigInt(affectedRows)
+              : undefined,
+          numChangedRows:
+            changedRows !== undefined && changedRows !== null
+              ? BigInt(changedRows)
+              : undefined,
           rows: [],
         }
       } else if (Array.isArray(result)) {
