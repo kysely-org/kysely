@@ -29,7 +29,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
    * db.schema.createType('species').asEnum(['cat', 'dog', 'frog'])
    * ```
    */
-  asEnum(values: string[]): CreateTypeBuilder {
+  asEnum(values: readonly string[]): CreateTypeBuilder {
     return new CreateTypeBuilder({
       ...this.#props,
       node: CreateTypeNode.cloneWithEnum(this.#props.node, values),
