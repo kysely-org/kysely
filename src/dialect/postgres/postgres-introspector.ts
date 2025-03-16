@@ -60,25 +60,17 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         sql<string | null>`col_description(a.attrelid, a.attnum)`.as(
           'column_description',
         ),
-        // Detect if the column is auto incrementing by finding the sequence
-        // that is created for `serial` and `bigserial` columns.
-        this.#db
-          .selectFrom('pg_class')
-          .select(sql`true`.as('auto_incrementing'))
-          // Make sure the sequence is in the same schema as the table.
-          .whereRef('relnamespace', '=', 'c.relnamespace')
-          .where('relkind', '=', 'S')
-          .where('relname', '=', sql`c.relname || '_' || a.attname || '_seq'`)
-          .as('auto_incrementing'),
+        sql<
+          string | null
+        >`pg_get_serial_sequence(ns.nspname || '.' || c.relname, a.attname)`.as(
+          'auto_incrementing',
+        ),
       ])
-      // r == normal table
-      .where((eb) =>
-        eb.or([
-          eb('c.relkind', '=', 'r'),
-          eb('c.relkind', '=', 'v'),
-          eb('c.relkind', '=', 'p'),
-        ]),
-      )
+      .where('c.relkind', 'in', [
+        'r' /*regular table*/,
+        'v' /*view*/,
+        'p' /*partitioned table*/,
+      ])
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
       // No system columns
@@ -96,6 +88,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     }
 
     const rawColumns = await query.execute()
+
     return this.#parseTableMetadata(rawColumns)
   }
 
@@ -130,7 +123,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           dataType: it.type,
           dataTypeSchema: it.type_schema,
           isNullable: !it.not_null,
-          isAutoIncrementing: !!it.auto_incrementing,
+          isAutoIncrementing: it.auto_incrementing !== null,
           hasDefaultValue: it.has_default,
           comment: it.column_description ?? undefined,
         }),
@@ -154,6 +147,6 @@ interface RawColumnMetadata {
   has_default: boolean
   type: string
   type_schema: string
-  auto_incrementing: boolean | null
+  auto_incrementing: string | null
   column_description: string | null
 }
