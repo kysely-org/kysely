@@ -35,7 +35,6 @@ import {
   InsertObject,
   MssqlDialect,
   SelectQueryBuilder,
-  QueryId,
 } from '../../../'
 import {
   OrderByDirection,
@@ -189,19 +188,23 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   mssql: {
     dialect: new MssqlDialect({
+      resetConnectionsOnRelease: false,
       tarn: {
         options: {
           max: POOL_SIZE,
           min: 0,
-          validateConnections: false,
+          // @ts-expect-error making sure people see the deprecation warning
+          validateConnections: true,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
-        resetConnectionOnRelease: false,
+        // @ts-expect-error making sure people see the deprecation warning
+        resetConnectionOnRelease: true,
       },
+      validateConnections: false,
     }),
     plugins: PLUGINS,
   },
