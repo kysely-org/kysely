@@ -1,4 +1,14 @@
+import { KyselyTypeError } from '../../util/type-error.js'
+
 export interface MssqlDialectConfig {
+  /**
+   * When `true`, connections are reset to their initial states when released
+   * back to the pool, resulting in additional requests to the database.
+   *
+   * Defaults to `false`.
+   */
+  resetConnectionsOnRelease?: boolean
+
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
    * database. To use it as a peer dependency and not bundle it with Kysely's code,
@@ -55,20 +65,26 @@ export interface MssqlDialectConfig {
    * ```
    */
   tedious: Tedious
+
+  /**
+   * When `true`, connections are validated before being acquired from the pool,
+   * resulting in additional requests to the database.
+   *
+   * Defaults to `true`.
+   */
+  validateConnections?: boolean
 }
 
 export interface Tedious {
   connectionFactory: () => TediousConnection | Promise<TediousConnection>
   ISOLATION_LEVEL: TediousIsolationLevel
   Request: TediousRequestClass
-  TYPES: TediousTypes
+  // TODO: remove in v0.29.0
   /**
-   * Controls whether connections are reset to their initial states when released back to the pool. Resetting a connection performs additional requests to the database.
-   * See {@link https://tediousjs.github.io/tedious/api-connection.html#function_reset | connection.reset}.
-   *
-   * Defaults to `true`.
+   * @deprecated use {@link MssqlDialectConfig.resetConnectionsOnRelease} instead.
    */
-  resetConnectionOnRelease?: boolean
+  resetConnectionOnRelease?: KyselyTypeError<'deprecated: use `MssqlDialectConfig.resetConnectionsOnRelease` instead'>
+  TYPES: TediousTypes
 }
 
 export interface TediousConnection {
@@ -165,12 +181,11 @@ export interface Tarn {
    * which must be implemented by this dialect.
    */
   options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
+    // TODO: remove in v0.29.0
     /**
-     * Controls whether connections are validated before being acquired from the pool. Connection validation performs additional requests to the database.
-     *
-     * Defaults to `true`.
+     * @deprecated use {@link MssqlDialectConfig.validateConnections} instead.
      */
-    validateConnections?: boolean
+    validateConnections?: KyselyTypeError<'deprecated: use `MssqlDialectConfig.validateConnections` instead'>
   }
 
   /**
