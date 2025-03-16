@@ -27,12 +27,13 @@ export const CreateTypeNode = freeze({
     })
   },
 
-  cloneWithEnum(createType: CreateTypeNode, values: string[]): CreateTypeNode {
+  cloneWithEnum(
+    createType: CreateTypeNode,
+    values: readonly string[],
+  ): CreateTypeNode {
     return freeze({
       ...createType,
-      enum: ValueListNode.create(
-        values.map((value) => ValueNode.createImmediate(value)),
-      ),
+      enum: ValueListNode.create(values.map(ValueNode.createImmediate)),
     })
   },
 })
