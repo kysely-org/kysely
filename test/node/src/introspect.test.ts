@@ -262,7 +262,7 @@ for (const dialect of DIALECTS) {
               schema: 'some_schema',
               columns: [
                 {
-                  name: 'some_column',
+                  name: 'some_column_renamed',
                   dataType: 'int4',
                   dataTypeSchema: 'pg_catalog',
                   isNullable: false,
@@ -882,6 +882,11 @@ for (const dialect of DIALECTS) {
           .createTable('some_schema.pet')
           .addColumn('some_column', 'serial', (col) => col.primaryKey())
           .addColumn('spcies', sql`dtype_schema.species`)
+          .execute()
+        // check that a renamed column with sequence is still detected as autoincrement
+        await ctx.db.schema
+          .alterTable('some_schema.pet')
+          .renameColumn('some_column', 'some_column_renamed')
           .execute()
         await ctx.db.schema
           .createTable('some_schema.pet_partition')
