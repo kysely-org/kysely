@@ -31,7 +31,7 @@
     "@types/koa-json": "^2.0.20",
     "@types/koa-router": "^7.4.4",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^16.11.9",
+    "@types/node": "^22.9.0",
     "axios": "^1.2.2",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
