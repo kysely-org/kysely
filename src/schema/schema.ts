@@ -306,7 +306,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .alterType('species')
-   *   .addValue(['capybara'])
+   *   .addValue('capybara')
    *   .execute()
    * ```
    */
