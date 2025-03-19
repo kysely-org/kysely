@@ -462,7 +462,7 @@ export const sql: Sql = Object.assign(
       array: readonly unknown[],
       separator: RawBuilder<any> = sql`, `,
     ): RawBuilder<unknown> {
-      const nodes = new Array<OperationNode>(2 * array.length - 1)
+      const nodes = new Array<OperationNode>(Math.max(2 * array.length - 1, 0))
       const sep = separator.toOperationNode()
 
       for (let i = 0; i < array.length; ++i) {
