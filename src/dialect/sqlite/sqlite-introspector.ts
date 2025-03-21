@@ -27,7 +27,7 @@ interface SQliteMasterTable {
   type: 'index' | 'table' | 'trigger' | 'view'
 }
 
-// https://www.sqlite.org/pragma.html#pragma_table_info
+// https://www.sqlite.org/pragma.html#pragma_table_xinfo
 interface PragmaTableInfo {
   cid: number
   dflt_value: unknown
@@ -35,6 +35,7 @@ interface PragmaTableInfo {
   notnull: 0 | 1
   pk: number
   type: string
+  hidden: 0 | 1 | 2 | 3
 }
 
 export class SqliteIntrospector implements DatabaseIntrospector {
@@ -91,7 +92,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .with('table_list', (qb) => this.#tablesQuery(qb, options))
       .selectFrom([
         'table_list as tl',
-        sql<PragmaTableInfo>`pragma_table_info(tl.name)`.as('p'),
+        sql<PragmaTableInfo>`pragma_table_xinfo(tl.name)`.as('p'),
       ])
       .select([
         'tl.name as table',
@@ -102,6 +103,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         'p.dflt_value',
         'p.pk',
       ])
+      .where('p.hidden', '<>', 1)
       .orderBy(['tl.name', 'p.cid'])
       .execute()
 
