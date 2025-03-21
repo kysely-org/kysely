@@ -10,6 +10,10 @@ import { ValueNode } from '../../operation-node/value-node.js'
  * @internal
  */
 export class ImmediateValueTransformer extends OperationNodeTransformer {
+  override transformPrimitiveValueList(node: PrimitiveValueListNode): PrimitiveValueListNode {
+    return ValueListNode.create(node.values.map(ValueNode.createImmediate)) as any;
+  }
+  
   override transformValue(node: ValueNode): ValueNode {
     return {
       ...super.transformValue(node),
