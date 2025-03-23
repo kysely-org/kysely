@@ -21,9 +21,6 @@ export class ImmediateValueTransformer extends OperationNodeTransformer {
   }
 
   override transformValue(node: ValueNode): ValueNode {
-    return {
-      ...super.transformValue(node),
-      immediate: true,
-    }
+    return ValueNode.createImmediate(node.value)
   }
 }
