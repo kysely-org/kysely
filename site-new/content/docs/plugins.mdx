@@ -1,0 +1,54 @@
+---
+title: Plugins
+description: Learn how to use plugins in Kysely.
+icon: Blocks
+---
+
+Plugins in Kysely are powerful extensions that modify or enhance query behavior. Each plugin is implemented as a class that conforms to the `KyselyPlugin` interface.
+
+## Adding Plugins
+
+To use plugins, add them to your Kysely database instance configuration:
+
+```typescript
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect({
+    database: 'kysely_test',
+    host: 'localhost',
+  }),
+  plugins: [
+    // Add plugins here
+    new CamelCasePlugin(),
+  ],
+})
+```
+
+For implementation examples and advanced usage, see:
+
+- [Deduplicating Joins Recipe](/docs/recipes/deduplicate-joins)
+- [DeduplicateJoinsPlugin API documentation](https://kysely-org.github.io/kysely-apidoc/classes/DeduplicateJoinsPlugin.html)
+
+## Available Built-in Plugins
+
+### CamelCasePlugin
+
+The CamelCasePlugin automatically handles the conversion between database and JavaScript naming conventions:
+
+- **Purpose**: Transforms snake_case database identifiers to camelCase in your JavaScript code
+- **Use Case**: Ideal when working with databases that follow SQL naming conventions (snake_case) while maintaining JavaScript conventions (camelCase) in your application code
+- **Example**:
+  - Database column: `user_name`
+  - JavaScript property: `userName`
+
+For detailed configuration options, refer to the [CamelCasePlugin API documentation](https://kysely-org.github.io/kysely-apidoc/classes/CamelCasePlugin.html).
+
+### DeduplicateJoinsPlugin
+
+The DeduplicateJoinsPlugin optimizes your queries by eliminating redundant join operations:
+
+- **Purpose**: Automatically removes duplicate JOIN clauses from your queries
+- **Benefits**:
+  - Improves query performance
+  - Reduces complexity in generated SQL
+  - Prevents unintended cartesian products
+- **Use Case**: Particularly valuable in complex queries with multiple joins that might accidentally introduce duplicates
