@@ -5,7 +5,7 @@ import {
   PostgresIntrospector,
   PostgresQueryCompiler,
 } from '../../../'
-import { ImmediateValuePlugin } from '../../../dist/esm/plugin/immediate-value/immediate-value-plugin.js'
+import { ImmediateValuePlugin } from '../../../dist/cjs/plugin/immediate-value/immediate-value-plugin.js'
 import { Database, NOT_SUPPORTED, testSql } from './test-setup.js'
 
 describe('ImmediateValuePlugin', () => {
