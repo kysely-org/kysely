@@ -1,4 +1,6 @@
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
+import { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
+import { ValueListNode } from '../../operation-node/value-list-node.js'
 import { ValueNode } from '../../operation-node/value-node.js'
 
 /**
@@ -10,10 +12,15 @@ import { ValueNode } from '../../operation-node/value-node.js'
  * @internal
  */
 export class ImmediateValueTransformer extends OperationNodeTransformer {
+  override transformPrimitiveValueList(
+    node: PrimitiveValueListNode,
+  ): PrimitiveValueListNode {
+    return ValueListNode.create(
+      node.values.map(ValueNode.createImmediate),
+    ) as any
+  }
+
   override transformValue(node: ValueNode): ValueNode {
-    return {
-      ...super.transformValue(node),
-      immediate: true,
-    }
+    return ValueNode.createImmediate(node.value)
   }
 }
