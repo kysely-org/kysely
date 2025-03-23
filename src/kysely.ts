@@ -13,10 +13,9 @@ import { SingleConnectionProvider } from './driver/single-connection-provider.js
 import {
   Driver,
   IsolationLevel,
-  TransactionSettings,
-  TRANSACTION_ISOLATION_LEVELS,
+  AccessMode,
+  validateTransactionSettings,
 } from './driver/driver.js'
-import { preventAwait } from './util/prevent-await.js'
 import {
   createFunctionModule,
   FunctionModule,
@@ -33,6 +32,18 @@ import { parseExpression } from './parser/expression-parser.js'
 import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { DrainOuterGeneric } from './util/type-utils.js'
+import { QueryCompiler } from './query-compiler/query-compiler.js'
+import {
+  ReleaseSavepoint,
+  RollbackToSavepoint,
+} from './parser/savepoint-parser.js'
+import {
+  ControlledConnection,
+  provideControlledConnection,
+} from './util/provide-controlled-connection.js'
+
+// @ts-ignore
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
 
 /**
  * The main Kysely class.
@@ -69,7 +80,7 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  */
 export class Kysely<DB>
   extends QueryCreator<DB>
-  implements QueryExecutorProvider
+  implements QueryExecutorProvider, AsyncDisposable
 {
   readonly #props: KyselyProps
 
@@ -223,6 +234,9 @@ export class Kysely<DB>
    * of type {@link Transaction} which inherits {@link Kysely}. Any query
    * started through the transaction object is executed inside the transaction.
    *
+   * To run a controlled transaction, allowing you to commit and rollback manually,
+   * use {@link startTransaction} instead.
+   *
    * ### Examples
    *
    * <!-- siteExample("transactions", "Simple transaction", 10) -->
@@ -276,6 +290,121 @@ export class Kysely<DB>
    */
   transaction(): TransactionBuilder<DB> {
     return new TransactionBuilder({ ...this.#props })
+  }
+
+  /**
+   * Creates a {@link ControlledTransactionBuilder} that can be used to run queries inside a controlled transaction.
+   *
+   * The returned {@link ControlledTransactionBuilder} can be used to configure the transaction.
+   * The {@link ControlledTransactionBuilder.execute} method can then be called
+   * to start the transaction and return a {@link ControlledTransaction}.
+   *
+   * A {@link ControlledTransaction} allows you to commit and rollback manually,
+   * execute savepoint commands. It extends {@link Transaction} which extends {@link Kysely},
+   * so you can run queries inside the transaction. Once the transaction is committed,
+   * or rolled back, it can't be used anymore - all queries will throw an error.
+   * This is to prevent accidentally running queries outside the transaction - where
+   * atomicity is not guaranteed anymore.
+   *
+   * ### Examples
+   *
+   * <!-- siteExample("transactions", "Controlled transaction", 11) -->
+   *
+   * A controlled transaction allows you to commit and rollback manually, execute
+   * savepoint commands, and queries in general.
+   *
+   * In this example we start a transaction, use it to insert two rows and then commit
+   * the transaction. If an error is thrown, we catch it and rollback the transaction.
+   *
+   * ```ts
+   * const trx = await db.startTransaction().execute()
+   *
+   * try {
+   *   const jennifer = await trx.insertInto('person')
+   *     .values({
+   *       first_name: 'Jennifer',
+   *       last_name: 'Aniston',
+   *       age: 40,
+   *     })
+   *     .returning('id')
+   *     .executeTakeFirstOrThrow()
+   *
+   *   const catto = await trx.insertInto('pet')
+   *     .values({
+   *       owner_id: jennifer.id,
+   *       name: 'Catto',
+   *       species: 'cat',
+   *       is_favorite: false,
+   *     })
+   *     .returningAll()
+   *     .executeTakeFirstOrThrow()
+   *
+   *   await trx.commit().execute()
+   *
+   *   // ...
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   * ```
+   *
+   * <!-- siteExample("transactions", "Controlled transaction /w savepoints", 12) -->
+   *
+   * A controlled transaction allows you to commit and rollback manually, execute
+   * savepoint commands, and queries in general.
+   *
+   * In this example we start a transaction, insert a person, create a savepoint,
+   * try inserting a toy and a pet, and if an error is thrown, we rollback to the
+   * savepoint. Eventually we release the savepoint, insert an audit record and
+   * commit the transaction. If an error is thrown, we catch it and rollback the
+   * transaction.
+   *
+   * ```ts
+   * const trx = await db.startTransaction().execute()
+   *
+   * try {
+   *   const jennifer = await trx
+   *     .insertInto('person')
+   *     .values({
+   *       first_name: 'Jennifer',
+   *       last_name: 'Aniston',
+   *       age: 40,
+   *     })
+   *     .returning('id')
+   *     .executeTakeFirstOrThrow()
+   *
+   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   *   try {
+   *     const catto = await trxAfterJennifer
+   *       .insertInto('pet')
+   *       .values({
+   *         owner_id: jennifer.id,
+   *         name: 'Catto',
+   *         species: 'cat',
+   *       })
+   *       .returning('id')
+   *       .executeTakeFirstOrThrow()
+   *
+   *     await trxAfterJennifer
+   *       .insertInto('toy')
+   *       .values({ name: 'Bone', price: 1.99, pet_id: catto.id })
+   *       .execute()
+   *   } catch (error) {
+   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   *   }
+   *
+   *   await trxAfterJennifer.releaseSavepoint('after_jennifer').execute()
+   *
+   *   await trx.insertInto('audit').values({ action: 'added Jennifer' }).execute()
+   *
+   *   await trx.commit().execute()
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   * ```
+   */
+  startTransaction(): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({ ...this.#props })
   }
 
   /**
@@ -408,6 +537,10 @@ export class Kysely<DB>
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
     return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
+  }
+
+  async [Symbol.asyncDispose]() {
+    await this.destroy()
   }
 }
 
@@ -566,16 +699,18 @@ export class ConnectionBuilder<DB> {
 
 interface ConnectionBuilderProps extends KyselyProps {}
 
-preventAwait(
-  ConnectionBuilder,
-  "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method",
-)
-
 export class TransactionBuilder<DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  setAccessMode(accessMode: AccessMode): TransactionBuilder<DB> {
+    return new TransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
   }
 
   setIsolationLevel(isolationLevel: IsolationLevel): TransactionBuilder<DB> {
@@ -586,8 +721,8 @@ export class TransactionBuilder<DB> {
   }
 
   async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
-    const { isolationLevel, ...kyselyProps } = this.#props
-    const settings = { isolationLevel }
+    const { isolationLevel, accessMode, ...kyselyProps } = this.#props
+    const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
 
@@ -616,21 +751,374 @@ export class TransactionBuilder<DB> {
 }
 
 interface TransactionBuilderProps extends KyselyProps {
+  readonly accessMode?: AccessMode
   readonly isolationLevel?: IsolationLevel
 }
 
-preventAwait(
-  TransactionBuilder,
-  "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
-)
+export class ControlledTransactionBuilder<DB> {
+  readonly #props: ControlledTransactionBuilderProps
 
-function validateTransactionSettings(settings: TransactionSettings): void {
-  if (
-    settings.isolationLevel &&
-    !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
-  ) {
-    throw new Error(
-      `invalid transaction isolation level ${settings.isolationLevel}`,
-    )
+  constructor(props: ControlledTransactionBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  setAccessMode(accessMode: AccessMode): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({
+      ...this.#props,
+      accessMode,
+    })
+  }
+
+  setIsolationLevel(
+    isolationLevel: IsolationLevel,
+  ): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({
+      ...this.#props,
+      isolationLevel,
+    })
+  }
+
+  async execute(): Promise<ControlledTransaction<DB>> {
+    const { isolationLevel, accessMode, ...props } = this.#props
+    const settings = { isolationLevel, accessMode }
+
+    validateTransactionSettings(settings)
+
+    const connection = await provideControlledConnection(this.#props.executor)
+
+    await this.#props.driver.beginTransaction(connection, settings)
+
+    return new ControlledTransaction({
+      ...props,
+      connection,
+      executor: this.#props.executor.withConnectionProvider(
+        new SingleConnectionProvider(connection),
+      ),
+    })
+  }
+}
+
+interface ControlledTransactionBuilderProps extends TransactionBuilderProps {
+  readonly releaseConnection?: boolean
+}
+
+export class ControlledTransaction<
+  DB,
+  S extends string[] = [],
+> extends Transaction<DB> {
+  readonly #props: ControlledTransactionProps
+  readonly #compileQuery: QueryCompiler['compileQuery']
+  #isCommitted: boolean
+  #isRolledBack: boolean
+
+  constructor(props: ControlledTransactionProps) {
+    const { connection, ...transactionProps } = props
+    super(transactionProps)
+    this.#props = freeze(props)
+
+    const queryId = createQueryId()
+    this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
+
+    this.#isCommitted = false
+    this.#isRolledBack = false
+
+    this.#assertNotCommittedOrRolledBackBeforeAllExecutions()
+  }
+
+  get isCommitted(): boolean {
+    return this.#isCommitted
+  }
+
+  get isRolledBack(): boolean {
+    return this.#isRolledBack
+  }
+
+  /**
+   * Commits the transaction.
+   *
+   * See {@link rollback}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
+   * try {
+   *   await doSomething(trx)
+   *
+   *   await trx.commit().execute()
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   *
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * ```
+   */
+  commit(): Command<void> {
+    this.#assertNotCommittedOrRolledBack()
+
+    return new Command(async () => {
+      await this.#props.driver.commitTransaction(this.#props.connection)
+      this.#isCommitted = true
+      this.#props.connection.release()
+    })
+  }
+
+  /**
+   * Rolls back the transaction.
+   *
+   * See {@link commit} and {@link rollbackToSavepoint}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
+   * try {
+   *   await doSomething(trx)
+   *
+   *   await trx.commit().execute()
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   *
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * ```
+   */
+  rollback(): Command<void> {
+    this.#assertNotCommittedOrRolledBack()
+
+    return new Command(async () => {
+      await this.#props.driver.rollbackTransaction(this.#props.connection)
+      this.#isRolledBack = true
+      this.#props.connection.release()
+    })
+  }
+
+  /**
+   * Creates a savepoint with a given name.
+   *
+   * See {@link rollbackToSavepoint} and {@link releaseSavepoint}.
+   *
+   * For a type-safe experience, you should use the returned instance from now on.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
+   * await insertJennifer(trx)
+   *
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * ```
+   */
+  savepoint<SN extends string>(
+    savepointName: SN extends S ? never : SN,
+  ): Command<ControlledTransaction<DB, [...S, SN]>> {
+    this.#assertNotCommittedOrRolledBack()
+
+    return new Command(async () => {
+      await this.#props.driver.savepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+
+      return new ControlledTransaction({ ...this.#props })
+    })
+  }
+
+  /**
+   * Rolls back to a savepoint with a given name.
+   *
+   * See {@link savepoint} and {@link releaseSavepoint}.
+   *
+   * You must use the same instance returned by {@link savepoint}, or
+   * escape the type-check by using `as any`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
+   * await insertJennifer(trx)
+   *
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * ```
+   */
+  rollbackToSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): RollbackToSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
+    : never {
+    this.#assertNotCommittedOrRolledBack()
+
+    return new Command(async () => {
+      await this.#props.driver.rollbackToSavepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+
+      return new ControlledTransaction({ ...this.#props })
+    }) as any
+  }
+
+  /**
+   * Releases a savepoint with a given name.
+   *
+   * See {@link savepoint} and {@link rollbackToSavepoint}.
+   *
+   * You must use the same instance returned by {@link savepoint}, or
+   * escape the type-check by using `as any`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import type { Kysely } from 'kysely'
+   * import type { Database } from 'type-editor' // imaginary module
+   *
+   * const trx = await db.startTransaction().execute()
+   *
+   * await insertJennifer(trx)
+   *
+   * const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   * try {
+   *   await doSomething(trxAfterJennifer)
+   * } catch (error) {
+   *   await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   * }
+   *
+   * await trxAfterJennifer.releaseSavepoint('after_jennifer').execute()
+   *
+   * await doSomethingElse(trx)
+   *
+   * async function insertJennifer(kysely: Kysely<Database>) {}
+   * async function doSomething(kysely: Kysely<Database>) {}
+   * async function doSomethingElse(kysely: Kysely<Database>) {}
+   * ```
+   */
+  releaseSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): ReleaseSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
+    : never {
+    this.#assertNotCommittedOrRolledBack()
+
+    return new Command(async () => {
+      await this.#props.driver.releaseSavepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+
+      return new ControlledTransaction({ ...this.#props })
+    }) as any
+  }
+
+  override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
+  }
+
+  override withoutPlugins(): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withoutPlugins(),
+    })
+  }
+
+  override withSchema(schema: string): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema),
+      ),
+    })
+  }
+
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  #assertNotCommittedOrRolledBackBeforeAllExecutions() {
+    const { executor } = this.#props
+
+    const originalExecuteQuery = executor.executeQuery.bind(executor)
+    executor.executeQuery = async (query, queryId) => {
+      this.#assertNotCommittedOrRolledBack()
+      return await originalExecuteQuery(query, queryId)
+    }
+
+    const that = this
+    const originalStream = executor.stream.bind(executor)
+    executor.stream = (query, chunkSize, queryId) => {
+      that.#assertNotCommittedOrRolledBack()
+      return originalStream(query, chunkSize, queryId)
+    }
+  }
+
+  #assertNotCommittedOrRolledBack(): void {
+    if (this.isCommitted) {
+      throw new Error('Transaction is already committed')
+    }
+
+    if (this.isRolledBack) {
+      throw new Error('Transaction is already rolled back')
+    }
+  }
+}
+
+interface ControlledTransactionProps extends KyselyProps {
+  readonly connection: ControlledConnection
+}
+
+export class Command<T> {
+  readonly #cb: () => Promise<T>
+
+  constructor(cb: () => Promise<T>) {
+    this.#cb = cb
+  }
+
+  /**
+   * Executes the command.
+   */
+  async execute(): Promise<T> {
+    return await this.#cb()
   }
 }

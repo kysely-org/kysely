@@ -29,7 +29,6 @@ import {
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
-  Logger,
   Generated,
   sql,
   ColumnType,
@@ -39,7 +38,7 @@ import {
 } from '../../../'
 import {
   OrderByDirection,
-  UndirectedOrderByExpression,
+  OrderByExpression,
 } from '../../../dist/cjs/parser/order-by-parser'
 import type { ConnectionConfiguration } from 'tedious'
 
@@ -189,19 +188,23 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   mssql: {
     dialect: new MssqlDialect({
+      resetConnectionsOnRelease: false,
       tarn: {
         options: {
           max: POOL_SIZE,
           min: 0,
-          validateConnections: false,
+          // @ts-expect-error making sure people see the deprecation warning
+          validateConnections: true,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
-        resetConnectionOnRelease: false,
+        // @ts-expect-error making sure people see the deprecation warning
+        resetConnectionOnRelease: true,
       },
+      validateConnections: false,
     }),
     plugins: PLUGINS,
   },
@@ -217,15 +220,12 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 export async function initTest(
   ctx: Mocha.Context,
   dialect: BuiltInDialect,
-  log?: Logger,
+  overrides?: Omit<KyselyConfig, 'dialect'>,
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
-  const db = await connect({
-    ...config,
-    log,
-  })
+  const db = await connect({ ...config, ...overrides })
 
   await createDatabase(db, dialect)
   return { config, db, dialect }
@@ -487,7 +487,7 @@ function createNoopTransformerPlugin(): KyselyPlugin {
 
   return {
     transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-      return transformer.transformNode(args.node)
+      return transformer.transformNode(args.node, args.queryId)
     },
 
     async transformResult(
@@ -517,7 +517,7 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
 
 export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
   orderBy: QB extends SelectQueryBuilder<infer DB, infer TB, infer O>
-    ? UndirectedOrderByExpression<DB, TB, O>
+    ? OrderByExpression<DB, TB, O>
     : never,
   direction: OrderByDirection | undefined,
   dialect: BuiltInDialect,

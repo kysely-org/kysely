@@ -4,6 +4,9 @@ import { DropColumnNode } from '../../operation-node/drop-column-node.js'
 import { OffsetNode } from '../../operation-node/offset-node.js'
 import { MergeQueryNode } from '../../operation-node/merge-query-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
+import { CollateNode } from '../../operation-node/collate-node.js'
+
+const COLLATION_CHAR_REGEX = /^[a-z0-9_]$/i
 
 export class MssqlQueryCompiler extends DefaultQueryCompiler {
   protected override getCurrentParameterPlaceholder(): string {
@@ -83,6 +86,20 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
   protected override visitMergeQuery(node: MergeQueryNode): void {
     super.visitMergeQuery(node)
     this.append(';')
+  }
+
+  protected override visitCollate(node: CollateNode): void {
+    this.append('collate ')
+
+    const { name } = node.collation
+
+    for (const char of name) {
+      if (!COLLATION_CHAR_REGEX.test(char)) {
+        throw new Error(`Invalid collation: ${name}`)
+      }
+    }
+
+    this.append(name)
   }
 
   protected override announcesNewColumnDataType(): boolean {

@@ -31,7 +31,7 @@ import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
 
-const PRIVATE_RELEASE_METHOD = Symbol()
+const PRIVATE_RESET_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
 
 export class MssqlDriver implements Driver {
@@ -41,8 +41,11 @@ export class MssqlDriver implements Driver {
   constructor(config: MssqlDialectConfig) {
     this.#config = freeze({ ...config })
 
-    const { tarn, tedious } = this.#config
-    const { validateConnections, ...poolOptions } = tarn.options
+    const { tarn, tedious, validateConnections } = this.#config
+    const {
+      validateConnections: deprecatedValidateConnections,
+      ...poolOptions
+    } = tarn.options
 
     this.#pool = new tarn.Pool({
       ...poolOptions,
@@ -57,7 +60,8 @@ export class MssqlDriver implements Driver {
       // @ts-ignore `tarn` accepts a function that returns a promise here, but
       // the types are not aligned and it type errors.
       validate:
-        validateConnections === false
+        validateConnections === false ||
+        (deprecatedValidateConnections as any) === false
           ? undefined
           : (connection) => connection.validate(),
     })
@@ -86,8 +90,28 @@ export class MssqlDriver implements Driver {
     await connection.rollbackTransaction()
   }
 
+  async savepoint(
+    connection: MssqlConnection,
+    savepointName: string,
+  ): Promise<void> {
+    await connection.savepoint(savepointName)
+  }
+
+  async rollbackToSavepoint(
+    connection: MssqlConnection,
+    savepointName: string,
+  ): Promise<void> {
+    await connection.rollbackTransaction(savepointName)
+  }
+
   async releaseConnection(connection: MssqlConnection): Promise<void> {
-    await connection[PRIVATE_RELEASE_METHOD]()
+    if (
+      this.#config.resetConnectionsOnRelease ||
+      this.#config.tedious.resetConnectionOnRelease
+    ) {
+      await connection[PRIVATE_RESET_METHOD]()
+    }
+
     this.#pool.release(connection)
   }
 
@@ -174,12 +198,21 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  async rollbackTransaction(): Promise<void> {
+  async rollbackTransaction(savepointName?: string): Promise<void> {
     await new Promise((resolve, reject) =>
       this.#connection.rollbackTransaction((error) => {
         if (error) reject(error)
         else resolve(undefined)
-      }),
+      }, savepointName),
+    )
+  }
+
+  async savepoint(savepointName: string): Promise<void> {
+    await new Promise((resolve, reject) =>
+      this.#connection.saveTransaction((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      }, savepointName),
     )
   }
 
@@ -274,16 +307,13 @@ class MssqlConnection implements DatabaseConnection {
     })
   }
 
-  async [PRIVATE_RELEASE_METHOD](): Promise<void> {
-    // TODO: flip this to `if (!this.#tedious.resetConnectionOnRelease) {}` in a future PR.
-    if (this.#tedious.resetConnectionOnRelease !== false) {
-      await new Promise((resolve, reject) => {
-        this.#connection.reset((error) => {
-          if (error) reject(error)
-          else resolve(undefined)
-        })
+  async [PRIVATE_RESET_METHOD](): Promise<void> {
+    await new Promise((resolve, reject) => {
+      this.#connection.reset((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
       })
-    }
+    })
   }
 
   [PRIVATE_DESTROY_METHOD](): Promise<void> {
@@ -316,7 +346,6 @@ class MssqlRequest<O> {
     (event: 'completed' | 'chunkReady' | 'error', error?: unknown) => void
   >
   readonly #tedious: Tedious
-  #error: Error | any[] | undefined
   #rowCount: number | undefined
 
   constructor(props: MssqlRequestProps<O>) {

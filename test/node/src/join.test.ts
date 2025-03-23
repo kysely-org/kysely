@@ -654,37 +654,38 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
-      describe('right join', () => {
-        it(`should right join a table`, async () => {
-          const query = ctx.db
-            .selectFrom('person')
-            .rightJoin('pet', 'pet.owner_id', 'person.id')
-            .selectAll()
-            .orderBy('person.first_name')
+    describe('right join', () => {
+      it(`should right join a table`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .rightJoin('pet', 'pet.owner_id', 'person.id')
+          .selectAll()
+          .orderBy('person.first_name')
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-              parameters: [],
-            },
-            mysql: {
-              sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-              parameters: [],
-            },
-            mssql: {
-              sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-              parameters: [],
-            },
-            sqlite: NOT_SUPPORTED,
-          })
-
-          await query.execute()
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
+          mysql: {
+            sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+            parameters: [],
+          },
+          mssql: {
+            sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
+          sqlite: {
+            sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
         })
-      })
-    }
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+        await query.execute()
+      })
+    })
+
+    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
       describe('full join', () => {
         it(`should full join a table`, async () => {
           const query = ctx.db
@@ -703,7 +704,10 @@ for (const dialect of DIALECTS) {
               sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
               parameters: [],
             },
-            sqlite: NOT_SUPPORTED,
+            sqlite: {
+              sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+              parameters: [],
+            },
           })
 
           await query.execute()
@@ -711,7 +715,38 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    describe('cross join', () => {
+      it(`should cross join a table`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .crossJoin('pet')
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select * from `person` cross join `pet` order by `person`.`first_name`',
+            parameters: [],
+          },
+          mssql: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+          sqlite: {
+            sql: `select * from "person" cross join "pet" order by "person"."first_name"`,
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
+    })
+
+    if (dialect === 'postgres' || dialect === 'mysql') {
       describe('lateral join', () => {
         it('should join an expression laterally', async () => {
           const query = ctx.db
@@ -733,7 +768,10 @@ for (const dialect of DIALECTS) {
               sql: `select "first_name", "p"."name" from "person" inner join lateral (select "name" from "pet" where "pet"."owner_id" = "person"."id") as "p" on true order by "first_name"`,
               parameters: [],
             },
-            mysql: NOT_SUPPORTED,
+            mysql: {
+              sql: `select \`first_name\`, \`p\`.\`name\` from \`person\` inner join lateral (select \`name\` from \`pet\` where \`pet\`.\`owner_id\` = \`person\`.\`id\`) as \`p\` on true order by \`first_name\``,
+              parameters: [],
+            },
             mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
@@ -766,7 +804,10 @@ for (const dialect of DIALECTS) {
               sql: `select "first_name", "p"."name" from "person" left join lateral (select "name" from "pet" where "pet"."owner_id" = "person"."id") as "p" on true order by "first_name"`,
               parameters: [],
             },
-            mysql: NOT_SUPPORTED,
+            mysql: {
+              sql: `select \`first_name\`, \`p\`.\`name\` from \`person\` left join lateral (select \`name\` from \`pet\` where \`pet\`.\`owner_id\` = \`person\`.\`id\`) as \`p\` on true order by \`first_name\``,
+              parameters: [],
+            },
             mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
@@ -775,6 +816,111 @@ for (const dialect of DIALECTS) {
           expect(res).to.eql([
             { first_name: 'Arnold', name: 'Doggo' },
             { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+
+        it('should cross join an expression laterally', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .crossJoinLateral((eb) =>
+              eb
+                .selectFrom('pet')
+                .innerJoin('person as owner', 'owner.id', 'pet.owner_id')
+                .select('name')
+                .whereRef('owner.gender', '=', 'person.gender')
+                .as('p'),
+            )
+            .select(['first_name', 'p.name'])
+            .orderBy(['first_name', 'p.name'])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select "first_name", "p"."name" from "person" cross join lateral (select "name" from "pet" inner join "person" as "owner" on "owner"."id" = "pet"."owner_id" where "owner"."gender" = "person"."gender") as "p" order by "first_name", "p"."name"`,
+              parameters: [],
+            },
+            mysql: {
+              sql: `select \`first_name\`, \`p\`.\`name\` from \`person\` cross join lateral (select \`name\` from \`pet\` inner join \`person\` as \`owner\` on \`owner\`.\`id\` = \`pet\`.\`owner_id\` where \`owner\`.\`gender\` = \`person\`.\`gender\`) as \`p\` order by \`first_name\`, \`p\`.\`name\``,
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const res = await query.execute()
+          expect(res).to.eql([
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Arnold', name: 'Hammo' },
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+      })
+    }
+
+    if (dialect === 'mssql') {
+      describe('apply', () => {
+        it('should cross apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .crossApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .select(['person.first_name', 'pets.name'])
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select "person"."first_name", "pets"."name" from "person" cross apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.deep.equal([
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+
+        it('should outer apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .outerApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .select(['person.first_name', 'pets.name'])
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select "person"."first_name", "pets"."name" from "person" outer apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.deep.equal([
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Arnold', name: 'Doggo' },
             { first_name: 'Sylvester', name: 'Hammo' },
           ])
         })

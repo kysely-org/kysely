@@ -1,6 +1,23 @@
 name: preview
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/test.yml'
+      - 'assets/**'
+      - 'docs/**'
+      - 'example/**'
+      - 'site/**'
+      - 'test/**'
+      - '.npmignore'
+      - '.prettierignore'
+      - '.prettierrc'
+      - '.renovaterc.json'
+      - '*.md'
+      - 'LICENSE'
 
 jobs:
   release:

@@ -12,12 +12,19 @@ import {
   parseReferenceExpression,
   ReferenceExpression,
 } from './reference-parser.js'
+import { AnyColumn, DrainOuterGeneric } from '../util/type-utils.js'
 
-export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
-  [C in UpdateKeys<DB[UT]>]?:
-    | ValueExpression<DB, TB, UpdateType<DB[UT][C]>>
-    | undefined
-}
+export type UpdateObject<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB = TB,
+> = DrainOuterGeneric<{
+  [C in AnyColumn<DB, UT>]?: {
+    [T in UT]: C extends keyof DB[T]
+      ? ValueExpression<DB, TB, UpdateType<DB[T][C]>> | undefined
+      : never
+  }[UT]
+}>
 
 export type UpdateObjectFactory<
   DB,
