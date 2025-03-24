@@ -37,6 +37,7 @@ const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
   SelectQueryNode: true,
   UpdateQueryNode: true,
   MergeQueryNode: true,
+  AlterTypeNode: true,
 })
 
 const SCHEMALESS_FUNCTIONS: Record<string, true> = {
