@@ -116,6 +116,8 @@ import { OrActionNode } from '../operation-node/or-action-node.js'
 import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
+import { AlterTypeNode } from '../operation-node/alter-type-node.js'
+import { AddValueNode } from '../operation-node/add-value-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1388,6 +1390,55 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+  }
+
+  protected override visitAlterType(node: AlterTypeNode): void {
+    this.append('alter type ')
+    this.visitNode(node.name)
+    this.append(' ')
+
+    if (node.ownerTo) {
+      this.append('owner to ')
+      this.visitNode(node.ownerTo)
+    }
+
+    if (node.renameTo) {
+      this.append('rename to ')
+      this.visitNode(node.renameTo)
+    }
+
+    if (node.setSchema) {
+      this.append('set schema ')
+      this.visitNode(node.setSchema)
+    }
+
+    if (node.renameValueOldName && node.renameValueNewName) {
+      this.append('rename value ')
+      this.visitNode(node.renameValueOldName)
+      this.append(' ')
+      this.append('to ')
+      this.visitNode(node.renameValueNewName)
+    }
+
+    if (node.addValue) {
+      this.visitNode(node.addValue)
+    }
+  }
+
+  protected override visitAddValue(node: AddValueNode): void {
+    this.append('add value ')
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+    this.visitNode(node.value)
+    if (node.before) {
+      this.append(' before ')
+      this.visitNode(node.before)
+    }
+    if (node.after) {
+      this.append(' after ')
+      this.visitNode(node.after)
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
