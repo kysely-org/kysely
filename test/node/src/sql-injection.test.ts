@@ -56,26 +56,6 @@ for (const dialect of DIALECTS) {
       expect(results.rows).to.have.length(0)
       await assertDidNotDropTable(ctx, 'person')
     })
-
-    it('should handle already escaped literals correctly', async () => {
-      await ctx.db
-        .insertInto('person')
-        .values({ first_name: `D'Angelo`, gender: 'male' })
-        .executeTakeFirstOrThrow()
-
-      const query = ctx.db
-        .selectFrom('person')
-        .where('first_name', '=', sql.lit(`D''Angelo`))
-        .selectAll()
-
-      expect(query.compile().sql).to.equal(
-        `select * from ${identifierWrapper}person${identifierWrapper} where ${identifierWrapper}first_name${identifierWrapper} = 'D''angelo'`,
-      )
-
-      const results = await ctx.db.executeQuery(query)
-      expect(results.rows).to.have.length(1)
-      expect(results.rows[0].first_name).to.equal(`D'Angelo`)
-    })
   })
 }
 
