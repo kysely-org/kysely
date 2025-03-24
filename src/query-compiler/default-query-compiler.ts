@@ -117,6 +117,8 @@ import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
 
+const LIT_WRAP_REGEX = /'/g
+
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
   implements QueryCompiler
@@ -1762,13 +1764,17 @@ export class DefaultQueryCompiler
     return sanitized
   }
 
+  protected sanitizeStringLiteral(value: string): string {
+    return value.replace(LIT_WRAP_REGEX, "''")
+  }
+
   protected addParameter(parameter: unknown): void {
     this.#parameters.push(parameter)
   }
 
   protected appendImmediateValue(value: unknown): void {
     if (isString(value)) {
-      this.append(`'${value}'`)
+      this.appendStringLiteral(value)
     } else if (isNumber(value) || isBoolean(value)) {
       this.append(value.toString())
     } else if (isNull(value)) {
@@ -1780,6 +1786,12 @@ export class DefaultQueryCompiler
     } else {
       throw new Error(`invalid immediate value ${value}`)
     }
+  }
+
+  protected appendStringLiteral(value: string): void {
+    this.append("'")
+    this.append(this.sanitizeStringLiteral(value))
+    this.append("'")
   }
 
   protected sortSelectModifiers(
