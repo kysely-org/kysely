@@ -3,7 +3,7 @@ import { sql } from '../../../'
 import { destroyTest, DIALECTS, initTest, TestContext } from './test-setup'
 
 for (const dialect of DIALECTS) {
-  describe.only(`${dialect}: select`, () => {
+  describe(`${dialect}: select`, () => {
     let ctx: TestContext
     const identifierWrapper = dialect === 'mysql' ? '`' : '"'
 
