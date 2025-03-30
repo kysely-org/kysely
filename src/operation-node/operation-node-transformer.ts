@@ -98,6 +98,7 @@ import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js
 import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { QueryId } from '../util/query-id.js'
+import { RenameConstraintNode } from './rename-constraint-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -201,6 +202,7 @@ export class OperationNodeTransformer {
     ModifyColumnNode: this.transformModifyColumn.bind(this),
     AddConstraintNode: this.transformAddConstraint.bind(this),
     DropConstraintNode: this.transformDropConstraint.bind(this),
+    RenameConstraintNode: this.transformRenameConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
     RefreshMaterializedViewNode:
@@ -842,6 +844,7 @@ export class OperationNodeTransformer {
       ),
       addConstraint: this.transformNode(node.addConstraint, queryId),
       dropConstraint: this.transformNode(node.dropConstraint, queryId),
+      renameConstraint: this.transformNode(node.renameConstraint, queryId),
       addIndex: this.transformNode(node.addIndex, queryId),
       dropIndex: this.transformNode(node.dropIndex, queryId),
     })
@@ -913,6 +916,17 @@ export class OperationNodeTransformer {
       constraintName: this.transformNode(node.constraintName, queryId),
       ifExists: node.ifExists,
       modifier: node.modifier,
+    })
+  }
+
+  protected transformRenameConstraint(
+    node: RenameConstraintNode,
+    queryId?: QueryId,
+  ): RenameConstraintNode {
+    return requireAllProps<RenameConstraintNode>({
+      kind: 'RenameConstraintNode',
+      oldName: this.transformNode(node.oldName, queryId),
+      newName: this.transformNode(node.newName, queryId),
     })
   }
 

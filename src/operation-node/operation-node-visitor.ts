@@ -99,6 +99,7 @@ import { OutputNode } from './output-node.js'
 import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
+import { RenameConstraintNode } from './rename-constraint-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -167,6 +168,7 @@ export abstract class OperationNodeVisitor {
     ModifyColumnNode: this.visitModifyColumn.bind(this),
     AddConstraintNode: this.visitAddConstraint.bind(this),
     DropConstraintNode: this.visitDropConstraint.bind(this),
+    RenameConstraintNode: this.visitRenameConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
     CreateViewNode: this.visitCreateView.bind(this),
     RefreshMaterializedViewNode: this.visitRefreshMaterializedView.bind(this),
@@ -270,6 +272,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitModifyColumn(node: ModifyColumnNode): void
   protected abstract visitAddConstraint(node: AddConstraintNode): void
   protected abstract visitDropConstraint(node: DropConstraintNode): void
+  protected abstract visitRenameConstraint(node: RenameConstraintNode): void
   protected abstract visitForeignKeyConstraint(
     node: ForeignKeyConstraintNode,
   ): void

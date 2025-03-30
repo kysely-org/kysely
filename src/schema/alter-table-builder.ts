@@ -54,6 +54,7 @@ import {
   CheckConstraintBuilder,
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
+import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -278,6 +279,18 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.create(constraintName),
+      }),
+    })
+  }
+
+  renameConstraint(
+    oldName: string,
+    newName: string,
+  ): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        renameConstraint: RenameConstraintNode.create(oldName, newName),
       }),
     })
   }

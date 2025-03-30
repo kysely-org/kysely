@@ -116,6 +116,7 @@ import { OrActionNode } from '../operation-node/or-action-node.js'
 import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
+import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1174,6 +1175,10 @@ export class DefaultQueryCompiler
       this.visitNode(node.dropConstraint)
     }
 
+    if (node.renameConstraint) {
+      this.visitNode(node.renameConstraint)
+    }
+
     if (node.columnAlterations) {
       this.compileColumnAlterations(node.columnAlterations)
     }
@@ -1264,6 +1269,13 @@ export class DefaultQueryCompiler
     } else if (node.modifier === 'restrict') {
       this.append(' restrict')
     }
+  }
+
+  protected override visitRenameConstraint(node: RenameConstraintNode): void {
+    this.append('rename constraint ')
+    this.visitNode(node.oldName)
+    this.append(' to ')
+    this.visitNode(node.newName)
   }
 
   protected override visitSetOperation(node: SetOperationNode): void {
