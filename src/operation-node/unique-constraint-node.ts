@@ -8,6 +8,8 @@ export interface UniqueConstraintNode extends OperationNode {
   readonly columns: ReadonlyArray<ColumnNode>
   readonly name?: IdentifierNode
   readonly nullsNotDistinct?: boolean
+  readonly deferrable?: boolean
+  readonly initiallyDeferred?: boolean
 }
 
 export type UniqueConstraintNodeProps = Omit<

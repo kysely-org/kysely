@@ -7,12 +7,19 @@ export interface PrimaryKeyConstraintNode extends OperationNode {
   readonly kind: 'PrimaryKeyConstraintNode'
   readonly columns: ReadonlyArray<ColumnNode>
   readonly name?: IdentifierNode
+  readonly deferrable?: boolean
+  readonly initiallyDeferred?: boolean
 }
+
+export type PrimaryKeyConstraintNodeProps = Omit<
+  Partial<PrimaryKeyConstraintNode>,
+  'kind'
+>
 
 /**
  * @internal
  */
-export const PrimaryConstraintNode = freeze({
+export const PrimaryKeyConstraintNode = freeze({
   is(node: OperationNode): node is PrimaryKeyConstraintNode {
     return node.kind === 'PrimaryKeyConstraintNode'
   },
@@ -24,4 +31,18 @@ export const PrimaryConstraintNode = freeze({
       name: constraintName ? IdentifierNode.create(constraintName) : undefined,
     })
   },
+
+  cloneWith(
+    node: PrimaryKeyConstraintNode,
+    props: PrimaryKeyConstraintNodeProps,
+  ): PrimaryKeyConstraintNode {
+    return freeze({ ...node, ...props })
+  },
 })
+
+/**
+ * Backwards compatibility for a typo in the codebase.
+ *
+ * @deprecated Use {@link PrimaryKeyConstraintNode} instead.
+ */
+export const PrimaryConstraintNode = PrimaryKeyConstraintNode

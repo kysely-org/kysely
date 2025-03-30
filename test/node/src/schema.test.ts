@@ -537,6 +537,37 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create a table with deferrable unique constraints', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'varchar(255)')
+            .addColumn('b', 'varchar(255)')
+            .addUniqueConstraint('unique_1', ['a', 'b'], (uc) =>
+              uc.deferrable(),
+            )
+            .addUniqueConstraint('unique_2', ['a', 'b'], (uc) =>
+              uc.notDeferrable(),
+            )
+            .addUniqueConstraint('unique_3', ['a', 'b'], (uc) =>
+              uc.deferrable().initiallyDeferred(),
+            )
+            .addUniqueConstraint('unique_4', ['a', 'b'], (uc) =>
+              uc.deferrable().initiallyImmediate(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" varchar(255), "b" varchar(255), constraint "unique_1" unique ("a", "b") deferrable, constraint "unique_2" unique ("a", "b") not deferrable, constraint "unique_3" unique ("a", "b") deferrable initially deferred, constraint "unique_4" unique ("a", "b") deferrable initially immediate)',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       }
 
       it('should create a table with check constraints', async () => {
@@ -599,6 +630,90 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
+      if (dialect === 'postgres') {
+        it('should create a table with a deferrable primary key constraint', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addPrimaryKeyConstraint('primary', ['a'], (pk) => pk.deferrable())
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, constraint "primary" primary key ("a") deferrable)',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with not deferrable primary key constraint', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addPrimaryKeyConstraint('primary', ['a'], (pk) =>
+              pk.notDeferrable(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, constraint "primary" primary key ("a") not deferrable)',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with a deferrable initially deferred primary key constraint', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addPrimaryKeyConstraint('primary', ['a'], (pk) =>
+              pk.deferrable().initiallyDeferred(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, constraint "primary" primary key ("a") deferrable initially deferred)',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with a deferrable initially immediate primary key constraint', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addPrimaryKeyConstraint('primary', ['a'], (pk) =>
+              pk.deferrable().initiallyImmediate(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, constraint "primary" primary key ("a") deferrable initially immediate)',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
       it('should create a table with a foreign key constraint', async () => {
         await ctx.db.schema
           .createTable('test2')
@@ -637,6 +752,65 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect !== 'mysql' && dialect !== 'mssql') {
+        it('should create a table with deferrable foreign key constraints', async () => {
+          await ctx.db.schema
+            .createTable('test2')
+            .addColumn('c', 'integer')
+            .addColumn('d', 'integer')
+            .addPrimaryKeyConstraint('primary_key', ['c', 'd'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addColumn('b', 'integer')
+            .addForeignKeyConstraint(
+              'foreign_key',
+              ['a', 'b'],
+              'test2',
+              ['c', 'd'],
+              (fk) => fk.deferrable(),
+            )
+            .addForeignKeyConstraint(
+              'foreign_key_2',
+              ['a', 'b'],
+              'test2',
+              ['c', 'd'],
+              (fk) => fk.notDeferrable(),
+            )
+            .addForeignKeyConstraint(
+              'foreign_key_3',
+              ['a', 'b'],
+              'test2',
+              ['c', 'd'],
+              (fk) => fk.deferrable().initiallyDeferred(),
+            )
+            .addForeignKeyConstraint(
+              'foreign_key_4',
+              ['a', 'b'],
+              'test2',
+              ['c', 'd'],
+              (fk) => fk.deferrable().initiallyImmediate(),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") deferrable, constraint "foreign_key_2" foreign key ("a", "b") references "test2" ("c", "d") not deferrable, constraint "foreign_key_3" foreign key ("a", "b") references "test2" ("c", "d") deferrable initially deferred, constraint "foreign_key_4" foreign key ("a", "b") references "test2" ("c", "d") deferrable initially immediate)',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") deferrable, constraint "foreign_key_2" foreign key ("a", "b") references "test2" ("c", "d") not deferrable, constraint "foreign_key_3" foreign key ("a", "b") references "test2" ("c", "d") deferrable initially deferred, constraint "foreign_key_4" foreign key ("a", "b") references "test2" ("c", "d") deferrable initially immediate)',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
 
       if (dialect === 'postgres' || dialect === 'mssql') {
         it('should support schemas in foreign key target table', async () => {
@@ -3041,11 +3215,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
-      ) {
+      if (dialect !== 'sqlite') {
         describe('add unique constraint', () => {
           it('should add a unique constraint', async () => {
             const builder = ctx.db.schema
@@ -3090,6 +3260,94 @@ for (const dialect of DIALECTS) {
               testSql(builder, dialect, {
                 postgres: {
                   sql: 'alter table "test" add constraint "varchar_col_constaint" unique nulls not distinct ("varchar_col")',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should add a deferrable unique constraint', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addUniqueConstraint(
+                  'some_constraint',
+                  ['varchar_col', 'integer_col'],
+                  (uc) => uc.deferrable(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col") deferrable',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should add a not deferrable unique constraint', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addUniqueConstraint(
+                  'some_constraint',
+                  ['varchar_col', 'integer_col'],
+                  (uc) => uc.notDeferrable(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col") not deferrable',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should add a deferrable initially deferred unique constraint', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addUniqueConstraint(
+                  'some_constraint',
+                  ['varchar_col', 'integer_col'],
+                  (uc) => uc.deferrable().initiallyDeferred(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col") deferrable initially deferred',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should add a deferrable initially immediate unique constraint', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addUniqueConstraint(
+                  'some_constraint',
+                  ['varchar_col', 'integer_col'],
+                  (uc) => uc.deferrable().initiallyImmediate(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col") deferrable initially immediate',
                   parameters: [],
                 },
                 mysql: NOT_SUPPORTED,
@@ -3219,6 +3477,39 @@ for (const dialect of DIALECTS) {
           })
         })
 
+        if (dialect === 'postgres') {
+          it('should add a deferrable initially deferred foreign key constraint', async () => {
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('a', 'integer')
+              .addColumn('b', 'varchar(255)')
+              .addUniqueConstraint('unique_a_b', ['a', 'b'])
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addForeignKeyConstraint(
+                'some_constraint',
+                ['integer_col', 'varchar_col'],
+                'test2',
+                ['a', 'b'],
+                (fk) => fk.deferrable().initiallyDeferred(),
+              )
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") deferrable initially deferred',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        }
+
         describe('drop constraint', () => {
           it('should drop a foreign key constraint', async () => {
             await ctx.db.schema.dropTable('test').execute()
@@ -3316,6 +3607,28 @@ for (const dialect of DIALECTS) {
 
             await builder.execute()
           })
+
+          if (dialect === 'postgres') {
+            it('should add a deferrable initially deferred primary key constraint', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addPrimaryKeyConstraint('test_pkey', ['decimal_col'], (pk) =>
+                  pk.deferrable().initiallyDeferred(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "test_pkey" primary key ("decimal_col") deferrable initially deferred',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+          }
 
           it('should add a primary key constraint for multiple columns', async () => {
             const builder = ctx.db.schema

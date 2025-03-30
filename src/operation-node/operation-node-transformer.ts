@@ -37,7 +37,7 @@ import { OnConflictNode } from './on-conflict-node.js'
 import { CreateIndexNode } from './create-index-node.js'
 import { ListNode } from './list-node.js'
 import { DropIndexNode } from './drop-index-node.js'
-import { PrimaryKeyConstraintNode } from './primary-constraint-node.js'
+import { PrimaryKeyConstraintNode } from './primary-key-constraint-node.js'
 import { UniqueConstraintNode } from './unique-constraint-node.js'
 import { ReferencesNode } from './references-node.js'
 import { CheckConstraintNode } from './check-constraint-node.js'
@@ -695,6 +695,8 @@ export class OperationNodeTransformer {
       kind: 'PrimaryKeyConstraintNode',
       columns: this.transformNodeList(node.columns, queryId),
       name: this.transformNode(node.name, queryId),
+      deferrable: node.deferrable,
+      initiallyDeferred: node.initiallyDeferred,
     })
   }
 
@@ -707,6 +709,8 @@ export class OperationNodeTransformer {
       columns: this.transformNodeList(node.columns, queryId),
       name: this.transformNode(node.name, queryId),
       nullsNotDistinct: node.nullsNotDistinct,
+      deferrable: node.deferrable,
+      initiallyDeferred: node.initiallyDeferred,
     })
   }
 
@@ -721,6 +725,8 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name, queryId),
       onDelete: node.onDelete,
       onUpdate: node.onUpdate,
+      deferrable: node.deferrable,
+      initiallyDeferred: node.initiallyDeferred,
     })
   }
 
