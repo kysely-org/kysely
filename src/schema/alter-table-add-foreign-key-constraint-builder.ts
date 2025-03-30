@@ -42,6 +42,34 @@ export class AlterTableAddForeignKeyConstraintBuilder
     })
   }
 
+  deferrable(): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
+      ...this.#props,
+      constraintBuilder: this.#props.constraintBuilder.deferrable(),
+    })
+  }
+
+  notDeferrable(): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
+      ...this.#props,
+      constraintBuilder: this.#props.constraintBuilder.notDeferrable(),
+    })
+  }
+
+  initiallyDeferred(): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
+      ...this.#props,
+      constraintBuilder: this.#props.constraintBuilder.initiallyDeferred(),
+    })
+  }
+
+  initiallyImmediate(): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
+      ...this.#props,
+      constraintBuilder: this.#props.constraintBuilder.initiallyImmediate(),
+    })
+  }
+
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.

@@ -94,7 +94,7 @@ async function testJSONReference(db: Kysely<Database>) {
       eb
         .ref('array', '->')
         .at(0)
-        .$castTo<string & { _brand: 'whenever' } | null>()
+        .$castTo<(string & { _brand: 'whenever' }) | null>()
         .as('whenever'),
     )
     .execute()

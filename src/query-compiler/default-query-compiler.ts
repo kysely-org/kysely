@@ -36,7 +36,7 @@ import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { PrimaryKeyConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
@@ -1024,6 +1024,29 @@ export class DefaultQueryCompiler
     this.append('primary key (')
     this.compileList(node.columns)
     this.append(')')
+
+    this.buildDeferrable(node)
+  }
+
+  protected buildDeferrable(node: {
+    deferrable?: boolean
+    initiallyDeferred?: boolean
+  }): void {
+    if (node.deferrable !== undefined) {
+      if (node.deferrable) {
+        this.append(' deferrable')
+      } else {
+        this.append(' not deferrable')
+      }
+    }
+
+    if (node.initiallyDeferred !== undefined) {
+      if (node.initiallyDeferred) {
+        this.append(' initially deferred')
+      } else {
+        this.append(' initially immediate')
+      }
+    }
   }
 
   protected override visitUniqueConstraint(node: UniqueConstraintNode): void {
@@ -1042,6 +1065,8 @@ export class DefaultQueryCompiler
     this.append(' (')
     this.compileList(node.columns)
     this.append(')')
+
+    this.buildDeferrable(node)
   }
 
   protected override visitCheckConstraint(node: CheckConstraintNode): void {
@@ -1079,6 +1104,8 @@ export class DefaultQueryCompiler
       this.append(' on update ')
       this.append(node.onUpdate)
     }
+
+    this.buildDeferrable(node)
   }
 
   protected override visitList(node: ListNode): void {
