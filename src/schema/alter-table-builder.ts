@@ -19,7 +19,10 @@ import {
   DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
-import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
+import {
+  ForeignKeyConstraintBuilder,
+  ForeignKeyConstraintBuilderCallback,
+} from './foreign-key-constraint-builder.js'
 import { AddConstraintNode } from '../operation-node/add-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
@@ -35,7 +38,7 @@ import {
 import { AlterTableExecutor } from './alter-table-executor.js'
 import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
 import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
-import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
 import { DropIndexNode } from '../operation-node/drop-index-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { AlterTableAddIndexBuilder } from './alter-table-add-index-builder.js'
@@ -43,6 +46,14 @@ import {
   UniqueConstraintNodeBuilder,
   UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
+import {
+  PrimaryKeyConstraintBuilder,
+  PrimaryKeyConstraintBuilderCallback,
+} from './primary-key-constraint-builder.js'
+import {
+  CheckConstraintBuilder,
+  CheckConstraintBuilderCallback,
+} from './check-constraint-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -186,15 +197,22 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   addCheckConstraint(
     constraintName: string,
     checkExpression: Expression<any>,
+    build: CheckConstraintBuilderCallback = noop,
   ): AlterTableExecutor {
+    const constraintBuilder = build(
+      new CheckConstraintBuilder(
+        CheckConstraintNode.create(
+          checkExpression.toOperationNode(),
+          constraintName,
+        ),
+      ),
+    )
+
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
-          CheckConstraintNode.create(
-            checkExpression.toOperationNode(),
-            constraintName,
-          ),
+          constraintBuilder.toOperationNode(),
         ),
       }),
     })
@@ -212,10 +230,10 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     columns: string[],
     targetTable: string,
     targetColumns: string[],
+    build: ForeignKeyConstraintBuilderCallback = noop,
   ): AlterTableAddForeignKeyConstraintBuilder {
-    return new AlterTableAddForeignKeyConstraintBuilder({
-      ...this.#props,
-      constraintBuilder: new ForeignKeyConstraintBuilder(
+    const constraintBuilder = build(
+      new ForeignKeyConstraintBuilder(
         ForeignKeyConstraintNode.create(
           columns.map(ColumnNode.create),
           parseTable(targetTable),
@@ -223,6 +241,11 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
           constraintName,
         ),
       ),
+    )
+
+    return new AlterTableAddForeignKeyConstraintBuilder({
+      ...this.#props,
+      constraintBuilder,
     })
   }
 
@@ -232,12 +255,19 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   addPrimaryKeyConstraint(
     constraintName: string,
     columns: string[],
+    build: PrimaryKeyConstraintBuilderCallback = noop,
   ): AlterTableExecutor {
+    const constraintBuilder = build(
+      new PrimaryKeyConstraintBuilder(
+        PrimaryKeyConstraintNode.create(columns, constraintName),
+      ),
+    )
+
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
-          PrimaryConstraintNode.create(columns, constraintName),
+          constraintBuilder.toOperationNode(),
         ),
       }),
     })

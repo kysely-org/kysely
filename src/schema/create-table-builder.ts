@@ -12,12 +12,15 @@ import { QueryId } from '../util/query-id.js'
 import { freeze, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
+import {
+  ForeignKeyConstraintBuilder,
+  ForeignKeyConstraintBuilderCallback,
+} from './foreign-key-constraint-builder.js'
 import {
   DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
-import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
@@ -28,6 +31,14 @@ import {
   UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
 import { parseExpression } from '../parser/expression-parser.js'
+import {
+  PrimaryKeyConstraintBuilder,
+  PrimaryKeyConstraintBuilderCallback,
+} from './primary-key-constraint-builder.js'
+import {
+  CheckConstraintBuilder,
+  CheckConstraintBuilderCallback,
+} from './check-constraint-builder.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -181,12 +192,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   addPrimaryKeyConstraint(
     constraintName: string,
     columns: C[],
+    build: PrimaryKeyConstraintBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
+    const constraintBuilder = build(
+      new PrimaryKeyConstraintBuilder(
+        PrimaryKeyConstraintNode.create(columns, constraintName),
+      ),
+    )
+
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        PrimaryConstraintNode.create(columns, constraintName),
+        constraintBuilder.toOperationNode(),
       ),
     })
   }
@@ -267,15 +285,22 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   addCheckConstraint(
     constraintName: string,
     checkExpression: Expression<any>,
+    build: CheckConstraintBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
-    return new CreateTableBuilder({
-      ...this.#props,
-      node: CreateTableNode.cloneWithConstraint(
-        this.#props.node,
+    const constraintBuilder = build(
+      new CheckConstraintBuilder(
         CheckConstraintNode.create(
           checkExpression.toOperationNode(),
           constraintName,
         ),
+      ),
+    )
+
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWithConstraint(
+        this.#props.node,
+        constraintBuilder.toOperationNode(),
       ),
     })
   }
@@ -518,7 +543,3 @@ export interface CreateTableBuilderProps {
 export type ColumnBuilderCallback = (
   builder: ColumnDefinitionBuilder,
 ) => ColumnDefinitionBuilder
-
-export type ForeignKeyConstraintBuilderCallback = (
-  builder: ForeignKeyConstraintBuilder,
-) => ForeignKeyConstraintBuilder

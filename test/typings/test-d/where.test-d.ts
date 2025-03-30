@@ -25,6 +25,17 @@ function testWhere(db: Kysely<Database>) {
   // Nullable LHS with reference
   db.selectFrom('person').whereRef('last_name', '=', 'first_name')
 
+  // ColumnType reference and non-ColumnType reference.
+  db.selectFrom('pet').whereRef('id', '=', 'name')
+  db.selectFrom('pet').whereRef('name', '=', 'id')
+  db.selectFrom('pet').whereRef('id', '=', 'id')
+  db.selectFrom('pet').where((eb) => eb('name', '=', eb.ref('id')))
+  db.selectFrom('pet').where((eb) => eb('id', '=', eb.ref('name')))
+  db.selectFrom('pet').where((eb) => eb('id', '=', eb.ref('id')))
+  db.selectFrom('pet').where((eb) => eb(eb.ref('id'), '=', eb.ref('name')))
+  db.selectFrom('pet').where((eb) => eb(eb.ref('id'), '=', eb.ref('id')))
+  db.selectFrom('pet').where((eb) => eb(eb.ref('name'), '=', eb.ref('id')))
+
   // Expression builder callback
   db.selectFrom('movie').where(
     (eb) => eb.selectFrom('person').select('gender'),

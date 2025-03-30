@@ -6,6 +6,10 @@ import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js
 export interface ForeignKeyConstraintBuilderInterface<R> {
   onDelete(onDelete: OnModifyForeignAction): R
   onUpdate(onUpdate: OnModifyForeignAction): R
+  deferrable(): R
+  notDeferrable(): R
+  initiallyDeferred(): R
+  initiallyImmediate(): R
 }
 
 export class ForeignKeyConstraintBuilder
@@ -35,6 +39,34 @@ export class ForeignKeyConstraintBuilder
     )
   }
 
+  deferrable(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, { deferrable: true }),
+    )
+  }
+
+  notDeferrable(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, { deferrable: false }),
+    )
+  }
+
+  initiallyDeferred(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        initiallyDeferred: true,
+      }),
+    )
+  }
+
+  initiallyImmediate(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        initiallyDeferred: false,
+      }),
+    )
+  }
+
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
@@ -47,3 +79,7 @@ export class ForeignKeyConstraintBuilder
     return this.#node
   }
 }
+
+export type ForeignKeyConstraintBuilderCallback = (
+  builder: ForeignKeyConstraintBuilder,
+) => ForeignKeyConstraintBuilder

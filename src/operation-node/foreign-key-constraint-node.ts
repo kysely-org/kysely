@@ -17,6 +17,8 @@ export interface ForeignKeyConstraintNode extends OperationNode {
   readonly onDelete?: OnModifyForeignAction
   readonly onUpdate?: OnModifyForeignAction
   readonly name?: IdentifierNode
+  readonly deferrable?: boolean
+  readonly initiallyDeferred?: boolean
 }
 
 /**
