@@ -1,6 +1,12 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import { DatabaseConnection } from '../driver/database-connection.js'
 import { Deferred } from './deferred.js'
+import { freeze } from './object-utils.js'
+
+export interface ControlledConnection {
+  readonly connection: DatabaseConnection
+  readonly release: () => void
+}
 
 export async function provideControlledConnection(
   connectionProvider: ConnectionProvider,
@@ -11,17 +17,17 @@ export async function provideControlledConnection(
   connectionProvider
     .provideConnection(async (connection) => {
       connectionDefer.resolve(connection)
-
       return await connectionReleaseDefer.promise
     })
     .catch((ex) => connectionDefer.reject(ex))
 
-  const connection = (await connectionDefer.promise) as ControlledConnection
-  connection.release = connectionReleaseDefer.resolve
-
-  return connection
-}
-
-export interface ControlledConnection extends DatabaseConnection {
-  release(): void
+  // Create composite of the connection and the release method instead of
+  // modifying the connection or creating a new nesting `DatabaseConnection`.
+  // This way we don't accidentally override any methods of 3rd party
+  // connections and don't return wrapped connections to drivers that
+  // expect a certain specific connection class.
+  return freeze({
+    connection: await connectionDefer.promise,
+    release: connectionReleaseDefer.resolve,
+  })
 }

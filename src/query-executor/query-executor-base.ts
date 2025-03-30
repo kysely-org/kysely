@@ -82,7 +82,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     chunkSize: number,
     queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>> {
-    const connection = await provideControlledConnection(this)
+    const { connection, release } = await provideControlledConnection(this)
 
     try {
       for await (const result of connection.streamQuery(
@@ -92,7 +92,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         yield await this.#transformResult(result, queryId)
       }
     } finally {
-      connection.release()
+      release()
     }
   }
 
