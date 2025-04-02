@@ -11,6 +11,7 @@ import { DropConstraintNode } from './drop-constraint-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { DropIndexNode } from './drop-index-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { RenameConstraintNode } from './rename-constraint-node.js'
 
 export type AlterTableNodeTableProps = Pick<
   AlterTableNode,
@@ -20,6 +21,7 @@ export type AlterTableNodeTableProps = Pick<
   | 'dropConstraint'
   | 'addIndex'
   | 'dropIndex'
+  | 'renameConstraint'
 >
 
 export type AlterTableColumnAlterationNode =
@@ -37,6 +39,7 @@ export interface AlterTableNode extends OperationNode {
   readonly columnAlterations?: ReadonlyArray<AlterTableColumnAlterationNode>
   readonly addConstraint?: AddConstraintNode
   readonly dropConstraint?: DropConstraintNode
+  readonly renameConstraint?: RenameConstraintNode
   readonly addIndex?: AddIndexNode
   readonly dropIndex?: DropIndexNode
 }

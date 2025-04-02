@@ -95,6 +95,7 @@ export type OperationNodeKind =
   | 'OutputNode'
   | 'OrActionNode'
   | 'CollateNode'
+  | 'RenameConstraintNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

@@ -3476,40 +3476,42 @@ for (const dialect of DIALECTS) {
             await builder.execute()
           })
         })
+      }
 
-        if (dialect === 'postgres') {
-          it('should add a deferrable initially deferred foreign key constraint', async () => {
-            await ctx.db.schema
-              .createTable('test2')
-              .addColumn('a', 'integer')
-              .addColumn('b', 'varchar(255)')
-              .addUniqueConstraint('unique_a_b', ['a', 'b'])
-              .execute()
+      if (dialect === 'postgres') {
+        it('should add a deferrable initially deferred foreign key constraint', async () => {
+          await ctx.db.schema
+            .createTable('test2')
+            .addColumn('a', 'integer')
+            .addColumn('b', 'varchar(255)')
+            .addUniqueConstraint('unique_a_b', ['a', 'b'])
+            .execute()
 
-            const builder = ctx.db.schema
-              .alterTable('test')
-              .addForeignKeyConstraint(
-                'some_constraint',
-                ['integer_col', 'varchar_col'],
-                'test2',
-                ['a', 'b'],
-                (fk) => fk.deferrable().initiallyDeferred(),
-              )
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addForeignKeyConstraint(
+              'some_constraint',
+              ['integer_col', 'varchar_col'],
+              'test2',
+              ['a', 'b'],
+              (fk) => fk.deferrable().initiallyDeferred(),
+            )
 
-            testSql(builder, dialect, {
-              postgres: {
-                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") deferrable initially deferred',
-                parameters: [],
-              },
-              mysql: NOT_SUPPORTED,
-              mssql: NOT_SUPPORTED,
-              sqlite: NOT_SUPPORTED,
-            })
-
-            await builder.execute()
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") deferrable initially deferred',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
-        }
 
+          await builder.execute()
+        })
+      }
+
+      if (dialect !== 'sqlite') {
         describe('drop constraint', () => {
           it('should drop a foreign key constraint', async () => {
             await ctx.db.schema.dropTable('test').execute()
@@ -3547,6 +3549,49 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table "test" drop constraint "foreign_key_constraint"',
                 parameters: [],
               },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        })
+      }
+
+      if (dialect === 'postgres') {
+        describe('rename constraint', () => {
+          it('should rename a foreign key constraint', async () => {
+            await ctx.db.schema.dropTable('test').execute()
+
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('id', 'integer', (col) => col.unique())
+              .execute()
+
+            await ctx.db.schema
+              .createTable('test')
+              .addColumn('foreign_key', 'integer')
+              .addForeignKeyConstraint(
+                'foreign_key_constraint',
+                ['foreign_key'],
+                'test2',
+                ['id'],
+              )
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .renameConstraint(
+                'foreign_key_constraint',
+                'new_foreign_key_constraint',
+              )
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" rename constraint "foreign_key_constraint" to "new_foreign_key_constraint"',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
