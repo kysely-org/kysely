@@ -86,84 +86,109 @@ impactful/challenging things.
     </tbody>
 </table>
 
-## Honorary mentions
+## Honorable mentions
 
-People who had an impact on the project, direct and indirect.
+People who had special impact on the project, direct and indirect.
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 0.125fr)); gap: 5px; align-items: start; text-align: center;">
-    <div>
-        <a href="https://github.com/fhur">
+<table>
+    <tbody>
+        <tr>
+            <td align="center">
+                <a href="https://github.com/fhur">
                     <img src="https://avatars.githubusercontent.com/u/6452323?v=4&s=100" width="100px;" alt=""/>
                     <br />
                     Fernando Hurtado
                 </a>
                 <br />
-        (1st <a href="https://kysely.dev">docs</a>)
-    </div>
-    <div>
-        <a href="https://github.com/wirekang">
-            <img src="https://avatars.githubusercontent.com/u/43294688?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Wirekang
-        </a>
-        <br />
-        (<a href="https://kyse.link">playground</a>)
-    </div>
-    <div>
-        <a href="https://github.com/tgriesser">
-            <img src="https://avatars.githubusercontent.com/u/154748?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Tim Griesser
-        </a>
-        <br />
-        (<a href="https://knexjs.org/">Knex</a>)
-    </div>
-    <div>
-        <a href="https://github.com/thdxr">
-            <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Dax Raad
-        </a>
-        <br />
-        (early <a href="https://thdxr.com/post/serverless-relational-showdown">adopter</a>)
-    </div>
-    <div>
-        <a href="https://github.com/t3dotgg">
-            <img src="https://avatars.githubusercontent.com/u/6751787?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Theo Browne
-        </a>
-        <br />
-        (early <a href="https://discord.com/channels/966627436387266600/988912020558602331/993220628154961930">promoter</a>)
-    </div>
-    <div>
-        <a href="https://github.com/jacobwgillespie">
-            <img src="https://avatars.githubusercontent.com/u/130874?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Jacob Gillespie
-        </a>
-        <br />
-        (timely <a href="https://github.com/depot/kysely-planetscale">dialect</a>)
-    </div>
-    <div>
-        <a href="https://github.com/nexxeln">
-         <img src="https://avatars.githubusercontent.com/u/95541290?v=4&s=100" width="100px" alt="" />
-         <br />
-         Shoubhit Dash
-        </a>
-        <br />
-        (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
-    </div>
-        <div>
-        <a href="https://github.com/nexxeln">
-         <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
-         <br />
-         Valtýr Örn Kjartansson
-        </a>
-        <br />
-        (prisma <a href="https://github.com/valtyr/prisma-kysely">impl</a>)
-    </div>
-</div>
+                (1st <a href="https://kysely.dev">docs</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/wirekang">
+                    <img src="https://avatars.githubusercontent.com/u/43294688?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Wirekang
+                </a>
+                <br />
+                (<a href="https://kyse.link">playground</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/tgriesser">
+                    <img src="https://avatars.githubusercontent.com/u/154748?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Tim Griesser
+                </a>
+                <br />
+                (<a href="https://knexjs.org/">Knex</a>)
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <a href="https://github.com/RobinBlomberg">
+                    <img src="https://avatars.githubusercontent.com/u/20827397?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Robin Blomberg
+                </a>
+                <br />
+                (<a href="https://github.com/RobinBlomberg/kysely-codegen">codegen</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/thdxr">
+                    <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Dax Raad
+                </a>
+                <br />
+                (early <a href="https://thdxr.com/post/serverless-relational-showdown">adopter</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/t3dotgg">
+                    <img src="https://avatars.githubusercontent.com/u/6751787?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Theo Browne
+                </a>
+                <br />
+                (early <a href="https://discord.com/channels/966627436387266600/988912020558602331/993220628154961930">promoter</a>)
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <a href="https://github.com/nexxeln">
+                    <img src="https://avatars.githubusercontent.com/u/95541290?v=4&s=100" width="100px" alt="" />
+                    <br />
+                    Shoubhit Dash
+                </a>
+                <br />
+                (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/nexxeln">
+                    <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
+                    <br />
+                    Valtýr Örn Kjartansson
+                </a>
+                <br />
+                (prisma <a href="https://github.com/valtyr/prisma-kysely">impl</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/ethanresnick">
+                    <img src="https://avatars.githubusercontent.com/u/471894?v=4&s=100" width="100px" alt="" />
+                    <br />
+                    Ethan Resnick
+                </a>
+                <br />
+                (timely <a href="https://github.com/kysely-org/kysely/issues/494">feedback</a>)
+            </td>
+        </tr>
+        <!-- <tr>
+            <td align="center">
+            </td>
+            <td align="center">
+            </td>
+            <td align="center">
+            </td>
+        </tr> -->
+    </tbody>
+</table>
 
 ## All contributors
 
