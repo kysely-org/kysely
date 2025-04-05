@@ -61,86 +61,106 @@ documentation in your IDE by hovering over a class/method/property/whatever.
 Responsible for project direction, API design, maintenance, code reviews, community support, documentation, and working on the some of the most 
 impactful/challenging things.
 
-<table>
-  <tbody>
-    <tr>
-      <td align="center">
-          <a href="https://github.com/koskimas">
-              <img src="https://avatars.githubusercontent.com/u/846508?v=4?s=100" width="100px;" alt=""/>
-              <br />
-              Sami Koskimäki
-          </a>
-          <br />
-          (the <a href="https://web.archive.org/web/20211203210043/https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript">author</a>)
-      </td>
-      <td align="center">
-          <a href="https://github.com/igalklebanov">
-              <img src="https://avatars.githubusercontent.com/u/14938291?v=4&s=100" width="100px;" alt=""/>
-              <br />
-              Igal Klebanov
-          </a>
-          <br />
-          (the other guy)
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 0.125fr)); gap: 5px; align-items: center; text-align: center;">
+    <div>
+        <a href="https://github.com/koskimas">
+            <img src="https://avatars.githubusercontent.com/u/846508?v=4?s=100" width="100px;" alt=""/>
+            <br />
+            Sami Koskimäki
+        </a>
+        <br />
+        (the <a href="https://web.archive.org/web/20211203210043/https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript">author</a>)
+    </div>
+    <div>
+        <a href="https://github.com/igalklebanov">
+            <img src="https://avatars.githubusercontent.com/u/14938291?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Igal Klebanov
+        </a>
+        <br />
+        (the other guy)
+    </div>
+</div>
 
 ## Honorary mentions
 
 People who had an impact on the project, direct and indirect.
 
-<table>
-    <tbody>
-        <tr>
-            <td align="center">
-                <a href="https://github.com/fhur">
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 0.125fr)); gap: 5px; align-items: start; text-align: center;">
+    <div>
+        <a href="https://github.com/fhur">
                     <img src="https://avatars.githubusercontent.com/u/6452323?v=4&s=100" width="100px;" alt=""/>
                     <br />
                     Fernando Hurtado
                 </a>
                 <br />
-                (made <a href="https://kysely.dev">kysely.dev</a>)
-            </td>
-            <td align="center">
-                <a href="https://github.com/wirekang">
-                    <img src="https://avatars.githubusercontent.com/u/43294688?v=4&s=100" width="100px;" alt=""/>
-                    <br />
-                    Wirekang
-                </a>
-                <br />
-                (made <a href="https://kyse.link">kyse.link</a>)
-            </td>
-            <td align="center">
-                <a href="https://github.com/tgriesser">
-                    <img src="https://avatars.githubusercontent.com/u/154748?v=4&s=100" width="100px;" alt=""/>
-                    <br />
-                    Tim Griesser
-                </a>
-                <br />
-                (<a href="https://knexjs.org/">Knex.js</a> author)
-            </td>
-            <td align="center">
-                <a href="https://github.com/thdxr">
-                    <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
-                    <br />
-                    Dax Raad
-                </a>
-                <br />
-                (early <a href="https://thdxr.com/post/serverless-relational-showdown">adopter</a>)
-            </td>
-            <td align="center">
-                <a href="https://github.com/thdxr">
-                    <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
-                    <br />
-                    Dax Raad
-                </a>
-                <br />
-                (early <a href="https://thdxr.com/post/serverless-relational-showdown">adopter</a>)
-            </td>
-        </tr>
-    </tbody>
-</table>
+        (1st <a href="https://kysely.dev">docs</a>)
+    </div>
+    <div>
+        <a href="https://github.com/wirekang">
+            <img src="https://avatars.githubusercontent.com/u/43294688?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Wirekang
+        </a>
+        <br />
+        (<a href="https://kyse.link">playground</a>)
+    </div>
+    <div>
+        <a href="https://github.com/tgriesser">
+            <img src="https://avatars.githubusercontent.com/u/154748?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Tim Griesser
+        </a>
+        <br />
+        (<a href="https://knexjs.org/">Knex</a>)
+    </div>
+    <div>
+        <a href="https://github.com/thdxr">
+            <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Dax Raad
+        </a>
+        <br />
+        (early <a href="https://thdxr.com/post/serverless-relational-showdown">adopter</a>)
+    </div>
+    <div>
+        <a href="https://github.com/t3dotgg">
+            <img src="https://avatars.githubusercontent.com/u/6751787?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Theo Browne
+        </a>
+        <br />
+        (early <a href="https://discord.com/channels/966627436387266600/988912020558602331/993220628154961930">promoter</a>)
+    </div>
+    <div>
+        <a href="https://github.com/jacobwgillespie">
+            <img src="https://avatars.githubusercontent.com/u/130874?v=4&s=100" width="100px;" alt=""/>
+            <br />
+            Jacob Gillespie
+        </a>
+        <br />
+        (timely <a href="https://github.com/depot/kysely-planetscale">dialect</a>)
+    </div>
+    <div>
+        <a href="https://github.com/nexxeln">
+         <img src="https://avatars.githubusercontent.com/u/95541290?v=4&s=100" width="100px" alt="" />
+         <br />
+         Shoubhit Dash
+        </a>
+        <br />
+        (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
+    </div>
+        <div>
+        <a href="https://github.com/nexxeln">
+         <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
+         <br />
+         Valtýr Örn Kjartansson
+        </a>
+        <br />
+        (prisma <a href="https://github.com/valtyr/prisma-kysely">impl</a>)
+    </div>
+</div>
 
 ## All contributors
 
