@@ -58,7 +58,7 @@ documentation in your IDE by hovering over a class/method/property/whatever.
 
 ## Project leads
 
-Responsible for project direction, API design, maintenance, code reviews, community support, documentation, and working on the some of the most 
+Responsible for project direction, API design, maintenance, code reviews, community support, documentation, and working on some of the most 
 impactful/challenging things.
 
 <table>
