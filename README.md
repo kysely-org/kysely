@@ -64,7 +64,7 @@ impactful/challenging things.
 <table>
     <tbody>
         <tr>
-            <td style="text-align: center;">
+            <td style="align-items: center; text-align: center;">
                 <a href="https://github.com/koskimas">
                     <img src="https://avatars.githubusercontent.com/u/846508?v=4?s=100" width="100px;" alt=""/>
                     <br />
@@ -73,7 +73,7 @@ impactful/challenging things.
                 <br />
                 (the <a href="https://web.archive.org/web/20211203210043/https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript">author</a>)
             </td>
-            <td style="text-align: center;">
+            <td style="align-items: center; text-align: center;">
                 <a href="https://github.com/igalklebanov">
                     <img src="https://avatars.githubusercontent.com/u/14938291?v=4&s=100" width="100px;" alt=""/>
                     <br />
