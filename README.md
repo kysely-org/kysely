@@ -61,31 +61,34 @@ documentation in your IDE by hovering over a class/method/property/whatever.
 Responsible for project direction, API design, maintenance, code reviews, community support, documentation, and working on the some of the most 
 impactful/challenging things.
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 0.125fr)); gap: 5px; align-items: center; text-align: center;">
-    <div>
-        <a href="https://github.com/koskimas">
-            <img src="https://avatars.githubusercontent.com/u/846508?v=4?s=100" width="100px;" alt=""/>
-            <br />
-            Sami Koskimäki
-        </a>
-        <br />
-        (the <a href="https://web.archive.org/web/20211203210043/https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript">author</a>)
-    </div>
-    <div>
-        <a href="https://github.com/igalklebanov">
-            <img src="https://avatars.githubusercontent.com/u/14938291?v=4&s=100" width="100px;" alt=""/>
-            <br />
-            Igal Klebanov
-        </a>
-        <br />
-        (the other guy)
-    </div>
-</div>
+<table>
+    <tbody>
+        <tr>
+            <td style="text-align: center;">
+                <a href="https://github.com/koskimas">
+                    <img src="https://avatars.githubusercontent.com/u/846508?v=4?s=100" width="100px;" alt=""/>
+                    <br />
+                    Sami Koskimäki
+                </a>
+                <br />
+                (the <a href="https://web.archive.org/web/20211203210043/https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript">author</a>)
+            </td>
+            <td style="text-align: center;">
+                <a href="https://github.com/igalklebanov">
+                    <img src="https://avatars.githubusercontent.com/u/14938291?v=4&s=100" width="100px;" alt=""/>
+                    <br />
+                    Igal Klebanov
+                </a>
+                <br />
+                (the other guy)
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 ## Honorary mentions
 
 People who had an impact on the project, direct and indirect.
-
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 0.125fr)); gap: 5px; align-items: start; text-align: center;">
     <div>
