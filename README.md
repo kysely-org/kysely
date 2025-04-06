@@ -88,7 +88,7 @@ impactful/challenging things.
 
 ## Honorable mentions
 
-People who had special impact on the project, direct and indirect.
+People who had special impact on the project and its growth.
 
 <table>
     <tbody>
@@ -131,6 +131,26 @@ People who had special impact on the project, direct and indirect.
                 <br />
                 (<a href="https://github.com/RobinBlomberg/kysely-codegen">codegen</a>)
             </td>
+                        <td align="center">
+                <a href="https://github.com/nexxeln">
+                    <img src="https://avatars.githubusercontent.com/u/95541290?v=4&s=100" width="100px" alt="" />
+                    <br />
+                    Shoubhit Dash
+                </a>
+                <br />
+                (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/nexxeln">
+                    <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
+                    <br />
+                    Valtýr Örn Kjartansson
+                </a>
+                <br />
+                (prisma <a href="https://github.com/valtyr/prisma-kysely">impl</a>)
+            </td>
+        </tr>
+        <tr>
             <td align="center">
                 <a href="https://github.com/thdxr">
                     <img src="https://avatars.githubusercontent.com/u/826656?v=4&s=100" width="100px;" alt=""/>
@@ -149,26 +169,17 @@ People who had special impact on the project, direct and indirect.
                 <br />
                 (early <a href="https://discord.com/channels/966627436387266600/988912020558602331/993220628154961930">promoter</a>)
             </td>
+            <td align="center">
+                <a href="https://github.com/leerob">
+                    <img src="https://avatars.githubusercontent.com/u/9113740?v=4&s=100" width="100px;" alt="" />
+                    <br />
+                    Lee Robinson
+                </a>
+                <br />
+                (early <a href="https://x.com/leerob/status/1576929372811849730">promoter</a>)
+            </td>
         </tr>
         <tr>
-            <td align="center">
-                <a href="https://github.com/nexxeln">
-                    <img src="https://avatars.githubusercontent.com/u/95541290?v=4&s=100" width="100px" alt="" />
-                    <br />
-                    Shoubhit Dash
-                </a>
-                <br />
-                (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
-            </td>
-            <td align="center">
-                <a href="https://github.com/nexxeln">
-                    <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
-                    <br />
-                    Valtýr Örn Kjartansson
-                </a>
-                <br />
-                (prisma <a href="https://github.com/valtyr/prisma-kysely">impl</a>)
-            </td>
             <td align="center">
                 <a href="https://github.com/ethanresnick">
                     <img src="https://avatars.githubusercontent.com/u/471894?v=4&s=100" width="100px" alt="" />
@@ -178,13 +189,34 @@ People who had special impact on the project, direct and indirect.
                 <br />
                 (timely <a href="https://github.com/kysely-org/kysely/issues/494">feedback</a>)
             </td>
+            <td align="center">
+                <a href="https://github.com/thetutlage">
+                    <img src="https://avatars.githubusercontent.com/u/1706381?v=4&s=100" width="100px;" alt="" />
+                    <br />
+                    Harminder Virk
+                </a>
+                <br />
+                (dope <a href="https://github.com/thetutlage/meta/discussions/8">writeup</a>)
+            </td>
+            <td align="center">
+                <a href="https://github.com/elitan">
+                    <img src="https://avatars.githubusercontent.com/u/331818?v=4&s=100" width="100px;" alt="" />
+                    <br />
+                    Johan Eliasson
+                </a>
+                <br />
+                (<a href="https://eliasson.me/articles/crafting-the-perfect-t3-stack-my-journey-with-kysely-atlas-and-clerk">promoter</a>/<a href="https://www.youtube.com/watch?v=u2s39dRIpCM">educator</a>)
+            </td>
         </tr>
         <!-- <tr>
             <td align="center">
-            </td>
-            <td align="center">
-            </td>
-            <td align="center">
+                <a href="">
+                    <img src="" width="100px;" alt="" />
+                    <br />
+                    Name
+                </a>
+                <br />
+                (contribution)
             </td>
         </tr> -->
     </tbody>
