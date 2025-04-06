@@ -80,7 +80,7 @@ impactful/challenging things.
                     Igal Klebanov
                 </a>
                 <br />
-                (the other guy)
+                (the <a href="https://github.com/kysely-org/kysely/pull/1414#issuecomment-2781281996">dynamo</a>)
             </td>
         </tr>
     </tbody>
