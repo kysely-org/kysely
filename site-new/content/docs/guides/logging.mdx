@@ -1,0 +1,152 @@
+---
+title: Logging
+description: Learn how to use logging in Kysely.
+---
+
+Kysely provides built-in query logging capabilities that can help you debug queries, monitor performance, and catch errors during development and production. This guide explains how to set up and customize logging in your Kysely instance.
+
+Query logging in Kysely can be configured in two ways:
+
+1. Using predefined log levels
+2. Using a custom logging function
+
+Both approaches are configured through the `log` property when instantiating a new Kysely instance.
+
+## Using Predefined Log Levels
+
+The simplest way to enable logging is to specify an array of log levels you want to capture:
+
+```ts
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect(postgresConfig),
+  log: ['query', 'error'],
+})
+```
+
+Available log levels:
+
+- `'query'` - Logs all executed queries (SQL statements without parameter values)
+- `'error'` - Logs all query execution errors
+
+## Using a Custom Logging Function
+
+For more control over logging behavior, you can provide a custom logging function. This function receives a `LogEvent` object containing detailed information about the query execution:
+
+```ts
+interface LogEvent {
+  // The type of log event ('query' or 'error')
+  level: 'query' | 'error'
+
+  // Contains the compiled query information
+  query: CompiledQuery
+
+  // Query execution time in milliseconds
+  queryDurationMillis: number
+
+  // Error object (only present when level is 'error')
+  error?: unknown
+}
+```
+
+### Example: Custom Logging Implementation
+
+```ts
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect(postgresConfig),
+  log(event) {
+    if (event.level === 'error') {
+      console.error('Query failed:', {
+        duration: `${event.queryDurationMillis}ms`,
+        error: event.error,
+        sql: event.query.sql,
+        parameters: event.query.parameters,
+      })
+    } else {
+      console.log('Query executed:', {
+        duration: `${event.queryDurationMillis}ms`,
+        sql: event.query.sql,
+        parameters: event.query.parameters,
+      })
+    }
+  },
+})
+```
+
+### Advanced Logging Example
+
+Here's a more sophisticated example that includes parameter masking for sensitive data and structured logging:
+
+```ts
+// Utility function to mask sensitive data
+const maskSensitiveData = (value: unknown): unknown => {
+  if (typeof value === 'string' && value.length > 4) {
+    return `${value.slice(0, 2)}***${value.slice(-2)}`
+  }
+  return value
+}
+
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect(postgresConfig),
+  log(event) {
+    const baseInfo = {
+      timestamp: new Date().toISOString(),
+      duration: `${event.queryDurationMillis}ms`,
+      sql: event.query.sql,
+      parameters: event.query.parameters.map(maskSensitiveData),
+    }
+
+    if (event.level === 'error') {
+      logger.error('Database query failed', {
+        ...baseInfo,
+        error:
+          event.error instanceof Error
+            ? {
+                message: event.error.message,
+                stack: event.error.stack,
+              }
+            : event.error,
+      })
+    } else {
+      logger.info('Database query executed', baseInfo)
+    }
+  },
+})
+```
+
+## The CompiledQuery Interface
+
+The `query` property in the `LogEvent` contains a `CompiledQuery` object with the following structure:
+
+```ts
+interface CompiledQuery {
+  // The raw SQL string
+  sql: string
+
+  // Array of parameter values
+  parameters: unknown[]
+
+  // Internal SQL syntax tree (useful for debugging)
+  queryNode: QueryNode
+}
+```
+
+## Best Practices
+
+1. **Production Logging**
+
+   - Consider disabling `'query'` level logging in production to avoid performance overhead
+   - Always keep `'error'` level logging enabled for monitoring and debugging
+   - Use structured logging formats for better searchability
+
+2. **Sensitive Data**
+
+   - Always mask sensitive information in parameter values before logging
+   - Consider implementing a whitelist of safe-to-log columns/parameters
+
+3. **Performance Monitoring**
+   - Use `queryDurationMillis` to monitor query performance
+   - Consider implementing alerts for slow queries
+
+## Configuration Reference
+
+For complete configuration options, refer to the [KyselyConfig interface documentation](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyConfig.html).

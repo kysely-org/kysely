@@ -1,0 +1,73 @@
+---
+title: Where
+description: Learn how to use the where method in Kysely.
+---
+
+The `where` clause filters rows based on specified conditions. Multiple `where` calls are combined with `AND`.
+
+## Basic Where
+
+```typescript
+db.selectFrom('users')
+  .selectAll()
+  .where('first_name', '=', 'Jennifer')
+  .where('age', '>', 40)
+  .execute()
+```
+
+## Where In
+
+```typescript
+db.selectFrom('users').selectAll().where('id', 'in', ['1', '2', '3']).execute()
+```
+
+## OR Conditions
+
+```typescript
+db.selectFrom('users')
+  .selectAll()
+  .where((eb) =>
+    eb.or([
+      eb('first_name', '=', 'Jennifer'),
+      eb('first_name', '=', 'Sylvester'),
+    ]),
+  )
+  .execute()
+```
+
+## Conditional Filters
+
+```typescript
+let query = db.selectFrom('users').selectAll()
+
+if (firstName) {
+  query = query.where('first_name', '=', firstName)
+}
+
+if (lastName) {
+  query = query.where('last_name', '=', lastName)
+}
+```
+
+## Column References (whereRef)
+
+```typescript
+db.selectFrom(['users', 'profiles'])
+  .selectAll()
+  .whereRef('users.profile_id', '=', 'profiles.id')
+  .execute()
+```
+
+## Complex Conditions
+
+```typescript
+db.selectFrom('users')
+  .selectAll()
+  .where(({ and, or, not }) =>
+    and([
+      or([eb('age', '<', 18), eb('age', '>', 60)]),
+      not('is_banned', '=', true),
+    ]),
+  )
+  .execute()
+```
