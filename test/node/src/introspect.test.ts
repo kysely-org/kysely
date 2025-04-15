@@ -257,6 +257,22 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              name: 'MixedCaseTable',
+              isView: false,
+              schema: 'some_schema',
+              columns: [
+                {
+                  name: 'some_column',
+                  dataType: 'int4',
+                  dataTypeSchema: 'pg_catalog',
+                  isNullable: false,
+                  isAutoIncrementing: true,
+                  hasDefaultValue: true,
+                  comment: undefined,
+                },
+              ],
+            },
+            {
               name: 'pet',
               isView: false,
               schema: 'some_schema',
@@ -879,6 +895,11 @@ for (const dialect of DIALECTS) {
           .execute()
 
         await ctx.db.schema
+          .createTable('some_schema.MixedCaseTable')
+          .addColumn('some_column', 'serial', (col) => col.primaryKey())
+          .execute()
+
+        await ctx.db.schema
           .createTable('some_schema.pet')
           .addColumn('some_column', 'serial', (col) => col.primaryKey())
           .addColumn('spcies', sql`dtype_schema.species`)
@@ -908,6 +929,10 @@ for (const dialect of DIALECTS) {
 
     async function dropSchema() {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
+      await ctx.db.schema
+        .dropTable('some_schema.MixedCaseTable')
+        .ifExists()
+        .execute()
       await ctx.db.schema
         .dropTable('some_schema.pet_partition')
         .ifExists()
