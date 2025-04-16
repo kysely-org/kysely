@@ -62,7 +62,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         ),
         sql<
           string | null
-        >`pg_get_serial_sequence(ns.nspname || '.' || c.relname, a.attname)`.as(
+        >`pg_get_serial_sequence(quote_ident(ns.nspname) || '.' || quote_ident(c.relname), a.attname)`.as(
           'auto_incrementing',
         ),
       ])
