@@ -1,0 +1,14 @@
+---
+title: Having
+description: Learn how to use the having method in Kysely.
+---
+
+The `having` clause filters grouped results in your SQL queries. Unlike `where` which filters individual rows, `having` works with aggregated data after grouping has been performed.
+
+```typescript
+db.selectFrom('orders')
+  .select(['category', (eb) => eb.fn.sum('amount').as('total_amount')])
+  .groupBy('category')
+  .having('total_amount', '>', 1000)
+  .execute()
+```

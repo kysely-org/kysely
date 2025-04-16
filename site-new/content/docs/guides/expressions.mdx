@@ -1,0 +1,170 @@
+---
+title: Expressions
+description: Learn how to use expressions in Kysely.
+---
+
+An `Expression<T>` is Kysely's fundamental building block for type-safe queries. They represent SQL expressions like:
+
+- Binary operations (`a + b`)
+- Function calls (`concat(arg1, ' ', arg2)`)
+- Complex combinations of both
+
+## Expression Builder
+
+### Basic Usage
+
+```typescript
+const person = await db
+  .selectFrom('person')
+  .select((eb) => [
+    // Function call
+    eb.fn('upper', ['first_name']).as('upper_first_name'),
+
+    // Subquery
+    eb
+      .selectFrom('pet')
+      .select('name')
+      .whereRef('pet.owner_id', '=', 'person.id')
+      .limit(1)
+      .as('pet_name'),
+
+    // Boolean expression
+    eb('first_name', '=', 'Jennifer').as('is_jennifer'),
+  ])
+  .execute()
+```
+
+### Complex Conditions
+
+```typescript
+.where(({ and, or, not, exists, selectFrom }) => or([
+  and([
+    eb('first_name', '=', firstName),
+    eb('last_name', '=', lastName)
+  ]),
+  not(exists(
+    selectFrom('pet')
+      .select('pet.id')
+      .whereRef('pet.owner_id', '=', 'person.id')
+      .where('pet.species', 'in', ['dog', 'cat'])
+  ))
+]))
+```
+
+## Creating Reusable Helpers
+
+### ❌ Less Type-Safe Approach
+
+```typescript
+function hasDogNamed(name: string): Expression<boolean> {
+  const eb = expressionBuilder<DB, 'person'>()
+
+  return eb.exists(
+    eb
+      .selectFrom('pet')
+      .select('pet.id')
+      .whereRef('pet.owner_id', '=', 'person.id')
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name),
+  )
+}
+```
+
+### ✅ Type-Safe Approach
+
+```typescript
+function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
+  const eb = expressionBuilder<DB, never>()
+
+  return eb.exists(
+    eb
+      .selectFrom('pet')
+      .select('pet.id')
+      .where('pet.owner_id', '=', ownerId)
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name),
+  )
+}
+
+// Usage
+const result = await db
+  .selectFrom('person')
+  .selectAll()
+  .where((eb) => hasDogNamed(eb.val('Doggo'), eb.ref('person.id')))
+  .execute()
+```
+
+## Conditional Expressions
+
+### Simple AND Conditions
+
+```typescript
+// Method 1: Using query builder
+let query = db.selectFrom('person').selectAll()
+
+if (firstName) {
+  query = query.where('first_name', '=', firstName)
+}
+
+if (lastName) {
+  query = query.where('last_name', '=', lastName)
+}
+
+// Method 2: Using expression builder
+const result = await db
+  .selectFrom('person')
+  .selectAll()
+  .where((eb) => {
+    const filters: Expression<SqlBool>[] = []
+
+    if (firstName) {
+      filters.push(eb('first_name', '=', firstName))
+    }
+
+    if (lastName) {
+      filters.push(eb('last_name', '=', lastName))
+    }
+
+    return eb.and(filters)
+  })
+  .execute()
+```
+
+## Global Expression Builder
+
+```typescript
+import { expressionBuilder } from 'kysely'
+
+// Single table context
+const eb1 = expressionBuilder<DB, 'person'>()
+
+// Multiple table context
+const eb2 = expressionBuilder<DB, 'person' | 'pet'>()
+
+// Inferred context from query
+const eb3 = expressionBuilder(query)
+```
+
+## Best Practices
+
+1. **Use Callbacks for Type Safety**
+
+   - Prefer callback-style expression builders
+   - Provides better type inference and auto-completion
+
+2. **Helper Functions**
+
+   - Accept expressions as parameters instead of raw values
+   - Avoid assuming table context
+   - Pass table references explicitly
+
+3. **Conditional Logic**
+
+   - Use array of filters for AND conditions
+   - Build complex conditions using expression builder methods
+   - Remember query builder immutability
+
+4. **Type Safety**
+   - Use `never` as table context when creating generic helpers
+   - Pass all dependencies explicitly
+   - Let the caller provide the context
