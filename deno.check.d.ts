@@ -20,6 +20,7 @@ export interface Database {
 }
 
 interface AuditTable {
+  id: Generated<number>
   action: string
 }
 
@@ -63,11 +64,13 @@ interface ToyTable {
 }
 
 interface WineTable {
+  id: Generated<number>
   name: string
   stock: number
 }
 
 interface WineStockChangeTable {
+  id: Generated<number>
   stock_delta: number
   wine_name: string
 }
