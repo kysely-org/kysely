@@ -44,7 +44,7 @@ export class AliasedDynamicTableBuilder<T extends string, A extends string>
 
   toOperationNode(): AliasNode {
     return AliasNode.create(
-      parseTable(String(this.#table)),
+      parseTable(this.#table),
       IdentifierNode.create(this.#alias),
     )
   }

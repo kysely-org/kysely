@@ -5,6 +5,7 @@ import {
   Generated,
   Nullable,
   Selectable,
+  SelectType,
 } from '..'
 
 import { expectAssignable, expectType } from 'tsd'
@@ -145,7 +146,7 @@ async function getRowDynamic<T extends keyof Database>(
 async function getRowByColumnDynamic<
   T extends keyof Database,
   C extends keyof Database[T] & string,
-  V extends Database[T][C],
+  V extends SelectType<Database[T][C]>,
 >(db: Kysely<Database>, t: T, c: C, v: V) {
   const { table, ref } = db.dynamic
 
