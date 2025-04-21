@@ -1,4 +1,6 @@
+import type { AliasedDynamicTableBuilder } from '../dynamic/dynamic-table-builder.js'
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { KyselyTypeError } from '../util/type-error.js'
 import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
@@ -23,6 +25,15 @@ export type SelectFrom<
     ? T extends keyof DB
       ? SelectQueryBuilder<DB & ShallowRecord<A, DB[T]>, TB | A, {}>
       : never
-    : TE extends ReadonlyArray<infer T>
-      ? SelectQueryBuilder<From<DB, T>, FromTables<DB, TB, T>, {}>
-      : SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+    : // This branch parses dynamic table builders where `T` can be a union of many
+      // tables. We handle this by adding a union of all the tables in `T` to the
+      // `DB` type.
+      TE extends AliasedDynamicTableBuilder<infer T, infer A>
+      ? SelectQueryBuilder<
+          DB & ShallowRecord<A, T extends keyof DB ? DB[T] : never>,
+          TB | A,
+          {}
+        >
+      : TE extends ReadonlyArray<infer T>
+        ? SelectQueryBuilder<From<DB, T>, FromTables<DB, TB, T>, {}>
+        : SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>

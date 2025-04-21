@@ -4,10 +4,11 @@ import {
   SelectQueryBuilder,
   Generated,
   Nullable,
+  Selectable,
 } from '..'
 
 import { expectAssignable, expectType } from 'tsd'
-import { Database } from '../shared'
+import { Database, Movie, Person } from '../shared'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
 function testSelectQueryBuilderExtends() {
@@ -98,4 +99,60 @@ async function testSelectsInVariable(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<{ first_name: string; pet_name: string | null }>(r1)
+}
+
+async function testSelectFromDynamic(db: Kysely<Database>) {
+  const r1 = await getIdDynamic(db, 'person')
+  expectType<{ id: number }>(r1)
+
+  const r2 = await getIdDynamic(db, 'pet')
+  expectType<{ id: string }>(r2)
+
+  const r3 = await getRowDynamic(db, 'movie')
+  expectType<Selectable<Movie>>(r3)
+
+  const r4 = await getRowDynamic(db, 'person')
+  expectType<Selectable<Person>>(r4)
+
+  const r5 = await getRowByColumnDynamic(db, 'person', 'first_name', 'Jennifer')
+  expectType<Selectable<Person>>(r5)
+}
+
+async function getIdDynamic<T extends 'person' | 'pet'>(
+  db: Kysely<Database>,
+  t: T,
+) {
+  const { table } = db.dynamic
+
+  return await db
+    .selectFrom(table(t).as('t'))
+    .select('t.id')
+    .executeTakeFirstOrThrow()
+}
+
+async function getRowDynamic<T extends keyof Database>(
+  db: Kysely<Database>,
+  t: T,
+) {
+  const { table } = db.dynamic
+
+  return await db
+    .selectFrom(table(t).as('t'))
+    .selectAll('t')
+    .executeTakeFirstOrThrow()
+}
+
+async function getRowByColumnDynamic<
+  T extends keyof Database,
+  C extends keyof Database[T] & string,
+  V extends Database[T][C],
+>(db: Kysely<Database>, t: T, c: C, v: V) {
+  const { table, ref } = db.dynamic
+
+  return await db
+    .selectFrom(table(t).as('t'))
+    .selectAll()
+    .where(ref(c), '=', v)
+    .orderBy('t.id')
+    .executeTakeFirstOrThrow()
 }

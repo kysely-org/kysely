@@ -1,6 +1,7 @@
 import { DynamicReferenceBuilder } from './dynamic-reference-builder.js'
+import { DynamicTableBuilder } from './dynamic-table-builder.js'
 
-export class DynamicModule {
+export class DynamicModule<DB> {
   /**
    * Creates a dynamic reference to a column that is not know at compile time.
    *
@@ -88,5 +89,12 @@ export class DynamicModule {
    */
   ref<R extends string = never>(reference: string): DynamicReferenceBuilder<R> {
     return new DynamicReferenceBuilder<R>(reference)
+  }
+
+  /**
+   * Creates a dynamic reference to a table that is not know at compile time.
+   */
+  table<T extends keyof DB & string>(table: T): DynamicTableBuilder<T> {
+    return new DynamicTableBuilder<T>(table)
   }
 }

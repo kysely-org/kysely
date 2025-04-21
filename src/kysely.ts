@@ -144,8 +144,8 @@ export class Kysely<DB>
    * The {@link DynamicModule} module can be used to bypass strict typing and
    * passing in dynamic values for the queries.
    */
-  get dynamic(): DynamicModule {
-    return new DynamicModule()
+  get dynamic(): DynamicModule<DB> {
+    return new DynamicModule<DB>()
   }
 
   /**
