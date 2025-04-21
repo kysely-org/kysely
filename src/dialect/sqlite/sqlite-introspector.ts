@@ -102,7 +102,8 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         'p.dflt_value',
         'p.pk',
       ])
-      .orderBy(['tl.name', 'p.cid'])
+      .orderBy('tl.name')
+      .orderBy('p.cid')
       .execute()
 
     const columnsByTable: Record<string, typeof tableMetadata> = {}
