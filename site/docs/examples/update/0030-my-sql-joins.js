@@ -3,5 +3,5 @@ export const mySqlJoins = `const result = await db
   .set('person.first_name', 'Updated person')
   .set('pet.name', 'Updated doggo')
   .whereRef('person.id', '=', 'pet.owner_id')
-  .where('person.id', '=', '1')
+  .where('person.id', '=', 1)
   .executeTakeFirst()`

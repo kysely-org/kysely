@@ -1,7 +1,7 @@
 export const complexSelections = `import { sql } from 'kysely'
 
 const persons = await db.selectFrom('person')
-  .select(({ eb, selectFrom, or }) => [
+  .select(({ eb, selectFrom, or, val, lit }) => [
     // Select a correlated subquery
     selectFrom('pet')
       .whereRef('person.id', '=', 'pet.owner_id')
@@ -18,6 +18,12 @@ const persons = await db.selectFrom('person')
     ]).as('is_jennifer_or_arnold'),
 
     // Select a raw sql expression
-    sql<string>\`concat(first_name, ' ', last_name)\`.as('full_name')
+    sql<string>\`concat(first_name, ' ', last_name)\`.as('full_name'),
+
+    // Select a static string value
+    val('Some value').as('string_value'),
+
+    // Select a literal value
+    lit(42).as('literal_value'),
   ])
   .execute()`
