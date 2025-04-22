@@ -1,6 +1,7 @@
 import { useColorMode } from '@docusaurus/theme-common'
 import { useEffect, useState } from 'react'
 import styles from './Playground.module.css'
+import { GENERATED_PLAYGROUND_EXAMPLE_TYPES } from './playground-example-types'
 
 export function Playground(props: PlaygroundProps) {
   const src = useSrc(props)
@@ -42,7 +43,7 @@ function getPlaygroundStateHash(props: PlaygroundProps) {
 
   const state: PlaygroundState = {
     dialect: props.dialect || 'postgres',
-    editors: { query: props.code, type: props.setupCode || exampleSetup },
+    editors: { query: props.code, type: GENERATED_PLAYGROUND_EXAMPLE_TYPES },
     hideType: true,
   }
 
@@ -73,42 +74,3 @@ interface PlaygroundState {
     name: string
   }
 }
-
-export const exampleSetup = `import { Generated } from 'kysely'
-
-export interface Database {
-  person: PersonTable
-  pet: PetTable
-  wine: WineTable
-  wine_stock_change: WineStockChangeTable
-}
-
-interface PersonTable {
-  id: Generated<string>
-  first_name: string
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-  has_pets: Generated<'Y' | 'N'>
-}
-
-interface PetTable {
-  id: Generated<string>
-  name: string
-  owner_id: string
-  species: 'cat' | 'dog'
-  is_favorite: boolean
-}
-
-interface WineTable {
-  id: Generated<string>
-  name: string
-  stock: number
-}
-
-interface WineStockChangeTable {
-  id: Generated<string>
-  wine_name: string
-  stock_delta: number
-}
-`

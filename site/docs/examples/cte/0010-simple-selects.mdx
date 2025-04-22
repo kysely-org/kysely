@@ -13,15 +13,12 @@ engines are able to optimize the overall query. For example, postgres
 is able to inline the CTEs inside the using queries if it decides it's
 faster.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   simpleSelects
 } from './0010-simple-selects'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={simpleSelects} setupCode={exampleSetup} />
+  <Playground code={simpleSelects} />
 </div>

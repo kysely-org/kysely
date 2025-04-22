@@ -7,17 +7,14 @@ title: 'Complex selections'
 You can select arbitrary expression including subqueries and raw sql snippets.
 When you do that, you need to give a name for the selections using the `as` method:
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   complexSelections
 } from './0050-complex-selections'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={complexSelections} setupCode={exampleSetup} />
+  <Playground code={complexSelections} />
 </div>
 
 :::info[More examples]

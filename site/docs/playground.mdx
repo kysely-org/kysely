@@ -12,7 +12,7 @@ import { Playground } from '../src/components/Playground'
   code={`const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
-  .where('id', '=', '1')
+  .where('id', '=', 1)
   .executeTakeFirst()
 `}
 />

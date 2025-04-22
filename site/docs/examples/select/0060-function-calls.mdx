@@ -8,17 +8,14 @@ This example shows how to create function calls. These examples also work in any
 other place (`where` calls, updates, inserts etc.). The only difference is that you
 leave out the alias (the `as` call) if you use these in any other place than `select`.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   functionCalls
 } from './0060-function-calls'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={functionCalls} setupCode={exampleSetup} />
+  <Playground code={functionCalls} />
 </div>
 
 :::info[More examples]

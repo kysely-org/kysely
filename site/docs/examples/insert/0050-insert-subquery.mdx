@@ -8,17 +8,14 @@ You can create an `INSERT INTO SELECT FROM` query using the `expression` method.
 This API doesn't follow our WYSIWYG principles and might be a bit difficult to
 remember. The reasons for this design stem from implementation difficulties.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   insertSubquery
 } from './0050-insert-subquery'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={insertSubquery} setupCode={exampleSetup} />
+  <Playground code={insertSubquery} />
 </div>
 
 :::info[More examples]

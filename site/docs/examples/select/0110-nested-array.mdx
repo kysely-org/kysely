@@ -15,17 +15,14 @@ JavaScript JSON values like objects and arrays. Some dialects might simply retur
 the data as a JSON string. In these cases you can use the built in `ParseJSONResultsPlugin`
 to parse the results.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   nestedArray
 } from './0110-nested-array'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={nestedArray} setupCode={exampleSetup} />
+  <Playground code={nestedArray} />
 </div>
 
 :::info[More examples]

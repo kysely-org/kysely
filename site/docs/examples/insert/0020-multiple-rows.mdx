@@ -9,17 +9,14 @@ rows by providing an array. Note that the return value is once again very
 dialect-specific. Some databases may only return the id of the *last* inserted
 row and some return nothing at all unless you call `returning`.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   multipleRows
 } from './0020-multiple-rows'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={multipleRows} setupCode={exampleSetup} />
+  <Playground code={multipleRows} />
 </div>
 
 :::info[More examples]

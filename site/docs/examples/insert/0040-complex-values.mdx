@@ -8,17 +8,14 @@ In addition to primitives, the values can also be arbitrary expressions.
 You can build the expressions by using a callback and calling the methods
 on the expression builder passed to it:
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   complexValues
 } from './0040-complex-values'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={complexValues} setupCode={exampleSetup} />
+  <Playground code={complexValues} />
 </div>
 
 :::info[More examples]

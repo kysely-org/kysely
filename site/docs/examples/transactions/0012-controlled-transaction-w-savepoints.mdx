@@ -13,17 +13,14 @@ savepoint. Eventually we release the savepoint, insert an audit record and
 commit the transaction. If an error is thrown, we catch it and rollback the
 transaction.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   controlledTransactionWSavepoints
 } from './0012-controlled-transaction-w-savepoints'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={controlledTransactionWSavepoints} setupCode={exampleSetup} />
+  <Playground code={controlledTransactionWSavepoints} />
 </div>
 
 :::info[More examples]
