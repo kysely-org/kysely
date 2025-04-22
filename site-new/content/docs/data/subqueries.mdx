@@ -1,0 +1,139 @@
+---
+title: Subqueries
+description: Learn how to use subqueries in Kysely.
+---
+
+# EXAMPLE DOCUMENTATION
+
+Subqueries (also known as nested queries) are queries nested within another query. Kysely provides several ways to work with subqueries.
+
+## In SELECT Clause
+
+You can use subqueries in SELECT statements to fetch related data:
+
+```typescript
+const result = await db
+  .selectFrom('users')
+  .select(({ eb, ref }) => [
+    'id',
+    'firstName',
+    eb
+      .selectFrom('orders')
+      .select('count(*)')
+      .where('userId', '=', ref('users.id'))
+      .as('orderCount'),
+  ])
+  .execute()
+```
+
+## In WHERE Clause
+
+Subqueries can be used in WHERE clauses for filtering:
+
+```typescript
+// Find users who have made at least one order
+const usersWithOrders = await db
+  .selectFrom('users')
+  .selectAll()
+  .where('id', 'in', (eb) =>
+    eb.selectFrom('orders').select('userId').distinct(),
+  )
+  .execute()
+
+// Find products with price higher than average
+const expensiveProducts = await db
+  .selectFrom('products')
+  .selectAll()
+  .where('price', '>', (eb) =>
+    eb
+      .selectFrom('products')
+      .select(({ fn }) => fn.avg('price').as('avgPrice')),
+  )
+  .execute()
+```
+
+## In FROM Clause
+
+You can use subqueries in the FROM clause to query derived tables:
+
+```typescript
+const result = await db
+  .selectFrom((eb) =>
+    eb
+      .selectFrom('orders')
+      .select([
+        'userId',
+        eb.fn.count('id').as('orderCount'),
+        eb.fn.sum('amount').as('totalAmount'),
+      ])
+      .groupBy('userId')
+      .as('orderStats'),
+  )
+  .innerJoin('users', 'users.id', 'orderStats.userId')
+  .select([
+    'users.firstName',
+    'orderStats.orderCount',
+    'orderStats.totalAmount',
+  ])
+  .execute()
+```
+
+## EXISTS and NOT EXISTS
+
+Check for the existence of related records:
+
+```typescript
+const usersWithBigOrders = await db
+  .selectFrom('users')
+  .selectAll()
+  .where(({ exists, eb }) =>
+    exists(
+      eb
+        .selectFrom('orders')
+        .select('id')
+        .where('userId', '=', eb.ref('users.id'))
+        .where('amount', '>', 1000),
+    ),
+  )
+  .execute()
+```
+
+## Correlated Subqueries
+
+Subqueries that reference the outer query:
+
+```typescript
+const result = await db
+  .selectFrom('employees')
+  .select(({ eb, ref }) => [
+    'id',
+    'firstName',
+    'salary',
+    eb
+      .selectFrom('employees as e2')
+      .select('salary')
+      .where('e2.departmentId', '=', ref('employees.departmentId'))
+      .where('e2.salary', '>', ref('employees.salary'))
+      .count()
+      .as('higherSalaryCount'),
+  ])
+  .execute()
+```
+
+## Best Practices
+
+1. Use meaningful aliases for subqueries to improve readability
+2. Consider performance implications - some subqueries might be better expressed as JOINs
+3. Use type parameters with `.as()` to ensure type safety:
+
+```typescript
+.as<{ orderCount: number }>('orderStats')
+```
+
+4. Break down complex subqueries into smaller, more manageable pieces using CTEs when possible
+
+## Common Gotchas
+
+1. Remember to use `ref()` when referencing outer query columns
+2. Subqueries in SELECT must return a single value unless used with IN/EXISTS
+3. Correlated subqueries can impact performance on large datasets
