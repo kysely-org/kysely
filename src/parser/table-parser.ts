@@ -63,7 +63,9 @@ type ExtractAliasFromTableExpression<DB, TE> = TE extends string
     ? QA
     : TE extends (qb: any) => AliasedExpression<any, infer QA>
       ? QA
-      : never
+      : TE extends AliasedDynamicTableBuilder<any, infer DA>
+        ? DA
+        : never
 
 type ExtractRowTypeFromTableExpression<
   DB,
@@ -87,7 +89,13 @@ type ExtractRowTypeFromTableExpression<
         ? QA extends A
           ? O
           : never
-        : never
+        : TE extends AliasedDynamicTableBuilder<infer T, infer DA>
+          ? DA extends A
+            ? T extends keyof DB
+              ? DB[T]
+              : never
+            : never
+          : never
 
 export function parseTableExpressionOrList(
   table: TableExpressionOrList<any, any>,
