@@ -16,10 +16,7 @@ export const RenameConstraintNode = freeze({
     return node.kind === 'RenameConstraintNode'
   },
 
-  create(
-    oldName: string,
-    newName: string,
-  ): RenameConstraintNode {
+  create(oldName: string, newName: string): RenameConstraintNode {
     return freeze({
       kind: 'RenameConstraintNode',
       oldName: IdentifierNode.create(oldName),
