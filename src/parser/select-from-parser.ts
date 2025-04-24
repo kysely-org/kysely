@@ -1,6 +1,5 @@
 import type { AliasedDynamicTableBuilder } from '../dynamic/dynamic-table-builder.js'
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
-import { KyselyTypeError } from '../util/type-error.js'
 import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
