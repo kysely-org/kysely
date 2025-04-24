@@ -71,9 +71,7 @@ import { MultiTableReturningInterface } from './returning-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
-  implements
-    MultiTableReturningInterface<DB, TT, O>,
-    OutputInterface<DB, TT, O>
+  implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>
 {
   readonly #props: MergeQueryBuilderProps
 

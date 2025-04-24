@@ -1,15 +1,14 @@
 ---
-title: 'Simple transaction'
+title: 'Controlled transaction'
 ---
 
-# Simple transaction
+# Controlled transaction
 
-This example inserts two rows in a transaction. If an exception is thrown inside
-the callback passed to the `execute` method,
-1. the exception is caught,
-2. the transaction is rolled back, and
-3. the exception is thrown again.
-Otherwise the transaction is committed.
+A controlled transaction allows you to commit and rollback manually, execute
+savepoint commands, and queries in general.
+
+In this example we start a transaction, use it to insert two rows and then commit
+the transaction. If an error is thrown, we catch it and rollback the transaction.
 
 import {
   Playground,
@@ -17,11 +16,11 @@ import {
 } from '../../../src/components/Playground'
 
 import {
-  simpleTransaction
-} from './0010-simple-transaction'
+  controlledTransaction
+} from './0011-controlled-transaction'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={simpleTransaction} setupCode={exampleSetup} />
+  <Playground code={controlledTransaction} setupCode={exampleSetup} />
 </div>
 
 :::info[More examples]

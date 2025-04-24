@@ -96,6 +96,41 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    it('should select all columns using dynamic table', async () => {
+      const { table } = ctx.db.dynamic
+
+      const query = ctx.db
+        .selectFrom(table('person').as('p'))
+        .selectAll()
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" as "p" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select * from `person` as `p` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select * from "person" as "p" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select * from "person" as "p" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
+
     it('should select all columns of a table', async () => {
       const query = ctx.db
         .selectFrom('person')

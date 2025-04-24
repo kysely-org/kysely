@@ -1,0 +1,31 @@
+---
+title: 'Generic find query'
+---
+
+# Generic find query
+
+A generic type-safe helper function for finding a row by a column value:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  genericFindQuery
+} from './0130-generic-find-query'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={genericFindQuery} setupCode={exampleSetup} />
+</div>
+
+:::info[More examples]
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [select method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#select)
+ - [selectAll method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#selectAll)
+ - [selectFrom method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#selectFrom)
+:::

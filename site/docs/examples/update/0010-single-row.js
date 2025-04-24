@@ -4,5 +4,5 @@ export const singleRow = `const result = await db
     first_name: 'Jennifer',
     last_name: 'Aniston'
   })
-  .where('id', '=', '1')
+  .where('id', '=', 1)
   .executeTakeFirst()`
