@@ -1814,14 +1814,12 @@ export class DefaultQueryCompiler
   protected appendImmediateValue(value: unknown): void {
     if (isString(value)) {
       this.appendStringLiteral(value)
-    } else if (isNumber(value) || isBoolean(value)) {
+    } else if (isNumber(value) || isBoolean(value) || isBigInt(value)) {
       this.append(value.toString())
     } else if (isNull(value)) {
       this.append('null')
     } else if (isDate(value)) {
       this.appendImmediateValue(value.toISOString())
-    } else if (isBigInt(value)) {
-      this.appendImmediateValue(value.toString())
     } else {
       throw new Error(`invalid immediate value ${value}`)
     }
