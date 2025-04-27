@@ -11,17 +11,14 @@ the callback passed to the `execute` method,
 3. the exception is thrown again.
 Otherwise the transaction is committed.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   simpleTransaction
 } from './0010-simple-transaction'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={simpleTransaction} setupCode={exampleSetup} />
+  <Playground code={simpleTransaction} />
 </div>
 
 :::info[More examples]

@@ -10,17 +10,14 @@ savepoint commands, and queries in general.
 In this example we start a transaction, use it to insert two rows and then commit
 the transaction. If an error is thrown, we catch it and rollback the transaction.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   controlledTransaction
 } from './0011-controlled-transaction'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={controlledTransaction} setupCode={exampleSetup} />
+  <Playground code={controlledTransaction} />
 </div>
 
 :::info[More examples]

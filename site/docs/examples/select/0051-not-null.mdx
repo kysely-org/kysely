@@ -12,17 +12,14 @@ you can be sure it's never null.
 Kysely has a couple of helpers for dealing with these cases: `$notNull()` and `$narrowType`.
 Both are used in the following example:
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   notNull
 } from './0051-not-null'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={notNull} setupCode={exampleSetup} />
+  <Playground code={notNull} />
 </div>
 
 :::info[More examples]

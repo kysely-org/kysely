@@ -15,17 +15,14 @@ can only be used as part of a PostgreSQL `update set from join` query.
 Due to type complexity issues, we unfortunately can't make the same
 methods work in both cases.
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground } from '../../../src/components/Playground'
 
 import {
   mySqlJoins
 } from './0030-my-sql-joins'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={mySqlJoins} setupCode={exampleSetup} />
+  <Playground code={mySqlJoins} />
 </div>
 
 :::info[More examples]
