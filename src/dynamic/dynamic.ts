@@ -1,6 +1,7 @@
 import { DynamicReferenceBuilder } from './dynamic-reference-builder.js'
+import { DynamicTableBuilder } from './dynamic-table-builder.js'
 
-export class DynamicModule {
+export class DynamicModule<DB> {
   /**
    * Creates a dynamic reference to a column that is not know at compile time.
    *
@@ -88,5 +89,42 @@ export class DynamicModule {
    */
   ref<R extends string = never>(reference: string): DynamicReferenceBuilder<R> {
     return new DynamicReferenceBuilder<R>(reference)
+  }
+
+  /**
+   * Creates a table reference to a table that's not fully known at compile time.
+   *
+   * The type `T` is allowed to be a union of multiple tables.
+   *
+   * <!-- siteExample("select", "Generic find query", 130) -->
+   *
+   * A generic type-safe helper function for finding a row by a column value:
+   *
+   * ```ts
+   * import { SelectType } from 'kysely'
+   * import { Database } from 'type-editor'
+   *
+   * async function getRowByColumn<
+   *   T extends keyof Database,
+   *   C extends keyof Database[T] & string,
+   *   V extends SelectType<Database[T][C]>,
+   * >(t: T, c: C, v: V) {
+   *   // We need to use the dynamic module since the table name
+   *   // is not known at compile time.
+   *   const { table, ref } = db.dynamic
+   *
+   *   return await db
+   *     .selectFrom(table(t).as('t'))
+   *     .selectAll()
+   *     .where(ref(c), '=', v)
+   *     .orderBy('t.id')
+   *     .executeTakeFirstOrThrow()
+   * }
+   *
+   * const person = await getRowByColumn('person', 'first_name', 'Arnold')
+   * ```
+   */
+  table<T extends keyof DB & string>(table: T): DynamicTableBuilder<T> {
+    return new DynamicTableBuilder<T>(table)
   }
 }

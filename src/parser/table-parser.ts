@@ -9,11 +9,16 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
 import { DrainOuterGeneric } from '../util/type-utils.js'
+import {
+  AliasedDynamicTableBuilder,
+  isAliasedDynamicTableBuilder,
+} from '../dynamic/dynamic-table-builder.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AliasedExpressionOrFactory<DB, TB>
+  | AliasedDynamicTableBuilder<any, any>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
   | TableExpression<DB, TB>
@@ -58,7 +63,9 @@ type ExtractAliasFromTableExpression<DB, TE> = TE extends string
     ? QA
     : TE extends (qb: any) => AliasedExpression<any, infer QA>
       ? QA
-      : never
+      : TE extends AliasedDynamicTableBuilder<any, infer DA>
+        ? DA
+        : never
 
 type ExtractRowTypeFromTableExpression<
   DB,
@@ -82,7 +89,13 @@ type ExtractRowTypeFromTableExpression<
         ? QA extends A
           ? O
           : never
-        : never
+        : TE extends AliasedDynamicTableBuilder<infer T, infer DA>
+          ? DA extends A
+            ? T extends keyof DB
+              ? DB[T]
+              : never
+            : never
+          : never
 
 export function parseTableExpressionOrList(
   table: TableExpressionOrList<any, any>,
@@ -99,6 +112,8 @@ export function parseTableExpression(
 ): OperationNode {
   if (isString(table)) {
     return parseAliasedTable(table)
+  } else if (isAliasedDynamicTableBuilder(table)) {
+    return table.toOperationNode()
   } else {
     return parseAliasedExpression(table)
   }
