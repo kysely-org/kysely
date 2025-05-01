@@ -80,7 +80,7 @@ export default {
             { label: 'Introduction', to: '/docs/intro' },
             { label: 'Getting started', to: '/docs/getting-started' },
             { label: 'Playground', to: '/docs/playground' },
-            { label: 'Migrations', to: '/docs/migrations' },
+            { label: 'Migrations', to: '/docs/category/migrations' },
             // { label: 'Examples', to: '/docs/category/examples' },
             { label: 'Recipes', to: '/docs/category/recipes' },
             { label: 'Other runtimes', to: '/docs/category/other-runtimes' },
