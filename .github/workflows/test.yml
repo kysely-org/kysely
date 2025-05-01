@@ -1,4 +1,4 @@
-name: tests
+name: test
 
 on:
   push:
@@ -33,13 +33,15 @@ on:
 
 jobs:
   node:
-    name: Node.js
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x, 20.x, 22.x, 23.x]
+        # https://endoflife.date/nodejs
+        node-version: [20.x, 22.x, 23.x]
+        with-transformer: [false, true]
+    runs-on: ubuntu-latest
+
+    name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -57,37 +59,11 @@ jobs:
         run: docker compose up -d
 
       - name: Run node tests
-        run: npm test
+        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}npm test
 
       - name: Run esbuild test
+        if: ${{ !matrix.with-transformer }}
         run: npm run test:esbuild
-
-  node-with-transformer:
-    name: Node.js /w transformer
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18.x, 20.x, 22.x, 23.x]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run docker compose
-        run: docker compose up -d
-
-      - name: Run node tests with transformer
-        run: TEST_TRANSFORMER=1 npm test
 
   deno:
     name: Deno
@@ -96,7 +72,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [1.x.x, 2.0.x]
+        # https://endoflife.date/deno
+        deno-version: [2.1.x, 2.2.x, 2.3.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -104,7 +81,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Use Deno ${{ matrix.deno-version }}
@@ -131,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bun-version: [1.1.26]
+        bun-version: [1.1, 1.2]
 
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +116,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -166,7 +143,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -188,7 +165,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
@@ -224,7 +201,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
 
       - name: Install dependencies
@@ -256,13 +233,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Use Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.0.x
+          deno-version: 2.x
 
       - name: Install dependencies
         run: npm ci
@@ -283,7 +260,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: lts/*
           cache: 'npm'
 
       - name: Install dependencies
