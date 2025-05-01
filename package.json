@@ -107,7 +107,7 @@
     "pg": "^8.12.0",
     "pg-cursor": "^2.11.0",
     "pkg-pr-new": "^0.0.30",
-    "playwright": "^1.46.1",
+    "playwright": "^1.52.0",
     "prettier": "^3.5.3",
     "semver": "^7.7.1",
     "sinon": "^20.0.0",
