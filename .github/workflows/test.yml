@@ -41,7 +41,7 @@ jobs:
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
-    name: Node.js ${{ matrix.node-version }}${{ matrix.with-transformer && ' /w transformer' || '' }}
+    name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
       - uses: actions/checkout@v4
