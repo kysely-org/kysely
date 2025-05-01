@@ -41,7 +41,7 @@ jobs:
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
-    name: Node.js${{ matrix.with-transformer ? ' /w transformer' : '' }}
+    name: Node.js${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -58,8 +58,8 @@ jobs:
       - name: Run docker compose
         run: docker compose up -d
 
-      - name: Run node tests${{ matrix.with-transformer ? ' with transformer' : '' }}
-        run: ${{ matrix.with-transformer ? 'TEST_TRANSFORMER=1 ' : '' }}npm test
+      - name: Run node tests
+        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}npm test
 
       - name: Run esbuild test
         run: npm run test:esbuild
