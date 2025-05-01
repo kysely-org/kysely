@@ -62,6 +62,7 @@ jobs:
         run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}npm test
 
       - name: Run esbuild test
+        if: ${{ !matrix.with-transformer }}
         run: npm run test:esbuild
 
   deno:
