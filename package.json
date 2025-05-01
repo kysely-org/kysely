@@ -47,7 +47,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
-    "bench:ts": "npm run build && cd ./test/ts-benchmarks && tsx ./index.ts",
+    "bench:ts": "npm run build && cd ./test/ts-benchmarks && node --experimental-strip-types ./index.ts",
     "test": "npm run build && npm run test:node:build && npm run test:node:run && npm run test:typings && npm run test:esmimports && npm run test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "npm run build && npm run test:node:build && npm run test:node:run",
@@ -114,7 +114,6 @@
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
     "tsd": "^0.32.0",
-    "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
 }

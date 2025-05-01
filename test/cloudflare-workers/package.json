@@ -1,8 +1,9 @@
 {
   "name": "kysely-cloudflare-workers-test",
+  "type": "module",
   "private": true,
   "scripts": {
-    "test": "tsx test.ts"
+    "test": "node --experimental-strip-types test.ts"
   },
   "devDependencies": {
     "hono": "^4.5.8",

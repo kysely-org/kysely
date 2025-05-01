@@ -1,2 +1,2 @@
-import './select-from.bench.js'
-import './order-by.bench.js'
+import './select-from.bench.ts'
+import './order-by.bench.ts'
