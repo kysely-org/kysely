@@ -99,7 +99,7 @@
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "chai-subset": "^1.6.0",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.3",
     "lodash": "^4.17.21",
     "mocha": "^11.2.2",
     "mysql2": "^3.14.1",
