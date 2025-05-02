@@ -84,7 +84,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.0",
     "@ark/attest": "^0.36.0",
-    "@types/better-sqlite3": "^7.6.11",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",
     "@types/chai-subset": "^1.3.5",
@@ -95,7 +95,7 @@
     "@types/semver": "^7.7.0",
     "@types/sinon": "^17.0.4",
     "@types/tedious": "^4.0.9",
-    "better-sqlite3": "^11.2.1",
+    "better-sqlite3": "^11.9.1",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "chai-subset": "^1.6.0",
