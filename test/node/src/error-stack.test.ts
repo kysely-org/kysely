@@ -1,4 +1,4 @@
-import { AssertionError } from 'chai'
+import { Assertion } from 'chai'
 import { sql } from '../../../'
 
 import {
@@ -41,7 +41,7 @@ for (const dialect of DIALECTS) {
             `query "${query.compile().sql}" was supposed to throw but didn't`,
           )
         } catch (err: any) {
-          if (err instanceof AssertionError) {
+          if (err instanceof Assertion) {
             throw err
           }
 
