@@ -20,26 +20,31 @@
   },
   "exports": {
     ".": {
+      "react-native": "./dist/cjs/index.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
     },
     "./helpers/postgres": {
+      "react-native": "./dist/cjs/helpers/postgres.js",
       "import": "./dist/esm/helpers/postgres.js",
       "require": "./dist/cjs/helpers/postgres.js",
       "default": "./dist/cjs/helpers/postgres.js"
     },
     "./helpers/mysql": {
+      "react-native": "./dist/cjs/helpers/mysql.js",
       "import": "./dist/esm/helpers/mysql.js",
       "require": "./dist/cjs/helpers/mysql.js",
       "default": "./dist/cjs/helpers/mysql.js"
     },
     "./helpers/mssql": {
+      "react-native": "./dist/cjs/helpers/mssql.js",
       "import": "./dist/esm/helpers/mssql.js",
       "require": "./dist/cjs/helpers/mssql.js",
       "default": "./dist/cjs/helpers/mssql.js"
     },
     "./helpers/sqlite": {
+      "react-native": "./dist/cjs/helpers/sqlite.js",
       "import": "./dist/esm/helpers/sqlite.js",
       "require": "./dist/cjs/helpers/sqlite.js",
       "default": "./dist/cjs/helpers/sqlite.js"
