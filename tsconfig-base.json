@@ -4,7 +4,6 @@
     "target": "ESNext",
     "declaration": true,
     "strict": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true
+    "noImplicitAny": true
   }
 }
