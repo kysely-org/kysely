@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache: 'npm'
-          node-version: 22.x
+          node-version: lts/*
 
       - name: Install dependencies
         run: npm ci
