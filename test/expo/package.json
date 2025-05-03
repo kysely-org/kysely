@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "expo export --platform android --output-dir dist --clear"
+    "test": "expo export --platform android --output-dir dist --clear",
+    "postinstall": "node --experimental-strip-types ./scripts/use-local-kysely.mts"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
