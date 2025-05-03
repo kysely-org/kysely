@@ -18,6 +18,11 @@
       ]
     }
   },
+  "files": [
+    "dist",
+    "helpers",
+    "outdated-typescript.d.ts"
+  ],
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
