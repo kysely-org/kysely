@@ -6,15 +6,20 @@ export interface ParensNode extends OperationNode {
   readonly node: OperationNode
 }
 
+type ParensNodeFactory = Readonly<{
+  is(node: OperationNode): node is ParensNode
+  create(node: OperationNode): Readonly<ParensNode>
+}>
+
 /**
  * @internal
  */
-export const ParensNode = freeze({
-  is(node: OperationNode): node is ParensNode {
+export const ParensNode: ParensNodeFactory = freeze<ParensNodeFactory>({
+  is(node): node is ParensNode {
     return node.kind === 'ParensNode'
   },
 
-  create(node: OperationNode): ParensNode {
+  create(node) {
     return freeze({
       kind: 'ParensNode',
       node,

@@ -6,25 +6,31 @@ export interface FromNode extends OperationNode {
   readonly froms: ReadonlyArray<OperationNode>
 }
 
+type FromNodeFactory = Readonly<{
+  is(node: OperationNode): node is FromNode
+  create(froms: ReadonlyArray<OperationNode>): Readonly<FromNode>
+  cloneWithFroms(
+    from: FromNode,
+    froms: ReadonlyArray<OperationNode>,
+  ): Readonly<FromNode>
+}>
+
 /**
  * @internal
  */
-export const FromNode = freeze({
-  is(node: OperationNode): node is FromNode {
+export const FromNode: FromNodeFactory = freeze<FromNodeFactory>({
+  is(node): node is FromNode {
     return node.kind === 'FromNode'
   },
 
-  create(froms: ReadonlyArray<OperationNode>): FromNode {
+  create(froms) {
     return freeze({
       kind: 'FromNode',
       froms: freeze(froms),
     })
   },
 
-  cloneWithFroms(
-    from: FromNode,
-    froms: ReadonlyArray<OperationNode>,
-  ): FromNode {
+  cloneWithFroms(from, froms) {
     return freeze({
       ...from,
       froms: freeze([...from.froms, ...froms]),

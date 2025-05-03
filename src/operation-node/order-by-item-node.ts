@@ -12,29 +12,39 @@ export interface OrderByItemNode extends OperationNode {
   readonly collation?: CollateNode
 }
 
-/**
- * @internal
- */
-export const OrderByItemNode = freeze({
-  is(node: OperationNode): node is OrderByItemNode {
-    return node.kind === 'OrderByItemNode'
-  },
-
-  create(orderBy: OperationNode, direction?: OperationNode): OrderByItemNode {
-    return freeze({
-      kind: 'OrderByItemNode',
-      orderBy,
-      direction,
-    })
-  },
-
+type OrderByItemNodeFactory = Readonly<{
+  is(node: OperationNode): node is OrderByItemNode
+  create(
+    orderBy: OperationNode,
+    direction?: OperationNode,
+  ): Readonly<OrderByItemNode>
   cloneWith(
     node: OrderByItemNode,
     props: OrderByItemNodeProps,
-  ): OrderByItemNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-})
+  ): Readonly<OrderByItemNode>
+}>
+
+/**
+ * @internal
+ */
+export const OrderByItemNode: OrderByItemNodeFactory =
+  freeze<OrderByItemNodeFactory>({
+    is(node): node is OrderByItemNode {
+      return node.kind === 'OrderByItemNode'
+    },
+
+    create(orderBy, direction?) {
+      return freeze({
+        kind: 'OrderByItemNode',
+        orderBy,
+        direction,
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+  })

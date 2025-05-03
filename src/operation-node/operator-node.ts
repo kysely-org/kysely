@@ -89,15 +89,20 @@ export interface OperatorNode extends OperationNode {
   readonly operator: Operator
 }
 
+type OperatorNodeFactory = Readonly<{
+  is(node: OperationNode): node is OperatorNode
+  create(operator: Operator): Readonly<OperatorNode>
+}>
+
 /**
  * @internal
  */
-export const OperatorNode = freeze({
-  is(node: OperationNode): node is OperatorNode {
+export const OperatorNode: OperatorNodeFactory = freeze<OperatorNodeFactory>({
+  is(node): node is OperatorNode {
     return node.kind === 'OperatorNode'
   },
 
-  create(operator: Operator): OperatorNode {
+  create(operator) {
     return freeze({
       kind: 'OperatorNode',
       operator,

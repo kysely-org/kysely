@@ -17,34 +17,43 @@ export type UniqueConstraintNodeProps = Omit<
   'kind'
 >
 
-/**
- * @internal
- */
-export const UniqueConstraintNode = freeze({
-  is(node: OperationNode): node is UniqueConstraintNode {
-    return node.kind === 'UniqueConstraintNode'
-  },
-
+type UniqueConstraintNodeFactory = Readonly<{
+  is(node: OperationNode): node is UniqueConstraintNode
   create(
     columns: string[],
     constraintName?: string,
     nullsNotDistinct?: boolean,
-  ): UniqueConstraintNode {
-    return freeze({
-      kind: 'UniqueConstraintNode',
-      columns: freeze(columns.map(ColumnNode.create)),
-      name: constraintName ? IdentifierNode.create(constraintName) : undefined,
-      nullsNotDistinct,
-    })
-  },
-
+  ): Readonly<UniqueConstraintNode>
   cloneWith(
     node: UniqueConstraintNode,
     props: UniqueConstraintNodeProps,
-  ): UniqueConstraintNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-})
+  ): Readonly<UniqueConstraintNode>
+}>
+
+/**
+ * @internal
+ */
+export const UniqueConstraintNode: UniqueConstraintNodeFactory =
+  freeze<UniqueConstraintNodeFactory>({
+    is(node): node is UniqueConstraintNode {
+      return node.kind === 'UniqueConstraintNode'
+    },
+
+    create(columns, constraintName?, nullsNotDistinct?) {
+      return freeze({
+        kind: 'UniqueConstraintNode',
+        columns: freeze(columns.map(ColumnNode.create)),
+        name: constraintName
+          ? IdentifierNode.create(constraintName)
+          : undefined,
+        nullsNotDistinct,
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+  })

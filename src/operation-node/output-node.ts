@@ -6,25 +6,31 @@ export interface OutputNode extends OperationNode {
   readonly selections: ReadonlyArray<OperationNode>
 }
 
+type OutputNodeFactory = Readonly<{
+  is(node: OperationNode): node is OutputNode
+  create(selections: ReadonlyArray<OperationNode>): Readonly<OutputNode>
+  cloneWithSelections(
+    output: OutputNode,
+    selections: ReadonlyArray<OperationNode>,
+  ): Readonly<OutputNode>
+}>
+
 /**
  * @internal
  */
-export const OutputNode = freeze({
-  is(node: OperationNode): node is OutputNode {
+export const OutputNode: OutputNodeFactory = freeze<OutputNodeFactory>({
+  is(node): node is OutputNode {
     return node.kind === 'OutputNode'
   },
 
-  create(selections: ReadonlyArray<OperationNode>): OutputNode {
+  create(selections) {
     return freeze({
       kind: 'OutputNode',
       selections: freeze(selections),
     })
   },
 
-  cloneWithSelections(
-    output: OutputNode,
-    selections: ReadonlyArray<OperationNode>,
-  ): OutputNode {
+  cloneWithSelections(output, selections) {
     return freeze({
       ...output,
       selections: output.selections

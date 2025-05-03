@@ -7,22 +7,28 @@ export interface TableNode extends OperationNode {
   readonly table: SchemableIdentifierNode
 }
 
+type TableNodeFactory = Readonly<{
+  is(node: OperationNode): node is TableNode
+  create(table: string): Readonly<TableNode>
+  createWithSchema(schema: string, table: string): Readonly<TableNode>
+}>
+
 /**
  * @internal
  */
-export const TableNode = freeze({
-  is(node: OperationNode): node is TableNode {
+export const TableNode: TableNodeFactory = freeze<TableNodeFactory>({
+  is(node): node is TableNode {
     return node.kind === 'TableNode'
   },
 
-  create(table: string): TableNode {
+  create(table) {
     return freeze({
       kind: 'TableNode',
       table: SchemableIdentifierNode.create(table),
     })
   },
 
-  createWithSchema(schema: string, table: string): TableNode {
+  createWithSchema(schema, table) {
     return freeze({
       kind: 'TableNode',
       table: SchemableIdentifierNode.createWithSchema(schema, table),

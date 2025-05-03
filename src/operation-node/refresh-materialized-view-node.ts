@@ -14,28 +14,35 @@ export interface RefreshMaterializedViewNode extends OperationNode {
   readonly withNoData?: boolean
 }
 
-/**
- * @internal
- */
-export const RefreshMaterializedViewNode = freeze({
-  is(node: OperationNode): node is RefreshMaterializedViewNode {
-    return node.kind === 'RefreshMaterializedViewNode'
-  },
-
-  create(name: string): RefreshMaterializedViewNode {
-    return freeze({
-      kind: 'RefreshMaterializedViewNode',
-      name: SchemableIdentifierNode.create(name),
-    })
-  },
-
+type RefreshMaterializedViewNodeFactory = Readonly<{
+  is(node: OperationNode): node is RefreshMaterializedViewNode
+  create(name: string): Readonly<RefreshMaterializedViewNode>
   cloneWith(
     createView: RefreshMaterializedViewNode,
     params: RefreshMaterializedViewNodeParams,
-  ): RefreshMaterializedViewNode {
-    return freeze({
-      ...createView,
-      ...params,
-    })
-  },
-})
+  ): Readonly<RefreshMaterializedViewNode>
+}>
+
+/**
+ * @internal
+ */
+export const RefreshMaterializedViewNode: RefreshMaterializedViewNodeFactory =
+  freeze<RefreshMaterializedViewNodeFactory>({
+    is(node): node is RefreshMaterializedViewNode {
+      return node.kind === 'RefreshMaterializedViewNode'
+    },
+
+    create(name) {
+      return freeze({
+        kind: 'RefreshMaterializedViewNode',
+        name: SchemableIdentifierNode.create(name),
+      })
+    },
+
+    cloneWith(createView, params) {
+      return freeze({
+        ...createView,
+        ...params,
+      })
+    },
+  })

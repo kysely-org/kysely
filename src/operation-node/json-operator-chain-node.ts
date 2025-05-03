@@ -9,29 +9,36 @@ export interface JSONOperatorChainNode extends OperationNode {
   readonly values: readonly ValueNode[]
 }
 
-/**
- * @internal
- */
-export const JSONOperatorChainNode = freeze({
-  is(node: OperationNode): node is JSONOperatorChainNode {
-    return node.kind === 'JSONOperatorChainNode'
-  },
-
-  create(operator: OperatorNode): JSONOperatorChainNode {
-    return freeze({
-      kind: 'JSONOperatorChainNode',
-      operator,
-      values: freeze([]),
-    })
-  },
-
+type JSONOperatorChainNodeFactory = Readonly<{
+  is(node: OperationNode): node is JSONOperatorChainNode
+  create(operator: OperatorNode): Readonly<JSONOperatorChainNode>
   cloneWithValue(
     node: JSONOperatorChainNode,
     value: ValueNode,
-  ): JSONOperatorChainNode {
-    return freeze({
-      ...node,
-      values: freeze([...node.values, value]),
-    })
-  },
-})
+  ): Readonly<JSONOperatorChainNode>
+}>
+
+/**
+ * @internal
+ */
+export const JSONOperatorChainNode: JSONOperatorChainNodeFactory =
+  freeze<JSONOperatorChainNodeFactory>({
+    is(node): node is JSONOperatorChainNode {
+      return node.kind === 'JSONOperatorChainNode'
+    },
+
+    create(operator) {
+      return freeze({
+        kind: 'JSONOperatorChainNode',
+        operator,
+        values: freeze([]),
+      })
+    },
+
+    cloneWithValue(node, value) {
+      return freeze({
+        ...node,
+        values: freeze([...node.values, value]),
+      })
+    },
+  })

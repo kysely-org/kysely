@@ -6,15 +6,20 @@ export interface OrActionNode extends OperationNode {
   readonly action: string
 }
 
+type OrActionNodeFactory = Readonly<{
+  is(node: OperationNode): node is OrActionNode
+  create(action: string): Readonly<OrActionNode>
+}>
+
 /**
  * @internal
  */
-export const OrActionNode = freeze({
-  is(node: OperationNode): node is OrActionNode {
+export const OrActionNode: OrActionNodeFactory = freeze<OrActionNodeFactory>({
+  is(node): node is OrActionNode {
     return node.kind === 'OrActionNode'
   },
 
-  create(action: string): OrActionNode {
+  create(action) {
     return freeze({
       kind: 'OrActionNode',
       action,

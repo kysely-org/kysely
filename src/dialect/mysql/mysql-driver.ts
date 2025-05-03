@@ -17,7 +17,7 @@ import {
   MysqlQueryResult,
 } from './mysql-dialect-config.js'
 
-const PRIVATE_RELEASE_METHOD = Symbol()
+const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
 
 export class MysqlDriver implements Driver {
   readonly #config: MysqlDialectConfig

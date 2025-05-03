@@ -8,19 +8,19 @@ export class PrimaryKeyConstraintBuilder implements OperationNodeSource {
     this.#node = node
   }
 
-  deferrable() {
+  deferrable(): PrimaryKeyConstraintBuilder {
     return new PrimaryKeyConstraintBuilder(
       PrimaryKeyConstraintNode.cloneWith(this.#node, { deferrable: true }),
     )
   }
 
-  notDeferrable() {
+  notDeferrable(): PrimaryKeyConstraintBuilder {
     return new PrimaryKeyConstraintBuilder(
       PrimaryKeyConstraintNode.cloneWith(this.#node, { deferrable: false }),
     )
   }
 
-  initiallyDeferred() {
+  initiallyDeferred(): PrimaryKeyConstraintBuilder {
     return new PrimaryKeyConstraintBuilder(
       PrimaryKeyConstraintNode.cloneWith(this.#node, {
         initiallyDeferred: true,
@@ -28,7 +28,7 @@ export class PrimaryKeyConstraintBuilder implements OperationNodeSource {
     )
   }
 
-  initiallyImmediate() {
+  initiallyImmediate(): PrimaryKeyConstraintBuilder {
     return new PrimaryKeyConstraintBuilder(
       PrimaryKeyConstraintNode.cloneWith(this.#node, {
         initiallyDeferred: false,

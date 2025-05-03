@@ -10,24 +10,30 @@ export interface SetOperationNode extends OperationNode {
   all: boolean
 }
 
-/**
- * @internal
- */
-export const SetOperationNode = freeze({
-  is(node: OperationNode): node is SetOperationNode {
-    return node.kind === 'SetOperationNode'
-  },
-
+type SetOperationNodeFactory = Readonly<{
+  is(node: OperationNode): node is SetOperationNode
   create(
     operator: SetOperator,
     expression: OperationNode,
     all: boolean,
-  ): SetOperationNode {
-    return freeze({
-      kind: 'SetOperationNode',
-      operator,
-      expression,
-      all,
-    })
-  },
-})
+  ): Readonly<SetOperationNode>
+}>
+
+/**
+ * @internal
+ */
+export const SetOperationNode: SetOperationNodeFactory =
+  freeze<SetOperationNodeFactory>({
+    is(node): node is SetOperationNode {
+      return node.kind === 'SetOperationNode'
+    },
+
+    create(operator, expression, all) {
+      return freeze({
+        kind: 'SetOperationNode',
+        operator,
+        expression,
+        all,
+      })
+    },
+  })

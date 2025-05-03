@@ -14,32 +14,39 @@ export interface CommonTableExpressionNode extends OperationNode {
   readonly expression: OperationNode
 }
 
-/**
- * @internal
- */
-export const CommonTableExpressionNode = freeze({
-  is(node: OperationNode): node is CommonTableExpressionNode {
-    return node.kind === 'CommonTableExpressionNode'
-  },
-
+type CommonTableExpressionNodeFactory = Readonly<{
+  is(node: OperationNode): node is CommonTableExpressionNode
   create(
     name: CommonTableExpressionNameNode,
     expression: OperationNode,
-  ): CommonTableExpressionNode {
-    return freeze({
-      kind: 'CommonTableExpressionNode',
-      name,
-      expression,
-    })
-  },
-
+  ): Readonly<CommonTableExpressionNode>
   cloneWith(
     node: CommonTableExpressionNode,
     props: CommonTableExpressionNodeProps,
-  ): CommonTableExpressionNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-})
+  ): Readonly<CommonTableExpressionNode>
+}>
+
+/**
+ * @internal
+ */
+export const CommonTableExpressionNode: CommonTableExpressionNodeFactory =
+  freeze<CommonTableExpressionNodeFactory>({
+    is(node): node is CommonTableExpressionNode {
+      return node.kind === 'CommonTableExpressionNode'
+    },
+
+    create(name, expression) {
+      return freeze({
+        kind: 'CommonTableExpressionNode',
+        name,
+        expression,
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+  })

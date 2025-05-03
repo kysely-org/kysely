@@ -7,15 +7,20 @@ export interface MatchedNode extends OperationNode {
   readonly bySource: boolean
 }
 
+type MatchedNodeFactory = Readonly<{
+  is(node: OperationNode): node is MatchedNode
+  create(not: boolean, bySource?: boolean): Readonly<MatchedNode>
+}>
+
 /**
  * @internal
  */
-export const MatchedNode = freeze({
-  is(node: OperationNode): node is MatchedNode {
+export const MatchedNode: MatchedNodeFactory = freeze<MatchedNodeFactory>({
+  is(node): node is MatchedNode {
     return node.kind === 'MatchedNode'
   },
 
-  create(not: boolean, bySource: boolean = false): MatchedNode {
+  create(not, bySource = false) {
     return freeze({
       kind: 'MatchedNode',
       not,

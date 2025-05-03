@@ -7,18 +7,26 @@ export interface PartitionByItemNode extends OperationNode {
   readonly partitionBy: SimpleReferenceExpressionNode
 }
 
+type PartitionByItemNodeFactory = Readonly<{
+  is(node: OperationNode): node is PartitionByItemNode
+  create(
+    partitionBy: SimpleReferenceExpressionNode,
+  ): Readonly<PartitionByItemNode>
+}>
+
 /**
  * @internal
  */
-export const PartitionByItemNode = freeze({
-  is(node: OperationNode): node is PartitionByItemNode {
-    return node.kind === 'PartitionByItemNode'
-  },
+export const PartitionByItemNode: PartitionByItemNodeFactory =
+  freeze<PartitionByItemNodeFactory>({
+    is(node): node is PartitionByItemNode {
+      return node.kind === 'PartitionByItemNode'
+    },
 
-  create(partitionBy: SimpleReferenceExpressionNode): PartitionByItemNode {
-    return freeze({
-      kind: 'PartitionByItemNode',
-      partitionBy,
-    })
-  },
-})
+    create(partitionBy) {
+      return freeze({
+        kind: 'PartitionByItemNode',
+        partitionBy,
+      })
+    },
+  })

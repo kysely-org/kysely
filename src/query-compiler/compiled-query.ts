@@ -10,13 +10,19 @@ export interface CompiledQuery<O = unknown> {
   readonly parameters: ReadonlyArray<unknown>
 }
 
-export const CompiledQuery = freeze({
-  raw(sql: string, parameters: unknown[] = []): CompiledQuery {
-    return freeze({
-      sql,
-      query: RawNode.createWithSql(sql),
-      parameters: freeze(parameters),
-      queryId: createQueryId(),
-    })
+type CompiledQueryFactory = Readonly<{
+  raw(sql: string, parameters?: unknown[]): Readonly<CompiledQuery>
+}>
+
+export const CompiledQuery: CompiledQueryFactory = freeze<CompiledQueryFactory>(
+  {
+    raw(sql, parameters = []) {
+      return freeze({
+        sql,
+        query: RawNode.createWithSql(sql),
+        parameters: freeze(parameters),
+        queryId: createQueryId(),
+      })
+    },
   },
-})
+)

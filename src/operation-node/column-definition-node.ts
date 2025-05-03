@@ -31,53 +31,65 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly ifNotExists?: boolean
 }
 
-/**
- * @internal
- */
-export const ColumnDefinitionNode = freeze({
-  is(node: OperationNode): node is ColumnDefinitionNode {
-    return node.kind === 'ColumnDefinitionNode'
-  },
-
-  create(column: string, dataType: OperationNode): ColumnDefinitionNode {
-    return freeze({
-      kind: 'ColumnDefinitionNode',
-      column: ColumnNode.create(column),
-      dataType,
-    })
-  },
-
+type ColumnDefinitionNodeFactory = Readonly<{
+  is(node: OperationNode): node is ColumnDefinitionNode
+  create(
+    column: string,
+    dataType: OperationNode,
+  ): Readonly<ColumnDefinitionNode>
   cloneWithFrontModifier(
     node: ColumnDefinitionNode,
     modifier: OperationNode,
-  ): ColumnDefinitionNode {
-    return freeze({
-      ...node,
-      frontModifiers: node.frontModifiers
-        ? freeze([...node.frontModifiers, modifier])
-        : [modifier],
-    })
-  },
-
+  ): Readonly<ColumnDefinitionNode>
   cloneWithEndModifier(
     node: ColumnDefinitionNode,
     modifier: OperationNode,
-  ): ColumnDefinitionNode {
-    return freeze({
-      ...node,
-      endModifiers: node.endModifiers
-        ? freeze([...node.endModifiers, modifier])
-        : [modifier],
-    })
-  },
-
+  ): Readonly<ColumnDefinitionNode>
   cloneWith(
     node: ColumnDefinitionNode,
     props: ColumnDefinitionNodeProps,
-  ): ColumnDefinitionNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-})
+  ): Readonly<ColumnDefinitionNode>
+}>
+
+/**
+ * @internal
+ */
+export const ColumnDefinitionNode: ColumnDefinitionNodeFactory =
+  freeze<ColumnDefinitionNodeFactory>({
+    is(node): node is ColumnDefinitionNode {
+      return node.kind === 'ColumnDefinitionNode'
+    },
+
+    create(column, dataType) {
+      return freeze({
+        kind: 'ColumnDefinitionNode',
+        column: ColumnNode.create(column),
+        dataType,
+      })
+    },
+
+    cloneWithFrontModifier(node, modifier) {
+      return freeze({
+        ...node,
+        frontModifiers: node.frontModifiers
+          ? freeze([...node.frontModifiers, modifier])
+          : [modifier],
+      })
+    },
+
+    cloneWithEndModifier(node, modifier) {
+      return freeze({
+        ...node,
+        endModifiers: node.endModifiers
+          ? freeze([...node.endModifiers, modifier])
+          : [modifier],
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+  })

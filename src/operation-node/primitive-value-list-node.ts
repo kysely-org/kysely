@@ -11,18 +11,24 @@ export interface PrimitiveValueListNode extends OperationNode {
   readonly values: ReadonlyArray<unknown>
 }
 
+type PrimitiveValueListNodeFactory = Readonly<{
+  is(node: OperationNode): node is PrimitiveValueListNode
+  create(values: ReadonlyArray<unknown>): Readonly<PrimitiveValueListNode>
+}>
+
 /**
  * @internal
  */
-export const PrimitiveValueListNode = freeze({
-  is(node: OperationNode): node is PrimitiveValueListNode {
-    return node.kind === 'PrimitiveValueListNode'
-  },
+export const PrimitiveValueListNode: PrimitiveValueListNodeFactory =
+  freeze<PrimitiveValueListNodeFactory>({
+    is(node): node is PrimitiveValueListNode {
+      return node.kind === 'PrimitiveValueListNode'
+    },
 
-  create(values: ReadonlyArray<unknown>): PrimitiveValueListNode {
-    return freeze({
-      kind: 'PrimitiveValueListNode',
-      values: freeze([...values]),
-    })
-  },
-})
+    create(values) {
+      return freeze({
+        kind: 'PrimitiveValueListNode',
+        values: freeze([...values]),
+      })
+    },
+  })

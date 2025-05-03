@@ -8,19 +8,25 @@ export interface RenameConstraintNode extends OperationNode {
   readonly newName: IdentifierNode
 }
 
+type RenameConstraintNodeFactory = Readonly<{
+  is(node: OperationNode): node is RenameConstraintNode
+  create(oldName: string, newName: string): Readonly<RenameConstraintNode>
+}>
+
 /**
  * @internal
  */
-export const RenameConstraintNode = freeze({
-  is(node: OperationNode): node is RenameConstraintNode {
-    return node.kind === 'RenameConstraintNode'
-  },
+export const RenameConstraintNode: RenameConstraintNodeFactory =
+  freeze<RenameConstraintNodeFactory>({
+    is(node): node is RenameConstraintNode {
+      return node.kind === 'RenameConstraintNode'
+    },
 
-  create(oldName: string, newName: string): RenameConstraintNode {
-    return freeze({
-      kind: 'RenameConstraintNode',
-      oldName: IdentifierNode.create(oldName),
-      newName: IdentifierNode.create(newName),
-    })
-  },
-})
+    create(oldName, newName) {
+      return freeze({
+        kind: 'RenameConstraintNode',
+        oldName: IdentifierNode.create(oldName),
+        newName: IdentifierNode.create(newName),
+      })
+    },
+  })

@@ -16,88 +16,99 @@ export interface AggregateFunctionNode extends OperationNode {
   readonly over?: OverNode
 }
 
-/**
- * @internal
- */
-export const AggregateFunctionNode = freeze({
-  is(node: OperationNode): node is AggregateFunctionNode {
-    return node.kind === 'AggregateFunctionNode'
-  },
-
+type AggregateFunctionNodeFactory = Readonly<{
+  is(node: OperationNode): node is AggregateFunctionNode
   create(
     aggregateFunction: string,
-    aggregated: readonly OperationNode[] = [],
-  ): AggregateFunctionNode {
-    return freeze({
-      kind: 'AggregateFunctionNode',
-      func: aggregateFunction,
-      aggregated,
-    })
-  },
-
+    aggregated?: readonly OperationNode[],
+  ): Readonly<AggregateFunctionNode>
   cloneWithDistinct(
     aggregateFunctionNode: AggregateFunctionNode,
-  ): AggregateFunctionNode {
-    return freeze({
-      ...aggregateFunctionNode,
-      distinct: true,
-    })
-  },
-
+  ): Readonly<AggregateFunctionNode>
   cloneWithOrderBy(
     aggregateFunctionNode: AggregateFunctionNode,
     orderItems: ReadonlyArray<OrderByItemNode>,
-    withinGroup = false,
-  ): AggregateFunctionNode {
-    const prop = withinGroup ? 'withinGroup' : 'orderBy'
-
-    return freeze({
-      ...aggregateFunctionNode,
-      [prop]: aggregateFunctionNode[prop]
-        ? OrderByNode.cloneWithItems(aggregateFunctionNode[prop], orderItems)
-        : OrderByNode.create(orderItems),
-    })
-  },
-
+    withinGroup?: boolean,
+  ): Readonly<AggregateFunctionNode>
   cloneWithFilter(
     aggregateFunctionNode: AggregateFunctionNode,
     filter: OperationNode,
-  ): AggregateFunctionNode {
-    return freeze({
-      ...aggregateFunctionNode,
-      filter: aggregateFunctionNode.filter
-        ? WhereNode.cloneWithOperation(
-            aggregateFunctionNode.filter,
-            'And',
-            filter,
-          )
-        : WhereNode.create(filter),
-    })
-  },
-
+  ): Readonly<AggregateFunctionNode>
   cloneWithOrFilter(
     aggregateFunctionNode: AggregateFunctionNode,
     filter: OperationNode,
-  ): AggregateFunctionNode {
-    return freeze({
-      ...aggregateFunctionNode,
-      filter: aggregateFunctionNode.filter
-        ? WhereNode.cloneWithOperation(
-            aggregateFunctionNode.filter,
-            'Or',
-            filter,
-          )
-        : WhereNode.create(filter),
-    })
-  },
-
+  ): Readonly<AggregateFunctionNode>
   cloneWithOver(
     aggregateFunctionNode: AggregateFunctionNode,
     over?: OverNode,
-  ): AggregateFunctionNode {
-    return freeze({
-      ...aggregateFunctionNode,
-      over,
-    })
-  },
-})
+  ): Readonly<AggregateFunctionNode>
+}>
+
+/**
+ * @internal
+ */
+export const AggregateFunctionNode: AggregateFunctionNodeFactory =
+  freeze<AggregateFunctionNodeFactory>({
+    is(node): node is AggregateFunctionNode {
+      return node.kind === 'AggregateFunctionNode'
+    },
+
+    create(aggregateFunction, aggregated = []) {
+      return freeze({
+        kind: 'AggregateFunctionNode',
+        func: aggregateFunction,
+        aggregated,
+      })
+    },
+
+    cloneWithDistinct(aggregateFunctionNode) {
+      return freeze({
+        ...aggregateFunctionNode,
+        distinct: true,
+      })
+    },
+
+    cloneWithOrderBy(aggregateFunctionNode, orderItems, withinGroup = false) {
+      const prop = withinGroup ? 'withinGroup' : 'orderBy'
+
+      return freeze({
+        ...aggregateFunctionNode,
+        [prop]: aggregateFunctionNode[prop]
+          ? OrderByNode.cloneWithItems(aggregateFunctionNode[prop], orderItems)
+          : OrderByNode.create(orderItems),
+      })
+    },
+
+    cloneWithFilter(aggregateFunctionNode, filter) {
+      return freeze({
+        ...aggregateFunctionNode,
+        filter: aggregateFunctionNode.filter
+          ? WhereNode.cloneWithOperation(
+              aggregateFunctionNode.filter,
+              'And',
+              filter,
+            )
+          : WhereNode.create(filter),
+      })
+    },
+
+    cloneWithOrFilter(aggregateFunctionNode, filter) {
+      return freeze({
+        ...aggregateFunctionNode,
+        filter: aggregateFunctionNode.filter
+          ? WhereNode.cloneWithOperation(
+              aggregateFunctionNode.filter,
+              'Or',
+              filter,
+            )
+          : WhereNode.create(filter),
+      })
+    },
+
+    cloneWithOver(aggregateFunctionNode, over?) {
+      return freeze({
+        ...aggregateFunctionNode,
+        over,
+      })
+    },
+  })

@@ -93,11 +93,12 @@
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
-    "script:align-site-version": "node --experimental-strip-types scripts/align-site-version.mts",
+    "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
     "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
+    "script:remove-global-augmentations": "node --experimental-strip-types scripts/remove-global-augmentations.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
-    "version": "pnpm script:align-site-version && git add ."
+    "version": "pnpm script:align-versions && git add ."
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
@@ -121,6 +122,7 @@
     "chai": "^6.2.0",
     "chai-as-promised": "^8.0.2",
     "esbuild": "^0.25.10",
+    "jsr": "^0.13.4",
     "lodash": "^4.17.21",
     "mocha": "^11.7.4",
     "mysql2": "^3.15.1",
