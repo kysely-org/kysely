@@ -18,6 +18,11 @@
       ]
     }
   },
+  "files": [
+    "dist",
+    "helpers",
+    "outdated-typescript.d.ts"
+  ],
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -72,7 +77,7 @@
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "script:align-site-version": "node scripts/align-site-version.js",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run test:exports",
     "release:preview": "pkg-pr-new publish --template './example'"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
