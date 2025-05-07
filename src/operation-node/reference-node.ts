@@ -10,27 +10,35 @@ export interface ReferenceNode extends OperationNode {
   readonly table?: TableNode
 }
 
+type ReferenceNodeFactory = Readonly<{
+  is(node: OperationNode): node is ReferenceNode
+  create(column: ColumnNode, table?: TableNode): Readonly<ReferenceNode>
+  createSelectAll(table: TableNode): Readonly<ReferenceNode>
+}>
+
 /**
  * @internal
  */
-export const ReferenceNode = freeze({
-  is(node: OperationNode): node is ReferenceNode {
-    return node.kind === 'ReferenceNode'
-  },
+export const ReferenceNode: ReferenceNodeFactory = freeze<ReferenceNodeFactory>(
+  {
+    is(node): node is ReferenceNode {
+      return node.kind === 'ReferenceNode'
+    },
 
-  create(column: ColumnNode, table?: TableNode): ReferenceNode {
-    return freeze({
-      kind: 'ReferenceNode',
-      table,
-      column,
-    })
-  },
+    create(column, table?) {
+      return freeze({
+        kind: 'ReferenceNode',
+        table,
+        column,
+      })
+    },
 
-  createSelectAll(table: TableNode): ReferenceNode {
-    return freeze({
-      kind: 'ReferenceNode',
-      table,
-      column: SelectAllNode.create(),
-    })
+    createSelectAll(table) {
+      return freeze({
+        kind: 'ReferenceNode',
+        table,
+        column: SelectAllNode.create(),
+      })
+    },
   },
-})
+)

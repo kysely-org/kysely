@@ -40,175 +40,197 @@ export interface SelectQueryNode extends OperationNode {
   readonly top?: TopNode
 }
 
-/**
- * @internal
- */
-export const SelectQueryNode = freeze({
-  is(node: OperationNode): node is SelectQueryNode {
-    return node.kind === 'SelectQueryNode'
-  },
-
-  create(withNode?: WithNode): SelectQueryNode {
-    return freeze({
-      kind: 'SelectQueryNode',
-      ...(withNode && { with: withNode }),
-    })
-  },
-
+type SelectQueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is SelectQueryNode
+  create(withNode?: WithNode): Readonly<SelectQueryNode>
   createFrom(
     fromItems: ReadonlyArray<OperationNode>,
     withNode?: WithNode,
-  ): SelectQueryNode {
-    return freeze({
-      kind: 'SelectQueryNode',
-      from: FromNode.create(fromItems),
-      ...(withNode && { with: withNode }),
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithSelections(
     select: SelectQueryNode,
     selections: ReadonlyArray<SelectionNode>,
-  ): SelectQueryNode {
-    return freeze({
-      ...select,
-      selections: select.selections
-        ? freeze([...select.selections, ...selections])
-        : freeze(selections),
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithDistinctOn(
     select: SelectQueryNode,
     expressions: ReadonlyArray<OperationNode>,
-  ): SelectQueryNode {
-    return freeze({
-      ...select,
-      distinctOn: select.distinctOn
-        ? freeze([...select.distinctOn, ...expressions])
-        : freeze(expressions),
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithFrontModifier(
     select: SelectQueryNode,
     modifier: SelectModifierNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...select,
-      frontModifiers: select.frontModifiers
-        ? freeze([...select.frontModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
-   */
-  cloneWithOrderByItems: (
+  ): Readonly<SelectQueryNode>
+  cloneWithOrderByItems(
     node: SelectQueryNode,
     items: ReadonlyArray<OrderByItemNode>,
-  ) => QueryNode.cloneWithOrderByItems(node, items),
-
+  ): Readonly<SelectQueryNode>
   cloneWithGroupByItems(
     selectNode: SelectQueryNode,
     items: ReadonlyArray<GroupByItemNode>,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      groupBy: selectNode.groupBy
-        ? GroupByNode.cloneWithItems(selectNode.groupBy, items)
-        : GroupByNode.create(items),
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithLimit(
     selectNode: SelectQueryNode,
     limit: LimitNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      limit,
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithOffset(
     selectNode: SelectQueryNode,
     offset: OffsetNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      offset,
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithFetch(
     selectNode: SelectQueryNode,
     fetch: FetchNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      fetch,
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithHaving(
     selectNode: SelectQueryNode,
     operation: OperationNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      having: selectNode.having
-        ? HavingNode.cloneWithOperation(selectNode.having, 'And', operation)
-        : HavingNode.create(operation),
-    })
-  },
-
+  ): Readonly<SelectQueryNode>
   cloneWithSetOperations(
     selectNode: SelectQueryNode,
     setOperations: ReadonlyArray<SetOperationNode>,
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      setOperations: selectNode.setOperations
-        ? freeze([...selectNode.setOperations, ...setOperations])
-        : freeze([...setOperations]),
-    })
-  },
+  ): Readonly<SelectQueryNode>
+  cloneWithoutSelections(select: SelectQueryNode): Readonly<SelectQueryNode>
+  cloneWithoutLimit(select: SelectQueryNode): Readonly<SelectQueryNode>
+  cloneWithoutOffset(select: SelectQueryNode): Readonly<SelectQueryNode>
+  cloneWithoutOrderBy(node: SelectQueryNode): Readonly<SelectQueryNode>
+  cloneWithoutGroupBy(select: SelectQueryNode): Readonly<SelectQueryNode>
+}>
 
-  cloneWithoutSelections(select: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...select,
-      selections: [],
-    })
-  },
+/**
+ * @internal
+ */
+export const SelectQueryNode: SelectQueryNodeFactory =
+  freeze<SelectQueryNodeFactory>({
+    is(node): node is SelectQueryNode {
+      return node.kind === 'SelectQueryNode'
+    },
 
-  cloneWithoutLimit(select: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...select,
-      limit: undefined,
-    })
-  },
+    create(withNode?) {
+      return freeze({
+        kind: 'SelectQueryNode',
+        ...(withNode && { with: withNode }),
+      })
+    },
 
-  cloneWithoutOffset(select: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...select,
-      offset: undefined,
-    })
-  },
+    createFrom(fromItems, withNode?) {
+      return freeze({
+        kind: 'SelectQueryNode',
+        from: FromNode.create(fromItems),
+        ...(withNode && { with: withNode }),
+      })
+    },
 
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
-   */
-  cloneWithoutOrderBy: (node: SelectQueryNode) =>
-    QueryNode.cloneWithoutOrderBy(node),
+    cloneWithSelections(select, selections) {
+      return freeze({
+        ...select,
+        selections: select.selections
+          ? freeze([...select.selections, ...selections])
+          : freeze(selections),
+      })
+    },
 
-  cloneWithoutGroupBy(select: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...select,
-      groupBy: undefined,
-    })
-  },
-})
+    cloneWithDistinctOn(select, expressions) {
+      return freeze({
+        ...select,
+        distinctOn: select.distinctOn
+          ? freeze([...select.distinctOn, ...expressions])
+          : freeze(expressions),
+      })
+    },
+
+    cloneWithFrontModifier(select, modifier) {
+      return freeze({
+        ...select,
+        frontModifiers: select.frontModifiers
+          ? freeze([...select.frontModifiers, modifier])
+          : freeze([modifier]),
+      })
+    },
+
+    // TODO: remove in v0.29
+    /**
+     * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+     */
+    cloneWithOrderByItems: (node, items) =>
+      QueryNode.cloneWithOrderByItems(node, items),
+
+    cloneWithGroupByItems(selectNode, items) {
+      return freeze({
+        ...selectNode,
+        groupBy: selectNode.groupBy
+          ? GroupByNode.cloneWithItems(selectNode.groupBy, items)
+          : GroupByNode.create(items),
+      })
+    },
+
+    cloneWithLimit(selectNode, limit) {
+      return freeze({
+        ...selectNode,
+        limit,
+      })
+    },
+
+    cloneWithOffset(selectNode, offset) {
+      return freeze({
+        ...selectNode,
+        offset,
+      })
+    },
+
+    cloneWithFetch(selectNode, fetch) {
+      return freeze({
+        ...selectNode,
+        fetch,
+      })
+    },
+
+    cloneWithHaving(selectNode, operation) {
+      return freeze({
+        ...selectNode,
+        having: selectNode.having
+          ? HavingNode.cloneWithOperation(selectNode.having, 'And', operation)
+          : HavingNode.create(operation),
+      })
+    },
+
+    cloneWithSetOperations(selectNode, setOperations) {
+      return freeze({
+        ...selectNode,
+        setOperations: selectNode.setOperations
+          ? freeze([...selectNode.setOperations, ...setOperations])
+          : freeze([...setOperations]),
+      })
+    },
+
+    cloneWithoutSelections(select) {
+      return freeze({
+        ...select,
+        selections: [],
+      })
+    },
+
+    cloneWithoutLimit(select) {
+      return freeze({
+        ...select,
+        limit: undefined,
+      })
+    },
+
+    cloneWithoutOffset(select) {
+      return freeze({
+        ...select,
+        offset: undefined,
+      })
+    },
+
+    // TODO: remove in v0.29
+    /**
+     * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+     */
+    cloneWithoutOrderBy: (node) => QueryNode.cloneWithoutOrderBy(node),
+
+    cloneWithoutGroupBy(select) {
+      return freeze({
+        ...select,
+        groupBy: undefined,
+      })
+    },
+  })

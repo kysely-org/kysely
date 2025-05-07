@@ -2,9 +2,7 @@ import { freeze } from '../util/object-utils.js'
 import { ColumnUpdateNode } from './column-update-node.js'
 import { JoinNode } from './join-node.js'
 import { OperationNode } from './operation-node.js'
-import { PrimitiveValueListNode } from './primitive-value-list-node.js'
 import { ReturningNode } from './returning-node.js'
-import { ValueListNode } from './value-list-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { FromNode } from './from-node.js'
@@ -32,64 +30,74 @@ export interface UpdateQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
 }
 
-/**
- * @internal
- */
-export const UpdateQueryNode = freeze({
-  is(node: OperationNode): node is UpdateQueryNode {
-    return node.kind === 'UpdateQueryNode'
-  },
-
+type UpdateQueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is UpdateQueryNode
   create(
     tables: ReadonlyArray<OperationNode>,
     withNode?: WithNode,
-  ): UpdateQueryNode {
-    return freeze({
-      kind: 'UpdateQueryNode',
-      // For backwards compatibility, use the raw table node when there's only one table
-      // and don't rename the property to something like `tables`.
-      table: tables.length === 1 ? tables[0] : ListNode.create(tables),
-      ...(withNode && { with: withNode }),
-    })
-  },
-
-  createWithoutTable(): UpdateQueryNode {
-    return freeze({
-      kind: 'UpdateQueryNode',
-    })
-  },
-
+  ): Readonly<UpdateQueryNode>
+  createWithoutTable(): Readonly<UpdateQueryNode>
   cloneWithFromItems(
     updateQuery: UpdateQueryNode,
     fromItems: ReadonlyArray<OperationNode>,
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      from: updateQuery.from
-        ? FromNode.cloneWithFroms(updateQuery.from, fromItems)
-        : FromNode.create(fromItems),
-    })
-  },
-
+  ): Readonly<UpdateQueryNode>
   cloneWithUpdates(
     updateQuery: UpdateQueryNode,
     updates: ReadonlyArray<ColumnUpdateNode>,
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      updates: updateQuery.updates
-        ? freeze([...updateQuery.updates, ...updates])
-        : updates,
-    })
-  },
-
+  ): Readonly<UpdateQueryNode>
   cloneWithLimit(
     updateQuery: UpdateQueryNode,
     limit: LimitNode,
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      limit,
-    })
-  },
-})
+  ): Readonly<UpdateQueryNode>
+}>
+
+/**
+ * @internal
+ */
+export const UpdateQueryNode: UpdateQueryNodeFactory =
+  freeze<UpdateQueryNodeFactory>({
+    is(node): node is UpdateQueryNode {
+      return node.kind === 'UpdateQueryNode'
+    },
+
+    create(tables, withNode?) {
+      return freeze({
+        kind: 'UpdateQueryNode',
+        // For backwards compatibility, use the raw table node when there's only one table
+        // and don't rename the property to something like `tables`.
+        table: tables.length === 1 ? tables[0] : ListNode.create(tables),
+        ...(withNode && { with: withNode }),
+      })
+    },
+
+    createWithoutTable() {
+      return freeze({
+        kind: 'UpdateQueryNode',
+      })
+    },
+
+    cloneWithFromItems(updateQuery, fromItems) {
+      return freeze({
+        ...updateQuery,
+        from: updateQuery.from
+          ? FromNode.cloneWithFroms(updateQuery.from, fromItems)
+          : FromNode.create(fromItems),
+      })
+    },
+
+    cloneWithUpdates(updateQuery, updates) {
+      return freeze({
+        ...updateQuery,
+        updates: updateQuery.updates
+          ? freeze([...updateQuery.updates, ...updates])
+          : updates,
+      })
+    },
+
+    cloneWithLimit(updateQuery, limit) {
+      return freeze({
+        ...updateQuery,
+        limit,
+      })
+    },
+  })

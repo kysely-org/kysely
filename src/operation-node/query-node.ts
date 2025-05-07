@@ -33,11 +33,45 @@ type HasOutput = { output?: OutputNode }
 type HasEndModifiers = { endModifiers?: ReadonlyArray<OperationNode> }
 type HasOrderBy = { orderBy?: OrderByNode }
 
+type QueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is QueryNode
+  cloneWithEndModifier<T extends HasEndModifiers>(
+    node: T,
+    modifier: OperationNode,
+  ): Readonly<T>
+  cloneWithWhere<T extends HasWhere>(
+    node: T,
+    operation: OperationNode,
+  ): Readonly<T>
+  cloneWithJoin<T extends HasJoins>(node: T, join: JoinNode): Readonly<T>
+  cloneWithReturning<T extends HasReturning>(
+    node: T,
+    selections: ReadonlyArray<SelectionNode>,
+  ): Readonly<T>
+  cloneWithoutReturning<T extends HasReturning>(node: T): Readonly<T>
+  cloneWithoutWhere<T extends HasWhere>(node: T): Readonly<T>
+  cloneWithExplain<T extends HasExplain>(
+    node: T,
+    format: ExplainFormat | undefined,
+    options: Expression<any> | undefined,
+  ): Readonly<T>
+  cloneWithTop<T extends HasTop>(node: T, top: TopNode): Readonly<T>
+  cloneWithOutput<T extends HasOutput>(
+    node: T,
+    selections: ReadonlyArray<SelectionNode>,
+  ): Readonly<T>
+  cloneWithOrderByItems<T extends HasOrderBy>(
+    node: T,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): Readonly<T>
+  cloneWithoutOrderBy<T extends HasOrderBy>(node: T): Readonly<T>
+}>
+
 /**
  * @internal
  */
-export const QueryNode = freeze({
-  is(node: OperationNode): node is QueryNode {
+export const QueryNode: QueryNodeFactory = freeze<QueryNodeFactory>({
+  is(node): node is QueryNode {
     return (
       SelectQueryNode.is(node) ||
       InsertQueryNode.is(node) ||
@@ -47,10 +81,7 @@ export const QueryNode = freeze({
     )
   },
 
-  cloneWithEndModifier<T extends HasEndModifiers>(
-    node: T,
-    modifier: OperationNode,
-  ): T {
+  cloneWithEndModifier(node, modifier) {
     return freeze({
       ...node,
       endModifiers: node.endModifiers
@@ -59,7 +90,7 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
+  cloneWithWhere(node, operation) {
     return freeze({
       ...node,
       where: node.where
@@ -68,17 +99,14 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithJoin<T extends HasJoins>(node: T, join: JoinNode): T {
+  cloneWithJoin(node, join) {
     return freeze({
       ...node,
       joins: node.joins ? freeze([...node.joins, join]) : freeze([join]),
     })
   },
 
-  cloneWithReturning<T extends HasReturning>(
-    node: T,
-    selections: ReadonlyArray<SelectionNode>,
-  ): T {
+  cloneWithReturning(node, selections) {
     return freeze({
       ...node,
       returning: node.returning
@@ -87,42 +115,35 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithoutReturning<T extends HasReturning>(node: T): T {
+  cloneWithoutReturning(node) {
     return freeze({
       ...node,
       returning: undefined,
     })
   },
 
-  cloneWithoutWhere<T extends HasWhere>(node: T): T {
+  cloneWithoutWhere(node) {
     return freeze({
       ...node,
       where: undefined,
     })
   },
 
-  cloneWithExplain<T extends HasExplain>(
-    node: T,
-    format: ExplainFormat | undefined,
-    options: Expression<any> | undefined,
-  ): T {
+  cloneWithExplain(node, format, options) {
     return freeze({
       ...node,
       explain: ExplainNode.create(format, options?.toOperationNode()),
     })
   },
 
-  cloneWithTop<T extends HasTop>(node: T, top: TopNode): T {
+  cloneWithTop(node, top) {
     return freeze({
       ...node,
       top,
     })
   },
 
-  cloneWithOutput<T extends HasOutput>(
-    node: T,
-    selections: ReadonlyArray<SelectionNode>,
-  ): T {
+  cloneWithOutput(node, selections) {
     return freeze({
       ...node,
       output: node.output
@@ -131,10 +152,7 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItems<T extends HasOrderBy>(
-    node: T,
-    items: ReadonlyArray<OrderByItemNode>,
-  ): T {
+  cloneWithOrderByItems(node, items) {
     return freeze({
       ...node,
       orderBy: node.orderBy
@@ -143,7 +161,7 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithoutOrderBy<T extends HasOrderBy>(node: T): T {
+  cloneWithoutOrderBy(node) {
     return freeze({
       ...node,
       orderBy: undefined,

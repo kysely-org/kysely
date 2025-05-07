@@ -6,15 +6,20 @@ export interface TupleNode extends OperationNode {
   readonly values: ReadonlyArray<OperationNode>
 }
 
+type TupleNodeFactory = Readonly<{
+  is(node: OperationNode): node is TupleNode
+  create(values: ReadonlyArray<OperationNode>): Readonly<TupleNode>
+}>
+
 /**
  * @internal
  */
-export const TupleNode = freeze({
-  is(node: OperationNode): node is TupleNode {
+export const TupleNode: TupleNodeFactory = freeze<TupleNodeFactory>({
+  is(node): node is TupleNode {
     return node.kind === 'TupleNode'
   },
 
-  create(values: ReadonlyArray<OperationNode>): TupleNode {
+  create(values) {
     return freeze({
       kind: 'TupleNode',
       values: freeze(values),

@@ -7,22 +7,28 @@ export interface ValueNode extends OperationNode {
   readonly immediate?: boolean
 }
 
+type ValueNodeFactory = Readonly<{
+  is(node: OperationNode): node is ValueNode
+  create(value: unknown): Readonly<ValueNode>
+  createImmediate(value: unknown): Readonly<ValueNode>
+}>
+
 /**
  * @internal
  */
-export const ValueNode = freeze({
-  is(node: OperationNode): node is ValueNode {
+export const ValueNode: ValueNodeFactory = freeze<ValueNodeFactory>({
+  is(node): node is ValueNode {
     return node.kind === 'ValueNode'
   },
 
-  create(value: unknown): ValueNode {
+  create(value) {
     return freeze({
       kind: 'ValueNode',
       value,
     })
   },
 
-  createImmediate(value: unknown): ValueNode {
+  createImmediate(value) {
     return freeze({
       kind: 'ValueNode',
       value,

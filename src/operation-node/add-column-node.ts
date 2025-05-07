@@ -7,18 +7,25 @@ export interface AddColumnNode extends OperationNode {
   readonly column: ColumnDefinitionNode
 }
 
+type AddColumnNodeFactory = Readonly<{
+  is(node: OperationNode): node is AddColumnNode
+  create(column: ColumnDefinitionNode): Readonly<AddColumnNode>
+}>
+
 /**
  * @internal
  */
-export const AddColumnNode = freeze({
-  is(node: OperationNode): node is AddColumnNode {
-    return node.kind === 'AddColumnNode'
-  },
+export const AddColumnNode: AddColumnNodeFactory = freeze<AddColumnNodeFactory>(
+  {
+    is(node): node is AddColumnNode {
+      return node.kind === 'AddColumnNode'
+    },
 
-  create(column: ColumnDefinitionNode): AddColumnNode {
-    return freeze({
-      kind: 'AddColumnNode',
-      column,
-    })
+    create(column) {
+      return freeze({
+        kind: 'AddColumnNode',
+        column,
+      })
+    },
   },
-})
+)

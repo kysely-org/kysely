@@ -84,15 +84,20 @@ export interface DataTypeNode extends OperationNode {
   readonly dataType: ColumnDataType
 }
 
+type DataTypeNodeFactory = Readonly<{
+  is(node: OperationNode): node is DataTypeNode
+  create(dataType: ColumnDataType): Readonly<DataTypeNode>
+}>
+
 /**
  * @internal
  */
-export const DataTypeNode = freeze({
-  is(node: OperationNode): node is DataTypeNode {
+export const DataTypeNode: DataTypeNodeFactory = freeze<DataTypeNodeFactory>({
+  is(node): node is DataTypeNode {
     return node.kind === 'DataTypeNode'
   },
 
-  create(dataType: ColumnDataType): DataTypeNode {
+  create(dataType) {
     return freeze({
       kind: 'DataTypeNode',
       dataType,

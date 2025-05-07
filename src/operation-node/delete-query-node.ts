@@ -30,65 +30,79 @@ export interface DeleteQueryNode extends OperationNode {
   readonly output?: OutputNode
 }
 
-/**
- * @internal
- */
-export const DeleteQueryNode = freeze({
-  is(node: OperationNode): node is DeleteQueryNode {
-    return node.kind === 'DeleteQueryNode'
-  },
-
-  create(fromItems: OperationNode[], withNode?: WithNode): DeleteQueryNode {
-    return freeze({
-      kind: 'DeleteQueryNode',
-      from: FromNode.create(fromItems),
-      ...(withNode && { with: withNode }),
-    })
-  },
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
-   */
-  cloneWithOrderByItems: (
+type DeleteQueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is DeleteQueryNode
+  create(
+    fromItems: OperationNode[],
+    withNode?: WithNode,
+  ): Readonly<DeleteQueryNode>
+  cloneWithOrderByItems(
     node: DeleteQueryNode,
     items: ReadonlyArray<OrderByItemNode>,
-  ) => QueryNode.cloneWithOrderByItems(node, items),
-
-  // TODO: remove in v0.29
-  /**
-   * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
-   */
-  cloneWithoutOrderBy: (node: DeleteQueryNode) =>
-    QueryNode.cloneWithoutOrderBy(node),
-
+  ): Readonly<DeleteQueryNode>
+  cloneWithoutOrderBy(node: DeleteQueryNode): Readonly<DeleteQueryNode>
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
     limit: LimitNode,
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      limit,
-    })
-  },
-
-  cloneWithoutLimit(deleteNode: DeleteQueryNode): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      limit: undefined,
-    })
-  },
-
+  ): Readonly<DeleteQueryNode>
+  cloneWithoutLimit(deleteNode: DeleteQueryNode): Readonly<DeleteQueryNode>
   cloneWithUsing(
     deleteNode: DeleteQueryNode,
     tables: OperationNode[],
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      using:
-        deleteNode.using !== undefined
-          ? UsingNode.cloneWithTables(deleteNode.using, tables)
-          : UsingNode.create(tables),
-    })
-  },
-})
+  ): Readonly<DeleteQueryNode>
+}>
+
+/**
+ * @internal
+ */
+export const DeleteQueryNode: DeleteQueryNodeFactory =
+  freeze<DeleteQueryNodeFactory>({
+    is(node): node is DeleteQueryNode {
+      return node.kind === 'DeleteQueryNode'
+    },
+
+    create(fromItems, withNode?) {
+      return freeze({
+        kind: 'DeleteQueryNode',
+        from: FromNode.create(fromItems),
+        ...(withNode && { with: withNode }),
+      })
+    },
+
+    // TODO: remove in v0.29
+    /**
+     * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+     */
+    cloneWithOrderByItems: (node, items) =>
+      QueryNode.cloneWithOrderByItems(node, items),
+
+    // TODO: remove in v0.29
+    /**
+     * @deprecated Use `QueryNode.cloneWithoutOrderBy` instead.
+     */
+    cloneWithoutOrderBy: (node) => QueryNode.cloneWithoutOrderBy(node),
+
+    cloneWithLimit(deleteNode, limit) {
+      return freeze({
+        ...deleteNode,
+        limit,
+      })
+    },
+
+    cloneWithoutLimit(deleteNode) {
+      return freeze({
+        ...deleteNode,
+        limit: undefined,
+      })
+    },
+
+    cloneWithUsing(deleteNode, tables) {
+      return freeze({
+        ...deleteNode,
+        using:
+          deleteNode.using !== undefined
+            ? UsingNode.cloneWithTables(deleteNode.using, tables)
+            : UsingNode.create(tables),
+      })
+    },
+  })

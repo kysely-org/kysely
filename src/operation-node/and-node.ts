@@ -7,15 +7,20 @@ export interface AndNode extends OperationNode {
   readonly right: OperationNode
 }
 
+type AndNodeFactory = Readonly<{
+  is(node: OperationNode): node is AndNode
+  create(left: OperationNode, right: OperationNode): Readonly<AndNode>
+}>
+
 /**
  * @internal
  */
-export const AndNode = freeze({
-  is(node: OperationNode): node is AndNode {
+export const AndNode: AndNodeFactory = freeze<AndNodeFactory>({
+  is(node): node is AndNode {
     return node.kind === 'AndNode'
   },
 
-  create(left: OperationNode, right: OperationNode): AndNode {
+  create(left, right) {
     return freeze({
       kind: 'AndNode',
       left,

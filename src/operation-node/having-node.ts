@@ -8,26 +8,32 @@ export interface HavingNode extends OperationNode {
   readonly having: OperationNode
 }
 
+type HavingNodeFactory = Readonly<{
+  is(node: OperationNode): node is HavingNode
+  create(filter: OperationNode): Readonly<HavingNode>
+  cloneWithOperation(
+    havingNode: HavingNode,
+    operator: 'And' | 'Or',
+    operation: OperationNode,
+  ): Readonly<HavingNode>
+}>
+
 /**
  * @internal
  */
-export const HavingNode = freeze({
-  is(node: OperationNode): node is HavingNode {
+export const HavingNode: HavingNodeFactory = freeze<HavingNodeFactory>({
+  is(node): node is HavingNode {
     return node.kind === 'HavingNode'
   },
 
-  create(filter: OperationNode): HavingNode {
+  create(filter) {
     return freeze({
       kind: 'HavingNode',
       having: filter,
     })
   },
 
-  cloneWithOperation(
-    havingNode: HavingNode,
-    operator: 'And' | 'Or',
-    operation: OperationNode,
-  ): HavingNode {
+  cloneWithOperation(havingNode, operator, operation) {
     return freeze({
       ...havingNode,
       having:

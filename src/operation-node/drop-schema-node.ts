@@ -14,29 +14,39 @@ export interface DropSchemaNode extends OperationNode {
   readonly cascade?: boolean
 }
 
-/**
- * @internal
- */
-export const DropSchemaNode = freeze({
-  is(node: OperationNode): node is DropSchemaNode {
-    return node.kind === 'DropSchemaNode'
-  },
-
-  create(schema: string, params?: DropSchemaNodeParams): DropSchemaNode {
-    return freeze({
-      kind: 'DropSchemaNode',
-      schema: IdentifierNode.create(schema),
-      ...params,
-    })
-  },
-
+type DropSchemaNodeFactory = Readonly<{
+  is(node: OperationNode): node is DropSchemaNode
+  create(
+    schema: string,
+    params?: DropSchemaNodeParams,
+  ): Readonly<DropSchemaNode>
   cloneWith(
     dropSchema: DropSchemaNode,
     params: DropSchemaNodeParams,
-  ): DropSchemaNode {
-    return freeze({
-      ...dropSchema,
-      ...params,
-    })
-  },
-})
+  ): Readonly<DropSchemaNode>
+}>
+
+/**
+ * @internal
+ */
+export const DropSchemaNode: DropSchemaNodeFactory =
+  freeze<DropSchemaNodeFactory>({
+    is(node): node is DropSchemaNode {
+      return node.kind === 'DropSchemaNode'
+    },
+
+    create(schema, params?) {
+      return freeze({
+        kind: 'DropSchemaNode',
+        schema: IdentifierNode.create(schema),
+        ...params,
+      })
+    },
+
+    cloneWith(dropSchema, params) {
+      return freeze({
+        ...dropSchema,
+        ...params,
+      })
+    },
+  })

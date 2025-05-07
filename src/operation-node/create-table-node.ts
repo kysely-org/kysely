@@ -31,75 +31,86 @@ export interface CreateTableNode extends OperationNode {
   readonly selectQuery?: OperationNode
 }
 
-/**
- * @internal
- */
-export const CreateTableNode = freeze({
-  is(node: OperationNode): node is CreateTableNode {
-    return node.kind === 'CreateTableNode'
-  },
-
-  create(table: TableNode): CreateTableNode {
-    return freeze({
-      kind: 'CreateTableNode',
-      table,
-      columns: freeze([]),
-    })
-  },
-
+type CreateTableNodeFactory = Readonly<{
+  is(node: OperationNode): node is CreateTableNode
+  create(table: TableNode): Readonly<CreateTableNode>
   cloneWithColumn(
     createTable: CreateTableNode,
     column: ColumnDefinitionNode,
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      columns: freeze([...createTable.columns, column]),
-    })
-  },
-
+  ): Readonly<CreateTableNode>
   cloneWithConstraint(
     createTable: CreateTableNode,
     constraint: ConstraintNode,
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      constraints: createTable.constraints
-        ? freeze([...createTable.constraints, constraint])
-        : freeze([constraint]),
-    })
-  },
-
+  ): Readonly<CreateTableNode>
   cloneWithFrontModifier(
     createTable: CreateTableNode,
     modifier: OperationNode,
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      frontModifiers: createTable.frontModifiers
-        ? freeze([...createTable.frontModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
+  ): Readonly<CreateTableNode>
   cloneWithEndModifier(
     createTable: CreateTableNode,
     modifier: OperationNode,
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      endModifiers: createTable.endModifiers
-        ? freeze([...createTable.endModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
+  ): Readonly<CreateTableNode>
   cloneWith(
     createTable: CreateTableNode,
     params: CreateTableNodeParams,
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      ...params,
-    })
-  },
-})
+  ): Readonly<CreateTableNode>
+}>
+
+/**
+ * @internal
+ */
+export const CreateTableNode: CreateTableNodeFactory =
+  freeze<CreateTableNodeFactory>({
+    is(node): node is CreateTableNode {
+      return node.kind === 'CreateTableNode'
+    },
+
+    create(table) {
+      return freeze({
+        kind: 'CreateTableNode',
+        table,
+        columns: freeze([]),
+      })
+    },
+
+    cloneWithColumn(createTable, column) {
+      return freeze({
+        ...createTable,
+        columns: freeze([...createTable.columns, column]),
+      })
+    },
+
+    cloneWithConstraint(createTable, constraint) {
+      return freeze({
+        ...createTable,
+        constraints: createTable.constraints
+          ? freeze([...createTable.constraints, constraint])
+          : freeze([constraint]),
+      })
+    },
+
+    cloneWithFrontModifier(createTable, modifier) {
+      return freeze({
+        ...createTable,
+        frontModifiers: createTable.frontModifiers
+          ? freeze([...createTable.frontModifiers, modifier])
+          : freeze([modifier]),
+      })
+    },
+
+    cloneWithEndModifier(createTable, modifier) {
+      return freeze({
+        ...createTable,
+        endModifiers: createTable.endModifiers
+          ? freeze([...createTable.endModifiers, modifier])
+          : freeze([modifier]),
+      })
+    },
+
+    cloneWith(createTable, params) {
+      return freeze({
+        ...createTable,
+        ...params,
+      })
+    },
+  })

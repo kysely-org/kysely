@@ -21,28 +21,35 @@ export interface CreateViewNode extends OperationNode {
   readonly as?: SelectQueryNode | RawNode
 }
 
-/**
- * @internal
- */
-export const CreateViewNode = freeze({
-  is(node: OperationNode): node is CreateViewNode {
-    return node.kind === 'CreateViewNode'
-  },
-
-  create(name: string): CreateViewNode {
-    return freeze({
-      kind: 'CreateViewNode',
-      name: SchemableIdentifierNode.create(name),
-    })
-  },
-
+type CreateViewNodeFactory = Readonly<{
+  is(node: OperationNode): node is CreateViewNode
+  create(name: string): Readonly<CreateViewNode>
   cloneWith(
     createView: CreateViewNode,
     params: CreateViewNodeParams,
-  ): CreateViewNode {
-    return freeze({
-      ...createView,
-      ...params,
-    })
-  },
-})
+  ): Readonly<CreateViewNode>
+}>
+
+/**
+ * @internal
+ */
+export const CreateViewNode: CreateViewNodeFactory =
+  freeze<CreateViewNodeFactory>({
+    is(node): node is CreateViewNode {
+      return node.kind === 'CreateViewNode'
+    },
+
+    create(name) {
+      return freeze({
+        kind: 'CreateViewNode',
+        name: SchemableIdentifierNode.create(name),
+      })
+    },
+
+    cloneWith(createView, params) {
+      return freeze({
+        ...createView,
+        ...params,
+      })
+    },
+  })

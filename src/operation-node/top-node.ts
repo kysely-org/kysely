@@ -9,15 +9,23 @@ export interface TopNode extends OperationNode {
   readonly modifiers?: TopModifier
 }
 
+type TopNodeFactory = Readonly<{
+  is(node: OperationNode): node is TopNode
+  create(
+    expression: number | bigint,
+    modifiers?: TopModifier,
+  ): Readonly<TopNode>
+}>
+
 /**
  * @internal
  */
-export const TopNode = freeze({
-  is(node: OperationNode): node is TopNode {
+export const TopNode: TopNodeFactory = freeze<TopNodeFactory>({
+  is(node): node is TopNode {
     return node.kind === 'TopNode'
   },
 
-  create(expression: number | bigint, modifiers?: TopModifier): TopNode {
+  create(expression, modifiers?) {
     return freeze({
       kind: 'TopNode',
       expression,

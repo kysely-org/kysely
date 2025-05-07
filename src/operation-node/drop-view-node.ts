@@ -12,22 +12,31 @@ export interface DropViewNode extends OperationNode {
   readonly cascade?: boolean
 }
 
+type DropViewNodeFactory = Readonly<{
+  is(node: OperationNode): node is DropViewNode
+  create(name: string): Readonly<DropViewNode>
+  cloneWith(
+    dropView: DropViewNode,
+    params: DropViewNodeParams,
+  ): Readonly<DropViewNode>
+}>
+
 /**
  * @internal
  */
-export const DropViewNode = freeze({
-  is(node: OperationNode): node is DropViewNode {
+export const DropViewNode: DropViewNodeFactory = freeze<DropViewNodeFactory>({
+  is(node): node is DropViewNode {
     return node.kind === 'DropViewNode'
   },
 
-  create(name: string): DropViewNode {
+  create(name) {
     return freeze({
       kind: 'DropViewNode',
       name: SchemableIdentifierNode.create(name),
     })
   },
 
-  cloneWith(dropView: DropViewNode, params: DropViewNodeParams): DropViewNode {
+  cloneWith(dropView, params) {
     return freeze({
       ...dropView,
       ...params,

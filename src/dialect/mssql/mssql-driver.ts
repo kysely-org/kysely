@@ -31,8 +31,8 @@ import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
 
-const PRIVATE_RESET_METHOD = Symbol()
-const PRIVATE_DESTROY_METHOD = Symbol()
+const PRIVATE_RESET_METHOD: unique symbol = Symbol()
+const PRIVATE_DESTROY_METHOD: unique symbol = Symbol()
 
 export class MssqlDriver implements Driver {
   readonly #config: MssqlDialectConfig
