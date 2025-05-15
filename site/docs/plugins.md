@@ -24,4 +24,4 @@ A plugin that removes duplicate joins from queries. You can read more about it i
 
 ### Handle `in ()` and `not in ()` plugin
 
-A plugin that allows handling `in ()` and `not in ()` with a chosen strategy. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/HandleEmptyWhereInListsPlugin.html).
+A plugin that allows handling `in ()` and `not in ()` with a chosen strategy. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/HandleEmptyInListsPlugin.html).
