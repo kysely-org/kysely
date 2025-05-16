@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": {
+      "react-native": "./dist/cjs/index.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
@@ -57,6 +58,7 @@
     "test:bun": "npm run build && bun link && cd test/bun && bun install && bun run test",
     "test:cloudflare-workers": "npm run build && cd test/cloudflare-workers && npm ci && npm test",
     "test:deno": "deno run --allow-env --allow-read --allow-net test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net test/deno/cdn.test.ts",
+    "test:expo": "npm run build && cd test/expo && npm ci && npm test",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
