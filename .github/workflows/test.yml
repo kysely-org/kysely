@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         # https://endoflife.date/nodejs
-        node-version: [20.x, 22.x, 23.x]
+        node-version: [20.x, 22.x, 24.x]
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
