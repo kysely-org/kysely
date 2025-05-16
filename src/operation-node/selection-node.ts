@@ -16,32 +16,41 @@ export interface SelectionNode extends OperationNode {
   readonly selection: SelectionNodeChild
 }
 
+type SelectionNodeFactory = Readonly<{
+  is(node: OperationNode): node is SelectionNode
+  create(selection: SelectionNodeChild): Readonly<SelectionNode>
+  createSelectAll(): Readonly<SelectionNode>
+  createSelectAllFromTable(table: TableNode): Readonly<SelectionNode>
+}>
+
 /**
  * @internal
  */
-export const SelectionNode = freeze({
-  is(node: OperationNode): node is SelectionNode {
-    return node.kind === 'SelectionNode'
-  },
+export const SelectionNode: SelectionNodeFactory = freeze<SelectionNodeFactory>(
+  {
+    is(node): node is SelectionNode {
+      return node.kind === 'SelectionNode'
+    },
 
-  create(selection: SelectionNodeChild): SelectionNode {
-    return freeze({
-      kind: 'SelectionNode',
-      selection: selection,
-    })
-  },
+    create(selection) {
+      return freeze({
+        kind: 'SelectionNode',
+        selection: selection,
+      })
+    },
 
-  createSelectAll(): SelectionNode {
-    return freeze({
-      kind: 'SelectionNode',
-      selection: SelectAllNode.create(),
-    })
-  },
+    createSelectAll() {
+      return freeze({
+        kind: 'SelectionNode',
+        selection: SelectAllNode.create(),
+      })
+    },
 
-  createSelectAllFromTable(table: TableNode): SelectionNode {
-    return freeze({
-      kind: 'SelectionNode',
-      selection: ReferenceNode.createSelectAll(table),
-    })
+    createSelectAllFromTable(table) {
+      return freeze({
+        kind: 'SelectionNode',
+        selection: ReferenceNode.createSelectAll(table),
+      })
+    },
   },
-})
+)

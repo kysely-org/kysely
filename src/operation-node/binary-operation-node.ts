@@ -8,24 +8,30 @@ export interface BinaryOperationNode extends OperationNode {
   readonly rightOperand: OperationNode
 }
 
-/**
- * @internal
- */
-export const BinaryOperationNode = freeze({
-  is(node: OperationNode): node is BinaryOperationNode {
-    return node.kind === 'BinaryOperationNode'
-  },
-
+type BinaryOperationNodeFactory = Readonly<{
+  is(node: OperationNode): node is BinaryOperationNode
   create(
     leftOperand: OperationNode,
     operator: OperationNode,
     rightOperand: OperationNode,
-  ): BinaryOperationNode {
-    return freeze({
-      kind: 'BinaryOperationNode',
-      leftOperand,
-      operator,
-      rightOperand,
-    })
-  },
-})
+  ): Readonly<BinaryOperationNode>
+}>
+
+/**
+ * @internal
+ */
+export const BinaryOperationNode: BinaryOperationNodeFactory =
+  freeze<BinaryOperationNodeFactory>({
+    is(node): node is BinaryOperationNode {
+      return node.kind === 'BinaryOperationNode'
+    },
+
+    create(leftOperand, operator, rightOperand) {
+      return freeze({
+        kind: 'BinaryOperationNode',
+        leftOperand,
+        operator,
+        rightOperand,
+      })
+    },
+  })

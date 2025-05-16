@@ -6,18 +6,24 @@ export interface GroupByItemNode extends OperationNode {
   readonly groupBy: OperationNode
 }
 
+type GroupByItemNodeFactory = Readonly<{
+  is(node: OperationNode): node is GroupByItemNode
+  create(groupBy: OperationNode): Readonly<GroupByItemNode>
+}>
+
 /**
  * @internal
  */
-export const GroupByItemNode = freeze({
-  is(node: OperationNode): node is GroupByItemNode {
-    return node.kind === 'GroupByItemNode'
-  },
+export const GroupByItemNode: GroupByItemNodeFactory =
+  freeze<GroupByItemNodeFactory>({
+    is(node): node is GroupByItemNode {
+      return node.kind === 'GroupByItemNode'
+    },
 
-  create(groupBy: OperationNode): GroupByItemNode {
-    return freeze({
-      kind: 'GroupByItemNode',
-      groupBy,
-    })
-  },
-})
+    create(groupBy) {
+      return freeze({
+        kind: 'GroupByItemNode',
+        groupBy,
+      })
+    },
+  })

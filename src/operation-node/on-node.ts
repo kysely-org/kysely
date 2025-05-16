@@ -8,26 +8,32 @@ export interface OnNode extends OperationNode {
   readonly on: OperationNode
 }
 
+type OnNodeFactory = Readonly<{
+  is(node: OperationNode): node is OnNode
+  create(filter: OperationNode): Readonly<OnNode>
+  cloneWithOperation(
+    onNode: OnNode,
+    operator: 'And' | 'Or',
+    operation: OperationNode,
+  ): Readonly<OnNode>
+}>
+
 /**
  * @internal
  */
-export const OnNode = freeze({
-  is(node: OperationNode): node is OnNode {
+export const OnNode: OnNodeFactory = freeze<OnNodeFactory>({
+  is(node): node is OnNode {
     return node.kind === 'OnNode'
   },
 
-  create(filter: OperationNode): OnNode {
+  create(filter) {
     return freeze({
       kind: 'OnNode',
       on: filter,
     })
   },
 
-  cloneWithOperation(
-    onNode: OnNode,
-    operator: 'And' | 'Or',
-    operation: OperationNode,
-  ): OnNode {
+  cloneWithOperation(onNode, operator, operation) {
     return freeze({
       ...onNode,
       on:

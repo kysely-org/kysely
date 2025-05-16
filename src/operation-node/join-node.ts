@@ -22,15 +22,26 @@ export interface JoinNode extends OperationNode {
   readonly on?: OnNode
 }
 
+type JoinNodeFactory = Readonly<{
+  is(node: OperationNode): node is JoinNode
+  create(joinType: JoinType, table: OperationNode): Readonly<JoinNode>
+  createWithOn(
+    joinType: JoinType,
+    table: OperationNode,
+    on: OperationNode,
+  ): Readonly<JoinNode>
+  cloneWithOn(joinNode: JoinNode, operation: OperationNode): Readonly<JoinNode>
+}>
+
 /**
  * @internal
  */
-export const JoinNode = freeze({
-  is(node: OperationNode): node is JoinNode {
+export const JoinNode: JoinNodeFactory = freeze<JoinNodeFactory>({
+  is(node): node is JoinNode {
     return node.kind === 'JoinNode'
   },
 
-  create(joinType: JoinType, table: OperationNode): JoinNode {
+  create(joinType, table) {
     return freeze({
       kind: 'JoinNode',
       joinType,
@@ -39,11 +50,7 @@ export const JoinNode = freeze({
     })
   },
 
-  createWithOn(
-    joinType: JoinType,
-    table: OperationNode,
-    on: OperationNode,
-  ): JoinNode {
+  createWithOn(joinType, table, on) {
     return freeze({
       kind: 'JoinNode',
       joinType,
@@ -52,7 +59,7 @@ export const JoinNode = freeze({
     })
   },
 
-  cloneWithOn(joinNode: JoinNode, operation: OperationNode): JoinNode {
+  cloneWithOn(joinNode, operation) {
     return freeze({
       ...joinNode,
       on: joinNode.on

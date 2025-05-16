@@ -34,40 +34,48 @@ export interface InsertQueryNode extends OperationNode {
   readonly output?: OutputNode
 }
 
-/**
- * @internal
- */
-export const InsertQueryNode = freeze({
-  is(node: OperationNode): node is InsertQueryNode {
-    return node.kind === 'InsertQueryNode'
-  },
-
+type InsertQueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is InsertQueryNode
   create(
     into: TableNode,
     withNode?: WithNode,
     replace?: boolean,
-  ): InsertQueryNode {
-    return freeze({
-      kind: 'InsertQueryNode',
-      into,
-      ...(withNode && { with: withNode }),
-      replace,
-    })
-  },
-
-  createWithoutInto(): InsertQueryNode {
-    return freeze({
-      kind: 'InsertQueryNode',
-    })
-  },
-
+  ): Readonly<InsertQueryNode>
+  createWithoutInto(): Readonly<InsertQueryNode>
   cloneWith(
     insertQuery: InsertQueryNode,
     props: InsertQueryNodeProps,
-  ): InsertQueryNode {
-    return freeze({
-      ...insertQuery,
-      ...props,
-    })
-  },
-})
+  ): Readonly<InsertQueryNode>
+}>
+
+/**
+ * @internal
+ */
+export const InsertQueryNode: InsertQueryNodeFactory =
+  freeze<InsertQueryNodeFactory>({
+    is(node): node is InsertQueryNode {
+      return node.kind === 'InsertQueryNode'
+    },
+
+    create(into, withNode?, replace?) {
+      return freeze({
+        kind: 'InsertQueryNode',
+        into,
+        ...(withNode && { with: withNode }),
+        replace,
+      })
+    },
+
+    createWithoutInto() {
+      return freeze({
+        kind: 'InsertQueryNode',
+      })
+    },
+
+    cloneWith(insertQuery, props) {
+      return freeze({
+        ...insertQuery,
+        ...props,
+      })
+    },
+  })

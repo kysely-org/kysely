@@ -12,33 +12,45 @@ export interface GeneratedNode extends OperationNode {
   readonly expression?: OperationNode
 }
 
+type GeneratedNodeFactory = Readonly<{
+  is(node: OperationNode): node is GeneratedNode
+  create(params: GeneratedNodeParams): Readonly<GeneratedNode>
+  createWithExpression(expression: OperationNode): Readonly<GeneratedNode>
+  cloneWith(
+    node: GeneratedNode,
+    params: GeneratedNodeParams,
+  ): Readonly<GeneratedNode>
+}>
+
 /**
  * @internal
  */
-export const GeneratedNode = freeze({
-  is(node: OperationNode): node is GeneratedNode {
-    return node.kind === 'GeneratedNode'
-  },
+export const GeneratedNode: GeneratedNodeFactory = freeze<GeneratedNodeFactory>(
+  {
+    is(node): node is GeneratedNode {
+      return node.kind === 'GeneratedNode'
+    },
 
-  create(params: GeneratedNodeParams): GeneratedNode {
-    return freeze({
-      kind: 'GeneratedNode',
-      ...params,
-    })
-  },
+    create(params) {
+      return freeze({
+        kind: 'GeneratedNode',
+        ...params,
+      })
+    },
 
-  createWithExpression(expression: OperationNode): GeneratedNode {
-    return freeze({
-      kind: 'GeneratedNode',
-      always: true,
-      expression,
-    })
-  },
+    createWithExpression(expression) {
+      return freeze({
+        kind: 'GeneratedNode',
+        always: true,
+        expression,
+      })
+    },
 
-  cloneWith(node: GeneratedNode, params: GeneratedNodeParams): GeneratedNode {
-    return freeze({
-      ...node,
-      ...params,
-    })
+    cloneWith(node, params) {
+      return freeze({
+        ...node,
+        ...params,
+      })
+    },
   },
-})
+)

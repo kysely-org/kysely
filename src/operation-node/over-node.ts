@@ -11,24 +11,34 @@ export interface OverNode extends OperationNode {
   readonly partitionBy?: PartitionByNode
 }
 
+type OverNodeFactory = Readonly<{
+  is(node: OperationNode): node is OverNode
+  create(): Readonly<OverNode>
+  cloneWithOrderByItems(
+    overNode: OverNode,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): Readonly<OverNode>
+  cloneWithPartitionByItems(
+    overNode: OverNode,
+    items: ReadonlyArray<PartitionByItemNode>,
+  ): Readonly<OverNode>
+}>
+
 /**
  * @internal
  */
-export const OverNode = freeze({
-  is(node: OperationNode): node is OverNode {
+export const OverNode: OverNodeFactory = freeze<OverNodeFactory>({
+  is(node): node is OverNode {
     return node.kind === 'OverNode'
   },
 
-  create(): OverNode {
+  create() {
     return freeze({
       kind: 'OverNode',
     })
   },
 
-  cloneWithOrderByItems(
-    overNode: OverNode,
-    items: ReadonlyArray<OrderByItemNode>,
-  ): OverNode {
+  cloneWithOrderByItems(overNode, items) {
     return freeze({
       ...overNode,
       orderBy: overNode.orderBy
@@ -37,10 +47,7 @@ export const OverNode = freeze({
     })
   },
 
-  cloneWithPartitionByItems(
-    overNode: OverNode,
-    items: ReadonlyArray<PartitionByItemNode>,
-  ): OverNode {
+  cloneWithPartitionByItems(overNode, items) {
     return freeze({
       ...overNode,
       partitionBy: overNode.partitionBy

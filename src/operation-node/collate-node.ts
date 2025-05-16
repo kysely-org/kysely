@@ -7,18 +7,23 @@ export interface CollateNode extends OperationNode {
   readonly collation: IdentifierNode
 }
 
+type CollateNodeFactory = Readonly<{
+  is(node: OperationNode): node is CollateNode
+  create(collation: string): Readonly<CollateNode>
+}>
+
 /**
  * @internal
  */
-export const CollateNode = {
-  is(node: OperationNode): node is CollateNode {
+export const CollateNode: CollateNodeFactory = freeze<CollateNodeFactory>({
+  is(node): node is CollateNode {
     return node.kind === 'CollateNode'
   },
 
-  create(collation: string): CollateNode {
+  create(collation) {
     return freeze({
       kind: 'CollateNode',
       collation: IdentifierNode.create(collation),
     })
   },
-}
+})

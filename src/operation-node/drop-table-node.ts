@@ -13,29 +13,40 @@ export interface DropTableNode extends OperationNode {
   readonly cascade?: boolean
 }
 
-/**
- * @internal
- */
-export const DropTableNode = freeze({
-  is(node: OperationNode): node is DropTableNode {
-    return node.kind === 'DropTableNode'
-  },
-
-  create(table: TableNode, params?: DropTablexNodeParams): DropTableNode {
-    return freeze({
-      kind: 'DropTableNode',
-      table,
-      ...params,
-    })
-  },
-
+type DropTableNodeFactory = Readonly<{
+  is(node: OperationNode): node is DropTableNode
+  create(
+    table: TableNode,
+    params?: DropTablexNodeParams,
+  ): Readonly<DropTableNode>
   cloneWith(
     dropIndex: DropTableNode,
     params: DropTablexNodeParams,
-  ): DropTableNode {
-    return freeze({
-      ...dropIndex,
-      ...params,
-    })
+  ): Readonly<DropTableNode>
+}>
+
+/**
+ * @internal
+ */
+export const DropTableNode: DropTableNodeFactory = freeze<DropTableNodeFactory>(
+  {
+    is(node): node is DropTableNode {
+      return node.kind === 'DropTableNode'
+    },
+
+    create(table, params?) {
+      return freeze({
+        kind: 'DropTableNode',
+        table,
+        ...params,
+      })
+    },
+
+    cloneWith(dropIndex, params) {
+      return freeze({
+        ...dropIndex,
+        ...params,
+      })
+    },
   },
-})
+)

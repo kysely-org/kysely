@@ -8,26 +8,32 @@ export interface WhereNode extends OperationNode {
   readonly where: OperationNode
 }
 
+type WhereNodeFactory = Readonly<{
+  is(node: OperationNode): node is WhereNode
+  create(filter: OperationNode): Readonly<WhereNode>
+  cloneWithOperation(
+    whereNode: WhereNode,
+    operator: 'And' | 'Or',
+    operation: OperationNode,
+  ): Readonly<WhereNode>
+}>
+
 /**
  * @internal
  */
-export const WhereNode = freeze({
-  is(node: OperationNode): node is WhereNode {
+export const WhereNode: WhereNodeFactory = freeze<WhereNodeFactory>({
+  is(node): node is WhereNode {
     return node.kind === 'WhereNode'
   },
 
-  create(filter: OperationNode): WhereNode {
+  create(filter) {
     return freeze({
       kind: 'WhereNode',
       where: filter,
     })
   },
 
-  cloneWithOperation(
-    whereNode: WhereNode,
-    operator: 'And' | 'Or',
-    operation: OperationNode,
-  ): WhereNode {
+  cloneWithOperation(whereNode, operator, operation) {
     return freeze({
       ...whereNode,
       where:

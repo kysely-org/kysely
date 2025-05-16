@@ -6,15 +6,20 @@ export interface LimitNode extends OperationNode {
   readonly limit: OperationNode
 }
 
+type LimitNodeFactory = Readonly<{
+  is(node: OperationNode): node is LimitNode
+  create(limit: OperationNode): Readonly<LimitNode>
+}>
+
 /**
  * @internal
  */
-export const LimitNode = freeze({
-  is(node: OperationNode): node is LimitNode {
+export const LimitNode: LimitNodeFactory = freeze<LimitNodeFactory>({
+  is(node): node is LimitNode {
     return node.kind === 'LimitNode'
   },
 
-  create(limit: OperationNode): LimitNode {
+  create(limit) {
     return freeze({
       kind: 'LimitNode',
       limit,

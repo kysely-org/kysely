@@ -19,19 +19,19 @@ export class UniqueConstraintNodeBuilder implements OperationNodeSource {
     )
   }
 
-  deferrable() {
+  deferrable(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(
       UniqueConstraintNode.cloneWith(this.#node, { deferrable: true }),
     )
   }
 
-  notDeferrable() {
+  notDeferrable(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(
       UniqueConstraintNode.cloneWith(this.#node, { deferrable: false }),
     )
   }
 
-  initiallyDeferred() {
+  initiallyDeferred(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(
       UniqueConstraintNode.cloneWith(this.#node, {
         initiallyDeferred: true,
@@ -39,7 +39,7 @@ export class UniqueConstraintNodeBuilder implements OperationNodeSource {
     )
   }
 
-  initiallyImmediate() {
+  initiallyImmediate(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(
       UniqueConstraintNode.cloneWith(this.#node, {
         initiallyDeferred: false,

@@ -716,7 +716,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected getAutoIncrement() {
+  protected getAutoIncrement(): string {
     return 'auto_increment'
   }
 

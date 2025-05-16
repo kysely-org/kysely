@@ -1,3 +1,4 @@
+import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { ValueNode } from './value-node.js'
 
@@ -9,19 +10,27 @@ export interface FetchNode extends OperationNode {
   readonly modifier: FetchModifier
 }
 
+type FetchNodeFactory = Readonly<{
+  is(node: OperationNode): node is FetchNode
+  create(
+    rowCount: number | bigint,
+    modifier: FetchModifier,
+  ): Readonly<FetchNode>
+}>
+
 /**
  * @internal
  */
-export const FetchNode = {
-  is(node: OperationNode): node is FetchNode {
+export const FetchNode: FetchNodeFactory = freeze<FetchNodeFactory>({
+  is(node): node is FetchNode {
     return node.kind === 'FetchNode'
   },
 
-  create(rowCount: number | bigint, modifier: FetchModifier): FetchNode {
+  create(rowCount, modifier) {
     return {
       kind: 'FetchNode',
       rowCount: ValueNode.create(rowCount),
       modifier,
     }
   },
-}
+})

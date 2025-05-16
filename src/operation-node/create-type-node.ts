@@ -12,28 +12,35 @@ export interface CreateTypeNode extends OperationNode {
   readonly enum?: ValueListNode
 }
 
-/**
- * @internal
- */
-export const CreateTypeNode = freeze({
-  is(node: OperationNode): node is CreateTypeNode {
-    return node.kind === 'CreateTypeNode'
-  },
-
-  create(name: SchemableIdentifierNode): CreateTypeNode {
-    return freeze({
-      kind: 'CreateTypeNode',
-      name,
-    })
-  },
-
+type CreateTypeNodeFactory = Readonly<{
+  is(node: OperationNode): node is CreateTypeNode
+  create(name: SchemableIdentifierNode): Readonly<CreateTypeNode>
   cloneWithEnum(
     createType: CreateTypeNode,
     values: readonly string[],
-  ): CreateTypeNode {
-    return freeze({
-      ...createType,
-      enum: ValueListNode.create(values.map(ValueNode.createImmediate)),
-    })
-  },
-})
+  ): Readonly<CreateTypeNode>
+}>
+
+/**
+ * @internal
+ */
+export const CreateTypeNode: CreateTypeNodeFactory =
+  freeze<CreateTypeNodeFactory>({
+    is(node): node is CreateTypeNode {
+      return node.kind === 'CreateTypeNode'
+    },
+
+    create(name) {
+      return freeze({
+        kind: 'CreateTypeNode',
+        name,
+      })
+    },
+
+    cloneWithEnum(createType, values) {
+      return freeze({
+        ...createType,
+        enum: ValueListNode.create(values.map(ValueNode.createImmediate)),
+      })
+    },
+  })

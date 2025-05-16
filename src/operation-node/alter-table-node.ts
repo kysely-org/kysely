@@ -44,40 +44,48 @@ export interface AlterTableNode extends OperationNode {
   readonly dropIndex?: DropIndexNode
 }
 
-/**
- * @internal
- */
-export const AlterTableNode = freeze({
-  is(node: OperationNode): node is AlterTableNode {
-    return node.kind === 'AlterTableNode'
-  },
-
-  create(table: TableNode): AlterTableNode {
-    return freeze({
-      kind: 'AlterTableNode',
-      table,
-    })
-  },
-
+type AlterTableNodeFactory = Readonly<{
+  is(node: OperationNode): node is AlterTableNode
+  create(table: TableNode): Readonly<AlterTableNode>
   cloneWithTableProps(
     node: AlterTableNode,
     props: AlterTableNodeTableProps,
-  ): AlterTableNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-
+  ): Readonly<AlterTableNode>
   cloneWithColumnAlteration(
     node: AlterTableNode,
     columnAlteration: AlterTableColumnAlterationNode,
-  ): AlterTableNode {
-    return freeze({
-      ...node,
-      columnAlterations: node.columnAlterations
-        ? [...node.columnAlterations, columnAlteration]
-        : [columnAlteration],
-    })
-  },
-})
+  ): Readonly<AlterTableNode>
+}>
+
+/**
+ * @internal
+ */
+export const AlterTableNode: AlterTableNodeFactory =
+  freeze<AlterTableNodeFactory>({
+    is(node): node is AlterTableNode {
+      return node.kind === 'AlterTableNode'
+    },
+
+    create(table) {
+      return freeze({
+        kind: 'AlterTableNode',
+        table,
+      })
+    },
+
+    cloneWithTableProps(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+
+    cloneWithColumnAlteration(node, columnAlteration) {
+      return freeze({
+        ...node,
+        columnAlterations: node.columnAlterations
+          ? [...node.columnAlterations, columnAlteration]
+          : [columnAlteration],
+      })
+    },
+  })

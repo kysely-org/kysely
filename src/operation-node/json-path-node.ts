@@ -9,15 +9,24 @@ export interface JSONPathNode extends OperationNode {
   readonly pathLegs: ReadonlyArray<JSONPathLegNode>
 }
 
+type JSONPathNodeFactory = Readonly<{
+  is(node: OperationNode): node is JSONPathNode
+  create(inOperator?: OperatorNode): Readonly<JSONPathNode>
+  cloneWithLeg(
+    jsonPathNode: JSONPathNode,
+    pathLeg: JSONPathLegNode,
+  ): Readonly<JSONPathNode>
+}>
+
 /**
  * @internal
  */
-export const JSONPathNode = freeze({
-  is(node: OperationNode): node is JSONPathNode {
+export const JSONPathNode: JSONPathNodeFactory = freeze<JSONPathNodeFactory>({
+  is(node): node is JSONPathNode {
     return node.kind === 'JSONPathNode'
   },
 
-  create(inOperator?: OperatorNode): JSONPathNode {
+  create(inOperator?) {
     return freeze({
       kind: 'JSONPathNode',
       inOperator,
@@ -25,10 +34,7 @@ export const JSONPathNode = freeze({
     })
   },
 
-  cloneWithLeg(
-    jsonPathNode: JSONPathNode,
-    pathLeg: JSONPathLegNode,
-  ): JSONPathNode {
+  cloneWithLeg(jsonPathNode, pathLeg) {
     return freeze({
       ...jsonPathNode,
       pathLegs: freeze([...jsonPathNode.pathLegs, pathLeg]),

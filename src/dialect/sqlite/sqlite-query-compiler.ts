@@ -10,7 +10,7 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
     this.append(node.action)
   }
 
-  protected override getCurrentParameterPlaceholder() {
+  protected override getCurrentParameterPlaceholder(): string {
     return '?'
   }
 
@@ -30,7 +30,7 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
     return '"'
   }
 
-  protected override getAutoIncrement() {
+  protected override getAutoIncrement(): string {
     return 'autoincrement'
   }
 
