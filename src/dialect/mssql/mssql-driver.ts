@@ -31,8 +31,9 @@ import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
 
-const PRIVATE_RESET_METHOD = Symbol()
-const PRIVATE_DESTROY_METHOD = Symbol()
+const PRIVATE_RESET_METHOD: unique symbol = Symbol()
+const PRIVATE_DESTROY_METHOD: unique symbol = Symbol()
+const PRIVATE_VALIDATE_METHOD: unique symbol = Symbol()
 
 export class MssqlDriver implements Driver {
   readonly #config: MssqlDialectConfig
@@ -63,7 +64,7 @@ export class MssqlDriver implements Driver {
         validateConnections === false ||
         (deprecatedValidateConnections as any) === false
           ? undefined
-          : (connection) => connection.validate(),
+          : (connection) => connection[PRIVATE_VALIDATE_METHOD](),
     })
   }
 
@@ -122,16 +123,13 @@ export class MssqlDriver implements Driver {
 
 class MssqlConnection implements DatabaseConnection {
   readonly #connection: TediousConnection
+  #hasSocketError: boolean
   readonly #tedious: Tedious
 
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
+    this.#hasSocketError = false
     this.#tedious = tedious
-
-    this.#connection.on('error', console.error)
-    this.#connection.once('end', () => {
-      this.#connection.off('error', console.error)
-    })
   }
 
   async beginTransaction(settings: TransactionSettings): Promise<void> {
@@ -161,16 +159,42 @@ class MssqlConnection implements DatabaseConnection {
   }
 
   async connect(): Promise<this> {
-    await new Promise((resolve, reject) => {
-      this.#connection.connect((error) => {
-        if (error) {
-          console.error(error)
-          reject(error)
-        } else {
-          resolve(undefined)
-        }
-      })
+    const { promise: waitForConnected, reject, resolve } = new Deferred<void>()
+
+    this.#connection.connect((error) => {
+      if (error) {
+        return reject(error)
+      }
+
+      resolve()
     })
+
+    this.#connection.on('error', (error) => {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ESOCKET'
+      ) {
+        this.#hasSocketError = true
+      }
+
+      console.error(error)
+      reject(error)
+    })
+
+    function endListener() {
+      reject(
+        new Error(
+          'The connection ended without ever completing the connection',
+        ),
+      )
+    }
+
+    this.#connection.once('end', endListener)
+
+    await waitForConnected
+
+    this.#connection.off('end', endListener)
 
     return this
   }
@@ -251,26 +275,6 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  async validate(): Promise<boolean> {
-    try {
-      const deferred = new Deferred<OnDone<unknown>>()
-
-      const request = new MssqlRequest<unknown>({
-        compiledQuery: CompiledQuery.raw('select 1'),
-        onDone: deferred,
-        tedious: this.#tedious,
-      })
-
-      this.#connection.execSql(request.request)
-
-      await deferred.promise
-
-      return true
-    } catch {
-      return false
-    }
-  }
-
   #getTediousIsolationLevel(isolationLevel: IsolationLevel) {
     const { ISOLATION_LEVEL } = this.#tedious
 
@@ -295,35 +299,68 @@ class MssqlConnection implements DatabaseConnection {
   }
 
   #cancelRequest<O>(request: MssqlRequest<O>): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       request.request.once('requestCompleted', resolve)
 
       const wasCanceled = this.#connection.cancel()
 
       if (!wasCanceled) {
         request.request.off('requestCompleted', resolve)
-        resolve(undefined)
+        resolve()
       }
     })
   }
 
+  [PRIVATE_DESTROY_METHOD](): Promise<void> {
+    if ('closed' in this.#connection && this.#connection.closed) {
+      return Promise.resolve()
+    }
+
+    return new Promise<void>((resolve) => {
+      this.#connection.once('end', resolve)
+
+      this.#connection.close()
+    })
+  }
+
   async [PRIVATE_RESET_METHOD](): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this.#connection.reset((error) => {
-        if (error) reject(error)
-        else resolve(undefined)
+        if (error) {
+          return reject(error)
+        }
+
+        resolve()
       })
     })
   }
 
-  [PRIVATE_DESTROY_METHOD](): Promise<void> {
-    return new Promise((resolve) => {
-      this.#connection.once('end', () => {
-        resolve(undefined)
+  async [PRIVATE_VALIDATE_METHOD](): Promise<boolean> {
+    if (this.#hasSocketError || this.#isConnectionClosed()) {
+      return false
+    }
+
+    try {
+      const deferred = new Deferred<OnDone<unknown>>()
+
+      const request = new MssqlRequest<unknown>({
+        compiledQuery: CompiledQuery.raw('select 1'),
+        onDone: deferred,
+        tedious: this.#tedious,
       })
 
-      this.#connection.close()
-    })
+      this.#connection.execSql(request.request)
+
+      await deferred.promise
+
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  #isConnectionClosed(): boolean {
+    return 'closed' in this.#connection && Boolean(this.#connection.closed)
   }
 }
 
@@ -367,13 +404,13 @@ class MssqlRequest<O> {
         delete this.#subscribers[subscriptionKey]
 
         if (event === 'error') {
-          onDone.reject(error)
-        } else {
-          onDone.resolve({
-            rowCount: this.#rowCount,
-            rows: this.#rows,
-          })
+          return onDone.reject(error)
         }
+
+        onDone.resolve({
+          rowCount: this.#rowCount,
+          rows: this.#rows,
+        })
       }
     }
 
@@ -381,15 +418,15 @@ class MssqlRequest<O> {
       compiledQuery.sql,
       (err, rowCount) => {
         if (err) {
-          Object.values(this.#subscribers).forEach((subscriber) =>
+          return Object.values(this.#subscribers).forEach((subscriber) =>
             subscriber(
               'error',
               err instanceof AggregateError ? err.errors : err,
             ),
           )
-        } else {
-          this.#rowCount = rowCount
         }
+
+        this.#rowCount = rowCount
       },
     )
 
@@ -409,10 +446,10 @@ class MssqlRequest<O> {
         delete this.#subscribers[subscriptionKey]
 
         if (event === 'error') {
-          reject(error)
-        } else {
-          resolve(this.#rows.splice(0, this.#streamChunkSize))
+          return reject(error)
         }
+
+        resolve(this.#rows.splice(0, this.#streamChunkSize))
       }
 
       this.#request.resume()
