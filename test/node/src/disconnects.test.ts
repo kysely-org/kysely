@@ -11,7 +11,7 @@ if (DIALECTS.includes(dialect)) {
     let connectionFactoryTimesCalled = 0
     let db: Kysely<Database>
 
-    before(async () => {
+    before(() => {
       db = new Kysely({
         dialect: new MssqlDialect({
           tarn: {
