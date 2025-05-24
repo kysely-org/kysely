@@ -268,3 +268,22 @@ jobs:
 
       - name: Run benchmarks
         run: npm run bench:ts
+
+  typescript-native:
+    name: TypeScript Native
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci && npm i -D @typescript/native-preview
+
+      - name: Run TypeScript Native tests
+        run: tsgo
