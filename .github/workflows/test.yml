@@ -286,4 +286,4 @@ jobs:
         run: npm ci && npm install -D @typescript/native-preview
 
       - name: Run TypeScript Native tests
-        run: npx tsgo --project ./tsconfig.json
+        run: npx tsgo --project ./tsconfig.json && npx tsgo --project ./test/node/tsconfig.json
