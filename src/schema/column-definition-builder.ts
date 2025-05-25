@@ -321,7 +321,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds a default value constraint for the column.
+   * Adds a default value constraint to the column's definition.
    *
    * ### Examples
    *
@@ -349,18 +349,18 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * await db.schema
    *   .createTable('pet')
    *   .addColumn(
-   *     'created_at',
-   *     'timestamp',
-   *     (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`)
+   *     'uuid',
+   *     'varchar(36)',
+   *     (col) => col.defaultTo(sql`gen_random_uuid()`)
    *   )
    *   .execute()
    * ```
    *
-   * The generated SQL (MySQL):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * create table `pet` (
-   *   `created_at` timestamp default CURRENT_TIMESTAMP
+   *   `uuid` varchar(36) default gen_random_uuid()
    * )
    * ```
    */
@@ -373,19 +373,27 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds `DEFAULT CURRENT_TIMESTAMP` for the column.
+   * Adds `default current_timestamp` to the column's definition.
    *
    * ### Examples
    *
    * ```ts
    *  db.schema.createTable('test')
    *    .addColumn('created_at', 'datetime', (col) =>
-   *      col.defaultToCurrentTimestamp(),
-   *     )
+   *      col.defaultCurrentTimestamp(),
+   *    )
    *    .execute()
    * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `test` (
+   *   `created_at` datetime default current_timestamp
+   * )
+   * ```
    */
-  defaultToCurrentTimestamp(): ColumnDefinitionBuilder {
+  defaultCurrentTimestamp(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         defaultTo: DefaultValueNode.create(
