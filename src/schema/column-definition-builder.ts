@@ -15,6 +15,11 @@ import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
+import { RawNode } from '../operation-node/raw-node.js'
+import {
+  parseCurrentTimestamp,
+  TimestampPrecision,
+} from '../parser/date-parser.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode
@@ -320,7 +325,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds a default value constraint for the column.
+   * Adds a default value constraint to the column's definition.
    *
    * ### Examples
    *
@@ -348,18 +353,18 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * await db.schema
    *   .createTable('pet')
    *   .addColumn(
-   *     'created_at',
-   *     'timestamp',
-   *     (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`)
+   *     'uuid',
+   *     'varchar(36)',
+   *     (col) => col.defaultTo(sql`gen_random_uuid()`)
    *   )
    *   .execute()
    * ```
    *
-   * The generated SQL (MySQL):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * create table `pet` (
-   *   `created_at` timestamp default CURRENT_TIMESTAMP
+   *   `uuid` varchar(36) default gen_random_uuid()
    * )
    * ```
    */
@@ -367,6 +372,55 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
+      }),
+    )
+  }
+
+  /**
+   * Adds `default current_timestamp` to the column's definition.
+   *
+   * ### Examples
+   *
+   * ```ts
+   *  db.schema.createTable('test')
+   *    .addColumn('created_at', 'timestamptz', (col) =>
+   *      col.defaultCurrentTimestamp(),
+   *    )
+   *    .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "test" (
+   *   "created_at" timestamptz default current_timestamp
+   * )
+   * ```
+   *
+   * or with precision:
+   *
+   * ```ts
+   *  db.schema.createTable('test')
+   *    .addColumn('created_at', 'timestamp(6)', (col) =>
+   *      col.defaultCurrentTimestamp(6),
+   *    )
+   *    .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `test` (
+   *   `created_at` timestamp(6) default current_timestamp(6)
+   * )
+   * ```
+   */
+  defaultCurrentTimestamp(
+    precision?: TimestampPrecision,
+  ): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        defaultTo: DefaultValueNode.create(parseCurrentTimestamp(precision)),
       }),
     )
   }
