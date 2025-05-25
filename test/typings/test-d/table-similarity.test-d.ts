@@ -1,5 +1,6 @@
 import { expectError } from 'tsd'
 import {
+  Expression,
   expressionBuilder,
   Kysely,
   Selectable,
@@ -15,11 +16,7 @@ async function test(db: Kysely<Database>) {
   function selectByName<TB extends NameSimilarity['TB']>(
     table: TB,
     name: SelectType<NameSimilarity['DB'][TB]['name']>,
-  ): SelectQueryBuilder<
-    Omit<Database, 't'> & { t: Database[TB] },
-    't',
-    Selectable<Database[TB]>
-  > {
+  ): Expression<Selectable<Database[TB]>> {
     const eb = expressionBuilder<NameSimilarity['DB'], never>()
 
     return eb
