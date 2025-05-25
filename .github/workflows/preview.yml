@@ -40,4 +40,4 @@ jobs:
         run: npm run build
 
       - name: Release preview version
-        run: npm run release:preview
+        run: npx pkg-pr-new publish --template './example'
