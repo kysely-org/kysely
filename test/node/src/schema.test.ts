@@ -70,7 +70,7 @@ for (const dialect of DIALECTS) {
             .addColumn('t', 'time(6)')
             .addColumn('tz', 'timetz(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp`),
+              col.notNull().defaultCurrentTimestamp(),
             )
             .addColumn('v', 'timestamptz(6)')
             .addColumn('w', 'char(4)')
@@ -227,7 +227,7 @@ for (const dialect of DIALECTS) {
             .addColumn('q', 'time(6)')
             .addColumn('r', 'datetime(6)')
             .addColumn('s', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp(6)`),
+              col.notNull().defaultCurrentTimestamp(6),
             )
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
@@ -323,9 +323,7 @@ for (const dialect of DIALECTS) {
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', sql`bit`, (col) => col.notNull().defaultTo(0))
             .addColumn('m', 'date')
-            .addColumn('n', 'datetime', (col) =>
-              col.defaultTo(sql`current_timestamp`),
-            )
+            .addColumn('n', 'datetime', (col) => col.defaultCurrentTimestamp())
             .addColumn('o', sql`uniqueidentifier`, (col) =>
               col.notNull().defaultTo(sql`newid()`),
             )
@@ -408,7 +406,9 @@ for (const dialect of DIALECTS) {
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
             .addColumn('m', 'date')
-            .addColumn('n', 'timestamptz')
+            .addColumn('n', 'timestamptz', (col) =>
+              col.defaultCurrentTimestamp(),
+            )
             .addColumn('o', 'int2')
             .addColumn('p', 'int4')
             .addColumn('q', 'int8')
@@ -438,7 +438,7 @@ for (const dialect of DIALECTS) {
                 '"k" decimal(8, 4),',
                 '"l" boolean default false not null,',
                 '"m" date,',
-                '"n" timestamptz,',
+                '"n" timestamptz default current_timestamp,',
                 '"o" int2,',
                 '"p" int4,',
                 '"q" int8,',
@@ -483,53 +483,6 @@ for (const dialect of DIALECTS) {
       } else {
         throw new Error(`Unknown dialect: ${dialect}`)
       }
-
-      it('should create table with default timestamp column', async () => {
-        if (dialect !== 'postgres') {
-          const builder = ctx.db.schema
-            .createTable('test')
-            .addColumn('created_at', 'datetime', (col) =>
-              col.defaultToCurrentTimestamp(),
-            )
-
-          testSql(builder, dialect, {
-            postgres: NOT_SUPPORTED,
-            mysql: {
-              sql: 'create table `test` (`created_at` datetime default current_timestamp)',
-              parameters: [],
-            },
-            mssql: {
-              sql: 'create table "test" ("created_at" datetime default current_timestamp)',
-              parameters: [],
-            },
-            sqlite: {
-              sql: 'create table "test" ("created_at" datetime default current_timestamp)',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-        } else {
-          const builder = ctx.db.schema
-            .createTable('test')
-            .addColumn('created_at', 'timestamptz', (col) =>
-              col.defaultToCurrentTimestamp(),
-            )
-            .addColumn('data', 'varchar')
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'create table "test" ("created_at" timestamptz default current_timestamp, "data" varchar)',
-              parameters: [],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-          })
-
-          await builder.execute()
-        }
-      })
 
       it('should create a table with a unique constraints', async () => {
         const builder = ctx.db.schema

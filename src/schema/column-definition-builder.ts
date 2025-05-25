@@ -16,6 +16,10 @@ import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
 import { RawNode } from '../operation-node/raw-node.js'
+import {
+  parseCurrentTimestamp,
+  TimestampPrecision,
+} from '../parser/date-parser.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode
@@ -379,8 +383,26 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    *
    * ```ts
    *  db.schema.createTable('test')
-   *    .addColumn('created_at', 'datetime', (col) =>
+   *    .addColumn('created_at', 'timestamptz', (col) =>
    *      col.defaultCurrentTimestamp(),
+   *    )
+   *    .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "test" (
+   *   "created_at" timestamptz default current_timestamp
+   * )
+   * ```
+   *
+   * or with precision:
+   *
+   * ```ts
+   *  db.schema.createTable('test')
+   *    .addColumn('created_at', 'timestamp(6)', (col) =>
+   *      col.defaultCurrentTimestamp(6),
    *    )
    *    .execute()
    * ```
@@ -389,16 +411,16 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    *
    * ```sql
    * create table `test` (
-   *   `created_at` datetime default current_timestamp
+   *   `created_at` timestamp(6) default current_timestamp(6)
    * )
    * ```
    */
-  defaultCurrentTimestamp(): ColumnDefinitionBuilder {
+  defaultCurrentTimestamp(
+    precision?: TimestampPrecision,
+  ): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
-        defaultTo: DefaultValueNode.create(
-          RawNode.createWithSql('current_timestamp'),
-        ),
+        defaultTo: DefaultValueNode.create(parseCurrentTimestamp(precision)),
       }),
     )
   }
