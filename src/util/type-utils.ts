@@ -218,3 +218,130 @@ export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
 export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T
 }>
+
+/**
+ * Returns converted value if it extends `From`, else returns the value itself.
+ *
+ * @example
+ * ```ts
+ * CastType<number, number, string> // string
+ * CastType<number | null | undefined, number, string> // string | null | undefined
+ * CastType<number, string, Date> // number
+ * ```
+ */
+export type CastType<Value, From, To> = From | null | undefined extends Value
+  ? To | null | undefined
+  : From | null extends Value
+    ? To | null
+    : From | undefined extends Value
+      ? To | undefined
+      : From extends Value
+        ? To
+        : Value
+
+/**
+ * Converts all properties of object type `O` from type `From` to type `To`.
+ *
+ * @example
+ * ```ts
+ * type Obj = {
+ *   created_at: Date
+ *   updated_at: Date | null
+ * }
+ *
+ * CastObjectTypes<Obj, Date, string>
+ * /// {
+ * ///   created_at: string
+ * ///   updated_at: string | null
+ * /// }
+ * ```
+ */
+export type CastObjectTypes<O, From, To> = {
+  [K in keyof O]: CastType<O[K], From, To>
+}
+
+/**
+ * Deeply converts all properties of object type `O` from type `From` to type `To`.
+ *
+ * @example
+ * ```ts
+ * type Obj = {
+ *   created_at: Date
+ *   updated_at: Date | null
+ *   nested: {
+ *     created_at: Date
+ *     updated_at: Date | null
+ *   }
+ * }
+ *
+ * DeepCastObjectTypes<Obj, number, string>
+ * /// {
+ * ///   created_at: string
+ * ///   updated_at: string | null
+ * ///   nested: {
+ * ///     created_at: string
+ * ///     updated_at: string | null
+ * ///   }
+ * /// }
+ * ```
+ */
+export type DeepCastObjectTypes<O, From, To> = {
+  [K in keyof O]: CastType<O[K], From, To> extends object | null | undefined
+    ? DeepCastObjectTypes<O[K], From, To>
+    : CastType<O[K], From, To>
+}
+
+/**
+ * Converts all `Date` like properties of object `O` to `string`.
+ * Useful for object aggregations like `jsonbObjectFrom`.
+ */
+export type CastDatesToStrings<O> = CastObjectTypes<O, Date, string>
+
+/**
+ * Deeply converts all `Date` like properties of object `O` to `string`.
+ */
+export type DeepCastDatesToStrings<O> = DeepCastObjectTypes<O, Date, string>
+
+/**
+ * Prepares object type which was created via jsonbObjectFrom or jsonArrayFrom.
+ * All dates in object will be converted to strings.
+ *
+ * @example
+ * ```ts
+ * type T1Type = {
+ *   created_at: Date
+ *   updated_at: Date | null
+ * }
+ *
+ * type T2Type = {
+ *   created_at: Date
+ *   updated_at: Date | null
+ * }
+ *
+ * const result: T1Type & {
+ *   obj: KyselyJson<T2Type>
+ * } = await kyselyClient
+ *   .selectFrom('t1')
+ *   .select(['created_at', 'updated_at'])
+ *   .select((eb) =>
+ *      jsonObjectFrom(
+ *        eb
+ *          .selectFrom('t2')
+ *          .whereRef('t2.id', '=', 't1.id')
+ *          .select(['created_at', 'updated_at'])
+ *      ).as('obj')
+ *    )
+ *   .executeTakeFirstOrThrow()
+ *
+ * /// result will be like
+ * type Result = {
+ *   created_at: Date
+ *   updated_at: Date | null
+ *   obj: {
+ *     created_at: string
+ *     updated_at: string | null
+ *   }
+ * }
+ * ```
+ */
+export type KyselyJson<O> = DeepCastDatesToStrings<O>
