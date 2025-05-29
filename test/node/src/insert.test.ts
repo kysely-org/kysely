@@ -1,4 +1,4 @@
-import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
+import { AliasedRawBuilder, InsertObject, InsertResult, Kysely, sql } from '../../../'
 
 import {
   clearDatabase,
@@ -14,6 +14,7 @@ import {
   DIALECTS,
   limit,
 } from './test-setup.js'
+import { getNonEmptyArray } from './utils'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: insert into`, () => {
@@ -33,6 +34,36 @@ for (const dialect of DIALECTS) {
 
     after(async () => {
       await destroyTest(ctx)
+    })
+
+    it('should throw ts and runtime error if empty array is passed to values', async () => {
+      const query = ctx.db
+        .insertInto('person')
+        // @ts-expect-error since empty array is not allowed
+        .values([])
+
+      testSql(query, dialect, {
+        postgres: { sql: 'insert into "person" () values ', parameters: [] },
+        mysql: { sql: 'insert into `person` () values ', parameters: [] },
+        mssql: { sql: 'insert into "person" () values ', parameters: [] },
+        sqlite: { sql: 'insert into "person" () values ', parameters: [] },
+      })
+
+      expect(query.executeTakeFirst()).to.be.rejectedWith(
+        `syntax error at or near ")"`,
+      )
+    })
+
+    it('should avoid ts and runtime error since additional check is provided', async () => {
+      const incomingValues: InsertObject<Database, 'person'>[] = []
+      const values = getNonEmptyArray(incomingValues)
+
+      if (!values) return
+
+      // this line should never be reached
+      expect(true).to.eq(false)
+
+      ctx.db.insertInto('person').values(values)
     })
 
     it('should insert one row', async () => {

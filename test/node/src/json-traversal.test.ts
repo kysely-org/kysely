@@ -16,6 +16,7 @@ import {
   insertDefaultDataSet,
   testSql,
 } from './test-setup.js'
+import { getNonEmptyArray } from './utils'
 
 type TestContext = Awaited<ReturnType<typeof initJSONTest>>
 
@@ -796,42 +797,43 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
     .select(['id', 'first_name', 'last_name'])
     .execute()
 
-  await ctx.db
-    .insertInto('person_metadata')
-    .values(
-      people
-        .filter((person) => person.first_name && person.last_name)
-        .map((person, index) => ({
-          person_id: person.id,
-          website: JSON.stringify({
-            url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
-          }),
-          nicknames: JSON.stringify([
-            `${person.first_name![0]}.${person.last_name![0]}.`,
-            `${person.first_name} the Great`,
-            `${person.last_name} the Magnificent`,
-          ]),
-          profile: JSON.stringify({
-            tags: ['awesome'],
-            auth: {
-              roles: ['contributor', 'moderator'],
-              last_login: {
-                device: 'android',
-              },
-              login_count: 12 + index,
-              is_verified: true,
+  const values = getNonEmptyArray(
+    people
+      .filter((person) => person.first_name && person.last_name)
+      .map((person, index) => ({
+        person_id: person.id,
+        website: JSON.stringify({
+          url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
+        }),
+        nicknames: JSON.stringify([
+          `${person.first_name![0]}.${person.last_name![0]}.`,
+          `${person.first_name} the Great`,
+          `${person.last_name} the Magnificent`,
+        ]),
+        profile: JSON.stringify({
+          tags: ['awesome'],
+          auth: {
+            roles: ['contributor', 'moderator'],
+            last_login: {
+              device: 'android',
             },
-            avatar: null,
-          }),
-          experience: JSON.stringify([
-            {
-              establishment: 'The University of Life',
-            },
-          ]),
-          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
-        })),
-    )
-    .execute()
+            login_count: 12 + index,
+            is_verified: true,
+          },
+          avatar: null,
+        }),
+        experience: JSON.stringify([
+          {
+            establishment: 'The University of Life',
+          },
+        ]),
+        schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
+      })),
+  )
+
+  if (values) {
+    await ctx.db.insertInto('person_metadata').values(values).execute()
+  }
 }
 
 async function clearJSONDatabase(ctx: TestContext) {

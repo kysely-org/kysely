@@ -33,9 +33,10 @@ export type InsertObject<DB, TB extends keyof DB> = {
     | undefined
 }
 
+type NonEmptyArray<T> = [T, ...T[]]
 export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
-  | ReadonlyArray<InsertObject<DB, TB>>
+  | Readonly<NonEmptyArray<InsertObject<DB, TB>>>
 
 export type InsertObjectOrListFactory<
   DB,
