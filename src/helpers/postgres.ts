@@ -1,7 +1,7 @@
 import { Expression } from '../expression/expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
-import { Simplify } from '../util/type-utils.js'
+import { CastDatesToStrings, Simplify } from '../util/type-utils.js'
 
 /**
  * A postgres helper for aggregating a subquery (or other expression) into a JSONB array.
@@ -54,7 +54,7 @@ import { Simplify } from '../util/type-utils.js'
  */
 export function jsonArrayFrom<O>(
   expr: Expression<O>,
-): RawBuilder<Simplify<O>[]> {
+): RawBuilder<CastDatesToStrings<Simplify<O>>[]> {
   return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
@@ -111,7 +111,7 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: Expression<O>,
-): RawBuilder<Simplify<O> | null> {
+): RawBuilder<CastDatesToStrings<Simplify<O>> | null> {
   return sql`(select to_json(obj) from ${expr} as obj)`
 }
 
@@ -161,9 +161,11 @@ export function jsonObjectFrom<O>(
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O,
 ): RawBuilder<
-  Simplify<{
-    [K in keyof O]: O[K] extends Expression<infer V> ? V : never
-  }>
+  Simplify<
+    CastDatesToStrings<{
+      [K in keyof O]: O[K] extends Expression<infer V> ? V : never
+    }>
+  >
 > {
   return sql`json_build_object(${sql.join(
     Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),

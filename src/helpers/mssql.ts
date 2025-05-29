@@ -1,7 +1,7 @@
 import { Expression } from '../expression/expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
-import { Simplify } from '../util/type-utils.js'
+import { CastDatesToStrings, Simplify } from '../util/type-utils.js'
 
 /**
  * An MS SQL Server helper for aggregating a subquery into a JSON array.
@@ -77,7 +77,7 @@ import { Simplify } from '../util/type-utils.js'
  */
 export function jsonArrayFrom<O>(
   expr: Expression<O>,
-): RawBuilder<Simplify<O>[]> {
+): RawBuilder<CastDatesToStrings<Simplify<O>>[]> {
   return sql`coalesce((select * from ${expr} as agg for json path, include_null_values), '[]')`
 }
 
@@ -155,7 +155,7 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: Expression<O>,
-): RawBuilder<Simplify<O> | null> {
+): RawBuilder<CastDatesToStrings<Simplify<O>> | null> {
   return sql`(select * from ${expr} as agg for json path, include_null_values, without_array_wrapper)`
 }
 
@@ -222,9 +222,9 @@ export function jsonObjectFrom<O>(
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O,
 ): RawBuilder<
-  Simplify<{
-    [K in keyof O]: O[K] extends Expression<infer V> ? V : never
-  }>
+  CastDatesToStrings<
+    Simplify<{ [K in keyof O]: O[K] extends Expression<infer V> ? V : never }>
+  >
 > {
   return sql`json_query('{${sql.join(
     Object.keys(obj).map((k) => sql`"${sql.raw(k)}":"'+${obj[k]}+'"`),
