@@ -417,6 +417,39 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should migrate all the way down with a foreign NO_MIGRATIONS object', async () => {
+        const [migrator, executedUpMethods, executedDownMethods] =
+          createMigrations(['migration1', 'migration2', 'migration3'])
+
+        const { results: results1 } = await migrator.migrateToLatest()
+        const { results: results2 } = await migrator.migrateTo({
+          __noMigrations__: true,
+        })
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration3', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+        expect(executedDownMethods).to.eql([
+          'migration3',
+          'migration2',
+          'migration1',
+        ])
+      })
+
       it('should migrate down to a specific migration', async () => {
         const [migrator1, executedUpMethods1] = createMigrations([
           'migration1',
