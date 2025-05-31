@@ -5,7 +5,7 @@ import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
 import { CreateTableBuilder } from '../schema/create-table-builder.js'
-import { freeze, getLast } from '../util/object-utils.js'
+import { freeze, getLast, isObject } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
 export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -210,7 +210,10 @@ export class Migrator {
         executedMigrations,
         pendingMigrations,
       }: MigrationState) => {
-        if (targetMigrationName === NO_MIGRATIONS) {
+        if (
+          isObject(targetMigrationName) &&
+          targetMigrationName.__noMigrations__ === true
+        ) {
           return { direction: 'Down', step: Infinity }
         }
 
