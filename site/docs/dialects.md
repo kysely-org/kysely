@@ -24,6 +24,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 |-------------------------------|-----------------------------------------------------------------------------|
 | PlanetScale Serverless Driver | https://github.com/depot/kysely-planetscale                                 |
 | Cloudflare D1                 | https://github.com/aidenwallis/kysely-d1                                    |
+| Cloudflare Durable Objects    | https://github.com/benallfree/kysely-do                                     |
 | AWS RDS Data API              | https://github.com/serverless-stack/kysely-data-api                         |
 | SurrealDB                     | https://github.com/igalklebanov/kysely-surrealdb                            |
 | Neon                          | https://github.com/seveibar/kysely-neon                                     |
