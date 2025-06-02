@@ -22,6 +22,7 @@ import {
   IsNever,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
+  Simplify,
 } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
@@ -720,9 +721,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     T extends TB
-      ? ShallowDehydrateObject<Selectable<DB[T]>>[]
+      ? Simplify<ShallowDehydrateObject<Selectable<DB[T]>>>[]
       : T extends Expression<infer O>
-        ? ShallowDehydrateObject<O>[]
+        ? Simplify<ShallowDehydrateObject<O>>[]
         : never
   >
 
@@ -760,9 +761,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     T extends TB
-      ? ShallowDehydrateObject<Selectable<DB[T]>>
+      ? Simplify<ShallowDehydrateObject<Selectable<DB[T]>>>
       : T extends Expression<infer O>
-        ? ShallowDehydrateObject<O>
+        ? Simplify<ShallowDehydrateObject<O>>
         : never
   >
 }
