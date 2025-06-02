@@ -236,6 +236,9 @@ export {
   SqlBool,
   Nullable,
   NotNull,
+  ShallowDehydrateObject,
+  ShallowDehydrateValue,
+  StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'

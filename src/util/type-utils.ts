@@ -218,3 +218,28 @@ export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
 export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T
 }>
+
+/**
+ * Dehydrates any root properties of an object that are not valid JSON types.
+ *
+ * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
+ */
+export type ShallowDehydrateObject<O> = {
+  [K in keyof O]: ShallowDehydrateValue<O[K]>
+}
+
+/**
+ * Dehydrates a value when it is not a valid JSON type.
+ *
+ * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
+ */
+export type ShallowDehydrateValue<T> =
+  T extends Exclude<T, StringsWhenDataTypeNotAvailable>
+    ? T
+    : string | Exclude<T, StringsWhenDataTypeNotAvailable>
+
+export type StringsWhenDataTypeNotAvailable =
+  | ArrayBuffer
+  | bigint
+  | Buffer
+  | Date
