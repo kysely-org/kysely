@@ -233,8 +233,9 @@ export type ShallowDehydrateObject<O> = {
  *
  * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
  */
-export type ShallowDehydrateValue<T> =
-  T extends Exclude<T, StringsWhenDataTypeNotAvailable>
+export type ShallowDehydrateValue<T> = T extends (infer U)[] | null | undefined
+  ? ShallowDehydrateValue<U>[] | Extract<T, null | undefined>
+  : T extends Exclude<T, StringsWhenDataTypeNotAvailable>
     ? T
     : string | Exclude<T, StringsWhenDataTypeNotAvailable>
 
