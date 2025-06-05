@@ -1,0 +1,8 @@
+{
+  "label": "Migrations",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Manage database schema migrations with Kysely."
+  }
+}

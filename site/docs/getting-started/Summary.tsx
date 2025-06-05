@@ -119,7 +119,7 @@ ${dialectSpecificCodeSnippet}
       <Admonition type="info" title="Migrations">
         As you can see, Kysely supports DDL queries. It also supports classic
         "up/down" migrations. Find out more at{' '}
-        <Link to="/docs/migrations">Migrations</Link>.
+        <Link to="/docs/category/migrations">Migrations</Link>.
       </Admonition>
     </>
   )
