@@ -845,6 +845,7 @@ for (const dialect of DIALECTS) {
         }
       })
 
+
       it('should execute in transaction if disableTransactions is false when calling `migrateUp` and transactionDdl supported', async () => {
         const [migrator, executedUpMethods] = createMigrations(['migration1'], {
           disableTransactions: true,
