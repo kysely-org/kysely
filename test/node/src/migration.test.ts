@@ -825,6 +825,55 @@ for (const dialect of DIALECTS) {
           expect(transactionSpy.called).to.be.false
         }
       })
+
+      it('should allow migrations to run inside a user-managed transaction when disableTransactions is true', async () => {
+        const migrationName = 'trx_connection_method_fail_case'
+        const executedUpMethodsForThisTest: string[] = []
+
+        const testSpecificProvider: any = {
+          getMigrations: async () => ({
+            [migrationName]: {
+              async up(_db: Kysely<any>): Promise<void> {
+                executedUpMethodsForThisTest.push(migrationName)
+              },
+              async down(_db: Kysely<any>): Promise<void> {},
+            },
+          }),
+        }
+
+        await ctx.db.transaction().execute(async (trx) => {
+          const migratorInTransaction = new Migrator({
+            db: trx,
+            provider: testSpecificProvider,
+            disableTransactions: true,
+          })
+
+          const { results, error } = await migratorInTransaction.migrateUp()
+
+          expect(error).to.be.undefined
+          expect(results).to.eql([
+            { migrationName, direction: 'Up', status: 'Success' },
+          ])
+        })
+
+        expect(executedUpMethodsForThisTest).to.eql(
+          [migrationName],
+          "The migration's 'up' method should have been executed.",
+        )
+
+        const checkerMigrator = new Migrator({
+          db: ctx.db,
+          provider: testSpecificProvider,
+        })
+
+        const migrations = await checkerMigrator.getMigrations()
+        const testMigrationInfo = migrations.find(
+          (m) => m.name === migrationName,
+        )
+
+        expect(testMigrationInfo).to.exist
+        expect(testMigrationInfo!.executedAt).to.be.instanceOf(Date)
+      })
     })
 
     describe('migrateDown', () => {
