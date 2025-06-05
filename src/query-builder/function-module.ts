@@ -18,7 +18,12 @@ import {
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { IsNever } from '../util/type-utils.js'
+import {
+  IsNever,
+  ShallowDehydrateObject,
+  ShallowDehydrateValue,
+  Simplify,
+} from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
@@ -716,9 +721,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     DB,
     TB,
     T extends TB
-      ? Selectable<DB[T]>[]
+      ? Simplify<ShallowDehydrateObject<Selectable<DB[T]>>>[]
       : T extends Expression<infer O>
-        ? O[]
+        ? Simplify<ShallowDehydrateObject<O>>[]
         : never
   >
 
@@ -727,7 +732,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromStringReference<DB, TB, RE>[] | null
+    ShallowDehydrateValue<ExtractTypeFromStringReference<DB, TB, RE>>[] | null
   >
 
   /**
@@ -755,7 +760,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): ExpressionWrapper<
     DB,
     TB,
-    T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
+    T extends TB
+      ? Simplify<ShallowDehydrateObject<Selectable<DB[T]>>>
+      : T extends Expression<infer O>
+        ? Simplify<ShallowDehydrateObject<O>>
+        : never
   >
 }
 
