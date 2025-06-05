@@ -36,6 +36,19 @@ async function testKyselyAnySelects(db: Kysely<any>) {
     ])
     .executeTakeFirstOrThrow()
   expectType<{ bar: any; spam: any; baz: 1 }>(r6)
+
+  const table: 'foo' | 'bar' = Math.random() > 0.5 ? 'foo' : 'bar'
+  const r7 = await db.selectFrom(table).select('baz').executeTakeFirstOrThrow()
+  expectType<{ baz: any }>(r7)
+
+  const r8 = await db.selectFrom('foo as f').select('bar').execute()
+  expectType<{ bar: any }[]>(r8)
+
+  const r9 = await db
+    .selectFrom(['foo1 as f1', 'foo2 as f2'])
+    .select(['spam', 'f1.bar', 'f2.baz', 'doesnotexists.fux'])
+    .execute()
+  expectType<{ spam: any; bar: any; baz: any; fux: any }[]>(r9)
 }
 
 async function testKyselyAnyInserts(db: Kysely<any>) {
@@ -64,6 +77,13 @@ async function testKyselyAnyInserts(db: Kysely<any>) {
     .values((eb) => ({ foo: eb.ref('foo.bar') }))
     .executeTakeFirstOrThrow()
   expectType<InsertResult>(r4)
+
+  const table: 'foo' | 'bar' = Math.random() > 0.5 ? 'foo' : 'bar'
+  const r5 = await db
+    .insertInto(table)
+    .values((eb) => ({ foo: eb.ref('foo.bar') }))
+    .executeTakeFirstOrThrow()
+  expectType<InsertResult>(r5)
 }
 
 async function testKyselyAnyUpdates(db: Kysely<any>) {
@@ -99,6 +119,16 @@ async function testKyselyAnyUpdates(db: Kysely<any>) {
     .where('foo.eggs', '=', 1)
     .executeTakeFirstOrThrow()
   expectType<UpdateResult>(r4)
+
+  const table: 'foo' | 'bar' = Math.random() > 0.5 ? 'foo' : 'bar'
+  const r5 = await db
+    .updateTable(table)
+    .set((eb) => ({
+      foo: eb('foo.bar', '=', 1),
+    }))
+    .where('foo.eggs', '=', 1)
+    .executeTakeFirstOrThrow()
+  expectType<UpdateResult>(r5)
 }
 
 async function testKyselyAnyDeletes(db: Kysely<any>) {
@@ -123,4 +153,11 @@ async function testKyselyAnyDeletes(db: Kysely<any>) {
     .returning(['a', 'b'])
     .executeTakeFirstOrThrow()
   expectType<{ a: any; b: any }>(r3)
+
+  const table: 'foo' | 'bar' = Math.random() > 0.5 ? 'foo' : 'bar'
+  const r4 = await db
+    .deleteFrom(table)
+    .where('baz', '=', 1)
+    .executeTakeFirstOrThrow()
+  expectType<DeleteResult>(r4)
 }
