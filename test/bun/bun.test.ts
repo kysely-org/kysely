@@ -9,6 +9,7 @@ import {
   MysqlDialect,
   sql,
   MssqlDialect,
+  QueryCancelledError,
 } from '../../dist/esm/index.js'
 
 interface Person {
@@ -20,6 +21,34 @@ interface Person {
 interface Database {
   person: Person
 }
+
+// Test QueryCancelledError first
+console.log('Testing QueryCancelledError...')
+
+const error1 = new QueryCancelledError()
+if (
+  error1.name !== 'QueryCancelledError' ||
+  error1.message !== 'Query was cancelled'
+) {
+  console.error('QueryCancelledError default test failed')
+  process.exit(1)
+}
+
+const error2 = new QueryCancelledError('Custom message')
+if (
+  error2.name !== 'QueryCancelledError' ||
+  error2.message !== 'Custom message'
+) {
+  console.error('QueryCancelledError custom message test failed')
+  process.exit(1)
+}
+
+if (!(error1 instanceof Error) || !(error1 instanceof QueryCancelledError)) {
+  console.error('QueryCancelledError inheritance test failed')
+  process.exit(1)
+}
+
+console.log('✓ QueryCancelledError tests passed')
 
 const dbs = [
   new Kysely<Database>({
@@ -91,6 +120,100 @@ if (
 const query = sql`select 1`
 
 await Promise.all(dbs.map((db) => query.execute(db)))
+
+// Test query cancellation functionality
+console.log('Testing query cancellation...')
+
+// Test 1: Execute with non-aborted signal (should work)
+try {
+  const controller = new AbortController()
+  await Promise.all(
+    dbs.map((db) =>
+      db
+        .selectFrom('person')
+        .select('id')
+        .limit(1)
+        .execute({ signal: controller.signal }),
+    ),
+  )
+  console.log('✓ Execute with non-aborted signal passed')
+} catch (error) {
+  console.error('Execute with non-aborted signal failed:', error)
+  process.exit(1)
+}
+
+// Test 2: Execute with already aborted signal (should throw QueryCancelledError)
+try {
+  const controller = new AbortController()
+  controller.abort()
+
+  await dbs[0]
+    .selectFrom('person')
+    .select('id')
+    .limit(1)
+    .execute({ signal: controller.signal })
+
+  console.error('Should have thrown QueryCancelledError')
+  process.exit(1)
+} catch (error) {
+  if (error instanceof QueryCancelledError) {
+    console.log(
+      '✓ Execute with aborted signal correctly threw QueryCancelledError',
+    )
+  } else {
+    console.error('Wrong error type thrown:', error)
+    process.exit(1)
+  }
+}
+
+// Test 3: Test different query builder methods
+try {
+  const controller = new AbortController()
+  controller.abort()
+
+  await dbs[0]
+    .selectFrom('person')
+    .select('id')
+    .executeTakeFirst({ signal: controller.signal })
+
+  console.error('executeTakeFirst should have thrown QueryCancelledError')
+  process.exit(1)
+} catch (error) {
+  if (error instanceof QueryCancelledError) {
+    console.log(
+      '✓ executeTakeFirst with aborted signal correctly threw QueryCancelledError',
+    )
+  } else {
+    console.error('executeTakeFirst wrong error type:', error)
+    process.exit(1)
+  }
+}
+
+// Test 4: Backward compatibility (no options parameter)
+try {
+  await Promise.all(
+    dbs.map(
+      (db) => db.selectFrom('person').select('id').limit(1).execute(), // No options parameter
+    ),
+  )
+  console.log('✓ Backward compatibility (no options) passed')
+} catch (error) {
+  console.error('Backward compatibility test failed:', error)
+  process.exit(1)
+}
+
+// Test 5: Empty options object
+try {
+  await Promise.all(
+    dbs.map(
+      (db) => db.selectFrom('person').select('id').limit(1).execute({}), // Empty options
+    ),
+  )
+  console.log('✓ Empty options object passed')
+} catch (error) {
+  console.error('Empty options test failed:', error)
+  process.exit(1)
+}
 
 console.log('bun test passed')
 

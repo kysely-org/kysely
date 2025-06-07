@@ -1,6 +1,7 @@
 import * as chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
+
+const chaiAsPromised = require('chai-as-promised')
 import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'

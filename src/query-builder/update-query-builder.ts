@@ -1145,12 +1145,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<SimplifyResult<O>[]> {
+  async execute(options?: {
+    signal?: AbortSignal
+  }): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
+      options,
     )
 
     const { adapter } = this.#props.executor
@@ -1175,8 +1178,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
+  async executeTakeFirst(options?: {
+    signal?: AbortSignal
+  }): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
     return result as SimplifySingleResult<O>
   }
 
@@ -1188,12 +1193,50 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * provide a custom error class, or callback as the only argument to throw a different
    * error.
    */
+  async executeTakeFirstOrThrow(): Promise<SimplifyResult<O>>
+
   async executeTakeFirstOrThrow(
-    errorConstructor:
+    errorConstructor: NoResultErrorConstructor | ((node: QueryNode) => Error),
+  ): Promise<SimplifyResult<O>>
+
+  async executeTakeFirstOrThrow(options: {
+    signal?: AbortSignal
+  }): Promise<SimplifyResult<O>>
+
+  async executeTakeFirstOrThrow(
+    errorConstructor: NoResultErrorConstructor | ((node: QueryNode) => Error),
+    options: { signal?: AbortSignal },
+  ): Promise<SimplifyResult<O>>
+
+  async executeTakeFirstOrThrow(
+    errorConstructorOrOptions:
       | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+      | ((node: QueryNode) => Error)
+      | { signal?: AbortSignal } = NoResultError,
+    options?: { signal?: AbortSignal },
   ): Promise<SimplifyResult<O>> {
-    const result = await this.executeTakeFirst()
+    // Handle parameter overloading
+    let errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error)
+    let executeOptions: { signal?: AbortSignal } | undefined
+
+    if (
+      typeof errorConstructorOrOptions === 'object' &&
+      'signal' in errorConstructorOrOptions
+    ) {
+      // First overload: executeTakeFirstOrThrow(options)
+      errorConstructor = NoResultError
+      executeOptions = errorConstructorOrOptions
+    } else {
+      // Second/third overload: executeTakeFirstOrThrow(errorConstructor, options?)
+      errorConstructor = errorConstructorOrOptions as
+        | NoResultErrorConstructor
+        | ((node: QueryNode) => Error)
+      executeOptions = options
+    }
+
+    const result = await this.executeTakeFirst(executeOptions)
 
     if (result === undefined) {
       const error = isNoResultErrorConstructor(errorConstructor)
@@ -1206,13 +1249,17 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSize: number = 100,
+    options?: { signal?: AbortSignal },
+  ): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
     const stream = this.#props.executor.stream<O>(
       compiledQuery,
       chunkSize,
       this.#props.queryId,
+      options,
     )
 
     for await (const item of stream) {

@@ -657,8 +657,236 @@ test/node/src/
 - Resource cleanup verified in all scenarios
 - Backward compatibility maintained
 
+## Testing Setup and Execution Guide
+
+### Prerequisites
+
+#### Node.js Version Management
+The Kysely test suite requires Node.js LTS version for optimal compatibility. Use nvm to manage Node.js versions:
+
+```bash
+# Install/use latest LTS Node.js version
+source ~/.nvm/nvm.sh
+nvm install --lts
+nvm use --lts
+
+# Verify versions
+node --version  # Should be v22.16.0 or later LTS
+npm --version   # Should be v10.9.2 or later
+```
+
+**Important**: Earlier Node.js versions may have compatibility issues with the test dependencies (chai, mocha) due to ES module vs CommonJS conflicts.
+
+#### Database Setup
+Kysely tests require running database instances. Use the provided Docker Compose setup:
+
+```bash
+# Start all test databases (PostgreSQL, MySQL, MSSQL)
+docker-compose up -d
+
+# Check database status
+docker-compose ps
+
+# Wait for databases to be ready (especially MSSQL takes longer)
+# PostgreSQL: Ready immediately
+# MySQL: Wait for "healthy" status
+# MSSQL: Wait for health check to pass
+```
+
+**Database Configuration**:
+- **PostgreSQL**: `localhost:5434`, database: `kysely_test`, user: `kysely`
+- **MySQL**: `localhost:3308`, database: `kysely_test`, user: `kysely`, password: `kysely`
+- **MSSQL**: `localhost:21433`, database: `kysely_test`, user: `sa`, password: `KyselyTest0`
+
+### Test Execution
+
+#### Full Test Suite
+```bash
+# Run all tests across all dialects
+npm run test:node
+
+# This executes:
+# 1. npm run build (builds TypeScript)
+# 2. npm run test:node:build (compiles test files)
+# 3. npm run test:node:run (executes tests with Mocha)
+```
+
+#### Dialect-Specific Testing
+```bash
+# Test only PostgreSQL (recommended for query cancellation testing)
+DIALECTS=postgres npm run test:node
+
+# Test only MySQL
+DIALECTS=mysql npm run test:node
+
+# Test only MSSQL
+DIALECTS=mssql npm run test:node
+
+# Test multiple specific dialects
+DIALECTS=postgres,mysql npm run test:node
+```
+
+#### Individual Test Components
+```bash
+# Build only (faster iteration during development)
+npm run build
+
+# Compile test files only
+npm run test:node:build
+
+# Run compiled tests (assumes build and test:node:build completed)
+npm run test:node:run
+```
+
+### Troubleshooting Common Issues
+
+#### Test Hanging or Timeout Issues
+**Symptoms**: Tests hang indefinitely or timeout
+**Causes**: Database connections failing
+**Solutions**:
+1. Verify databases are running: `docker-compose ps`
+2. Check database logs: `docker-compose logs postgres` (or mysql/mssql)
+3. Restart databases: `docker-compose down && docker-compose up -d`
+4. Wait longer for MSSQL to initialize (can take 30-60 seconds)
+
+#### Chai/Testing Library Compatibility Issues
+**Symptoms**: `TypeError: fn is not a function` or similar chai errors
+**Root Cause**: ES module vs CommonJS compatibility with newer Node.js versions
+**Solution Applied**: 
+- Fixed import syntax in `test/node/src/test-setup.ts`
+- Changed `import chaiAsPromised from 'chai-as-promised'` to `const chaiAsPromised = require('chai-as-promised')`
+- This resolves compatibility between CommonJS and ES modules
+
+#### Docker Platform Warnings
+**Symptoms**: Warnings about platform mismatch (linux/amd64 vs linux/arm64)
+**Impact**: Databases still work correctly
+**Solution**: These warnings are cosmetic and don't affect functionality. The containers run correctly despite platform warnings.
+
+#### Memory or Resource Issues
+**Symptoms**: Tests fail with connection pool errors
+**Solutions**:
+1. Ensure Docker has sufficient memory allocated
+2. Close other database connections
+3. Restart Docker daemon if needed
+4. Check system resources with `docker stats`
+
+### Query Cancellation Test Execution
+
+#### Running Cancellation Tests
+```bash
+# Run all tests including cancellation (PostgreSQL recommended)
+DIALECTS=postgres npm run test:node
+
+# Look for specific test output:
+# "Query Cancellation" test suite
+# "postgres: AbortSignal functionality" test suite
+```
+
+#### Expected Test Results
+When query cancellation tests pass, you should see output like:
+```
+Query Cancellation
+  QueryCancelledError
+    ✔ should create error with default message
+    ✔ should create error with custom message
+    ✔ should have proper error stack
+  postgres: AbortSignal functionality
+    ✔ should execute query normally without signal
+    ✔ should execute query with non-aborted signal
+    ✔ should throw QueryCancelledError when signal is already aborted
+    ✔ should support cancellation in executeTakeFirst method
+    ✔ should support cancellation in executeTakeFirstOrThrow method
+    ✔ should support cancellation in InsertQueryBuilder execute method
+    ✔ should support cancellation in stream method
+    ✔ should work without options parameter (backward compatibility)
+    ✔ should work with empty options object
+    ✔ should work with undefined signal
+```
+
+### Performance Testing
+
+#### Running Performance Tests
+```bash
+# Enable performance logging
+NODE_ENV=test npm run test:node
+
+# Monitor test execution time
+time DIALECTS=postgres npm run test:node
+```
+
+#### Database Cleanup Between Tests
+Tests automatically handle cleanup, but manual cleanup if needed:
+```bash
+# Connect to PostgreSQL and clear data
+docker exec -it kysely-postgres-1 psql -U kysely -d kysely_test -c "TRUNCATE person, pet, toy CASCADE;"
+
+# Or restart databases for complete reset
+docker-compose down && docker-compose up -d
+```
+
+### Development Workflow
+
+#### Iterative Testing During Development
+```bash
+# 1. Make code changes
+# 2. Build and test quickly
+npm run build && npm run test:node:build && DIALECTS=postgres npm run test:node:run
+
+# Or use the full command for complete verification
+DIALECTS=postgres npm run test:node
+```
+
+#### Test File Organization
+```
+test/node/src/
+├── query-cancelled-error.test.ts        # Unit tests for error class
+├── query-cancellation.test.ts           # Integration tests for cancellation
+├── test-setup.ts                        # Test configuration and utilities
+└── [other existing test files]
+```
+
+### Continuous Integration Considerations
+
+#### Environment Setup for CI
+```bash
+# Ensure correct Node.js version
+nvm install --lts && nvm use --lts
+
+# Start databases
+docker-compose up -d
+
+# Wait for database readiness (especially important in CI)
+sleep 30
+
+# Run tests
+DIALECTS=postgres npm run test:node
+```
+
+#### Test Matrix for CI
+- Test across multiple Node.js LTS versions
+- Test all supported dialects where cancellation is implemented
+- Include performance regression testing
+- Memory leak detection
+
+### Local Development Best Practices
+
+#### Fast Feedback Loop
+1. Use dialect-specific testing: `DIALECTS=postgres npm run test:node`
+2. Keep databases running between test sessions
+3. Use `npm run build` for quick TypeScript compilation checks
+4. Monitor test output for specific cancellation test results
+
+#### Debugging Test Issues
+1. Check Docker container status: `docker-compose ps`
+2. View database logs: `docker-compose logs [service-name]`
+3. Verify Node.js version compatibility: `node --version`
+4. Ensure test setup file has correct imports
+5. Clear Docker volumes if persistent issues: `docker-compose down -v`
+
 ## Conclusion
 
 This implementation provides a solid foundation for query cancellation in Kysely, starting with PostgreSQL and designed for future expansion. The bottom-up approach ensures proper architectural integration while maintaining backward compatibility and performance characteristics. The optional nature of cancellation support allows for gradual adoption and dialect-specific implementation strategies.
 
-The comprehensive testing strategy ensures that the feature works reliably across different scenarios while maintaining Kysely's high standards for performance and stability. By following the established testing patterns and infrastructure, we can confidently integrate this feature without disrupting existing functionality. 
+The comprehensive testing strategy ensures that the feature works reliably across different scenarios while maintaining Kysely's high standards for performance and stability. By following the established testing patterns and infrastructure, we can confidently integrate this feature without disrupting existing functionality.
+
+With the testing setup guide above, developers can reliably run and verify the query cancellation implementation across different environments, ensuring consistent functionality and enabling confident deployment to production systems. 
