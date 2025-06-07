@@ -103,13 +103,13 @@ This plan breaks down the query cancellation implementation into actionable task
 
 ### 3.2 Update InsertQueryBuilder
 
-- [ ] **Task 3.2.1**: Update execution methods in `src/query-builder/insert-query-builder.ts`
+- [x] **Task 3.2.1**: Update execution methods in `src/query-builder/insert-query-builder.ts`
   - Modify `execute()` method to accept optional options parameter
   - Update `executeTakeFirst()` method with options parameter  
   - Update `executeTakeFirstOrThrow()` method with options parameter
   - Pass options to executor calls
 
-- [ ] **Task 3.2.2**: Update streaming method in `InsertQueryBuilder`
+- [x] **Task 3.2.2**: Update streaming method in `InsertQueryBuilder`
   - Modify `stream()` method to accept optional signal parameter
   - Pass options to executor.stream() calls
 
