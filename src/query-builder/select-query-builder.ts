@@ -2122,13 +2122,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  execute(): Promise<Simplify<O>[]>
+  execute(options?: { signal?: AbortSignal }): Promise<Simplify<O>[]>
 
   /**
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(options?: {
+    signal?: AbortSignal
+  }): Promise<SimplifySingleResult<O>>
 
   /**
    * Executes the query and returns the first result or throws if
@@ -2139,10 +2141,16 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * error.
    */
   executeTakeFirstOrThrow(
-    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
+    errorConstructorOrOptions?:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error)
+      | { signal?: AbortSignal },
   ): Promise<Simplify<O>>
 
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  stream(
+    chunkSize?: number,
+    options?: { signal?: AbortSignal },
+  ): AsyncIterableIterator<O>
 
   explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
@@ -2647,28 +2655,52 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(): Promise<Simplify<O>[]> {
+  async execute(options?: { signal?: AbortSignal }): Promise<Simplify<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
+      options,
     )
 
     return result.rows
   }
 
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
+  async executeTakeFirst(options?: {
+    signal?: AbortSignal
+  }): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
     return result as SimplifySingleResult<O>
   }
 
   async executeTakeFirstOrThrow(
-    errorConstructor:
+    errorConstructorOrOptions:
       | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+      | ((node: QueryNode) => Error)
+      | { signal?: AbortSignal } = NoResultError,
   ): Promise<Simplify<O>> {
-    const result = await this.executeTakeFirst()
+    // Determine if the parameter is options or error constructor
+    let errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
+    let options: { signal?: AbortSignal } | undefined
+
+    if (
+      errorConstructorOrOptions &&
+      typeof errorConstructorOrOptions === 'object' &&
+      'signal' in errorConstructorOrOptions
+    ) {
+      // It's options
+      options = errorConstructorOrOptions
+    } else if (errorConstructorOrOptions) {
+      // It's error constructor
+      errorConstructor = errorConstructorOrOptions as
+        | NoResultErrorConstructor
+        | ((node: QueryNode) => Error)
+    }
+
+    const result = await this.executeTakeFirst(options)
 
     if (result === undefined) {
       const error = isNoResultErrorConstructor(errorConstructor)
@@ -2681,13 +2713,17 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return result as O
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSize: number = 100,
+    options?: { signal?: AbortSignal },
+  ): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
     const stream = this.#props.executor.stream<O>(
       compiledQuery,
       chunkSize,
       this.#props.queryId,
+      options,
     )
 
     for await (const item of stream) {

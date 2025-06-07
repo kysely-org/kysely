@@ -90,13 +90,13 @@ This plan breaks down the query cancellation implementation into actionable task
 
 ### 3.1 Update SelectQueryBuilder
 
-- [ ] **Task 3.1.1**: Update execution methods in `src/query-builder/select-query-builder.ts`
+- [x] **Task 3.1.1**: Update execution methods in `src/query-builder/select-query-builder.ts`
   - Modify `execute()` method to accept optional `options?: { signal?: AbortSignal }` parameter
   - Update `executeTakeFirst()` method with options parameter
   - Update `executeTakeFirstOrThrow()` method with options parameter
   - Pass options to executor.executeQuery() calls
 
-- [ ] **Task 3.1.2**: Update streaming method in `SelectQueryBuilder`
+- [x] **Task 3.1.2**: Update streaming method in `SelectQueryBuilder`
   - Modify `stream()` method to accept optional signal parameter: `stream(chunkSize?: number, options?: { signal?: AbortSignal })`
   - Pass options to executor.stream() calls
   - Maintain backward compatibility with existing chunkSize parameter

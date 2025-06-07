@@ -13,7 +13,14 @@
 - PostgreSQL streamQuery cancellation with abort checks ✅
 - Connection pool compatibility maintained ✅
 
-**Current Status**: Ready to proceed with Phase 3 (Query Builder Integration)
+**Phase 3 Query Builder Integration: 🔄 IN PROGRESS**
+- SelectQueryBuilder execute/executeTakeFirst/executeTakeFirstOrThrow methods ✅
+- SelectQueryBuilder stream method ✅
+- InsertQueryBuilder integration (pending)
+- UpdateQueryBuilder integration (pending)
+- DeleteQueryBuilder integration (pending)
+
+**Current Status**: SelectQueryBuilder completed, continuing with other query builders
 
 **Compatibility Note**: Implementation is fully compatible with PR #176 changes that added `queryId` to `CompiledQuery` and updated transformer methods. Our interface extensions work seamlessly with the existing `queryId` parameter structure.
 
