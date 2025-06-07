@@ -225,6 +225,7 @@ export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/streamable.js'
 export * from './util/log.js'
+export * from './util/query-cancelled-error.js'
 export {
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
