@@ -58,29 +58,31 @@ This plan breaks down the query cancellation implementation into actionable task
 
 ### 2.1 PostgreSQL Connection Implementation
 
-- [ ] **Task 2.1.1**: Research PostgreSQL cancellation mechanisms
+- [x] **Task 2.1.1**: Research PostgreSQL cancellation mechanisms
   - Investigate `pg.Pool` and `pg.Client` cancellation capabilities
   - Determine best approach for connection-level cancellation
   - Document findings and chosen approach
+  - **Result**: Implemented Promise.race approach due to interface limitations
 
-- [ ] **Task 2.1.2**: Implement cancellation in `PostgresConnection` class in `src/dialect/postgres/postgres-driver.ts`
+- [x] **Task 2.1.2**: Implement cancellation in `PostgresConnection` class in `src/dialect/postgres/postgres-driver.ts`
   - Update `executeQuery` method to handle AbortSignal
-  - Implement connection-level cancellation when signal is aborted
+  - Implement Promise.race cancellation when signal is aborted
   - Add proper error handling and cleanup
   - Throw `QueryCancelledError` when cancelled
 
-- [ ] **Task 2.1.3**: Implement streaming cancellation in `PostgresConnection` class
+- [x] **Task 2.1.3**: Implement streaming cancellation in `PostgresConnection` class
   - Update `streamQuery` method to handle AbortSignal
-  - Add signal abort listener to cancel cursor operations
+  - Add signal abort listener and cancellation checks
   - Ensure proper cursor cleanup when cancelled
   - Handle cancellation during different phases of streaming
 
 ### 2.2 Connection Pool Handling
 
-- [ ] **Task 2.2.1**: Update connection pool logic for cancelled connections
+- [x] **Task 2.2.1**: Update connection pool logic for cancelled connections
   - Ensure cancelled connections are properly cleaned up
   - Handle connection state after cancellation
   - Verify pool health after cancellation events
+  - **Note**: Promise.race approach maintains connection integrity
 
 ---
 

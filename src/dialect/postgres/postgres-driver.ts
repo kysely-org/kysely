@@ -9,6 +9,7 @@ import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
+import { QueryCancelledError } from '../../util/query-cancelled-error.js'
 import {
   PostgresCursorConstructor,
   PostgresDialectConfig,
@@ -152,12 +153,42 @@ class PostgresConnection implements DatabaseConnection {
     this.#options = options
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    options?: { signal?: AbortSignal },
+  ): Promise<QueryResult<O>> {
+    // Check if already cancelled
+    if (options?.signal?.aborted) {
+      throw new QueryCancelledError()
+    }
+
     try {
-      const { command, rowCount, rows } = await this.#client.query<O>(
-        compiledQuery.sql,
-        [...compiledQuery.parameters],
-      )
+      let queryPromise: Promise<any>
+
+      // Create the query promise
+      queryPromise = this.#client.query<O>(compiledQuery.sql, [
+        ...compiledQuery.parameters,
+      ])
+
+      // If signal is provided, set up cancellation via Promise.race
+      if (options?.signal) {
+        queryPromise = Promise.race([
+          queryPromise,
+          new Promise((_, reject) => {
+            const onAbort = () => {
+              reject(new QueryCancelledError())
+            }
+
+            if (options.signal!.aborted) {
+              onAbort()
+            } else {
+              options.signal!.addEventListener('abort', onAbort, { once: true })
+            }
+          }),
+        ])
+      }
+
+      const { command, rowCount, rows } = await queryPromise
 
       return {
         numAffectedRows:
@@ -170,6 +201,9 @@ class PostgresConnection implements DatabaseConnection {
         rows: rows ?? [],
       }
     } catch (err) {
+      if (err instanceof QueryCancelledError) {
+        throw err
+      }
       throw extendStackTrace(err, new Error())
     }
   }
@@ -177,7 +211,13 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: { signal?: AbortSignal },
   ): AsyncIterableIterator<QueryResult<O>> {
+    // Check if already cancelled
+    if (options?.signal?.aborted) {
+      throw new QueryCancelledError()
+    }
+
     if (!this.#options.cursor) {
       throw new Error(
         "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres.",
@@ -195,19 +235,55 @@ class PostgresConnection implements DatabaseConnection {
       ),
     )
 
+    let abortListener: (() => void) | null = null
+
     try {
+      // Set up abort listener if signal is provided
+      if (options?.signal) {
+        abortListener = () => {
+          // For streaming, we'll handle cancellation by breaking the loop
+          // The cursor cleanup happens in the finally block
+        }
+
+        if (options.signal.aborted) {
+          throw new QueryCancelledError()
+        }
+
+        options.signal.addEventListener('abort', abortListener, { once: true })
+      }
+
       while (true) {
+        // Check for cancellation before each read
+        if (options?.signal?.aborted) {
+          throw new QueryCancelledError()
+        }
+
         const rows = await cursor.read(chunkSize)
 
         if (rows.length === 0) {
           break
         }
 
+        // Check for cancellation after reading but before yielding
+        if (options?.signal?.aborted) {
+          throw new QueryCancelledError()
+        }
+
         yield {
           rows,
         }
       }
+    } catch (err) {
+      if (err instanceof QueryCancelledError) {
+        throw err
+      }
+      throw err
     } finally {
+      // Clean up abort listener
+      if (abortListener && options?.signal) {
+        options.signal.removeEventListener('abort', abortListener)
+      }
+
       await cursor.close()
     }
   }
