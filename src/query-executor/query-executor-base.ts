@@ -12,6 +12,7 @@ import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
+import { QueryCancelledError } from '../util/query-cancelled-error.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -63,9 +64,15 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async executeQuery<R>(
     compiledQuery: CompiledQuery,
     queryId: QueryId,
+    options?: { signal?: AbortSignal },
   ): Promise<QueryResult<R>> {
+    // Check if query is already cancelled before execution
+    if (options?.signal?.aborted) {
+      throw new QueryCancelledError()
+    }
+
     return await this.provideConnection(async (connection) => {
-      const result = await connection.executeQuery(compiledQuery)
+      const result = await connection.executeQuery(compiledQuery, options)
 
       if ('numUpdatedOrDeletedRows' in result) {
         logOnce(
@@ -81,14 +88,26 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     compiledQuery: CompiledQuery,
     chunkSize: number,
     queryId: QueryId,
+    options?: { signal?: AbortSignal },
   ): AsyncIterableIterator<QueryResult<R>> {
+    // Check if query is already cancelled before execution
+    if (options?.signal?.aborted) {
+      throw new QueryCancelledError()
+    }
+
     const { connection, release } = await provideControlledConnection(this)
 
     try {
       for await (const result of connection.streamQuery(
         compiledQuery,
         chunkSize,
+        options,
       )) {
+        // Check for cancellation during streaming
+        if (options?.signal?.aborted) {
+          throw new QueryCancelledError()
+        }
+
         yield await this.#transformResult(result, queryId)
       }
     } finally {

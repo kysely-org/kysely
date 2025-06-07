@@ -1,5 +1,19 @@
 # Query Cancellation Support for Kysely
 
+## Implementation Status
+
+**Phase 1 Core Infrastructure: ✅ COMPLETED**
+- QueryCancelledError class implementation ✅
+- DatabaseConnection interface extensions ✅  
+- QueryExecutor interface extensions ✅
+- QueryExecutorBase implementation ✅
+
+**Current Status**: Ready to proceed with Phase 2 (PostgreSQL Implementation)
+
+**Compatibility Note**: Implementation is fully compatible with PR #176 changes that added `queryId` to `CompiledQuery` and updated transformer methods. Our interface extensions work seamlessly with the existing `queryId` parameter structure.
+
+---
+
 ## Overview
 
 Implement query cancellation support in Kysely using AbortSignal, allowing users to cancel long-running database queries for both streaming and non-streaming operations. This addresses GitHub issue #783 and provides a crucial feature for production applications that need to manage resource usage and user experience.

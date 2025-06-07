@@ -6,10 +6,14 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
  * These are created by an instance of {@link Driver}.
  */
 export interface DatabaseConnection {
-  executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
+  executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: { signal?: AbortSignal },
+  ): Promise<QueryResult<R>>
   streamQuery<R>(
     compiledQuery: CompiledQuery,
     chunkSize?: number,
+    options?: { signal?: AbortSignal },
   ): AsyncIterableIterator<QueryResult<R>>
 }
 

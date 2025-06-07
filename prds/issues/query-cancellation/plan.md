@@ -10,35 +10,35 @@ This plan breaks down the query cancellation implementation into actionable task
 
 ### 1.1 Add Error Class
 
-- [ ] **Task 1.1.1**: Create `QueryCancelledError` class in `src/util/query-cancelled-error.ts`
+- [x] **Task 1.1.1**: Create `QueryCancelledError` class in `src/util/query-cancelled-error.ts`
   - Add class extending `Error` with constructor accepting optional message
   - Set `name` property to `'QueryCancelledError'`
   - Export the class
 
-- [ ] **Task 1.1.2**: Export `QueryCancelledError` from main index file
+- [x] **Task 1.1.2**: Export `QueryCancelledError` from main index file
   - Add export to `src/index.ts`
   - Add to public API documentation
 
 ### 1.2 Update Core Interfaces
 
-- [ ] **Task 1.2.1**: Extend `DatabaseConnection` interface in `src/driver/database-connection.ts`
+- [x] **Task 1.2.1**: Extend `DatabaseConnection` interface in `src/driver/database-connection.ts`
   - Add optional `options?: { signal?: AbortSignal }` parameter to `executeQuery` method
   - Add optional `options?: { signal?: AbortSignal }` parameter to `streamQuery` method
   - Maintain backward compatibility with existing signatures
 
-- [ ] **Task 1.2.2**: Extend `QueryExecutor` interface in `src/query-executor/query-executor.ts`
+- [x] **Task 1.2.2**: Extend `QueryExecutor` interface in `src/query-executor/query-executor.ts`
   - Add optional `options?: { signal?: AbortSignal }` parameter to `executeQuery` method
   - Add optional `options?: { signal?: AbortSignal }` parameter to `stream` method
   - Update method signatures while maintaining backward compatibility
 
 ### 1.3 Update QueryExecutorBase
 
-- [ ] **Task 1.3.1**: Update `executeQuery` method in `src/query-executor/query-executor-base.ts`
+- [x] **Task 1.3.1**: Update `executeQuery` method in `src/query-executor/query-executor-base.ts`
   - Add optional `options` parameter to method signature
   - Pass `options` parameter to `connection.executeQuery()` call
   - Add AbortSignal check before execution and throw `QueryCancelledError` if already aborted
 
-- [ ] **Task 1.3.2**: Update `stream` method in `src/query-executor/query-executor-base.ts`
+- [x] **Task 1.3.2**: Update `stream` method in `src/query-executor/query-executor-base.ts`
   - Add optional `options` parameter to method signature
   - Pass `options` parameter to `connection.streamQuery()` call
   - Add AbortSignal check and error handling for cancelled streams
@@ -46,10 +46,11 @@ This plan breaks down the query cancellation implementation into actionable task
 
 ### 1.4 Update DefaultQueryExecutor
 
-- [ ] **Task 1.4.1**: Update method signatures in `src/query-executor/default-query-executor.ts`
+- [x] **Task 1.4.1**: Update method signatures in `src/query-executor/default-query-executor.ts`
   - Update `executeQuery` method to accept and pass through options parameter
   - Update `stream` method to accept and pass through options parameter
   - Ensure all calls to base class methods include options parameter
+  - **Note**: DefaultQueryExecutor inherits from QueryExecutorBase, so updates are automatic
 
 ---
 

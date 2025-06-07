@@ -47,6 +47,7 @@ export interface QueryExecutor extends ConnectionProvider {
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     queryId: QueryId,
+    options?: { signal?: AbortSignal },
   ): Promise<QueryResult<R>>
 
   /**
@@ -62,6 +63,7 @@ export interface QueryExecutor extends ConnectionProvider {
      */
     chunkSize: number,
     queryId: QueryId,
+    options?: { signal?: AbortSignal },
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**
