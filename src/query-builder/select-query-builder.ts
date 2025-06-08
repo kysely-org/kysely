@@ -30,7 +30,6 @@ import {
   Nullable,
   ShallowRecord,
   Simplify,
-  SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
 import {
@@ -83,9 +82,11 @@ import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
+import { Executable, ExecuteOptions } from '../util/executable.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends WhereInterface<DB, TB>,
+  extends Executable<Simplify<O>>,
+    WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
@@ -2117,30 +2118,19 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   compile(): CompiledQuery<Simplify<O>>
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
   execute(): Promise<Simplify<O>[]>
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(): Promise<Simplify<O> | undefined>
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback to throw a different
-   * error.
-   */
   executeTakeFirstOrThrow(
     errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
   ): Promise<Simplify<O>>
+
+  executeTakeFirstOrThrow(
+    options?: ExecuteOptions & {
+      errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error)
+    },
+  ): Promise<O>
 
   stream(chunkSize?: number): AsyncIterableIterator<O>
 
@@ -2647,27 +2637,35 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(): Promise<Simplify<O>[]> {
+  async execute(options?: any): Promise<any> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
     return result.rows
   }
 
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(options?: any): Promise<any> {
+    const [result] = await this.execute(options)
+    return result
   }
 
-  async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
-  ): Promise<Simplify<O>> {
-    const result = await this.executeTakeFirst()
+  async executeTakeFirstOrThrow(errorConstructorOrOptions?: any): Promise<any> {
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -2675,7 +2673,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       throw error
     }
 
-    return result as O
+    return result
   }
 
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {

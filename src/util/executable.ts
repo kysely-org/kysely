@@ -1,5 +1,6 @@
-import { QueryNode } from '../operation-node/query-node'
-import { NoResultErrorConstructor } from '../query-builder/no-result-error'
+import { QueryNode } from '../operation-node/query-node.js'
+import { NoResultErrorConstructor } from '../query-builder/no-result-error.js'
+import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
 
 export interface Executable<O> {
   /**
@@ -34,15 +35,4 @@ export interface Executable<O> {
   ): Promise<O>
 }
 
-export interface ExecuteOptions {
-  /**
-   * An optional signal that can be used to abort the execution of the query.
-   *
-   * This is useful for cancelling long-running queries, for example when
-   * the user navigates away from the page or closes the browser tab.
-   *
-   * Writes (insert, update, delete) are not cancellable in most database engines,
-   * so this signal is mostly useful for read queries.
-   */
-  abortSignal?: AbortSignal
-}
+export interface ExecuteOptions extends ExecuteQueryOptions {}
