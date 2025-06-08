@@ -44,10 +44,7 @@ export interface QueryExecutor extends ConnectionProvider {
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method.
    */
-  executeQuery<R>(
-    compiledQuery: CompiledQuery<R>,
-    queryId: QueryId,
-  ): Promise<QueryResult<R>>
+  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>>
 
   /**
    * Executes a compiled query and runs the result through all plugins'
@@ -61,7 +58,6 @@ export interface QueryExecutor extends ConnectionProvider {
      * only by the postgres driver.
      */
     chunkSize: number,
-    queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**

@@ -60,10 +60,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
-  async executeQuery<R>(
-    compiledQuery: CompiledQuery,
-    queryId: QueryId,
-  ): Promise<QueryResult<R>> {
+  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
 
@@ -73,14 +70,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         )
       }
 
-      return await this.#transformResult(result, queryId)
+      return await this.#transformResult(result, compiledQuery.queryId)
     })
   }
 
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { connection, release } = await provideControlledConnection(this)
 
@@ -89,7 +85,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         compiledQuery,
         chunkSize,
       )) {
-        yield await this.#transformResult(result, queryId)
+        yield await this.#transformResult(result, compiledQuery.queryId)
       }
     } finally {
       release()

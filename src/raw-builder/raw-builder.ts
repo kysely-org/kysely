@@ -190,10 +190,7 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
   ): Promise<QueryResult<O>> {
     const executor = this.#getExecutor(executorProvider)
 
-    return executor.executeQuery<O>(
-      this.#compile(executor),
-      this.#props.queryId,
-    )
+    return executor.executeQuery<O>(this.#compile(executor))
   }
 
   #getExecutor(executorProvider?: QueryExecutorProvider): QueryExecutor {

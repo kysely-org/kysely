@@ -48,6 +48,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import { ConnectionProvider } from './driver/connection-provider.js'
+import { logOnce } from './util/log-once.js'
 
 // @ts-ignore
 Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
@@ -539,11 +540,18 @@ export class Kysely<DB>
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    queryId: QueryId = createQueryId(),
+    // TODO: remove this in the future. deprecated in  0.28.x
+    queryId?: QueryId,
   ): Promise<QueryResult<R>> {
+    if (queryId !== undefined) {
+      logOnce(
+        'Passing `queryId` in `db.executeQuery` is deprecated and will result in a compile-time error in the future.',
+      )
+    }
+
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
+    return this.getExecutor().executeQuery<R>(compiledQuery)
   }
 
   async [Symbol.asyncDispose]() {
@@ -1169,21 +1177,17 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     return this.#executor.provideConnection(consumer)
   }
 
-  executeQuery<R>(
-    compiledQuery: CompiledQuery<R>,
-    queryId: QueryId,
-  ): Promise<QueryResult<R>> {
+  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery, queryId)
+    return this.#executor.executeQuery(compiledQuery)
   }
 
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
-    queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize, queryId)
+    return this.#executor.stream(compiledQuery, chunkSize)
   }
 
   withConnectionProvider(
