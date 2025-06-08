@@ -1292,10 +1292,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(
-      compiledQuery,
-      this.#props.queryId,
-    )
+    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as InsertQueryNode
@@ -1353,11 +1350,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(
-      compiledQuery,
-      chunkSize,
-      this.#props.queryId,
-    )
+    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
 
     for await (const item of stream) {
       yield* item.rows

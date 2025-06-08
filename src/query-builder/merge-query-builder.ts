@@ -883,10 +883,7 @@ export class WheneableMergeQueryBuilder<
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(
-      compiledQuery,
-      this.#props.queryId,
-    )
+    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as MergeQueryNode
