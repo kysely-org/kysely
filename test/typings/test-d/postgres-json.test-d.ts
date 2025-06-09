@@ -155,7 +155,7 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
               }),
             )
             .filterWhere('transaction.id', 'is not', null),
-          sql`'[]'`,
+          sql<[]>`'[]'`,
         )
         .as('transactions'),
     ])
