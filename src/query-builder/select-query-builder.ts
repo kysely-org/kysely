@@ -30,6 +30,7 @@ import {
   Nullable,
   ShallowRecord,
   Simplify,
+  SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
 import {
@@ -2118,19 +2119,23 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   compile(): CompiledQuery<Simplify<O>>
 
-  execute(): Promise<Simplify<O>[]>
+  execute(
+    options?: ExecuteOptions,
+  ): Promise<NonNullable<SimplifySingleResult<O>>[]>
 
-  executeTakeFirst(): Promise<Simplify<O> | undefined>
+  executeTakeFirst(
+    options?: ExecuteOptions,
+  ): Promise<SimplifySingleResult<O> | undefined>
 
   executeTakeFirstOrThrow(
     errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
-  ): Promise<Simplify<O>>
+  ): Promise<NonNullable<SimplifySingleResult<O>>>
 
   executeTakeFirstOrThrow(
     options?: ExecuteOptions & {
       errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error)
     },
-  ): Promise<O>
+  ): Promise<NonNullable<SimplifySingleResult<O>>>
 
   stream(chunkSize?: number): AsyncIterableIterator<O>
 
