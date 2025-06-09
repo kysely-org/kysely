@@ -85,12 +85,12 @@ import { OrderByInterface } from './order-by-interface.js'
 import { Executable, ExecuteOptions } from '../util/executable.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends Executable<Simplify<O>>,
-    WhereInterface<DB, TB>,
+  extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O> {
   where<
