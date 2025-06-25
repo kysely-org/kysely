@@ -31,10 +31,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = {
-      withInternalKyselyTables: false,
-      withForeignTables: false,
-    },
+    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     let query = this.#db
       // column
@@ -87,10 +84,6 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .orderBy('a.attnum')
       .$castTo<RawColumnMetadata>()
 
-    if (!options.withForeignTables) {
-      query = query.where('c.relkind', '!=', 'f')
-    }
-
     if (!options.withInternalKyselyTables) {
       query = query
         .where('c.relname', '!=', DEFAULT_MIGRATION_TABLE)
@@ -120,7 +113,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         table = freeze({
           name: it.table,
           isView: it.table_type === 'v',
-          isForeignTable: it.table_type === 'f',
+          isForeign: it.table_type === 'f',
           schema: it.schema,
           columns: [],
         })

@@ -135,7 +135,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       return {
         name: name,
         isView: type === 'view',
-        isForeignTable: false,
+        isForeign: false,
         columns: columns.map((col) => ({
           name: col.name,
           dataType: col.type,

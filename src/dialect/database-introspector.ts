@@ -26,11 +26,6 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
-
-  /**
-   * If this is true, the metadata contains the foreign tables.
-   */
-  withForeignTables?: boolean
 }
 
 export interface SchemaMetadata {
@@ -48,7 +43,7 @@ export interface DatabaseMetadata {
 export interface TableMetadata {
   readonly name: string
   readonly isView: boolean
-  readonly isForeignTable: boolean
+  readonly isForeign: boolean
   readonly columns: ColumnMetadata[]
   readonly schema?: string
 }
