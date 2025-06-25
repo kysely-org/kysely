@@ -83,6 +83,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         table = freeze({
           name: it.TABLE_NAME,
           isView: it.TABLE_TYPE === 'VIEW',
+          isForeignTable: false,
           schema: it.TABLE_SCHEMA,
           columns: [],
         })

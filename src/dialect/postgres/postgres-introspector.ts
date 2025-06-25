@@ -31,7 +31,10 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
+    options: DatabaseMetadataOptions = {
+      withInternalKyselyTables: false,
+      withForeignTables: false,
+    },
   ): Promise<TableMetadata[]> {
     let query = this.#db
       // column
@@ -70,6 +73,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'r' /*regular table*/,
         'v' /*view*/,
         'p' /*partitioned table*/,
+        'f' /*foreign table*/,
       ])
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
@@ -82,6 +86,10 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .orderBy('c.relname')
       .orderBy('a.attnum')
       .$castTo<RawColumnMetadata>()
+
+    if (!options.withForeignTables) {
+      query = query.where('c.relkind', '!=', 'f')
+    }
 
     if (!options.withInternalKyselyTables) {
       query = query
@@ -112,6 +120,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         table = freeze({
           name: it.table,
           isView: it.table_type === 'v',
+          isForeignTable: it.table_type === 'f',
           schema: it.schema,
           columns: [],
         })
