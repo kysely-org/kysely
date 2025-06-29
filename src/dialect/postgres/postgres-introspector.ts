@@ -70,6 +70,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'r' /*regular table*/,
         'v' /*view*/,
         'p' /*partitioned table*/,
+        'f' /*foreign table*/,
       ])
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
@@ -119,6 +120,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           tableKey,
           freeze({
             columns: [],
+            isForeign: column.table_type === 'f',
             isView: column.table_type === 'v',
             name: table,
             schema,
