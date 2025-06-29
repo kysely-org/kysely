@@ -85,6 +85,7 @@ for (const dialect of DIALECTS) {
           expect(meta).to.eql([
             {
               name: 'person',
+              isForeign: false,
               isView: false,
               schema: 'public',
               columns: [
@@ -157,6 +158,7 @@ for (const dialect of DIALECTS) {
             {
               name: 'pet',
               isView: false,
+              isForeign: false,
               schema: 'public',
               columns: [
                 {
@@ -200,6 +202,7 @@ for (const dialect of DIALECTS) {
             {
               name: 'toy',
               isView: false,
+              isForeign: false,
               schema: 'public',
               columns: [
                 {
@@ -242,6 +245,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'toy_names',
+              isForeign: false,
               isView: true,
               schema: 'public',
               columns: [
@@ -258,6 +262,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'MixedCaseTable',
+              isForeign: false,
               isView: false,
               schema: 'some_schema',
               columns: [
@@ -274,6 +279,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'pet',
+              isForeign: false,
               isView: false,
               schema: 'some_schema',
               columns: [
@@ -299,6 +305,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'pet_partition',
+              isForeign: false,
               isView: false,
               schema: 'some_schema',
               columns: [
@@ -318,6 +325,7 @@ for (const dialect of DIALECTS) {
           expect(meta).to.eql([
             {
               name: 'person',
+              isForeign: false,
               isView: false,
               schema: 'kysely_test',
               columns: [
@@ -382,6 +390,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'pet',
+              isForeign: false,
               isView: false,
               schema: 'kysely_test',
               columns: [
@@ -421,6 +430,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'toy',
+              isForeign: false,
               isView: false,
               schema: 'kysely_test',
               columns: [
@@ -460,6 +470,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'toy_names',
+              isForeign: false,
               isView: true,
               schema: 'kysely_test',
               columns: [
@@ -477,6 +488,7 @@ for (const dialect of DIALECTS) {
         } else if (dialect === 'mssql') {
           expect(meta).to.eql([
             {
+              isForeign: false,
               isView: false,
               name: 'person',
               schema: 'dbo',
@@ -547,6 +559,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              isForeign: false,
               isView: false,
               name: 'pet',
               schema: 'dbo',
@@ -590,6 +603,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              isForeign: false,
               isView: false,
               name: 'toy',
               schema: 'dbo',
@@ -633,6 +647,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              isForeign: false,
               isView: true,
               name: 'toy_names',
               schema: 'dbo',
@@ -649,6 +664,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              isForeign: false,
               isView: false,
               name: 'pet',
               schema: 'some_schema',
@@ -678,6 +694,7 @@ for (const dialect of DIALECTS) {
           expect(meta).to.eql([
             {
               name: 'person',
+              isForeign: false,
               isView: false,
               columns: [
                 {
@@ -741,6 +758,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'pet',
+              isForeign: false,
               isView: false,
               columns: [
                 {
@@ -779,6 +797,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'toy',
+              isForeign: false,
               isView: false,
               columns: [
                 {
@@ -817,6 +836,7 @@ for (const dialect of DIALECTS) {
             },
             {
               name: 'toy_names',
+              isForeign: false,
               isView: true,
               columns: [
                 {
@@ -856,6 +876,7 @@ for (const dialect of DIALECTS) {
 
             expect(testTable).to.eql({
               name: testTableName,
+              isForeign: false,
               isView: false,
               columns: [
                 {
