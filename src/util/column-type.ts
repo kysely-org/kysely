@@ -201,5 +201,5 @@ export type Insertable<R> = DrainOuterGeneric<
  * ```
  */
 export type Updateable<R> = DrainOuterGeneric<{
-  [K in UpdateKeys<R>]?: UpdateType<R[K]>
+  [K in UpdateKeys<R>]?: UpdateType<R[K]> | undefined
 }>
