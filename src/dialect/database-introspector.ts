@@ -43,6 +43,7 @@ export interface DatabaseMetadata {
 export interface TableMetadata {
   readonly name: string
   readonly isView: boolean
+  readonly isForeign: boolean
   readonly columns: ColumnMetadata[]
   readonly schema?: string
 }
