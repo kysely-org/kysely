@@ -142,6 +142,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         tableDictionary[key] ||
         freeze({
           columns: [],
+          isForeign: false,
           isView: rawColumn.table_type === 'V ',
           name: rawColumn.table_name,
           schema: rawColumn.table_schema_name ?? undefined,
