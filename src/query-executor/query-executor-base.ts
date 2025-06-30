@@ -9,9 +9,10 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
-import { QueryExecutor } from './query-executor.js'
+import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
+import { assertNotAborted } from '../util/abort.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -60,15 +61,26 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
+  async executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: ExecuteQueryOptions,
+  ): Promise<QueryResult<R>> {
+    const { abortSignal } = options || {}
+
+    assertNotAborted(abortSignal)
+
     return await this.provideConnection(async (connection) => {
-      const result = await connection.executeQuery(compiledQuery)
+      assertNotAborted(abortSignal)
+
+      const result = await connection.executeQuery(compiledQuery, options)
 
       if ('numUpdatedOrDeletedRows' in result) {
         logOnce(
           'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
         )
       }
+
+      assertNotAborted(abortSignal)
 
       return await this.#transformResult(result, compiledQuery.queryId)
     })
@@ -77,13 +89,21 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
+    const { abortSignal } = options || {}
+
+    assertNotAborted(abortSignal)
+
     const { connection, release } = await provideControlledConnection(this)
 
     try {
+      assertNotAborted(abortSignal)
+
       for await (const result of connection.streamQuery(
         compiledQuery,
         chunkSize,
+        options,
       )) {
         yield await this.#transformResult(result, compiledQuery.queryId)
       }
