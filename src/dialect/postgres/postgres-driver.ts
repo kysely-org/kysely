@@ -1,5 +1,7 @@
 import {
+  ControlConnectionProvider,
   DatabaseConnection,
+  QueryOptions,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
@@ -20,7 +22,6 @@ import {
   PostgresPoolClient,
 } from './postgres-dialect-config.js'
 
-const PRIVATE_CANCEL_QUERY_METHOD = Symbol()
 const PRIVATE_MAKE_CANCELABLE_METHOD = Symbol()
 const PRIVATE_RELEASE_METHOD = Symbol()
 
@@ -157,50 +158,45 @@ interface PostgresConnectionOptions {
 }
 
 class PostgresConnection implements DatabaseConnection {
-  readonly #acquireConnection: () => Promise<DatabaseConnection>
   readonly #client: PostgresPoolClient
   readonly #options: PostgresConnectionOptions
   #pid: unknown
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
-    this.#acquireConnection = options.acquireConnection
     this.#client = client
     this.#options = options
   }
 
+  async cancelQuery(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    if (!this.#pid) {
+      return logOnce(
+        'kysely:warning: cannot cancel query because the connection has not been made cancelable.',
+      )
+    }
+
+    return await controlConnectionProvider(async (controlConnection) => {
+      await controlConnection.executeQuery(
+        CompiledQuery.raw('select pg_cancel_backend($1)', [this.#pid]),
+      )
+    })
+  }
+
   async executeQuery<O>(
     compiledQuery: CompiledQuery,
-    options?: ExecuteQueryOptions,
+    options?: QueryOptions,
   ): Promise<QueryResult<O>> {
-    const { abortSignal } = options || {}
+    const { cancelable } = options || {}
 
-    assertNotAborted(abortSignal)
+    if (cancelable) {
+      await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
+    }
 
     try {
-      const { promise: abortPromise, resolve } = new Deferred<void>()
-
-      if (abortSignal) {
-        await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
-
-        assertNotAborted(abortSignal)
-
-        abortSignal.addEventListener('abort', () => {
-          resolve()
-        })
-      }
-
-      const queryPromise = this.#client.query<O>(compiledQuery.sql, [
+      const result = await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
       ])
-
-      const result = await Promise.race([abortPromise, queryPromise])
-
-      if (!result) {
-        // we fire the database-side cancel command and forget.
-        void this[PRIVATE_CANCEL_QUERY_METHOD]()
-
-        throw new AbortError()
-      }
 
       const { command, rowCount, rows } = result
 
@@ -215,10 +211,6 @@ class PostgresConnection implements DatabaseConnection {
         rows: rows ?? [],
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw err
-      }
-
       throw extendStackTrace(err, new Error())
     }
   }
@@ -258,26 +250,6 @@ class PostgresConnection implements DatabaseConnection {
       }
     } finally {
       await cursor.close()
-    }
-  }
-
-  async [PRIVATE_CANCEL_QUERY_METHOD](): Promise<void> {
-    if (!this.#pid) {
-      return logOnce(
-        'kysely:warning: cannot cancel query because the connection has not been made cancelable.',
-      )
-    }
-
-    const controlConnection = await this.#acquireConnection()
-
-    try {
-      await controlConnection.executeQuery(
-        CompiledQuery.raw(`select pg_cancel_backend($1)`, [this.#pid]),
-      )
-    } catch {
-      // noop
-    } finally {
-      ;(controlConnection as PostgresConnection)[PRIVATE_RELEASE_METHOD]()
     }
   }
 

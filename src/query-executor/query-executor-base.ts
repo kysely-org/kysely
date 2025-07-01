@@ -11,8 +11,8 @@ import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
-import { logOnce } from '../util/log-once.js'
-import { assertNotAborted } from '../util/abort.js'
+import { AbortError, assertNotAborted } from '../util/abort.js'
+import { Deferred } from '../util/deferred.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -69,21 +69,45 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     assertNotAborted(abortSignal)
 
-    return await this.provideConnection(async (connection) => {
-      assertNotAborted(abortSignal)
+    const { connection, release } = await provideControlledConnection(this)
 
-      const result = await connection.executeQuery(compiledQuery, options)
+    const { promise: abortPromise, resolve } = new Deferred<void>()
 
-      if ('numUpdatedOrDeletedRows' in result) {
-        logOnce(
-          'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
-        )
+    const abortListener = () => {
+      resolve()
+      abortSignal?.removeEventListener('abort', abortListener)
+    }
+    abortSignal?.addEventListener('abort', abortListener)
+
+    // might have already abort before adding the listener.
+    if (abortSignal?.aborted) {
+      abortListener()
+    }
+
+    try {
+      const queryPromise = connection.executeQuery(compiledQuery, {
+        cancelable: abortSignal !== undefined,
+      })
+
+      const result = await Promise.race([queryPromise, abortPromise])
+
+      // aborted.
+      if (!result) {
+        void Promise.allSettled([
+          queryPromise,
+          void connection.cancelQuery?.(this.provideConnection.bind(this)),
+        ]).catch(() => {
+          // noop
+        })
+
+        throw new AbortError()
       }
 
-      assertNotAborted(abortSignal)
-
       return await this.#transformResult(result, compiledQuery.queryId)
-    })
+    } finally {
+      release()
+      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+    }
   }
 
   async *stream<R>(
