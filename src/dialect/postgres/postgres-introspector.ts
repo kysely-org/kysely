@@ -75,6 +75,11 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('ns.nspname', '!=', 'information_schema')
       // Filter out internal cockroachdb schema
       .where('ns.nspname', '!=', 'crdb_internal')
+      // Filter out internal citus schema
+      .where("ns.nspname", "!=", "citus")
+      .where("ns.nspname", "!=", "citus_internal")
+      .where("ns.nspname", "!=", "columnar")
+      .where("ns.nspname", "!=", "columnar_internal")
       // No system columns
       .where('a.attnum', '>=', 0)
       .where('a.attisdropped', '!=', true)
