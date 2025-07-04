@@ -89,7 +89,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         cancelable: abortSignal !== undefined,
       })
 
-      const result = await Promise.race([queryPromise, abortPromise])
+      const result = await Promise.race([abortPromise, queryPromise])
 
       // aborted.
       if (!result) {
@@ -103,7 +103,23 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         throw new AbortError()
       }
 
-      return await this.#transformResult(result, compiledQuery.queryId)
+      const transformedResult = await this.#transformResult<R>(
+        result,
+        compiledQuery.queryId,
+      )
+
+      if (!transformedResult) {
+        void Promise.allSettled([
+          transformedResult,
+          void connection.cancelQuery?.(this.provideConnection.bind(this)),
+        ]).catch(() => {
+          // noop
+        })
+
+        throw new AbortError()
+      }
+
+      return transformedResult
     } finally {
       release()
       abortListener() // we're calling it to resolve the abort promise and remove the listener.
@@ -121,18 +137,75 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const { connection, release } = await provideControlledConnection(this)
 
-    try {
-      assertNotAborted(abortSignal)
+    const { promise: abortPromise, resolve } = new Deferred<void>()
 
-      for await (const result of connection.streamQuery(
-        compiledQuery,
-        chunkSize,
-        options,
-      )) {
-        yield await this.#transformResult(result, compiledQuery.queryId)
+    const abortListener = () => {
+      resolve()
+      abortSignal?.removeEventListener('abort', abortListener)
+    }
+    abortSignal?.addEventListener('abort', abortListener)
+
+    // might have already abort before adding the listener.
+    if (abortSignal?.aborted) {
+      abortListener()
+    }
+
+    let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
+
+    try {
+      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
+        cancelable: abortSignal !== undefined,
+      })
+
+      const { queryId } = compiledQuery
+      const controlConnectionProvider = this.provideConnection.bind(this)
+
+      while (true) {
+        const nextPromise = asyncIterator.next()
+
+        const result = await Promise.race([abortPromise, nextPromise])
+
+        // aborted.
+        if (!result) {
+          void Promise.allSettled([
+            nextPromise,
+            void connection.cancelQuery?.(controlConnectionProvider),
+          ]).catch(() => {
+            // noop
+          })
+
+          throw new AbortError()
+        }
+
+        if (result.done) {
+          break
+        }
+
+        const transformPromise = this.#transformResult<R>(result.value, queryId)
+
+        const transformedResult = await Promise.race([
+          abortPromise,
+          transformPromise,
+        ])
+
+        // aborted.
+        if (!transformedResult) {
+          void Promise.allSettled([
+            transformPromise,
+            void connection.cancelQuery?.(controlConnectionProvider),
+          ]).catch(() => {
+            // noop
+          })
+
+          throw new AbortError()
+        }
+
+        yield transformedResult
       }
     } finally {
       release()
+      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+      await asyncIterator?.return?.()
     }
   }
 

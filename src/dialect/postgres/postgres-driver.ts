@@ -187,13 +187,11 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     options?: QueryOptions,
   ): Promise<QueryResult<O>> {
-    const { cancelable } = options || {}
-
-    if (cancelable) {
-      await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
-    }
-
     try {
+      if (options?.cancelable) {
+        await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
+      }
+
       const result = await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
       ])
@@ -218,6 +216,7 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: QueryOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
@@ -227,6 +226,10 @@ class PostgresConnection implements DatabaseConnection {
 
     if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
       throw new Error('chunkSize must be a positive integer')
+    }
+
+    if (options?.cancelable) {
+      await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
     }
 
     const cursor = this.#client.query(
