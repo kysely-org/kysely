@@ -103,25 +103,21 @@ export type AnyAliasedColumnWithTable<
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
-export type SimplifySingleResult<O> = O extends InsertResult
+export type SimplifyResult<O> = O extends
+  | InsertResult
+  | UpdateResult
+  | DeleteResult
+  | MergeResult
   ? O
-  : O extends DeleteResult
-    ? O
-    : O extends UpdateResult
-      ? O
-      : O extends MergeResult
-        ? O
-        : Simplify<O> | undefined
+  : Simplify<O>
 
-export type SimplifyResult<O> = O extends InsertResult
+export type SimplifySingleResult<O> = O extends
+  | InsertResult
+  | UpdateResult
+  | DeleteResult
+  | MergeResult
   ? O
-  : O extends DeleteResult
-    ? O
-    : O extends UpdateResult
-      ? O
-      : O extends MergeResult
-        ? O
-        : Simplify<O>
+  : Simplify<O> | undefined
 
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 

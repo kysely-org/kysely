@@ -2,7 +2,10 @@ import { Dialect } from './dialect/dialect.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import { QueryExecutor } from './query-executor/query-executor.js'
+import {
+  ExecuteQueryOptions,
+  QueryExecutor,
+} from './query-executor/query-executor.js'
 import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
@@ -48,7 +51,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import { ConnectionProvider } from './driver/connection-provider.js'
-import { logOnce } from './util/log-once.js'
+import { ExecuteOptions } from './util/executable.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -623,20 +626,13 @@ export class Kysely<DB>
    *
    * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
-  executeQuery<R>(
+  async executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    // TODO: remove this in the future. deprecated in  0.28.x
-    queryId?: QueryId,
+    options?: ExecuteOptions,
   ): Promise<QueryResult<R>> {
-    if (queryId !== undefined) {
-      logOnce(
-        'Passing `queryId` in `db.executeQuery` is deprecated and will result in a compile-time error in the future.',
-      )
-    }
-
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery<R>(compiledQuery)
+    return await this.getExecutor().executeQuery<R>(compiledQuery, options)
   }
 
   async [Symbol.asyncDispose]() {
@@ -1269,17 +1265,21 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     return this.#executor.provideConnection(consumer)
   }
 
-  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
+  executeQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+    options?: ExecuteQueryOptions,
+  ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery)
+    return this.#executor.executeQuery(compiledQuery, options)
   }
 
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize)
+    return this.#executor.stream(compiledQuery, chunkSize, options)
   }
 
   withConnectionProvider(
