@@ -46,7 +46,6 @@ export class PostgresDriver implements Driver {
 
     if (!connection) {
       connection = new PostgresConnection(client, {
-        acquireConnection: () => this.acquireConnection(),
         cursor: this.#config.cursor ?? null,
       })
       this.#connections.set(client, connection)
@@ -148,12 +147,6 @@ export class PostgresDriver implements Driver {
 }
 
 interface PostgresConnectionOptions {
-  /**
-   * A function that acquires a new connection from the pool.
-   *
-   * The connection will be used to cancel running queries from another process.
-   */
-  acquireConnection: () => Promise<DatabaseConnection>
   cursor: PostgresCursorConstructor | null
 }
 
