@@ -44,7 +44,10 @@ export interface QueryExecutor extends ConnectionProvider {
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method.
    */
-  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>>
+  executeQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+    options?: ExecuteQueryOptions,
+  ): Promise<QueryResult<R>>
 
   /**
    * Executes a compiled query and runs the result through all plugins'
@@ -58,6 +61,7 @@ export interface QueryExecutor extends ConnectionProvider {
      * only by the postgres driver.
      */
     chunkSize: number,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**
@@ -87,4 +91,17 @@ export interface QueryExecutor extends ConnectionProvider {
    * Returns a copy of this executor without any plugins.
    */
   withoutPlugins(): QueryExecutor
+}
+
+export interface ExecuteQueryOptions {
+  /**
+   * An optional signal that can be used to abort the execution of the query.
+   *
+   * This is useful for cancelling long-running queries, for example when
+   * the user navigates away from the page or closes the browser tab.
+   *
+   * Writes (insert, update, delete) are not cancellable in most database engines,
+   * so this signal is mostly useful for read queries.
+   */
+  abortSignal?: AbortSignal
 }

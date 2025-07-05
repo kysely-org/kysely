@@ -1,3 +1,5 @@
+import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+
 export interface Streamable<O> {
   /**
    * Executes the query and streams the rows.
@@ -25,5 +27,16 @@ export interface Streamable<O> {
    * }
    * ```
    */
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O>
+}
+
+export interface StreamOptions extends ExecuteQueryOptions {
+  /**
+   * How many rows should be pulled from the database at once.
+   *
+   * Supported only by some dialects like PostgreSQL.
+   */
+  chunkSize?: number
 }

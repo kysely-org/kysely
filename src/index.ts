@@ -245,6 +245,7 @@ export type * from './util/column-type.js'
 export * from './util/compilable.js'
 export type * from './util/explainable.js'
 export type * from './util/streamable.js'
+export type * from './util/executable.js'
 export * from './util/log.js'
 export type {
   AnyAliasedColumn,
@@ -273,6 +274,7 @@ export type * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
 export type { KyselyTypeError } from './util/type-error.js'
+export * from './util/abort.js'
 
 export type {
   SelectExpression,

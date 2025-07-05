@@ -30,6 +30,7 @@ import type {
   Nullable,
   ShallowRecord,
   Simplify,
+  SimplifyResult,
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
@@ -69,7 +70,7 @@ import {
 } from '../parser/binary-operation-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 import type { Selectable } from '../util/column-type.js'
-import type { Streamable } from '../util/streamable.js'
+import type { Streamable, StreamOptions } from '../util/streamable.js'
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import type { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
@@ -83,6 +84,11 @@ import type { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 import type { JoinType } from '../operation-node/join-node.js'
 import type { OrderByInterface } from './order-by-interface.js'
+import type {
+  Executable,
+  ExecuteOptions,
+  ExecuteOrThrowOptions,
+} from '../util/executable.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends
@@ -91,6 +97,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O> {
   where<
@@ -2118,32 +2125,17 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   compile(): CompiledQuery<Simplify<O>>
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  execute(): Promise<Simplify<O>[]>
+  execute(options?: ExecuteOptions): Promise<NonNullable<SimplifyResult<O>>[]>
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(options?: ExecuteOptions): Promise<SimplifySingleResult<O>>
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback to throw a different
-   * error.
-   */
   executeTakeFirstOrThrow(
-    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
-  ): Promise<Simplify<O>>
+    options?: ExecuteOrThrowOptions | ExecuteOrThrowOptions['errorConstructor'],
+  ): Promise<SimplifyResult<O>>
 
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O>
 
   explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
@@ -2650,27 +2642,42 @@ class SelectQueryBuilderImpl<
     )
   }
 
-  async execute(): Promise<Simplify<O>[]> {
+  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
-    return result.rows
+    return result.rows as never
   }
 
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: ExecuteOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
-  ): Promise<Simplify<O>> {
-    const result = await this.executeTakeFirst()
+    errorConstructorOrOptions?:
+      | ExecuteOrThrowOptions
+      | ExecuteOrThrowOptions['errorConstructor'],
+  ): Promise<SimplifyResult<O>> {
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -2678,13 +2685,25 @@ class SelectQueryBuilderImpl<
       throw error
     }
 
-    return result as O
+    return result as never
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
 
     for await (const item of stream) {
       yield* item.rows
