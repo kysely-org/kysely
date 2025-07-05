@@ -1,11 +1,14 @@
 import {
+  ControlConnectionProvider,
   DatabaseConnection,
+  QueryOptions,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import { logOnce } from '../../util/log-once.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -144,20 +147,45 @@ interface PostgresConnectionOptions {
 }
 
 class PostgresConnection implements DatabaseConnection {
-  #client: PostgresPoolClient
-  #options: PostgresConnectionOptions
+  readonly #client: PostgresPoolClient
+  readonly #options: PostgresConnectionOptions
+  #pid: unknown
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
     this.#options = options
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    try {
-      const { command, rowCount, rows } = await this.#client.query<O>(
-        compiledQuery.sql,
-        [...compiledQuery.parameters],
+  async cancelQuery(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    if (!this.#pid) {
+      return logOnce(
+        'kysely:warning: cannot cancel query because the connection has not been made cancelable.',
       )
+    }
+
+    return await controlConnectionProvider(async (controlConnection) => {
+      await controlConnection.executeQuery(
+        CompiledQuery.raw('select pg_cancel_backend($1)', [this.#pid]),
+      )
+    })
+  }
+
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    options?: QueryOptions,
+  ): Promise<QueryResult<O>> {
+    try {
+      if (options?.cancelable) {
+        await this.#setupCancelability()
+      }
+
+      const result = await this.#client.query<O>(compiledQuery.sql, [
+        ...compiledQuery.parameters,
+      ])
+
+      const { command, rowCount, rows } = result
 
       return {
         numAffectedRows:
@@ -177,6 +205,7 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: QueryOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
@@ -186,6 +215,10 @@ class PostgresConnection implements DatabaseConnection {
 
     if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
       throw new Error('chunkSize must be a positive integer')
+    }
+
+    if (options?.cancelable) {
+      await this.#setupCancelability()
     }
 
     const cursor = this.#client.query(
@@ -214,5 +247,20 @@ class PostgresConnection implements DatabaseConnection {
 
   [PRIVATE_RELEASE_METHOD](): void {
     this.#client.release()
+  }
+
+  async #setupCancelability(): Promise<void> {
+    if (this.#pid) {
+      return
+    }
+
+    const {
+      rows: [row],
+    } = await this.#client.query<{ pid: unknown }>(
+      'select pg_backend_pid() as pid',
+      [],
+    )
+
+    this.#pid = row.pid
   }
 }

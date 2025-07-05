@@ -42,11 +42,7 @@ import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { MultiTableReturningInterface } from './returning-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
@@ -65,7 +61,7 @@ import {
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { Streamable } from '../util/streamable.js'
+import { Streamable, StreamOptions } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   ValueExpression,
@@ -81,6 +77,11 @@ import {
 } from './output-interface.js'
 import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
+import {
+  Executable,
+  ExecuteOptions,
+  ExecuteOrThrowOptions,
+} from '../util/executable.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -90,6 +91,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     OrderByInterface<DB, TB, {}>,
     OperationNodeSource,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O>
 {
@@ -1051,15 +1053,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  async execute(): Promise<SimplifyResult<O>[]> {
+  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as DeleteQueryNode
@@ -1068,37 +1068,37 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.rows as never
     }
 
-    return [new DeleteResult(result.numAffectedRows ?? BigInt(0)) as any]
+    return [new DeleteResult(result.numAffectedRows ?? BigInt(0)) as never]
   }
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: ExecuteOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
-   */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+    errorConstructorOrOptions?:
+      | ExecuteOrThrowOptions
+      | ExecuteOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
-    const result = await this.executeTakeFirst()
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -1106,13 +1106,25 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       throw error
     }
 
-    return result as SimplifyResult<O>
+    return result as never
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
 
     for await (const item of stream) {
       yield* item.rows
