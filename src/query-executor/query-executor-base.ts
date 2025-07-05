@@ -67,7 +67,15 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     const { abortSignal } = options || {}
 
-    assertNotAborted(abortSignal)
+    if (!abortSignal) {
+      return await this.provideConnection(async (connection) => {
+        const result = await connection.executeQuery(compiledQuery)
+
+        return await this.#transformResult<R>(result, compiledQuery.queryId)
+      })
+    }
+
+    assertNotAborted(abortSignal, 'aborted before query execution')
 
     const { connection, release } = await provideControlledConnection(this)
 
@@ -80,13 +88,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     abortSignal?.addEventListener('abort', abortListener)
 
     // might have already abort before adding the listener.
-    if (abortSignal?.aborted) {
+    if (abortSignal.aborted) {
       abortListener()
     }
 
     try {
       const queryPromise = connection.executeQuery(compiledQuery, {
-        cancelable: abortSignal !== undefined,
+        cancelable: true,
       })
 
       const result = await Promise.race([abortPromise, queryPromise])
@@ -100,23 +108,25 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           // noop
         })
 
-        throw new AbortError()
+        throw new AbortError('aborted during query execution')
       }
 
-      const transformedResult = await this.#transformResult<R>(
+      const transformPromise = this.#transformResult<R>(
         result,
         compiledQuery.queryId,
       )
 
+      const transformedResult = await Promise.race([
+        abortPromise,
+        transformPromise,
+      ])
+
       if (!transformedResult) {
-        void Promise.allSettled([
-          transformedResult,
-          void connection.cancelQuery?.(this.provideConnection.bind(this)),
-        ]).catch(() => {
+        transformPromise.catch(() => {
           // noop
         })
 
-        throw new AbortError()
+        throw new AbortError('aborted during result transformation')
       }
 
       return transformedResult
@@ -133,7 +143,24 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): AsyncIterableIterator<QueryResult<R>> {
     const { abortSignal } = options || {}
 
-    assertNotAborted(abortSignal)
+    if (!abortSignal) {
+      const { connection, release } = await provideControlledConnection(this)
+
+      try {
+        for await (const result of connection.streamQuery(
+          compiledQuery,
+          chunkSize,
+        )) {
+          yield await this.#transformResult<R>(result, compiledQuery.queryId)
+        }
+      } finally {
+        release()
+      }
+
+      return
+    }
+
+    assertNotAborted(abortSignal, 'aborted before connection acquisition')
 
     const { connection, release } = await provideControlledConnection(this)
 
@@ -141,12 +168,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const abortListener = () => {
       resolve()
-      abortSignal?.removeEventListener('abort', abortListener)
+      abortSignal.removeEventListener('abort', abortListener)
     }
-    abortSignal?.addEventListener('abort', abortListener)
+    abortSignal.addEventListener('abort', abortListener)
 
     // might have already abort before adding the listener.
-    if (abortSignal?.aborted) {
+    if (abortSignal.aborted) {
       abortListener()
     }
 
@@ -154,7 +181,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     try {
       asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
-        cancelable: abortSignal !== undefined,
+        cancelable: true,
       })
 
       const { queryId } = compiledQuery
@@ -174,7 +201,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             // noop
           })
 
-          throw new AbortError()
+          throw new AbortError('aborted while getting next result')
         }
 
         if (result.done) {
@@ -197,7 +224,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             // noop
           })
 
-          throw new AbortError()
+          throw new AbortError('aborted during result transformation')
         }
 
         yield transformedResult
