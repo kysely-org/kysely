@@ -8,9 +8,6 @@ import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { ExecuteQueryOptions } from '../../query-executor/query-executor.js'
-import { AbortError, assertNotAborted } from '../../util/abort.js'
-import { Deferred } from '../../util/deferred.js'
 import { logOnce } from '../../util/log-once.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
@@ -22,7 +19,6 @@ import {
   PostgresPoolClient,
 } from './postgres-dialect-config.js'
 
-const PRIVATE_MAKE_CANCELABLE_METHOD = Symbol()
 const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class PostgresDriver implements Driver {
@@ -182,7 +178,7 @@ class PostgresConnection implements DatabaseConnection {
   ): Promise<QueryResult<O>> {
     try {
       if (options?.cancelable) {
-        await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
+        await this.#setupCancelability()
       }
 
       const result = await this.#client.query<O>(compiledQuery.sql, [
@@ -222,7 +218,7 @@ class PostgresConnection implements DatabaseConnection {
     }
 
     if (options?.cancelable) {
-      await this[PRIVATE_MAKE_CANCELABLE_METHOD]()
+      await this.#setupCancelability()
     }
 
     const cursor = this.#client.query(
@@ -249,7 +245,11 @@ class PostgresConnection implements DatabaseConnection {
     }
   }
 
-  async [PRIVATE_MAKE_CANCELABLE_METHOD](): Promise<void> {
+  [PRIVATE_RELEASE_METHOD](): void {
+    this.#client.release()
+  }
+
+  async #setupCancelability(): Promise<void> {
     if (this.#pid) {
       return
     }
@@ -262,9 +262,5 @@ class PostgresConnection implements DatabaseConnection {
     )
 
     this.#pid = row.pid
-  }
-
-  [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release()
   }
 }

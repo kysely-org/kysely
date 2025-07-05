@@ -64,9 +64,9 @@ for (const dialect of DIALECTS) {
 
         const delayedQuery = (
           {
-            postgres: sql`select pg_sleep(1); ${writeQuery};`,
-            mysql: sql`select sleep(1); ${writeQuery};`,
-            mssql: sql`waitfor delay '00:00:01.000'; ${writeQuery};`,
+            postgres: sql`select pg_sleep(0.1); ${writeQuery};`,
+            mysql: sql`select sleep(0.1); ${writeQuery};`,
+            mssql: sql`waitfor delay '00:00:00.100'; ${writeQuery};`,
             sqlite: sql`WITH RECURSIVE timer(i) AS (
               SELECT 1
               UNION ALL
@@ -88,7 +88,7 @@ for (const dialect of DIALECTS) {
               error.reason === 'aborted during query execution',
           )
 
-        // this checks the write after the sleep query was not executed due to the abort.
+        await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
         await expect(
           ctx.db
             .selectFrom('person')
