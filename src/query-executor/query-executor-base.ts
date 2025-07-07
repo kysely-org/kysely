@@ -94,12 +94,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     }
     abortSignal?.addEventListener('abort', abortListener)
 
-    // might have already abort before adding the listener.
-    if (abortSignal.aborted) {
-      abortListener()
-    }
-
     try {
+      assertNotAborted(abortSignal, 'aborted before query execution')
+
       const queryPromise = connection.executeQuery(compiledQuery, {
         cancelable: true,
       })
@@ -128,6 +125,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         transformPromise,
       ])
 
+      // aborted.
       if (!transformedResult) {
         transformPromise.catch(() => {
           // noop
@@ -187,6 +185,8 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
 
     try {
+      assertNotAborted(abortSignal, 'aborted before query streaming')
+
       asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
         cancelable: true,
       })
@@ -195,6 +195,8 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       const controlConnectionProvider = this.provideConnection.bind(this)
 
       while (true) {
+        assertNotAborted(abortSignal, 'aborted during query streaming')
+
         const nextPromise = asyncIterator.next()
 
         const result = await Promise.race([abortPromise, nextPromise])
@@ -235,8 +237,6 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         }
 
         yield transformedResult
-
-        assertNotAborted(abortSignal, 'aborted during query streaming')
       }
     } finally {
       release()
