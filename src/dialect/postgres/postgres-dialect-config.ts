@@ -15,12 +15,11 @@ export interface PostgresDialectConfig {
 
   /**
    * A postgres `Client` constructor, to be used for connecting to the database
-   * outside of the `pool` to avoid waiting for idle connection.
+   * outside of the `pool` to avoid waiting for an idle connection.
    *
    * This is useful for cancelling queries.
    *
-   * Defaults to the pool's undocumented `Client` member. If it doesn't exist,
-   * a pool connection is used instead.
+   * Defaults to the pool's undocumented `Client` member, if it exists.
    */
   client?: PostgresClientConstructor
 
@@ -78,10 +77,6 @@ export interface PostgresPool {
  * https://node-postgres.com/apis/client
  */
 export interface PostgresClient {
-  // internal
-  activeQuery?: unknown
-  // internal
-  cancel?(client: PostgresClient, query: unknown): void
   connect(): Promise<void>
   end(): void
   // internal
@@ -104,8 +99,6 @@ export type PostgresClientConstructor = new (options: any) => PostgresClient
  * https://node-postgres.com/apis/pool#releasing-clients
  */
 export interface PostgresPoolClient extends Omit<PostgresClient, 'end'> {
-  // internal
-  end?(): void
   release(): void
 }
 

@@ -13,6 +13,7 @@ import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { AbortError, assertNotAborted } from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
+import { logOnce } from '../util/log-once.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -78,6 +79,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     assertNotAborted(abortSignal, 'aborted before query execution')
 
     const { connection, release } = await provideControlledConnection(this)
+
+    if (!connection.cancelQuery) {
+      logOnce(
+        'this kysely dialect does not implement the `cancelQuery` method. this means, queries will not be cancelled on the database side when the `abortSignal` is triggered.',
+      )
+    }
 
     const { promise: abortPromise, resolve } = new Deferred<void>()
 

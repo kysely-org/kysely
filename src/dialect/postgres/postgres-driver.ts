@@ -9,10 +9,9 @@ import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
-import { createQueryId } from '../../util/query-id.js'
+import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
-  PostgresClient,
   PostgresClientConstructor,
   PostgresCursorConstructor,
   PostgresDialectConfig,
@@ -154,7 +153,8 @@ interface PostgresConnectionOptions {
 class PostgresConnection implements DatabaseConnection {
   readonly #client: PostgresPoolClient
   readonly #options: PostgresConnectionOptions
-  #pid: number | undefined
+  #queryId?: QueryId
+  #pid?: number
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -164,48 +164,43 @@ class PostgresConnection implements DatabaseConnection {
   async cancelQuery(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void> {
+    if (!this.#queryId) {
+      return
+    }
+
     const { Client, poolOptions } = this.#options
+
+    const queryIdToCancel = this.#queryId
+    const cancelQuery = `select pg_cancel_backend(${this.#pid})`
 
     // we fallback to a pool connection, and execute a SQL query to cancel the
     // query. this is not ideal, as we might have to wait for an idle connection.
     if (!Client) {
       return await controlConnectionProvider(async (controlConnection) => {
-        await controlConnection.executeQuery(
-          CompiledQuery.raw(`select pg_cancel_backend(${this.#pid})`, []),
-        )
+        // by the time we get the connection, another query might have been executed.
+        // we need to ensure we're not canceling the wrong query.
+        if (queryIdToCancel === this.#queryId) {
+          await controlConnection.executeQuery(
+            CompiledQuery.raw(cancelQuery, []),
+          )
+        }
       })
     }
 
     const controlClient = new Client({ ...poolOptions })
 
-    // `cancel` is not available. fallback to SQL query to cancel.
-    if (!isFunction(controlClient.cancel)) {
-      try {
-        await controlClient.connect()
+    try {
+      await controlClient.connect()
 
-        await controlClient.query(`select pg_cancel_backend(${this.#pid})`, [])
-
+      // by the time we get the connection, another query might have been executed.
+      // we need to ensure we're not canceling the wrong query.
+      if (queryIdToCancel !== this.#queryId) {
         return
-      } finally {
-        controlClient.end()
       }
-    }
 
-    controlClient.cancel!(
-      this.#client as PostgresClient,
-      this.#client.activeQuery,
-    )
-
-    // we don't have any way to know if the cancel finished and the client can be ended.
-    // we also don't have a way to know if the connect happened already.
-    // so we just try to query until it succeeds.
-    while (true) {
-      try {
-        await controlClient.query('select 1', [])
-        return controlClient.end()
-      } catch {
-        // noop
-      }
+      await controlClient.query(cancelQuery, [])
+    } finally {
+      controlClient.end()
     }
   }
 
@@ -217,6 +212,8 @@ class PostgresConnection implements DatabaseConnection {
       if (options?.cancelable) {
         await this.#setupCancelability()
       }
+
+      this.#queryId = compiledQuery.queryId
 
       const result = await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
@@ -236,6 +233,8 @@ class PostgresConnection implements DatabaseConnection {
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
+    } finally {
+      this.#queryId = undefined
     }
   }
 
@@ -258,6 +257,8 @@ class PostgresConnection implements DatabaseConnection {
       await this.#setupCancelability()
     }
 
+    this.#queryId = compiledQuery.queryId
+
     const cursor = this.#client.query(
       new this.#options.cursor<O>(
         compiledQuery.sql,
@@ -278,6 +279,7 @@ class PostgresConnection implements DatabaseConnection {
         }
       }
     } finally {
+      this.#queryId = undefined
       await cursor.close()
     }
   }
@@ -288,14 +290,6 @@ class PostgresConnection implements DatabaseConnection {
 
   async #setupCancelability(): Promise<void> {
     if (this.#pid) {
-      return
-    }
-
-    const { Client } = this.#options
-
-    // if we can create a `Client` instance, and it has a `cancel` method,
-    // we don't need to query for the `pid` property.
-    if (Client && isFunction(Client.prototype.cancel)) {
       return
     }
 
