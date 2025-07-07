@@ -8,11 +8,12 @@ import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { logOnce } from '../../util/log-once.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
+  PostgresClient,
+  PostgresClientConstructor,
   PostgresCursorConstructor,
   PostgresDialectConfig,
   PostgresPool,
@@ -42,7 +43,9 @@ export class PostgresDriver implements Driver {
 
     if (!connection) {
       connection = new PostgresConnection(client, {
+        Client: this.#config.client || this.#pool!.Client,
         cursor: this.#config.cursor ?? null,
+        poolOptions: this.#pool!.options,
       })
       this.#connections.set(client, connection)
 
@@ -143,13 +146,15 @@ export class PostgresDriver implements Driver {
 }
 
 interface PostgresConnectionOptions {
+  Client?: PostgresClientConstructor
   cursor: PostgresCursorConstructor | null
+  poolOptions: object
 }
 
 class PostgresConnection implements DatabaseConnection {
   readonly #client: PostgresPoolClient
   readonly #options: PostgresConnectionOptions
-  #pid: unknown
+  #pid: number | undefined
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -159,17 +164,49 @@ class PostgresConnection implements DatabaseConnection {
   async cancelQuery(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void> {
-    if (!this.#pid) {
-      return logOnce(
-        'kysely:warning: cannot cancel query because the connection has not been made cancelable.',
-      )
+    const { Client, poolOptions } = this.#options
+
+    // we fallback to a pool connection, and execute a SQL query to cancel the
+    // query. this is not ideal, as we might have to wait for an idle connection.
+    if (!Client) {
+      return await controlConnectionProvider(async (controlConnection) => {
+        await controlConnection.executeQuery(
+          CompiledQuery.raw(`select pg_cancel_backend(${this.#pid})`, []),
+        )
+      })
     }
 
-    return await controlConnectionProvider(async (controlConnection) => {
-      await controlConnection.executeQuery(
-        CompiledQuery.raw('select pg_cancel_backend($1)', [this.#pid]),
-      )
-    })
+    const controlClient = new Client({ ...poolOptions })
+
+    // `cancel` is not available. fallback to SQL query to cancel.
+    if (!isFunction(controlClient.cancel)) {
+      try {
+        await controlClient.connect()
+
+        await controlClient.query(`select pg_cancel_backend(${this.#pid})`, [])
+
+        return
+      } finally {
+        controlClient.end()
+      }
+    }
+
+    controlClient.cancel!(
+      this.#client as PostgresClient,
+      this.#client.activeQuery,
+    )
+
+    // we don't have any way to know if the cancel finished and the client can be ended.
+    // we also don't have a way to know if the connect happened already.
+    // so we just try to query until it succeeds.
+    while (true) {
+      try {
+        await controlClient.query('select 1', [])
+        return controlClient.end()
+      } catch {
+        // noop
+      }
+    }
   }
 
   async executeQuery<O>(
@@ -254,13 +291,31 @@ class PostgresConnection implements DatabaseConnection {
       return
     }
 
+    const { Client } = this.#options
+
+    // if we can create a `Client` instance, and it has a `cancel` method,
+    // we don't need to query for the `pid` property.
+    if (Client && isFunction(Client.prototype.cancel)) {
+      return
+    }
+
+    const { processID } = this.#client
+
+    // `processID` is an undocumented member of the `Client` class.
+    // it might not exist in old or future versions of the `pg` driver.
+    // if it does, use it.
+    if (processID) {
+      this.#pid = processID
+      return
+    }
+
     const {
-      rows: [row],
-    } = await this.#client.query<{ pid: unknown }>(
+      rows: [{ pid }],
+    } = await this.#client.query<{ pid: string }>(
       'select pg_backend_pid() as pid',
       [],
     )
 
-    this.#pid = row.pid
+    this.#pid = Number(pid)
   }
 }
