@@ -203,6 +203,7 @@ export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
 
   mysql: {
     dialect: new MysqlDialect({
+      createConnection,
       pool: async () => createPool(DIALECT_CONFIGS.mysql),
     }),
     plugins: PLUGINS,
