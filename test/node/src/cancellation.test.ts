@@ -12,7 +12,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  if (dialect === 'postgres') {
+  if (dialect === 'postgres' || dialect === 'mysql') {
     describe(`${dialect}: query cancellation`, () => {
       let ctx: TestContext
 
@@ -64,7 +64,7 @@ for (const dialect of DIALECTS) {
         const delayedQuery = (
           {
             postgres: sql`select pg_sleep(0.1); ${writeQuery};`,
-            mysql: sql`select sleep(0.1); ${writeQuery};`,
+            mysql: sql`do sleep(0.1); ${writeQuery};`,
             mssql: sql`waitfor delay '00:00:00.100'; ${writeQuery};`,
             sqlite: sql`WITH RECURSIVE timer(i) AS (
               SELECT 1

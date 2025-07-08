@@ -2,7 +2,7 @@ import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
-import { createPool } from 'mysql2'
+import { createConnection, createPool } from 'mysql2'
 import * as Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
@@ -199,6 +199,7 @@ export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
 
   mysql: {
     dialect: new MysqlDialect({
+      createConnection,
       pool: async () => createPool(DIALECT_CONFIGS.mysql),
     }),
     plugins: PLUGINS,
