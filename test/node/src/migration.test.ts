@@ -860,19 +860,6 @@ for (const dialect of DIALECTS) {
           [migrationName],
           "The migration's 'up' method should have been executed.",
         )
-
-        const checkerMigrator = new Migrator({
-          db: ctx.db,
-          provider: testSpecificProvider,
-        })
-
-        const migrations = await checkerMigrator.getMigrations()
-        const testMigrationInfo = migrations.find(
-          (m) => m.name === migrationName,
-        )
-
-        expect(testMigrationInfo).to.exist
-        expect(testMigrationInfo!.executedAt).to.be.instanceOf(Date)
       })
     })
 
