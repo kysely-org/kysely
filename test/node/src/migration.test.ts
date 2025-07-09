@@ -830,7 +830,7 @@ for (const dialect of DIALECTS) {
         const migrationName = 'trx_connection_method_fail_case'
         const executedUpMethodsForThisTest: string[] = []
 
-        const testSpecificProvider: any = {
+        const testSpecificProvider: MigrationProvider = {
           getMigrations: async () => ({
             [migrationName]: {
               async up(_db: Kysely<any>): Promise<void> {
