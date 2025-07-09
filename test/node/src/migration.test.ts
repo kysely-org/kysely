@@ -826,7 +826,7 @@ for (const dialect of DIALECTS) {
         }
       })
 
-      it('should allow migrations to run inside a user-managed transaction when disableTransactions is true', async () => {
+      it('should run migrations using a provided transaction', async () => {
         const migrationName = 'trx_connection_method_fail_case'
         const executedUpMethodsForThisTest: string[] = []
 
