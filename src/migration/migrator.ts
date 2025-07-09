@@ -526,7 +526,7 @@ export class Migrator {
       }
     }
 
-    if (this.#props.db.isTransaction && this.#props.disableTransactions) {
+    if (this.#props.db.isTransaction) {
       return run(this.#props.db)
     } else if (
       adapter.supportsTransactionalDdl &&
