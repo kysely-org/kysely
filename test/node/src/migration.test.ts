@@ -841,20 +841,21 @@ for (const dialect of DIALECTS) {
           }),
         }
 
-        await ctx.db.transaction().execute(async (trx) => {
-          const migratorInTransaction = new Migrator({
-            db: trx,
-            provider: testSpecificProvider,
-            disableTransactions: true,
-          })
-
-          const { results, error } = await migratorInTransaction.migrateUp()
-
-          expect(error).to.be.undefined
-          expect(results).to.eql([
-            { migrationName, direction: 'Up', status: 'Success' },
-          ])
+        const trx = await db.startTransaction().execute()
+        
+        const migratorInTransaction = new Migrator({
+          db: trx,
+          provider: testSpecificProvider,
         })
+
+        const { results, error } = await migratorInTransaction.migrateUp()
+        
+        await trx.rollback().execute().catch(() => {})
+
+        expect(error).to.be.undefined
+        expect(results).to.eql([
+          { migrationName, direction: 'Up', status: 'Success' },
+        ])
 
         expect(executedUpMethodsForThisTest).to.eql(
           [migrationName],
