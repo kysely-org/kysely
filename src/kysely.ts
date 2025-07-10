@@ -53,6 +53,10 @@ import { logOnce } from './util/log-once.js'
 // @ts-ignore
 Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
 
+declare global {
+  interface AsyncDisposable {}
+}
+
 /**
  * The main Kysely class.
  *
