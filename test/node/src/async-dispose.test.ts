@@ -6,6 +6,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  QueryId,
   QueryResult,
   RootOperationNode,
   sql,
@@ -17,7 +18,6 @@ describe('async dispose', function () {
     const steps: string[] = []
 
     {
-      // @ts-ignore - `using` was only introduced in TS 5.2
       await using db = new Kysely({
         dialect: {
           createAdapter: () => new PostgresAdapter(),
@@ -41,8 +41,11 @@ describe('async dispose', function () {
           createIntrospector: (db) => new PostgresIntrospector(db),
           createQueryCompiler: () =>
             new (class extends PostgresQueryCompiler {
-              compileQuery(node: RootOperationNode): CompiledQuery<unknown> {
-                const compiled = super.compileQuery(node)
+              compileQuery(
+                node: RootOperationNode,
+                queryId: QueryId,
+              ): CompiledQuery<unknown> {
+                const compiled = super.compileQuery(node, queryId)
                 steps.push('compiled')
                 return compiled
               }
