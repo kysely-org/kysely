@@ -167,12 +167,13 @@ export class RuntimeDriver implements Driver {
 
     connection.executeQuery = async (
       compiledQuery,
+      options,
     ): Promise<QueryResult<any>> => {
       let caughtError: unknown
       const startTime = performanceNow()
 
       try {
-        return await executeQuery.call(connection, compiledQuery)
+        return await executeQuery.call(connection, compiledQuery, options)
       } catch (error) {
         caughtError = error
         await dis.#logError(error, compiledQuery, startTime)
@@ -187,6 +188,7 @@ export class RuntimeDriver implements Driver {
     connection.streamQuery = async function* (
       compiledQuery,
       chunkSize,
+      options,
     ): AsyncIterableIterator<QueryResult<any>> {
       let caughtError: unknown
       const startTime = performanceNow()
@@ -196,6 +198,7 @@ export class RuntimeDriver implements Driver {
           connection,
           compiledQuery,
           chunkSize,
+          options,
         )) {
           yield result
         }

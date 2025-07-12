@@ -140,6 +140,7 @@ const MYSQL_CONFIG: PoolOptions = {
   bigNumberStrings: true,
 
   connectionLimit: POOL_SIZE,
+  multipleStatements: true,
 }
 
 const MSSQL_CONFIG: ConnectionConfiguration = {
