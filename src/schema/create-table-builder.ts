@@ -25,7 +25,7 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
-import { Expression } from '../expression/expression.js'
+import { Expression, isExpression } from '../expression/expression.js'
 import {
   UniqueConstraintNodeBuilder,
   UniqueConstraintNodeBuilderCallback,
@@ -39,6 +39,7 @@ import {
   CheckConstraintBuilder,
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
+import { ParensNode } from '../operation-node/parens-node.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -246,12 +247,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: C[],
+    columns: (C | Expression<any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName),
+        UniqueConstraintNode.create(
+          columns.map((column) =>
+            isExpression(column)
+              ? ParensNode.create(column.toOperationNode())
+              : ColumnNode.create(column),
+          ),
+          constraintName,
+        ),
       ),
     )
 

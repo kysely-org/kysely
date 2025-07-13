@@ -5,7 +5,7 @@ import { OperationNode } from './operation-node.js'
 
 export interface UniqueConstraintNode extends OperationNode {
   readonly kind: 'UniqueConstraintNode'
-  readonly columns: ReadonlyArray<ColumnNode>
+  readonly columns: ReadonlyArray<OperationNode>
   readonly name?: IdentifierNode
   readonly nullsNotDistinct?: boolean
   readonly deferrable?: boolean
@@ -26,13 +26,13 @@ export const UniqueConstraintNode = freeze({
   },
 
   create(
-    columns: string[],
+    expressions: OperationNode[],
     constraintName?: string,
     nullsNotDistinct?: boolean,
   ): UniqueConstraintNode {
     return freeze({
       kind: 'UniqueConstraintNode',
-      columns: freeze(columns.map(ColumnNode.create)),
+      columns: freeze(expressions),
       name: constraintName ? IdentifierNode.create(constraintName) : undefined,
       nullsNotDistinct,
     })
