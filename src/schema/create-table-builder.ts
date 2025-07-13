@@ -244,6 +244,20 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   )
    *   .execute()
    * ```
+   *
+   * In dialects such as MySQL you create unique constraints on expressions as follows:
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addUniqueConstraint(
+   *     'first_name_last_name_unique',
+   *     [sql`lower('first_name')), 'last_name']
+   *   )
+   *   .execute()
+   * ```
    */
   addUniqueConstraint(
     constraintName: string,
