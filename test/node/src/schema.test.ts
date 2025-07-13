@@ -515,6 +515,31 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
+      if (dialect == 'mysql') {
+        it('should create a table with a unique constraints using expressions', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'varchar(255)')
+            .addColumn('b', 'varchar(255)')
+            .addColumn('c', 'varchar(255)')
+            .addUniqueConstraint('a_b_unique', [sql`lower(a)`, sql`lower(b)`])
+            .addUniqueConstraint('a_c_unique', [sql`lower(a)`, 'c'])
+          console.log('foo', builder.compile())
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique ((lower(a)), (lower(b))), constraint `a_c_unique` unique ((lower(a)), `c`))',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
       if (dialect === 'postgres') {
         it('should create a table with a unique constraint and "nulls not distinct" option', async () => {
           const builder = ctx.db.schema
