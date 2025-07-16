@@ -10,6 +10,30 @@ import { PGliteAdapter } from './pglite-adapter.js'
 import type { PGliteDialectConfig } from './pglite-dialect-config.js'
 import { PGliteDriver } from './pglite-driver.js'
 
+/**
+ * PGlite dialect.
+ *
+ * The constructor takes an instance of {@link PGliteDialectConfig}.
+ *
+ * ```ts
+ * import { PGlite } from '@electric-sql/pglite'
+ *
+ * new PGliteDialect({
+ *   pglite: new PGlite()
+ * })
+ * ```
+ *
+ * If you want the client to only be created once it's first used, `pglite`
+ * can be a function:
+ *
+ * ```ts
+ * import { PGlite } from '@electric-sql/pglite'
+ *
+ * new PGliteDialect({
+ *   pglite: () => new PGlite()
+ * })
+ * ```
+ */
 export class PGliteDialect implements Dialect {
   readonly #config: PGliteDialectConfig
 
