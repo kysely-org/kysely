@@ -48,6 +48,10 @@ const builtInDialects: BuiltInDialect[] = [
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
   },
+  {
+    value: 'pglite',
+    driverDocsURL: 'https://pglite.dev/docs',
+  },
 ]
 
 export function Dialects(props: DialectsProps) {
