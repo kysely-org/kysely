@@ -6,12 +6,13 @@ import {
   TestContext,
   Person,
   testSql,
-  NOT_SUPPORTED,
   DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: sanitize identifiers`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: sanitize identifiers`, () => {
     let ctx: TestContext
 
     before(async function () {
