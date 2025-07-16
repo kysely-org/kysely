@@ -12,6 +12,10 @@ export abstract class DialectAdapterBase implements DialectAdapter {
     return true
   }
 
+  get supportsMultipleConnections(): boolean {
+    return true
+  }
+
   get supportsTransactionalDdl(): boolean {
     return false
   }

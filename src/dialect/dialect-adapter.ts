@@ -19,6 +19,13 @@ export interface DialectAdapter {
   readonly supportsCreateIfNotExists: boolean
 
   /**
+   * Whether or not this dialect supports multiple connections at the same time.
+   *
+   * If this is false, Kysely will use a single connection for all database operations.
+   */
+  readonly supportsMultipleConnections: boolean
+
+  /**
    * Whether or not this dialect supports transactional DDL.
    *
    * If this is true, migrations are executed inside a transaction.
@@ -35,7 +42,7 @@ export interface DialectAdapter {
    * Whether or not this dialect supports the `output` clause in inserts
    * updates and deletes.
    */
-  readonly supportsOutput?: boolean
+  readonly supportsOutput: boolean
 
   /**
    * This method is used to acquire a lock for the migrations so that
