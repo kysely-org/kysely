@@ -4,8 +4,8 @@ import type {
 } from '../../driver/database-connection.js'
 import type { Driver } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
-import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Deferred } from '../../util/deferred.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
@@ -15,6 +15,10 @@ import type {
   PGliteDialectConfig,
   PGliteTransaction,
 } from './pglite-dialect-config.js'
+
+const PRIVATE_BEGIN_TRANSACTION_METHOD = Symbol()
+const PRIVATE_COMMIT_TRANSACTION_METHOD = Symbol()
+const PRIVATE_ROLLBACK_TRANSACTION_METHOD = Symbol()
 
 export class PGliteDriver implements Driver {
   readonly #config: PGliteDialectConfig
@@ -30,11 +34,11 @@ export class PGliteDriver implements Driver {
   }
 
   async beginTransaction(connection: PGliteConnection): Promise<void> {
-    await connection.beginTransaction()
+    await connection[PRIVATE_BEGIN_TRANSACTION_METHOD]()
   }
 
   async commitTransaction(connection: PGliteConnection): Promise<void> {
-    await connection.commitTransaction()
+    await connection[PRIVATE_COMMIT_TRANSACTION_METHOD]()
   }
 
   async destroy(): Promise<void> {
@@ -94,7 +98,7 @@ export class PGliteDriver implements Driver {
   }
 
   async rollbackTransaction(connection: PGliteConnection): Promise<void> {
-    await connection.rollbackTransaction()
+    await connection[PRIVATE_ROLLBACK_TRANSACTION_METHOD]()
   }
 
   async savepoint(
@@ -122,7 +126,29 @@ class PGliteConnection implements DatabaseConnection {
     this.#pglite = pglite
   }
 
-  async beginTransaction(): Promise<void> {
+  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
+    try {
+      const { affectedRows, rows } = await (
+        this.#transaction || this.#pglite
+      ).query<R>(compiledQuery.sql, compiledQuery.parameters as never, {
+        rowMode: 'object',
+      })
+
+      return {
+        numAffectedRows:
+          affectedRows != null ? BigInt(affectedRows) : undefined,
+        rows: rows || [],
+      }
+    } catch (error) {
+      throw extendStackTrace(error, new Error())
+    }
+  }
+
+  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
+    throw new Error('Streaming is not supported by PGlite.')
+  }
+
+  async [PRIVATE_BEGIN_TRANSACTION_METHOD](): Promise<void> {
     const {
       promise: waitForCommit,
       reject: rollback,
@@ -146,7 +172,7 @@ class PGliteConnection implements DatabaseConnection {
     await waitForBegin
   }
 
-  async commitTransaction(): Promise<void> {
+  async [PRIVATE_COMMIT_TRANSACTION_METHOD](): Promise<void> {
     this.#commitTransaction?.()
     await this.#transactionClosedPromise
     this.#commitTransaction = undefined
@@ -155,34 +181,12 @@ class PGliteConnection implements DatabaseConnection {
     this.#transactionClosedPromise = undefined
   }
 
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    try {
-      const { affectedRows, rows } = await (
-        this.#transaction || this.#pglite
-      ).query<R>(compiledQuery.sql, compiledQuery.parameters as never, {
-        rowMode: 'object',
-      })
-
-      return {
-        numAffectedRows:
-          affectedRows != null ? BigInt(affectedRows) : undefined,
-        rows: rows || [],
-      }
-    } catch (error) {
-      throw extendStackTrace(error, new Error())
-    }
-  }
-
-  async rollbackTransaction(): Promise<void> {
+  async [PRIVATE_ROLLBACK_TRANSACTION_METHOD](): Promise<void> {
     this.#rollbackTransaction?.()
     await this.#transactionClosedPromise?.catch(() => {})
     this.#commitTransaction = undefined
     this.#rollbackTransaction = undefined
     this.#transaction = undefined
     this.#transactionClosedPromise = undefined
-  }
-
-  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
-    throw new Error('Streaming is not supported by PGlite.')
   }
 }

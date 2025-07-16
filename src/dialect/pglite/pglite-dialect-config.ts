@@ -1,5 +1,8 @@
 import type { DatabaseConnection } from '../../driver/database-connection.js'
 
+/**
+ * Config for the PGlite dialect.
+ */
 export interface PGliteDialectConfig {
   /**
    * Called once when the first query is executed.

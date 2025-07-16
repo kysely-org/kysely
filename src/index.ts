@@ -101,6 +101,7 @@ export * from './dialect/mssql/mssql-driver.js'
 export * from './dialect/mssql/mssql-introspector.js'
 export * from './dialect/mssql/mssql-query-compiler.js'
 
+export * from './dialect/pglite/pglite-adapter.js'
 export * from './dialect/pglite/pglite-driver.js'
 export * from './dialect/pglite/pglite-dialect.js'
 export * from './dialect/pglite/pglite-dialect-config.js'
