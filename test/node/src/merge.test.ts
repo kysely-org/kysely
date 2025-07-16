@@ -1164,7 +1164,7 @@ for (const dialect of DIALECTS) {
 
         it('should perform a merge...using table simple on...when matched then delete returning merge_action(), {target}.name', async () => {
           await ctx.db.connection().execute(async (db) => {
-            await ctx.db
+            await db
               .insertInto('person')
               .values({ first_name: 'Moshe', gender: 'other' })
               .execute()
