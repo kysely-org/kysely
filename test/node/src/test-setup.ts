@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
 import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
-import { createPool } from 'mysql2'
+import { createConnection, createPool } from 'mysql2'
 import * as Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
@@ -140,6 +140,7 @@ const MYSQL_CONFIG: PoolOptions = {
   bigNumberStrings: true,
 
   connectionLimit: POOL_SIZE,
+  multipleStatements: true,
 }
 
 const MSSQL_CONFIG: ConnectionConfiguration = {
@@ -181,6 +182,7 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   mysql: {
     dialect: new MysqlDialect({
+      createConnection,
       pool: async () => createPool(DIALECT_CONFIGS.mysql),
     }),
     plugins: PLUGINS,
