@@ -28,7 +28,7 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
-import { Selectable } from '../util/column-type.js'
+import { Selectable, SelectType } from '../util/column-type.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -732,7 +732,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ShallowDehydrateValue<ExtractTypeFromStringReference<DB, TB, RE>>[] | null
+    | ShallowDehydrateValue<
+        SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
+      >[]
+    | null
   >
 
   /**
