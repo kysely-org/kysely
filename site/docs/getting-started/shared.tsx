@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import packageJson from '../../package.json'
 
-export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'mssql'
+export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'mssql' | 'pglite'
 
 export type PropsWithDialect<P = {}> = P & {
   dialect: Dialect | undefined
@@ -31,6 +31,7 @@ export const DIALECT_CLASS_NAMES = {
   mysql: 'MysqlDialect',
   mssql: 'MssqlDialect',
   sqlite: 'SqliteDialect',
+  pglite: 'PGliteDialect',
 } as const satisfies Record<Dialect, string>
 
 export const getDriverNPMPackageNames = (
@@ -41,6 +42,7 @@ export const getDriverNPMPackageNames = (
     mysql: 'mysql2',
     mssql: 'tedious',
     sqlite: 'better-sqlite3',
+    pglite: '@electric-sql/pglite',
   }) as const satisfies Record<Dialect, string>
 
 export const POOL_NPM_PACKAGE_NAMES = {
@@ -52,6 +54,7 @@ export const PRETTY_DIALECT_NAMES = {
   mysql: 'MySQL',
   mssql: 'Microsoft SQL Server (MSSQL)',
   sqlite: 'SQLite',
+  pglite: 'PGlite',
 } as const satisfies Record<Dialect, string>
 
 export const PRETTY_PACKAGE_MANAGER_NAMES = {
