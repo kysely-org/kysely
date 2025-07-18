@@ -1033,6 +1033,7 @@ export class OperationNodeTransformer {
       kind: 'DropTypeNode',
       names: this.transformNodeList(node.names, queryId),
       ifExists: node.ifExists,
+      modifier: node.modifier,
     })
   }
 
