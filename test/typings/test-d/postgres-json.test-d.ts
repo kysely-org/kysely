@@ -42,7 +42,34 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
         first: eb.ref('first_name'),
         last: eb.ref('last_name'),
         full: sql<string>`first_name || ' ' || last_name`,
+        modified_at: eb.ref('modified_at'),
       }).as('name'),
+
+    // Nest other people with same first name.
+    (eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom('person as other')
+          .where('other.id', '!=', eb.ref('person.id'))
+          .where('other.first_name', '=', eb.ref('person.first_name'))
+          .selectAll(),
+      ).as('people_same_first_name'),
+
+    // Nest an object that holds the first person that might be a match from the opposite gender and is not married.
+    (eb) =>
+      jsonObjectFrom(
+        eb
+          .selectFrom('person as match')
+          .where('match.gender', '!=', eb.ref('person.gender'))
+          .where('match.marital_status', '!=', 'married')
+          .where(
+            (eb) => eb.fn('abs', [eb('match.age', '-', eb.ref('person.age'))]),
+            '<=',
+            5,
+          )
+          .limit(1)
+          .selectAll(),
+      ).as('potential_match'),
   ])
 
   const r1 = await query.execute()
@@ -52,7 +79,32 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
       first_name: string
       pets: { name: string; species: 'dog' | 'cat' }[]
       doggo: { doggo_name: string } | null
-      name: { first: string; last: string | null; full: string }
+      name: {
+        first: string
+        last: string | null
+        full: string
+        modified_at: string
+      }
+      people_same_first_name: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      }[]
+      potential_match: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      } | null
     }[]
   >(r1)
 }
