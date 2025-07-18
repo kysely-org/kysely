@@ -1031,7 +1031,7 @@ export class OperationNodeTransformer {
   ): DropTypeNode {
     return requireAllProps<DropTypeNode>({
       kind: 'DropTypeNode',
-      name: this.transformNode(node.name, queryId),
+      names: this.transformNodeList(node.names, queryId),
       ifExists: node.ifExists,
     })
   }
