@@ -2599,6 +2599,24 @@ for (const dialect of DIALECTS) {
 
 					await builder.execute()
 				})
+
+        it('should drop a type and cascade', async () => {
+          await ctx.db.schema.createType('species').execute()
+
+          const builder = ctx.db.schema.dropType('species').cascade()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `drop type "species" cascade`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       }
 
       async function cleanup() {
