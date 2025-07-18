@@ -311,6 +311,13 @@ export class SchemaModule {
    *   .ifExists()
    *   .execute()
    * ```
+	 * 
+	 * ```ts
+	 * await db.schema
+	 *   .dropType(['species', 'colors'])
+	 *   .ifExists()
+	 *   .execute()
+	 * ```
    */
   dropType(typeName: string): DropTypeBuilder {
     return new DropTypeBuilder({
