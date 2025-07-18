@@ -22,6 +22,24 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  cascade(): DropTypeBuilder {
+    return new DropTypeBuilder({
+      ...this.#props,
+      node: DropTypeNode.cloneWith(this.#props.node, {
+        modifier: 'cascade',
+      }),
+    })
+  }
+
+  restrict(): DropTypeBuilder {
+    return new DropTypeBuilder({
+      ...this.#props,
+      node: DropTypeNode.cloneWith(this.#props.node, {
+        modifier: 'restrict',
+      }),
+    })
+  }
+
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.

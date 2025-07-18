@@ -1429,6 +1429,12 @@ export class DefaultQueryCompiler
     }
 
     this.compileList(node.names)
+
+    if (node.modifier === 'cascade') {
+      this.append(' cascade')
+    } else if (node.modifier === 'restrict') {
+      this.append(' restrict')
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
