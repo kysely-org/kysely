@@ -316,6 +316,7 @@ export class SchemaModule {
    * await db.schema
    *   .dropType(['species', 'colors'])
    *   .ifExists()
+   *   .cascade()
    *   .execute()
    * ```
    */
