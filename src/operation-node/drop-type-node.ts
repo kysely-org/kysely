@@ -6,7 +6,7 @@ export type DropTypeNodeParams = Omit<Partial<DropTypeNode>, 'kind' | 'name'>
 
 export interface DropTypeNode extends OperationNode {
   readonly kind: 'DropTypeNode'
-  readonly name: SchemableIdentifierNode
+  readonly names: SchemableIdentifierNode[]
   readonly ifExists?: boolean
 }
 
@@ -18,10 +18,10 @@ export const DropTypeNode = freeze({
     return node.kind === 'DropTypeNode'
   },
 
-  create(name: SchemableIdentifierNode): DropTypeNode {
+  create(names: SchemableIdentifierNode[]): DropTypeNode {
     return freeze({
       kind: 'DropTypeNode',
-      name,
+      names,
     })
   },
 
