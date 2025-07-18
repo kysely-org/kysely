@@ -2,7 +2,7 @@ import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 
-export type DropTypeNodeParams = Omit<Partial<DropTypeNode>, 'kind' | 'name'>
+export type DropTypeNodeParams = Omit<Partial<DropTypeNode>, 'kind' | 'names'>
 
 export interface DropTypeNode extends OperationNode {
   readonly kind: 'DropTypeNode'
