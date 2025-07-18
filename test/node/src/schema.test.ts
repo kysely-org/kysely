@@ -2561,10 +2561,48 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+				it('should drop multiple types', async () => {
+					await ctx.db.schema.createType('species').execute()
+					await ctx.db.schema.createType('colors').execute()
+
+					const builder = ctx.db.schema
+						.dropType(['species', 'colors'])
+						.ifExists()
+
+					testSql(builder, dialect, {
+						postgres: {
+							sql: `drop type if exists "species", "colors"`,
+							parameters: [],
+						},
+						mysql: NOT_SUPPORTED,
+						mssql: NOT_SUPPORTED,
+						sqlite: NOT_SUPPORTED,
+					})
+
+					await builder.execute()
+				})
+
+				it('should drop multiple types if exists', async () => {
+					await ctx.db.schema.createType('species').execute()
+					const builder = ctx.db.schema.dropType(['species', 'colors']).ifExists()
+
+					testSql(builder, dialect, {
+						postgres: {
+							sql: `drop type if exists "species", "colors"`,
+							parameters: [],
+						},
+						mysql: NOT_SUPPORTED,
+						mssql: NOT_SUPPORTED,
+						sqlite: NOT_SUPPORTED,
+					})
+
+					await builder.execute()
+				})
       }
 
       async function cleanup() {
-        await ctx.db.schema.dropType('species').ifExists().execute()
+        await ctx.db.schema.dropType(['species', 'colors']).ifExists().execute()
       }
     })
 
