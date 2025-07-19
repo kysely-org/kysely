@@ -1430,10 +1430,8 @@ export class DefaultQueryCompiler
 
     this.compileList(node.names)
 
-    if (node.modifier === 'cascade') {
-      this.append(' cascade')
-    } else if (node.modifier === 'restrict') {
-      this.append(' restrict')
+    if (node.modifier) {
+      this.append(` ${node.modifier}`)
     }
   }
 
