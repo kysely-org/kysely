@@ -1,7 +1,9 @@
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { Log } from '../util/log.js'
 import { performanceNow } from '../util/performance-now.js'
+import { ConnectionMutex } from './connection-mutex.js'
 import { DatabaseConnection, QueryResult } from './database-connection.js'
 import { Driver, TransactionSettings } from './driver.js'
 
@@ -18,11 +20,16 @@ export class RuntimeDriver implements Driver {
   #initDone: boolean
   #destroyPromise?: Promise<void>
   #connections = new WeakSet<DatabaseConnection>()
+  #connectionMutex?: ConnectionMutex
 
-  constructor(driver: Driver, log: Log) {
-    this.#initDone = false
+  constructor(driver: Driver, adapter: DialectAdapter, log: Log) {
     this.#driver = driver
+    this.#initDone = false
     this.#log = log
+
+    if (adapter.supportsMultipleConnections === false) {
+      this.#connectionMutex = new ConnectionMutex()
+    }
   }
 
   async init(): Promise<void> {
@@ -54,6 +61,10 @@ export class RuntimeDriver implements Driver {
       await this.init()
     }
 
+    if (this.#connectionMutex) {
+      await this.#connectionMutex.lock()
+    }
+
     const connection = await this.#driver.acquireConnection()
 
     if (!this.#connections.has(connection)) {
@@ -69,6 +80,8 @@ export class RuntimeDriver implements Driver {
 
   async releaseConnection(connection: DatabaseConnection): Promise<void> {
     await this.#driver.releaseConnection(connection)
+
+    this.#connectionMutex?.unlock()
   }
 
   beginTransaction(

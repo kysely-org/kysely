@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: schema`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: schema`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -31,7 +33,7 @@ for (const dialect of DIALECTS) {
     })
 
     describe('create table', () => {
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -193,7 +195,7 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
-      } else if (dialect === 'mysql') {
+      } else if (sqlSpec === 'mysql') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -298,7 +300,7 @@ for (const dialect of DIALECTS) {
             name: 'k',
           })
         })
-      } else if (dialect === 'mssql') {
+      } else if (sqlSpec === 'mssql') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -383,7 +385,7 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
-      } else if (dialect === 'sqlite') {
+      } else if (sqlSpec === 'sqlite') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -515,7 +517,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with a unique constraint and "nulls not distinct" option', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -630,7 +632,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with a deferrable primary key constraint', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -753,7 +755,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect !== 'mysql' && dialect !== 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
         it('should create a table with deferrable foreign key constraints', async () => {
           await ctx.db.schema
             .createTable('test2')
@@ -812,7 +814,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         it('should support schemas in foreign key target table', async () => {
           await ctx.db.schema
             .createTable('test2')
@@ -828,7 +830,7 @@ for (const dialect of DIALECTS) {
             .addForeignKeyConstraint(
               'foreign_key',
               ['a', 'b'],
-              dialect === 'postgres' ? 'public.test2' : 'dbo.test2',
+              sqlSpec === 'postgres' ? 'public.test2' : 'dbo.test2',
               ['c', 'd'],
             )
 
@@ -892,9 +894,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it("should create a table if it doesn't already exist", async () => {
           const builder = ctx.db.schema
@@ -1003,7 +1005,7 @@ for (const dialect of DIALECTS) {
 
         it('should create a table with as expression and raw sql', async () => {
           let rawSql = sql`select "first_name", "last_name" from "person"`
-          if (dialect === 'mysql') {
+          if (sqlSpec === 'mysql') {
             rawSql = sql`select \`first_name\`, \`last_name\` from \`person\``
           }
 
@@ -1054,7 +1056,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'mssql') {
+      if (sqlSpec === 'mssql') {
         it('should create a temporary table', async () => {
           await ctx.db.connection().execute(async (conn) => {
             const builder = conn.schema
@@ -1086,7 +1088,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a temporary table with on commit statement', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1108,8 +1110,8 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
-        const schema = dialect === 'postgres' ? 'public' : 'dbo'
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
+        const schema = sqlSpec === 'postgres' ? 'public' : 'dbo'
 
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
@@ -1136,7 +1138,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with generated identity', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1158,7 +1160,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with generated identity (by default)', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1180,7 +1182,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a global temporary table', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1208,7 +1210,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table partitioned by country', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1238,7 +1240,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         it('should create a table partitioned by country', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1268,7 +1270,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'sqlite') {
+      if (sqlSpec === 'sqlite') {
         it('should create a strict table', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1296,7 +1298,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         it('should create a table while using modifiers to define columns', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -1441,7 +1443,11 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect == 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+      if (
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
+      ) {
         it('should drop a table cascade', async () => {
           const builder = ctx.db.schema.dropTable('test').cascade()
           testSql(builder, dialect, {
@@ -1521,7 +1527,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres' || dialect === 'sqlite') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
         it('should create an index if not exists', async () => {
           await ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1581,7 +1587,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
         it('should create an index with a type', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1606,7 +1612,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create an index with "nulls not distinct" modifier', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1683,9 +1689,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('should create an index for an expression', async () => {
           const builder = ctx.db.schema
@@ -1770,9 +1776,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mssql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mssql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('should create a partial index, single column', async () => {
           const builder = ctx.db.schema
@@ -1832,7 +1838,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'sqlite') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
         it('should create a partial index, multi-column, or', async () => {
           const builder = ctx.db.schema
             .createIndex('test_partial_index')
@@ -1881,7 +1887,7 @@ for (const dialect of DIALECTS) {
       it('should drop an index', async () => {
         let builder = ctx.db.schema.dropIndex('test_first_name_index')
 
-        if (dialect === 'mysql' || dialect === 'mssql') {
+        if (sqlSpec === 'mysql' || sqlSpec === 'mssql') {
           builder = builder.on('test')
         }
 
@@ -1908,16 +1914,16 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mssql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mssql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('should drop an index if it exists', async () => {
           let builder = ctx.db.schema
             .dropIndex('test_first_name_index')
             .ifExists()
 
-          if (dialect === 'mssql') {
+          if (sqlSpec === 'mssql') {
             builder = builder.on('test')
           }
 
@@ -1941,7 +1947,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should drop an index cascade', async () => {
           let builder = ctx.db.schema
             .dropIndex('test_first_name_index')
@@ -2012,7 +2018,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres' || dialect === 'sqlite') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
         it('should create a temporary view', async () => {
           const builder = ctx.db.schema
             .createView('dogs')
@@ -2038,7 +2044,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
         it('should create or replace a view', async () => {
           const builder = ctx.db.schema
             .createView('dogs')
@@ -2064,7 +2070,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'sqlite') {
+      if (sqlSpec === 'sqlite') {
         it("should create a view if it doesn't exists", async () => {
           const builder = ctx.db.schema
             .createView('dogs')
@@ -2087,7 +2093,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a materialized view', async () => {
           const builder = ctx.db.schema
             .createView('materialized_dogs')
@@ -2113,7 +2119,7 @@ for (const dialect of DIALECTS) {
       async function cleanup() {
         await ctx.db.schema.dropView('dogs').ifExists().execute()
 
-        if (dialect === 'postgres') {
+        if (sqlSpec === 'postgres') {
           await ctx.db.schema
             .dropView('materialized_dogs')
             .materialized()
@@ -2140,7 +2146,7 @@ for (const dialect of DIALECTS) {
           .execute()
       })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should refresh a materialized view', async () => {
           const builder =
             ctx.db.schema.refreshMaterializedView('materialized_dogs')
@@ -2266,7 +2272,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
         it('should drop a view cascade', async () => {
           const builder = ctx.db.schema.dropView('dogs').cascade()
 
@@ -2312,9 +2318,9 @@ for (const dialect of DIALECTS) {
       afterEach(cleanup)
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         it('should create a schema', async () => {
           const builder = ctx.db.schema.createSchema('pets')
@@ -2339,7 +2345,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
         it('should create a schema if not exists', async () => {
           const builder = ctx.db.schema.createSchema('pets').ifNotExists()
 
@@ -2370,9 +2376,9 @@ for (const dialect of DIALECTS) {
       afterEach(cleanup)
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         it('should drop a schema', async () => {
           await ctx.db.schema.createSchema('pets').execute()
@@ -2421,7 +2427,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should drop a schema cascade', async () => {
           await ctx.db.schema.createSchema('pets').execute()
           const builder = ctx.db.schema.dropSchema('pets').cascade()
@@ -2462,7 +2468,7 @@ for (const dialect of DIALECTS) {
     })
 
     describe('create type', () => {
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -2491,7 +2497,7 @@ for (const dialect of DIALECTS) {
     })
 
     describe('drop type', () => {
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -2572,7 +2578,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        if (dialect === 'postgres') {
+        if (sqlSpec === 'postgres') {
           it('should add a column with "unique nulls not distinct" modifier', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
@@ -2612,7 +2618,7 @@ for (const dialect of DIALECTS) {
           })
         }
 
-        if (dialect === 'postgres' || dialect === 'mysql') {
+        if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
           it('should add a unique column', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
@@ -2636,15 +2642,15 @@ for (const dialect of DIALECTS) {
             expect(await getColumnMeta('test.bool_col')).to.containSubset({
               name: 'bool_col',
               isNullable: false,
-              dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
+              dataType: sqlSpec === 'postgres' ? 'bool' : 'tinyint',
             })
           })
         }
 
         if (
-          dialect === 'postgres' ||
-          dialect === 'mysql' ||
-          dialect === 'mssql'
+          sqlSpec === 'postgres' ||
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'mssql'
         ) {
           it('should add multiple columns', async () => {
             const builder = ctx.db.schema
@@ -2685,7 +2691,7 @@ for (const dialect of DIALECTS) {
         }
       })
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         describe('modify column', () => {
           it('should set column data type', async () => {
             const builder = ctx.db.schema
@@ -2780,12 +2786,12 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         describe('alter column', () => {
-          if (dialect === 'postgres' || dialect === 'mysql') {
+          if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
             it('should set default value', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -2835,7 +2841,7 @@ for (const dialect of DIALECTS) {
             })
           }
 
-          if (dialect === 'postgres' || dialect === 'mssql') {
+          if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
             it('should set column data type', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -2879,7 +2885,7 @@ for (const dialect of DIALECTS) {
             })
           }
 
-          if (dialect === 'postgres') {
+          if (sqlSpec === 'postgres') {
             it('should add not null constraint for column', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -2922,7 +2928,7 @@ for (const dialect of DIALECTS) {
             })
           }
 
-          if (dialect === 'postgres' || dialect === 'mysql') {
+          if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
             it('should alter multiple columns', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -2985,9 +2991,9 @@ for (const dialect of DIALECTS) {
         })
 
         if (
-          dialect === 'postgres' ||
-          dialect === 'mysql' ||
-          dialect === 'mssql'
+          sqlSpec === 'postgres' ||
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'mssql'
         ) {
           it('should drop multiple columns', async () => {
             await ctx.db.schema
@@ -3041,9 +3047,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         describe('rename', () => {
           it('should rename a table', async () => {
@@ -3070,7 +3076,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         describe('set schema', () => {
           it('should rename a table', async () => {
             const builder = ctx.db.schema.alterTable('test').setSchema('public')
@@ -3091,9 +3097,9 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         describe('rename column', () => {
           it('should rename a column', async () => {
@@ -3120,7 +3126,7 @@ for (const dialect of DIALECTS) {
             await builder.execute()
           })
 
-          if (dialect === 'mysql') {
+          if (sqlSpec === 'mysql') {
             it('should rename multiple columns', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -3147,9 +3153,9 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
         describe('mixed column alterations', () => {
-          if (dialect === 'postgres') {
+          if (sqlSpec === 'postgres') {
             it('should alter multiple columns in various ways', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -3176,7 +3182,7 @@ for (const dialect of DIALECTS) {
             })
           }
 
-          if (dialect === 'mysql') {
+          if (sqlSpec === 'mysql') {
             it('should alter multiple columns in various ways', async () => {
               await ctx.db.schema
                 .alterTable('test')
@@ -3215,7 +3221,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect !== 'sqlite') {
+      if (sqlSpec !== 'sqlite') {
         describe('add unique constraint', () => {
           it('should add a unique constraint', async () => {
             const builder = ctx.db.schema
@@ -3247,7 +3253,7 @@ for (const dialect of DIALECTS) {
             await builder.execute()
           })
 
-          if (dialect === 'postgres') {
+          if (sqlSpec === 'postgres') {
             it('should add a unique constraint with "nulls not distinct" modifier', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -3362,9 +3368,9 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         describe('add check constraint', () => {
           it('should add a check constraint', async () => {
@@ -3397,9 +3403,9 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         describe('add foreign key constraint', () => {
           it('should add a foreign key constraint', async () => {
@@ -3478,7 +3484,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should add a deferrable initially deferred foreign key constraint', async () => {
           await ctx.db.schema
             .createTable('test2')
@@ -3511,7 +3517,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect !== 'sqlite') {
+      if (sqlSpec !== 'sqlite') {
         describe('drop constraint', () => {
           it('should drop a foreign key constraint', async () => {
             await ctx.db.schema.dropTable('test').execute()
@@ -3557,7 +3563,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         describe('rename constraint', () => {
           it('should rename a foreign key constraint', async () => {
             await ctx.db.schema.dropTable('test').execute()
@@ -3601,9 +3607,9 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         describe('add primary key constraint', async () => {
           beforeEach(() => {
@@ -3615,7 +3621,7 @@ for (const dialect of DIALECTS) {
           })
 
           afterEach(async () => {
-            if (dialect === 'mssql') {
+            if (sqlSpec === 'mssql') {
               await ctx.db.schema
                 .alterTable('test')
                 .dropConstraint('test_pkey')
@@ -3653,7 +3659,7 @@ for (const dialect of DIALECTS) {
             await builder.execute()
           })
 
-          if (dialect === 'postgres') {
+          if (sqlSpec === 'postgres') {
             it('should add a deferrable initially deferred primary key constraint', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -3705,9 +3711,9 @@ for (const dialect of DIALECTS) {
       }
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         describe('parse schema name', () => {
           beforeEach(cleanup)
@@ -3782,7 +3788,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         describe('add index', () => {
           it('should add an index', async () => {
             const query = ctx.db.schema
@@ -3902,7 +3908,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         describe('drop index', () => {
           beforeEach(async () => {
             await ctx.db.schema

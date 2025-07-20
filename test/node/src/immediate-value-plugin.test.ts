@@ -30,14 +30,18 @@ describe('ImmediateValuePlugin', () => {
       .where('gender', 'in', ['male', 'other'])
       .selectAll()
 
-    testSql(query, 'postgres', {
-      postgres: {
-        parameters: [],
-        sql: `select * from "person" where "first_name" = 'Sylvester' and "gender" in ('male', 'other')`,
+    testSql(
+      query,
+      { sqlSpec: 'postgres', variant: 'postgres' },
+      {
+        postgres: {
+          parameters: [],
+          sql: `select * from "person" where "first_name" = 'Sylvester' and "gender" in ('male', 'other')`,
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: NOT_SUPPORTED,
+        sqlite: NOT_SUPPORTED,
       },
-      mysql: NOT_SUPPORTED,
-      mssql: NOT_SUPPORTED,
-      sqlite: NOT_SUPPORTED,
-    })
+    )
   })
 })
