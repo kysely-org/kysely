@@ -11,7 +11,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: set operations`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: set operations`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -153,7 +155,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'mssql') {
       it('should combine three select queries using union and an expression builder', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -263,7 +265,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
       it('should combine two select queries using intersect', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -346,7 +348,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should combine two select queries using intersect all', async () => {
         const query = ctx.db
           .selectFrom('person')
