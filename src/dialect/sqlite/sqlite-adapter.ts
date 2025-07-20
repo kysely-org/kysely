@@ -3,6 +3,10 @@ import { DialectAdapterBase } from '../dialect-adapter-base.js'
 import { MigrationLockOptions } from '../dialect-adapter.js'
 
 export class SqliteAdapter extends DialectAdapterBase {
+  override get supportsMultipleConnections(): boolean {
+    return false
+  }
+
   override get supportsTransactionalDdl(): boolean {
     return false
   }
