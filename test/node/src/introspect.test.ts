@@ -11,13 +11,15 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: introspect`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: introspect`, () => {
     let ctx: TestContext
 
     before(async function () {
       ctx = await initTest(this, dialect)
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         await dropSchema()
         await createSchema()
       }
@@ -36,7 +38,7 @@ for (const dialect of DIALECTS) {
     after(async () => {
       await dropView()
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         await dropSchema()
       }
 
@@ -47,7 +49,7 @@ for (const dialect of DIALECTS) {
       it('should get schema names', async () => {
         const schemas = await ctx.db.introspection.getSchemas()
 
-        if (dialect === 'postgres') {
+        if (sqlSpec === 'postgres') {
           expect(schemas).to.containSubset([
             { name: 'public' },
             { name: 'information_schema' },
@@ -55,7 +57,7 @@ for (const dialect of DIALECTS) {
             { name: 'some_schema' },
             { name: 'dtype_schema' },
           ])
-        } else if (dialect === 'mysql') {
+        } else if (sqlSpec === 'mysql') {
           expect(schemas).to.containSubset([
             { name: 'mysql' },
             { name: 'information_schema' },
@@ -63,7 +65,7 @@ for (const dialect of DIALECTS) {
             { name: 'sys' },
             { name: 'kysely_test' },
           ])
-        } else if (dialect === 'mssql') {
+        } else if (sqlSpec === 'mssql') {
           expect(schemas).to.containSubset([
             { name: 'dbo' },
             { name: 'sys' },
@@ -71,7 +73,7 @@ for (const dialect of DIALECTS) {
             { name: 'INFORMATION_SCHEMA' },
             { name: 'some_schema' },
           ])
-        } else if (dialect === 'sqlite') {
+        } else if (sqlSpec === 'sqlite') {
           expect(schemas).to.eql([])
         }
       })
@@ -81,7 +83,7 @@ for (const dialect of DIALECTS) {
       it('should get table metadata', async () => {
         const meta = await ctx.db.introspection.getTables()
 
-        if (dialect === 'postgres') {
+        if (sqlSpec === 'postgres') {
           expect(meta).to.eql([
             {
               name: 'person',
@@ -321,7 +323,7 @@ for (const dialect of DIALECTS) {
               ],
             },
           ])
-        } else if (dialect === 'mysql') {
+        } else if (sqlSpec === 'mysql') {
           expect(meta).to.eql([
             {
               name: 'person',
@@ -485,7 +487,7 @@ for (const dialect of DIALECTS) {
               ],
             },
           ])
-        } else if (dialect === 'mssql') {
+        } else if (sqlSpec === 'mssql') {
           expect(meta).to.eql([
             {
               isForeign: false,
@@ -690,7 +692,7 @@ for (const dialect of DIALECTS) {
               ],
             },
           ])
-        } else if (dialect === 'sqlite') {
+        } else if (sqlSpec === 'sqlite') {
           expect(meta).to.eql([
             {
               name: 'person',
@@ -853,7 +855,7 @@ for (const dialect of DIALECTS) {
         }
       })
 
-      if (dialect === 'sqlite') {
+      if (sqlSpec === 'sqlite') {
         describe('implicit autoincrement', () => {
           const testTableName = 'implicit_increment_test'
 
@@ -908,7 +910,7 @@ for (const dialect of DIALECTS) {
     async function createSchema() {
       await ctx.db.schema.createSchema('some_schema').execute()
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         await ctx.db.schema.createSchema('dtype_schema').execute()
         await ctx.db.schema
           .createType('dtype_schema.species')
@@ -960,7 +962,7 @@ for (const dialect of DIALECTS) {
         .execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         await ctx.db.schema
           .dropType('dtype_schema.species')
           .ifExists()

@@ -116,7 +116,7 @@ export class Kysely<DB>
       const adapter = dialect.createAdapter()
 
       const log = new Log(args.log ?? [])
-      const runtimeDriver = new RuntimeDriver(driver, log)
+      const runtimeDriver = new RuntimeDriver(driver, adapter, log)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
       const executor = new DefaultQueryExecutor(

@@ -10,8 +10,7 @@ import {
   type PropsWithDialect,
 } from './shared'
 
-const dialectSpecificCodeSnippets: Record<Dialect, string> = {
-  postgresql: `    await db.schema.createTable('person')
+const postgresqlCodeSnippet = `    await db.schema.createTable('person')
       .addColumn('id', 'serial', (cb) => cb.primaryKey())
       .addColumn('first_name', 'varchar', (cb) => cb.notNull())
       .addColumn('last_name', 'varchar')
@@ -19,7 +18,10 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .addColumn('created_at', 'timestamp', (cb) =>
         cb.notNull().defaultTo(sql\`now()\`)
       )
-      .execute()`,
+      .execute()`
+
+const dialectSpecificCodeSnippets: Record<Dialect, string> = {
+  postgresql: postgresqlCodeSnippet,
   mysql: `    await db.schema.createTable('person')
       .addColumn('id', 'integer', (cb) => cb.primaryKey().autoIncrement())
       .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
@@ -48,13 +50,17 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
       .execute()`,
+  pglite: postgresqlCodeSnippet,
 }
 
+const truncateTableSnippet = `await sql\`truncate table \${sql.table('person')}\`.execute(db)`
+
 const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
-  postgresql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
-  mysql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
-  mssql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
+  postgresql: truncateTableSnippet,
+  mysql: truncateTableSnippet,
+  mssql: truncateTableSnippet,
   sqlite: `await sql\`delete from \${sql.table('person')}\`.execute(db)`,
+  pglite: truncateTableSnippet,
 }
 
 export function Summary(props: PropsWithDialect) {
