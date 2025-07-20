@@ -26,13 +26,13 @@ export const UniqueConstraintNode = freeze({
   },
 
   create(
-    expressions: OperationNode[],
+    columns: OperationNode[],
     constraintName?: string,
     nullsNotDistinct?: boolean,
   ): UniqueConstraintNode {
     return freeze({
       kind: 'UniqueConstraintNode',
-      columns: freeze(expressions),
+      columns: freeze(columns),
       name: constraintName ? IdentifierNode.create(constraintName) : undefined,
       nullsNotDistinct,
     })
