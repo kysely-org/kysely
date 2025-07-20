@@ -9,7 +9,7 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import {
@@ -25,12 +25,15 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
-import { Expression, isExpression } from '../expression/expression.js'
+import { Expression } from '../expression/expression.js'
 import {
   UniqueConstraintNodeBuilder,
   UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
-import { parseExpression } from '../parser/expression-parser.js'
+import {
+  ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 import {
   PrimaryKeyConstraintBuilder,
   PrimaryKeyConstraintBuilderCallback,
@@ -260,16 +263,16 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: (C | Expression<any>)[],
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
         UniqueConstraintNode.create(
           columns.map((column) =>
-            isExpression(column)
-              ? column.toOperationNode()
-              : ColumnNode.create(column),
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
           ),
           constraintName,
         ),

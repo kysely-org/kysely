@@ -7,7 +7,7 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import {
   ColumnDefinitionBuilder,
   ColumnDefinitionBuilderCallback,
@@ -30,7 +30,7 @@ import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constrai
 import { ColumnNode } from '../operation-node/column-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
-import { Expression, isExpression } from '../expression/expression.js'
+import { Expression } from '../expression/expression.js'
 import {
   AlterColumnBuilder,
   AlterColumnBuilderCallback,
@@ -55,6 +55,10 @@ import {
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import {
+  ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -173,17 +177,18 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: (string | Expression<any>)[],
+    columns: (string | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): AlterTableExecutor {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
         UniqueConstraintNode.create(
           columns.map((column) =>
-            isExpression(column)
-              ? column.toOperationNode()
-              : ColumnNode.create(column),
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
           ),
+
           constraintName,
         ),
       ),
