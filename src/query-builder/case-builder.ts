@@ -1,7 +1,11 @@
 import { Expression } from '../expression/expression.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { freeze } from '../util/object-utils.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ExtractTypeFromReferenceExpression,
+  parseReferenceExpression,
+  ReferenceExpression,
+} from '../parser/reference-parser.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import {
@@ -87,6 +91,29 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
         isSafeImmediateValue(valueExpression)
           ? parseSafeImmediateValue(valueExpression)
           : parseValueExpression(valueExpression),
+      ),
+    })
+  }
+
+  /**
+   * Adds a `then` clause to the `case` statement where the value is a reference to a column.
+   *
+   * A `thenRef` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
+   * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   */
+  thenRef<RE extends ReferenceExpression<DB, TB>>(
+    expression: RE,
+  ): CaseWhenBuilder<
+    DB,
+    TB,
+    W,
+    ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new CaseWhenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithThen(
+        this.#props.node,
+        parseReferenceExpression(expression),
       ),
     })
   }
