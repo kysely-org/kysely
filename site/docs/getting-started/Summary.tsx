@@ -47,14 +47,14 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   pglite: postgresqlCodeSnippet,
 }
 
-const postgresqlTruncateSnippet = `await sql\`truncate table \${sql.table('person')}\`.execute(db)`
+const truncateTableSnippet = `await sql\`truncate table \${sql.table('person')}\`.execute(db)`
 
 const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
-  postgresql: postgresqlTruncateSnippet,
-  mysql: postgresqlTruncateSnippet,
-  mssql: postgresqlTruncateSnippet,
+  postgresql: truncateTableSnippet,
+  mysql: truncateTableSnippet,
+  mssql: truncateTableSnippet,
   sqlite: `await sql\`delete from \${sql.table('person')}\`.execute(db)`,
-  pglite: postgresqlTruncateSnippet,
+  pglite: truncateTableSnippet,
 }
 
 export function Summary(props: PropsWithDialect) {
