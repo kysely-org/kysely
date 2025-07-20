@@ -11,7 +11,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: deduplicate joins`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: deduplicate joins`, () => {
     let ctx: TestContext
 
     before(async function () {

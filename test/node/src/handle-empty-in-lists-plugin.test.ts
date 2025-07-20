@@ -11,7 +11,7 @@ import {
   expect,
   DIALECTS,
   insertDefaultDataSet,
-  BuiltInDialect,
+  DialectDescriptor,
   NOT_SUPPORTED,
   clearDatabase,
 } from './test-setup.js'
@@ -20,19 +20,19 @@ const fixtures = [
   {
     strategy: replaceWithNoncontingentExpression,
     replaceIn: (_lhs: string) => '1 = 0',
-    inReturnValue: (dialect: BuiltInDialect) =>
+    inReturnValue: ({ sqlSpec }: DialectDescriptor) =>
       ({
-        [dialect]: false,
+        [sqlSpec]: false,
         mysql: '0',
         sqlite: 0,
-      })[dialect],
+      })[sqlSpec],
     replaceNotIn: (_lhs: string) => '1 = 1',
-    notInReturnValue: (dialect: BuiltInDialect) =>
+    notInReturnValue: ({ sqlSpec }: DialectDescriptor) =>
       ({
-        [dialect]: true,
+        [sqlSpec]: true,
         mysql: '1',
         sqlite: 1,
-      })[dialect],
+      })[sqlSpec],
   },
   {
     strategy: pushValueIntoList('__kysely_no_values_were_provided__'),
@@ -40,17 +40,19 @@ const fixtures = [
     inReturnValue: () => null,
     replaceNotIn: (lhs: string) =>
       `cast(${lhs} as char) not in ('__kysely_no_values_were_provided__')`,
-    notInReturnValue: (dialect: BuiltInDialect) =>
+    notInReturnValue: ({ sqlSpec }: DialectDescriptor) =>
       ({
-        [dialect]: true,
+        [sqlSpec]: true,
         mysql: '1',
         sqlite: 1,
-      })[dialect],
+      })[sqlSpec],
   },
 ] as const
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: handle empty in lists plugin`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: handle empty in lists plugin`, () => {
     for (const fixture of fixtures) {
       describe(`strategy: ${fixture.strategy.name}`, () => {
         let ctx: TestContext
@@ -218,9 +220,9 @@ for (const dialect of DIALECTS) {
         })
 
         if (
-          dialect === 'mysql' ||
-          dialect === 'postgres' ||
-          dialect === 'sqlite'
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'postgres' ||
+          sqlSpec === 'sqlite'
         ) {
           it('should handle `select ... in (), ... not in ()`', async () => {
             const query = ctx.db
