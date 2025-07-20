@@ -7,6 +7,7 @@ import * as Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
 import { PoolOptions } from 'mysql2'
+import { PGlite } from '@electric-sql/pglite'
 
 chai.use(chaiAsPromised)
 
@@ -33,6 +34,7 @@ import {
   InsertObject,
   MssqlDialect,
   SelectQueryBuilder,
+  PGliteDialect,
 } from '../../../'
 import {
   OrderByDirection,
@@ -84,22 +86,36 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
 }
 
 export interface TestContext {
-  dialect: BuiltInDialect
+  dialect: DialectDescriptor
   config: KyselyConfig
   db: Kysely<Database>
 }
 
-export type BuiltInDialect = 'postgres' | 'mysql' | 'mssql' | 'sqlite'
-export type PerDialect<T> = Record<BuiltInDialect, T>
+export type SQLSpec = 'postgres' | 'mysql' | 'mssql' | 'sqlite'
 
-export const DIALECTS: BuiltInDialect[] = (
-  ['postgres', 'mysql', 'mssql', 'sqlite'] as const
+export type DialectVariant = SQLSpec | 'pglite'
+
+export interface DialectDescriptor {
+  sqlSpec: SQLSpec
+  variant: DialectVariant
+}
+
+export type PerDialectVariant<T> = Record<DialectVariant, T>
+export type PerSQLDialect<T> = Record<SQLSpec, T>
+
+export const DIALECTS = (
+  [
+    { sqlSpec: 'postgres', variant: 'postgres' },
+    { sqlSpec: 'mysql', variant: 'mysql' },
+    { sqlSpec: 'mssql', variant: 'mssql' },
+    { sqlSpec: 'sqlite', variant: 'sqlite' },
+    { sqlSpec: 'postgres', variant: 'pglite' },
+  ] as const satisfies readonly DialectDescriptor[]
 ).filter(
-  (d) =>
-    !process.env.DIALECTS ||
-    process.env.DIALECTS.split(',')
+  ({ variant }) =>
+    process.env.DIALECTS?.split(',')
       .map((it) => it.trim())
-      .includes(d),
+      .includes(variant) ?? true,
 )
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
@@ -161,14 +177,17 @@ const SQLITE_CONFIG = {
   databasePath: ':memory:',
 }
 
+const PGLITE_CONFIG = {}
+
 export const DIALECT_CONFIGS = {
   postgres: POSTGRES_CONFIG,
   mysql: MYSQL_CONFIG,
   mssql: MSSQL_CONFIG,
   sqlite: SQLITE_CONFIG,
+  pglite: PGLITE_CONFIG,
 }
 
-export const DB_CONFIGS: PerDialect<KyselyConfig> = {
+export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
       pool: async () => new Pool(DIALECT_CONFIGS.postgres),
@@ -213,14 +232,21 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
     }),
     plugins: PLUGINS,
   },
+
+  pglite: {
+    dialect: new PGliteDialect({
+      pglite: async () => new PGlite(DIALECT_CONFIGS.pglite),
+    }),
+    plugins: PLUGINS,
+  },
 }
 
 export async function initTest(
   ctx: Mocha.Context,
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
   overrides?: Omit<KyselyConfig, 'dialect'>,
 ): Promise<TestContext> {
-  const config = DB_CONFIGS[dialect]
+  const config = DB_CONFIGS[dialect.variant]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
   const db = await connect({ ...config, ...overrides })
@@ -230,7 +256,10 @@ export async function initTest(
 }
 
 export async function destroyTest(ctx: TestContext): Promise<void> {
-  await dropDatabase(ctx.db)
+  if (ctx.dialect.variant !== 'pglite' && ctx.dialect.variant !== 'sqlite') {
+    await dropDatabase(ctx.db)
+  }
+
   await ctx.db.destroy()
 }
 
@@ -288,10 +317,20 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
 
 export function testSql(
   query: Compilable,
-  dialect: BuiltInDialect,
-  expectedPerDialect: PerDialect<{ sql: string | string[]; parameters: any[] }>,
+  dialect: DialectDescriptor,
+  expectedPerDialect: PerSQLDialect<{
+    sql: string | string[]
+    parameters: any[]
+  }> &
+    Partial<
+      Omit<
+        PerDialectVariant<{ sql: string | string[]; parameters: any[] }>,
+        keyof PerSQLDialect<any>
+      >
+    >,
 ): void {
-  const expected = expectedPerDialect[dialect]
+  const expected =
+    expectedPerDialect[dialect.variant] || expectedPerDialect[dialect.sqlSpec]
   const expectedSql = Array.isArray(expected.sql)
     ? expected.sql.map((it) => it.trim()).join(' ')
     : expected.sql
@@ -303,9 +342,13 @@ export function testSql(
 
 async function createDatabase(
   db: Kysely<Database>,
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
 ): Promise<void> {
-  await dropDatabase(db)
+  const { sqlSpec, variant } = dialect
+
+  if (variant !== 'pglite' && variant !== 'sqlite') {
+    await dropDatabase(db)
+  }
 
   await createTableWithId(db.schema, dialect, 'person')
     .addColumn('first_name', 'varchar(255)')
@@ -328,14 +371,14 @@ async function createDatabase(
     .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
 
-  if (dialect === 'postgres') {
+  if (sqlSpec === 'postgres') {
     await createToyTableBase
       .addColumn('price', 'double precision', (col) => col.notNull())
       .execute()
     await sql`COMMENT ON COLUMN toy.price IS 'Price in USD';`.execute(db)
   }
 
-  if (dialect === 'mssql') {
+  if (sqlSpec === 'mssql') {
     await createToyTableBase
       .addColumn('price', 'double precision', (col) => col.notNull())
       .execute()
@@ -344,7 +387,7 @@ async function createDatabase(
     )
   }
 
-  if (dialect === 'mysql') {
+  if (sqlSpec === 'mysql') {
     await createToyTableBase
       .addColumn('price', 'double precision', (col) =>
         col.notNull().modifyEnd(sql`comment ${sql.lit('Price in USD')}`),
@@ -352,7 +395,7 @@ async function createDatabase(
       .execute()
   }
 
-  if (dialect === 'sqlite') {
+  if (sqlSpec === 'sqlite') {
     // there is no way to add a comment
     await createToyTableBase
       .addColumn('price', 'double precision', (col) => col.notNull())
@@ -368,24 +411,24 @@ async function createDatabase(
 
 export function createTableWithId(
   schema: SchemaModule,
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
   tableName: string,
   implicitIncrement: boolean = false,
 ) {
   const builder = schema.createTable(tableName)
 
-  if (dialect === 'postgres') {
+  if (dialect.sqlSpec === 'postgres') {
     return builder.addColumn('id', 'serial', (col) => col.primaryKey())
   }
 
-  if (dialect === 'mssql') {
+  if (dialect.sqlSpec === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
       col.identity().notNull().primaryKey(),
     )
   }
 
   return builder.addColumn('id', 'integer', (col) => {
-    if (implicitIncrement && dialect === 'sqlite') {
+    if (implicitIncrement && dialect.sqlSpec === 'sqlite') {
       return col.primaryKey()
     }
     return col.autoIncrement().primaryKey()
@@ -460,13 +503,13 @@ export async function insert<TB extends keyof Database>(
 ): Promise<number> {
   const { dialect } = ctx
 
-  if (dialect === 'postgres' || dialect === 'sqlite') {
+  if (dialect.sqlSpec === 'postgres' || dialect.sqlSpec === 'sqlite') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()
 
     return id
   }
 
-  if (dialect === 'mssql') {
+  if (dialect.sqlSpec === 'mssql') {
     const { id } = await qb
       .output('inserted.id' as any)
       .$castTo<{ id: number }>()
@@ -502,10 +545,10 @@ function sleep(millis: number): Promise<void> {
 
 export function limit<QB extends SelectQueryBuilder<any, any, any>>(
   limit: number,
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
 ): (qb: QB) => QB {
   return (qb) => {
-    if (dialect === 'mssql') {
+    if (dialect.sqlSpec === 'mssql') {
       return qb.top(limit) as QB
     }
 
@@ -518,10 +561,10 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
     ? OrderByExpression<DB, TB, O>
     : never,
   direction: OrderByDirection | undefined,
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
 ): (qb: QB) => QB {
   return (qb) => {
-    if (dialect === 'mssql') {
+    if (dialect.sqlSpec === 'mssql') {
       return qb.orderBy(
         orderBy,
         sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(

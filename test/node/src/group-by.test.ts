@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: group by`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: group by`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -73,7 +75,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('group by selection', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -200,7 +202,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('group by a sub query', async () => {
         const query = ctx.db
           .selectFrom('person')

@@ -42,6 +42,7 @@ export async function deletePerson(id: number) {
 
   return person
 }`,
+  // TODO: Update to use output clause once #687 is completed
   mssql: `// As of v0.27.0, Kysely doesn't support the \`OUTPUT\` clause. This will change
 // in the future. For now, the following implementations achieve the same results
 // as other dialects' examples, but with extra steps.
@@ -69,7 +70,7 @@ export async function deletePerson(id: number) {
   return person
 }`,
   sqlite: postgresqlCodeSnippet,
-  // TODO: Update to use output clause once #687 is completed
+  pglite: postgresqlCodeSnippet,
 }
 
 export function Querying(props: PropsWithDialect) {
