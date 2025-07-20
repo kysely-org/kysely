@@ -1428,7 +1428,7 @@ export class DefaultQueryCompiler
       this.append('if exists ')
     }
 
-    this.compileList(node.names)
+    this.compileList([node.name, ...(node.additionalNames ?? [])])
 
     if (node.modifier) {
       this.append(` ${node.modifier}`)
