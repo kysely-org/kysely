@@ -6,9 +6,8 @@ export type DropTypeNodeParams = Omit<Partial<DropTypeNode>, 'kind' | 'names'>
 
 export interface DropTypeNode extends OperationNode {
   readonly kind: 'DropTypeNode'
-  /** @deprecated Use `names` instead. */
-  readonly name?: SchemableIdentifierNode
-  readonly names: SchemableIdentifierNode[]
+  readonly name: SchemableIdentifierNode
+  readonly additionalNames?: SchemableIdentifierNode[]
   readonly ifExists?: boolean
   readonly modifier?: 'cascade' | 'restrict'
 }
@@ -22,10 +21,11 @@ export const DropTypeNode = freeze({
   },
 
   create(names: SchemableIdentifierNode | SchemableIdentifierNode[]): DropTypeNode {
+    names = Array.isArray(names) ? names : [names];
     return freeze({
       kind: 'DropTypeNode',
-      name: Array.isArray(names) ? undefined : names,
-      names: Array.isArray(names) ? names : [names],
+      name: names[0],
+      additionalNames: names.slice(1),
     })
   },
 
