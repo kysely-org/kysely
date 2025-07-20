@@ -8,9 +8,11 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: select`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: select`, () => {
     let ctx: TestContext
-    const identifierWrapper = dialect === 'mysql' ? '`' : '"'
+    const identifierWrapper = sqlSpec === 'mysql' ? '`' : '"'
 
     before(async function () {
       ctx = await initTest(this, dialect)

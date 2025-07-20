@@ -19,7 +19,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: select`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: select`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -164,7 +166,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('should select all columns of a table with a schema', async () => {
         const query = ctx.db
           .selectFrom('toy_schema.toy')
@@ -377,7 +379,10 @@ for (const dialect of DIALECTS) {
       const counts = await query.execute()
 
       expect(counts).to.have.length(1)
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (
+        (sqlSpec === 'postgres' && variant !== 'pglite') ||
+        sqlSpec === 'mysql'
+      ) {
         expect(counts[0]).to.eql({ num_jennifers: '1' })
       } else {
         expect(counts[0]).to.eql({ num_jennifers: 1 })
@@ -423,13 +428,17 @@ for (const dialect of DIALECTS) {
 
       expect(counts).to.have.length(1)
       expect(counts[0]).to.eql({
-        num_jennifers: dialect === 'postgres' || dialect === 'mysql' ? '1' : 1,
+        num_jennifers:
+          (sqlSpec === 'postgres' && variant !== 'pglite') ||
+          sqlSpec === 'mysql'
+            ? '1'
+            : 1,
       })
     })
 
     // Raw expressions are of course supported on all dialects, but we use an
     // expression that's only valid on postgres or mssql.
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('should select one field using a raw expression', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -466,7 +475,7 @@ for (const dialect of DIALECTS) {
 
     it('should select multiple fields', async () => {
       const fullName =
-        dialect === 'mysql' || dialect === 'mssql'
+        sqlSpec === 'mysql' || sqlSpec === 'mssql'
           ? sql`concat(first_name, ' ', last_name)`
           : sql`first_name || ' ' || last_name`
 
@@ -653,7 +662,7 @@ for (const dialect of DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('should select a row for update', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -788,7 +797,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should select with distinct on', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -969,7 +978,7 @@ for (const dialect of DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -997,36 +1006,41 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    it('should stream results', async () => {
-      const males: unknown[] = []
+    if (variant !== 'pglite') {
+      it('should stream results', async () => {
+        const males: unknown[] = []
 
-      const stream = ctx.db
-        .selectFrom('person')
-        .select(['first_name', 'last_name', 'gender'])
-        .where('gender', '=', 'male')
-        .orderBy('first_name')
-        .stream()
+        const stream = ctx.db
+          .selectFrom('person')
+          .select(['first_name', 'last_name', 'gender'])
+          .where('gender', '=', 'male')
+          .orderBy('first_name')
+          .stream()
 
-      for await (const male of stream) {
-        males.push(male)
-      }
+        for await (const male of stream) {
+          males.push(male)
+        }
 
-      expect(males).to.have.length(2)
-      expect(males).to.eql([
-        {
-          first_name: 'Arnold',
-          last_name: 'Schwarzenegger',
-          gender: 'male',
-        },
-        {
-          first_name: 'Sylvester',
-          last_name: 'Stallone',
-          gender: 'male',
-        },
-      ])
-    })
+        expect(males).to.have.length(2)
+        expect(males).to.eql([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+        ])
+      })
+    }
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (
+      (sqlSpec === 'postgres' && variant !== 'pglite') ||
+      sqlSpec === 'mssql'
+    ) {
       it('should stream results with a specific chunk size', async () => {
         const males: unknown[] = []
 
@@ -1057,27 +1071,29 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    it('should release connection on premature async iterator stop', async () => {
-      for (let i = 0; i <= POOL_SIZE + 1; i++) {
-        const stream = ctx.db.selectFrom('person').selectAll().stream()
+    if (variant !== 'pglite') {
+      it('should release connection on premature async iterator stop', async () => {
+        for (let i = 0; i <= POOL_SIZE + 1; i++) {
+          const stream = ctx.db.selectFrom('person').selectAll().stream()
 
-        for await (const _ of stream) {
-          break
+          for await (const _ of stream) {
+            break
+          }
         }
-      }
-    })
+      })
 
-    it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
-      for (let i = 0; i <= POOL_SIZE + 1; i++) {
-        const stream = ctx.db.selectFrom('person').selectAll().stream(1)
+      it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
+        for (let i = 0; i <= POOL_SIZE + 1; i++) {
+          const stream = ctx.db.selectFrom('person').selectAll().stream(1)
 
-        for await (const _ of stream) {
-          break
+          for await (const _ of stream) {
+            break
+          }
         }
-      }
-    })
+      })
+    }
 
-    if (dialect === 'postgres') {
+    if (variant === 'postgres') {
       it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
         const db = new Kysely<Database>({
           dialect: new PostgresDialect({
@@ -1102,7 +1118,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should create a select query with limit and offset', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -1184,7 +1200,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a select query with limit null', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -1238,7 +1254,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(1)
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         // For some weird reason, MySQL returns `one` as a string.
         expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       } else {
@@ -1246,7 +1262,7 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('should create a select query with order by, offset and fetch', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -1298,7 +1314,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a select query with order by, offset and fetch with ties', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -1321,7 +1337,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should create a select query with top', async () => {
         const query = ctx.db.selectFrom('person').select('first_name').top(2)
 
