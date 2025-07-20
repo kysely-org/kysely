@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: where`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: where`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -274,9 +276,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('a raw instance and a boolean value', async () => {
           const query = ctx.db
@@ -351,9 +353,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('a boolean subquery', async () => {
           const query = ctx.db
@@ -514,9 +516,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('a `where in` query with tuples', async () => {
           const query = ctx.db
@@ -922,9 +924,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
         it('case expression', async () => {
           const query = ctx.db
@@ -990,9 +992,9 @@ for (const dialect of DIALECTS) {
       })
 
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'mssql'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'mssql'
       ) {
         it('subquery inside `any` operator', async () => {
           await ctx.db
