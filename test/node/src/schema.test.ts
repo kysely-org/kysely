@@ -526,7 +526,7 @@ for (const dialect of DIALECTS) {
               sql`(lower(a))`,
               sql`(lower(b))`,
             ])
-            .addUniqueConstraint('a_c_unique', [sql`lower(a)`, 'c'])
+            .addUniqueConstraint('a_c_unique', [sql`(lower(a))`, 'c'])
           console.log('foo', builder.compile())
 
           testSql(builder, dialect, {
@@ -3393,12 +3393,15 @@ for (const dialect of DIALECTS) {
         it('should add a unique constraint using expressions', async () => {
           const builder = ctx.db.schema
             .alterTable('test')
-            .addUniqueConstraint('a_b_unique', [sql`(lower(a))`, 'b'])
+            .addUniqueConstraint('unique_constraint', [
+              sql`(lower(varchar_col))`,
+              'integer_col',
+            ])
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
             mysql: {
-              sql: 'alter table `test`  add constraint `lower_constraint` unique ((lower(varchar_col)), integer_col)',
+              sql: 'alter table `test` add constraint `unique_constraint` unique ((lower(varchar_col)), `integer_col`)',
               parameters: [],
             },
             mssql: NOT_SUPPORTED,
