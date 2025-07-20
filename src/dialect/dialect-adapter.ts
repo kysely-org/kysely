@@ -12,37 +12,47 @@ export interface DialectAdapter {
   /**
    * Whether or not this dialect supports `if not exists` in creation of tables/schemas/views/etc.
    *
+   * Default is `false`.
+   *
    * If this is false, Kysely's internal migrations tables and schemas are created
    * without `if not exists` in migrations. This is not a problem if the dialect
    * supports transactional DDL.
    */
-  readonly supportsCreateIfNotExists: boolean
+  readonly supportsCreateIfNotExists?: boolean
 
   /**
    * Whether or not this dialect supports multiple connections at the same time.
    *
+   * Default is `true`.
+   *
    * If this is false, Kysely will use a single connection for all database operations.
    */
-  readonly supportsMultipleConnections: boolean
+  readonly supportsMultipleConnections?: boolean
 
   /**
    * Whether or not this dialect supports transactional DDL.
    *
+   * Default is `false`.
+   *
    * If this is true, migrations are executed inside a transaction.
    */
-  readonly supportsTransactionalDdl: boolean
+  readonly supportsTransactionalDdl?: boolean
 
   /**
    * Whether or not this dialect supports the `returning` in inserts
    * updates and deletes.
+   *
+   * Default is `false`.
    */
-  readonly supportsReturning: boolean
+  readonly supportsReturning?: boolean
 
   /**
    * Whether or not this dialect supports the `output` clause in inserts
    * updates and deletes.
+   *
+   * Default is `false`.
    */
-  readonly supportsOutput: boolean
+  readonly supportsOutput?: boolean
 
   /**
    * This method is used to acquire a lock for the migrations so that
