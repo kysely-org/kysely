@@ -254,7 +254,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .addColumn('last_name', 'varchar(64)')
    *   .addUniqueConstraint(
    *     'first_name_last_name_unique',
-   *     [sql`lower('first_name')), 'last_name']
+   *     [sql`(lower('first_name')), 'last_name']
    *   )
    *   .execute()
    * ```
