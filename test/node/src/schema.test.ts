@@ -522,7 +522,10 @@ for (const dialect of DIALECTS) {
             .addColumn('a', 'varchar(255)')
             .addColumn('b', 'varchar(255)')
             .addColumn('c', 'varchar(255)')
-            .addUniqueConstraint('a_b_unique', [sql`lower(a)`, sql`lower(b)`])
+            .addUniqueConstraint('a_b_unique', [
+              sql`(lower(a))`,
+              sql`(lower(b))`,
+            ])
             .addUniqueConstraint('a_c_unique', [sql`lower(a)`, 'c'])
           console.log('foo', builder.compile())
 
@@ -3390,7 +3393,7 @@ for (const dialect of DIALECTS) {
         it('should add a unique constraint using expressions', async () => {
           const builder = ctx.db.schema
             .alterTable('test')
-            .addUniqueConstraint('a_b_unique', [sql`lower(a)`, 'b'])
+            .addUniqueConstraint('a_b_unique', [sql`(lower(a))`, 'b'])
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,

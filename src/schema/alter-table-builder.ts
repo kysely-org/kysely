@@ -182,7 +182,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
         UniqueConstraintNode.create(
           columns.map((column) =>
             isExpression(column)
-              ? ParensNode.create(column.toOperationNode())
+              ? column.toOperationNode()
               : ColumnNode.create(column),
           ),
           constraintName,

@@ -269,7 +269,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
         UniqueConstraintNode.create(
           columns.map((column) =>
             isExpression(column)
-              ? ParensNode.create(column.toOperationNode())
+              ? column.toOperationNode()
               : ColumnNode.create(column),
           ),
           constraintName,
