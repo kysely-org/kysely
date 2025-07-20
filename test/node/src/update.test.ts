@@ -15,7 +15,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: update`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: update`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -63,7 +65,7 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
         expect(result.numChangedRows).to.undefined
@@ -114,7 +116,7 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
         expect(result.numChangedRows).to.undefined
@@ -136,7 +138,7 @@ for (const dialect of DIALECTS) {
 
     // mssql doesn't support table aliases in update clause, but it does support this
     // with update alias set ... from table_name as alias
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should update one row with table alias', async () => {
         const query = ctx.db
           .updateTable('person as p')
@@ -163,7 +165,7 @@ for (const dialect of DIALECTS) {
 
         expect(result).to.be.instanceOf(UpdateResult)
         expect(result.numUpdatedRows).to.equal(1n)
-        if (dialect === 'mysql') {
+        if (sqlSpec === 'mysql') {
           expect(result.numChangedRows).to.equal(1n)
         } else {
           expect(result.numChangedRows).to.undefined
@@ -184,7 +186,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should update one row with table alias in from clause', async () => {
         const query = ctx.db
           .updateTable('p' as 'person')
@@ -257,7 +259,7 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
         expect(result.numChangedRows).to.undefined
@@ -272,7 +274,7 @@ for (const dialect of DIALECTS) {
       expect(person.last_name).to.equal('Catto')
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should update one row using an expression', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -338,7 +340,7 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
         expect(result.numChangedRows).to.undefined
@@ -382,7 +384,7 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
         expect(result.numChangedRows).to.undefined
@@ -400,7 +402,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should update some rows and return updated rows when `returning` is used', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -500,7 +502,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should update some rows and return joined rows when `returningAll` is used', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -528,7 +530,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres' && variant !== 'pglite') {
       it('should update multiple rows and stream returned results', async () => {
         const stream = ctx.db
           .updateTable('person')
@@ -553,7 +555,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should update but not change the row', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -769,7 +771,7 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should update using a from clause and a join', async () => {
         const query = ctx.db
           .updateTable('pet as p')
@@ -805,7 +807,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -834,7 +836,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should update using a from clause and a join', async () => {
         const query = ctx.db
           .updateTable('p' as 'pet')
@@ -909,7 +911,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should update some rows and return updated rows when `output` is used', async () => {
         const query = ctx.db
           .updateTable('person')

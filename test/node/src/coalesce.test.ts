@@ -11,7 +11,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: coalesce`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: coalesce`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -30,7 +32,7 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('should coalesce a single item', async () => {
         const { coalesce } = ctx.db.fn
 
@@ -87,9 +89,9 @@ for (const dialect of DIALECTS) {
           coalesce('first_name', ctx.db.dynamic.ref('last_name')).as(
             'ColumnReference1',
           ),
-          ...(dialect === 'postgres' ||
-          dialect === 'mysql' ||
-          dialect === 'sqlite'
+          ...(sqlSpec === 'postgres' ||
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'sqlite'
             ? [coalesce('first_name', sql`${1}`).as('ColumnReference2')]
             : []),
           coalesce('first_name', max('last_name')).as('ColumnReference3'),
@@ -100,9 +102,9 @@ for (const dialect of DIALECTS) {
           coalesce(ctx.db.dynamic.ref('first_name'), 'last_name').as(
             'DynamicReference1',
           ),
-          ...(dialect === 'postgres' ||
-          dialect === 'mysql' ||
-          dialect === 'sqlite'
+          ...(sqlSpec === 'postgres' ||
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'sqlite'
             ? [
                 coalesce(ctx.db.dynamic.ref('first_name'), sql`${2}`).as(
                   'DynamicReference2',
@@ -125,9 +127,9 @@ for (const dialect of DIALECTS) {
           coalesce(max('first_name'), ctx.db.dynamic.ref('last_name')).as(
             'AggregateFunction2',
           ),
-          ...(dialect === 'postgres' ||
-          dialect === 'mysql' ||
-          dialect === 'sqlite'
+          ...(sqlSpec === 'postgres' ||
+          sqlSpec === 'mysql' ||
+          sqlSpec === 'sqlite'
             ? [coalesce(max('first_name'), sql`${8}`).as('AggregateFunction3')]
             : []),
         ])

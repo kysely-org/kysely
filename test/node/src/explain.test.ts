@@ -11,147 +11,152 @@ import {
   DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
-  describe(`${dialect}: explain test`, () => {
-    let ctx: TestContext
-    const sandbox = createSandbox()
-    let executeQuerySpy: SinonSpy
+for (const dialect of DIALECTS) {
+  const { sqlSpec, variant } = dialect
 
-    before(async function () {
-      ctx = await initTest(this, dialect)
-    })
+  if (sqlSpec !== 'mssql') {
+    describe(`${variant}: explain`, () => {
+      let ctx: TestContext
+      const sandbox = createSandbox()
+      let executeQuerySpy: SinonSpy
 
-    beforeEach(async () => {
-      await insertDefaultDataSet(ctx)
-      executeQuerySpy = sandbox.spy(
-        DefaultQueryExecutor.prototype,
-        'executeQuery',
-      )
-    })
+      before(async function () {
+        ctx = await initTest(this, dialect)
+      })
 
-    afterEach(async () => {
-      await clearDatabase(ctx)
-      sandbox.restore()
-    })
+      beforeEach(async () => {
+        await insertDefaultDataSet(ctx)
+        executeQuerySpy = sandbox.spy(
+          DefaultQueryExecutor.prototype,
+          'executeQuery',
+        )
+      })
 
-    after(async () => {
-      await destroyTest(ctx)
-    })
+      afterEach(async () => {
+        await clearDatabase(ctx)
+        sandbox.restore()
+      })
 
-    it('should add explain statement before selects', async () => {
-      await ctx.db.selectFrom('person').selectAll().limit(5).explain()
+      after(async () => {
+        await destroyTest(ctx)
+      })
 
-      expect(executeQuerySpy.calledOnce).to.be.true
-      expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-        {
-          postgres: 'explain select * from "person" limit $1',
-          mysql: 'explain select * from `person` limit ?',
-          mssql: NOT_SUPPORTED,
-          sqlite: 'explain select * from "person" limit ?',
-        }[dialect],
-      )
-    })
-
-    it('should add explain statement before inserts', async () => {
-      await ctx.db.insertInto('person').values({ gender: 'female' }).explain()
-
-      expect(executeQuerySpy.calledOnce).to.be.true
-      expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-        {
-          postgres: 'explain insert into "person" ("gender") values ($1)',
-          mysql: 'explain insert into `person` (`gender`) values (?)',
-          mssql: NOT_SUPPORTED,
-          sqlite: 'explain insert into "person" ("gender") values (?)',
-        }[dialect],
-      )
-    })
-
-    it('should add explain statement before updates', async () => {
-      await ctx.db
-        .updateTable('person')
-        .set({ gender: 'female' })
-        .where('id', '=', 123)
-        .explain()
-
-      expect(executeQuerySpy.calledOnce).to.be.true
-      expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-        {
-          postgres: 'explain update "person" set "gender" = $1 where "id" = $2',
-          mysql: 'explain update `person` set `gender` = ? where `id` = ?',
-          mssql: NOT_SUPPORTED,
-          sqlite: 'explain update "person" set "gender" = ? where "id" = ?',
-        }[dialect],
-      )
-    })
-
-    it('should add explain statement before deletes', async () => {
-      await ctx.db.deleteFrom('person').where('id', '=', 123).explain()
-
-      expect(executeQuerySpy.calledOnce).to.be.true
-      expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-        {
-          postgres: 'explain delete from "person" where "id" = $1',
-          mysql: 'explain delete from `person` where `id` = ?',
-          mssql: NOT_SUPPORTED,
-          sqlite: 'explain delete from "person" where "id" = ?',
-        }[dialect],
-      )
-    })
-
-    if (dialect === 'mysql') {
-      it('should add explain statement before replaces', async () => {
-        await ctx.db
-          .replaceInto('person')
-          .values({ id: 123, gender: 'female' })
-          .explain()
+      it('should add explain statement before selects', async () => {
+        await ctx.db.selectFrom('person').selectAll().limit(5).explain()
 
         expect(executeQuerySpy.calledOnce).to.be.true
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-          'explain replace into `person` (`id`, `gender`) values (?, ?)',
+          {
+            postgres: 'explain select * from "person" limit $1',
+            mysql: 'explain select * from `person` limit ?',
+            mssql: NOT_SUPPORTED,
+            sqlite: 'explain select * from "person" limit ?',
+          }[sqlSpec],
         )
       })
-    }
 
-    if (dialect === 'postgres') {
-      it('should add explain statement before select, with analyze', async () => {
+      it('should add explain statement before inserts', async () => {
+        await ctx.db.insertInto('person').values({ gender: 'female' }).explain()
+
+        expect(executeQuerySpy.calledOnce).to.be.true
+        expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+          {
+            postgres: 'explain insert into "person" ("gender") values ($1)',
+            mysql: 'explain insert into `person` (`gender`) values (?)',
+            mssql: NOT_SUPPORTED,
+            sqlite: 'explain insert into "person" ("gender") values (?)',
+          }[sqlSpec],
+        )
+      })
+
+      it('should add explain statement before updates', async () => {
         await ctx.db
-          .selectFrom('person')
+          .updateTable('person')
+          .set({ gender: 'female' })
           .where('id', '=', 123)
-          .selectAll()
-          .explain('json', sql`analyze`)
+          .explain()
 
         expect(executeQuerySpy.calledOnce).to.be.true
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
           {
             postgres:
-              'explain (analyze, format json) select * from "person" where "id" = $1',
-            mysql: NOT_SUPPORTED,
+              'explain update "person" set "gender" = $1 where "id" = $2',
+            mysql: 'explain update `person` set `gender` = ? where `id` = ?',
             mssql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-          }[dialect],
+            sqlite: 'explain update "person" set "gender" = ? where "id" = ?',
+          }[sqlSpec],
         )
       })
-    }
 
-    if (dialect === 'mysql') {
-      it('should add explain statement before select, with analyze', async () => {
-        await ctx.db
-          .selectFrom('person')
-          .where('id', '=', 123)
-          .selectAll()
-          .explain('tree', sql`analyze`)
+      it('should add explain statement before deletes', async () => {
+        await ctx.db.deleteFrom('person').where('id', '=', 123).explain()
 
         expect(executeQuerySpy.calledOnce).to.be.true
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
           {
-            postgres: NOT_SUPPORTED,
-            mysql:
-              'explain analyze format=tree select * from `person` where `id` = ?',
+            postgres: 'explain delete from "person" where "id" = $1',
+            mysql: 'explain delete from `person` where `id` = ?',
             mssql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-          }[dialect],
+            sqlite: 'explain delete from "person" where "id" = ?',
+          }[sqlSpec],
         )
       })
-    }
-  })
+
+      if (sqlSpec === 'mysql') {
+        it('should add explain statement before replaces', async () => {
+          await ctx.db
+            .replaceInto('person')
+            .values({ id: 123, gender: 'female' })
+            .explain()
+
+          expect(executeQuerySpy.calledOnce).to.be.true
+          expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+            'explain replace into `person` (`id`, `gender`) values (?, ?)',
+          )
+        })
+      }
+
+      if (sqlSpec === 'postgres') {
+        it('should add explain statement before select, with analyze', async () => {
+          await ctx.db
+            .selectFrom('person')
+            .where('id', '=', 123)
+            .selectAll()
+            .explain('json', sql`analyze`)
+
+          expect(executeQuerySpy.calledOnce).to.be.true
+          expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+            {
+              postgres:
+                'explain (analyze, format json) select * from "person" where "id" = $1',
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            }[sqlSpec],
+          )
+        })
+      }
+
+      if (sqlSpec === 'mysql') {
+        it('should add explain statement before select, with analyze', async () => {
+          await ctx.db
+            .selectFrom('person')
+            .where('id', '=', 123)
+            .selectAll()
+            .explain('tree', sql`analyze`)
+
+          expect(executeQuerySpy.calledOnce).to.be.true
+          expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+            {
+              postgres: NOT_SUPPORTED,
+              mysql:
+                'explain analyze format=tree select * from `person` where `id` = ?',
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            }[sqlSpec],
+          )
+        })
+      }
+    })
+  }
 }

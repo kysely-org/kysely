@@ -12,7 +12,9 @@ import {
 const __filename = fileURLToPath(import.meta.url)
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: error stack`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: error stack`, () => {
     let ctx: TestContext
 
     before(async function () {

@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: order by`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: order by`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -297,7 +299,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('order by nulls first', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -351,7 +353,7 @@ for (const dialect of DIALECTS) {
         mysql: 'utf8mb4_general_ci',
         mssql: 'Latin1_General_CI_AS',
         sqlite: 'nocase',
-      }[dialect]
+      }[sqlSpec]
 
       const query = ctx.db
         .selectFrom('person')
@@ -381,7 +383,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('order by raw expression in direction', async () => {
         const query = ctx.db
           .selectFrom('person')
