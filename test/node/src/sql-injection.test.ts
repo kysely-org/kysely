@@ -12,9 +12,11 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: select`, () => {
-    let ctx: JSONTestContext
-    const identifierWrapper = dialect === 'mysql' ? '`' : '"'
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: select`, () => {
+    let ctx: TestContext
+    const identifierWrapper = sqlSpec === 'mysql' ? '`' : '"'
 
     before(async function () {
       ctx = await initJSONTest(this, dialect)

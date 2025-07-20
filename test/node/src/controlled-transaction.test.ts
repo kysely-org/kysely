@@ -20,9 +20,12 @@ import {
   insertDefaultDataSet,
   limit,
 } from './test-setup.js'
+import { PGlite } from '@electric-sql/pglite'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: controlled transaction`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: controlled transaction`, () => {
     let ctx: TestContext
     const executedQueries: CompiledQuery[] = []
     const sandbox = sinon.createSandbox()
@@ -41,6 +44,10 @@ for (const dialect of DIALECTS) {
     let tediousSaveTransactionSpy: sinon.SinonSpy<
       Parameters<Connection['saveTransaction']>,
       ReturnType<Connection['saveTransaction']>
+    >
+    let pgliteTransactionSpy: sinon.SinonSpy<
+      Parameters<PGlite['transaction']>,
+      ReturnType<PGlite['transaction']>
     >
 
     before(async function () {
@@ -72,6 +79,7 @@ for (const dialect of DIALECTS) {
         Connection.prototype,
         'saveTransaction',
       )
+      pgliteTransactionSpy = sandbox.spy(PGlite.prototype, 'transaction')
     })
 
     afterEach(async () => {
@@ -90,24 +98,31 @@ for (const dialect of DIALECTS) {
 
       await trx.commit().execute()
 
-      if (dialect == 'postgres') {
+      if (sqlSpec === 'postgres') {
+        const query = {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+          parameters: ['Foo', 'Barson', 'male'],
+        }
+
+        if (variant === 'pglite') {
+          expect(pgliteTransactionSpy.calledOnce).to.be.true
+        }
+
         expect(
           executedQueries.map((it) => ({
             sql: it.sql,
             parameters: it.parameters,
           })),
-        ).to.eql([
-          {
-            sql: 'begin',
-            parameters: [],
-          },
-          {
-            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-            parameters: ['Foo', 'Barson', 'male'],
-          },
-          { sql: 'commit', parameters: [] },
-        ])
-      } else if (dialect === 'mysql') {
+        ).to.eql(
+          variant === 'pglite'
+            ? [query]
+            : [
+                { sql: 'begin', parameters: [] },
+                query,
+                { sql: 'commit', parameters: [] },
+              ],
+        )
+      } else if (sqlSpec === 'mysql') {
         expect(
           executedQueries.map((it) => ({
             sql: it.sql,
@@ -124,7 +139,7 @@ for (const dialect of DIALECTS) {
           },
           { sql: 'commit', parameters: [] },
         ])
-      } else if (dialect === 'mssql') {
+      } else if (sqlSpec === 'mssql') {
         expect(tediousBeginTransactionSpy.calledOnce).to.be.true
         expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.be.undefined
         expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.be.undefined
@@ -160,6 +175,14 @@ for (const dialect of DIALECTS) {
           { sql: 'commit', parameters: [] },
         ])
       }
+
+      const person = await ctx.db
+        .selectFrom('person')
+        .where('first_name', '=', 'Foo')
+        .select('first_name')
+        .executeTakeFirst()
+
+      expect(person).not.to.be.undefined
     })
 
     it('should be able to start and rollback a transaction', async () => {
@@ -169,24 +192,34 @@ for (const dialect of DIALECTS) {
 
       await trx.rollback().execute()
 
-      if (dialect == 'postgres') {
+      if (sqlSpec === 'postgres') {
+        const query = {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+          parameters: ['Foo', 'Barson', 'male'],
+        }
+
+        if (variant === 'pglite') {
+          expect(pgliteTransactionSpy.calledOnce).to.be.true
+        }
+
         expect(
           executedQueries.map((it) => ({
             sql: it.sql,
             parameters: it.parameters,
           })),
-        ).to.eql([
-          {
-            sql: 'begin',
-            parameters: [],
-          },
-          {
-            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-            parameters: ['Foo', 'Barson', 'male'],
-          },
-          { sql: 'rollback', parameters: [] },
-        ])
-      } else if (dialect === 'mysql') {
+        ).to.eql(
+          variant === 'pglite'
+            ? [query]
+            : [
+                {
+                  sql: 'begin',
+                  parameters: [],
+                },
+                query,
+                { sql: 'rollback', parameters: [] },
+              ],
+        )
+      } else if (sqlSpec === 'mysql') {
         expect(
           executedQueries.map((it) => ({
             sql: it.sql,
@@ -203,7 +236,7 @@ for (const dialect of DIALECTS) {
           },
           { sql: 'rollback', parameters: [] },
         ])
-      } else if (dialect === 'mssql') {
+      } else if (sqlSpec === 'mssql') {
         expect(tediousBeginTransactionSpy.calledOnce).to.be.true
         expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.be.undefined
         expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.be.undefined
@@ -249,7 +282,10 @@ for (const dialect of DIALECTS) {
       expect(person).to.be.undefined
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (
+      (sqlSpec === 'postgres' && variant !== 'pglite') ||
+      sqlSpec === 'mysql'
+    ) {
       for (const accessMode of TRANSACTION_ACCESS_MODES) {
         it(`should set the transaction access mode as "${accessMode}"`, async () => {
           const trx = await ctx.db
@@ -279,19 +315,23 @@ for (const dialect of DIALECTS) {
                 { sql: 'select * from `person`', parameters: [] },
                 { sql: 'commit', parameters: [] },
               ],
-            }[dialect],
+            }[sqlSpec],
           )
         })
       }
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+    if (
+      (sqlSpec === 'postgres' && variant !== 'pglite') ||
+      sqlSpec === 'mysql' ||
+      sqlSpec === 'mssql'
+    ) {
       for (const isolationLevel of [
         'read uncommitted',
         'read committed',
         'repeatable read',
         'serializable',
-        ...(dialect === 'mssql' ? (['snapshot'] as const) : []),
+        ...(sqlSpec === 'mssql' ? (['snapshot'] as const) : []),
       ] as const) {
         it(`should set the transaction isolation level as "${isolationLevel}"`, async () => {
           const trx = await ctx.db
@@ -303,7 +343,7 @@ for (const dialect of DIALECTS) {
 
           await trx.commit().execute()
 
-          if (dialect === 'mssql') {
+          if (sqlSpec === 'mssql') {
             expect(tediousBeginTransactionSpy.calledOnce).to.be.true
             expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.not.be
               .undefined
@@ -351,7 +391,7 @@ for (const dialect of DIALECTS) {
                   parameters: ['Foo', 'Barson', 'male'],
                 },
               ],
-            }[dialect],
+            }[sqlSpec],
           )
         })
       }
@@ -402,14 +442,8 @@ for (const dialect of DIALECTS) {
 
       await trxAfterFoo.commit().execute()
 
-      if (dialect == 'postgres') {
-        expect(
-          executedQueries.map((it) => ({
-            sql: it.sql,
-            parameters: it.parameters,
-          })),
-        ).to.eql([
-          { sql: 'begin', parameters: [] },
+      if (sqlSpec === 'postgres') {
+        const ops = [
           {
             sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
             parameters: ['Foo', 'Barson', 'male'],
@@ -420,9 +454,23 @@ for (const dialect of DIALECTS) {
             parameters: ['Fizz', 'Buzzson', 'female'],
           },
           { sql: 'rollback to "foo"', parameters: [] },
-          { sql: 'commit', parameters: [] },
-        ])
-      } else if (dialect === 'mysql') {
+        ]
+
+        expect(
+          executedQueries.map((it) => ({
+            sql: it.sql,
+            parameters: it.parameters,
+          })),
+        ).to.eql(
+          variant === 'pglite'
+            ? ops
+            : [
+                { sql: 'begin', parameters: [] },
+                ...ops,
+                { sql: 'commit', parameters: [] },
+              ],
+        )
+      } else if (sqlSpec === 'mysql') {
         expect(
           executedQueries.map((it) => ({
             sql: it.sql,
@@ -442,7 +490,7 @@ for (const dialect of DIALECTS) {
           { sql: 'rollback to `foo`', parameters: [] },
           { sql: 'commit', parameters: [] },
         ])
-      } else if (dialect === 'mssql') {
+      } else if (sqlSpec === 'mssql') {
         expect(tediousBeginTransactionSpy.calledOnce).to.be.true
         expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.be.undefined
         expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.be.undefined
@@ -502,7 +550,7 @@ for (const dialect of DIALECTS) {
       expect(results[0].first_name).to.equal('Foo')
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should be able to savepoint and release savepoint', async () => {
         const trx = await ctx.db.startTransaction().execute()
 
@@ -516,14 +564,8 @@ for (const dialect of DIALECTS) {
 
         await trxAfterFoo.commit().execute()
 
-        if (dialect == 'postgres') {
-          expect(
-            executedQueries.map((it) => ({
-              sql: it.sql,
-              parameters: it.parameters,
-            })),
-          ).to.eql([
-            { sql: 'begin', parameters: [] },
+        if (sqlSpec === 'postgres') {
+          const ops = [
             {
               sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
               parameters: ['Foo', 'Barson', 'male'],
@@ -534,9 +576,23 @@ for (const dialect of DIALECTS) {
               parameters: ['Fizz', 'Buzzson', 'female'],
             },
             { sql: 'release "foo"', parameters: [] },
-            { sql: 'commit', parameters: [] },
-          ])
-        } else if (dialect === 'mysql') {
+          ]
+
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            })),
+          ).to.eql(
+            variant === 'pglite'
+              ? ops
+              : [
+                  { sql: 'begin', parameters: [] },
+                  ...ops,
+                  { sql: 'commit', parameters: [] },
+                ],
+          )
+        } else if (sqlSpec === 'mysql') {
           expect(
             executedQueries.map((it) => ({
               sql: it.sql,
@@ -591,7 +647,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should throw an error when trying to release a savepoint as it is not supported', async () => {
         const trx = await ctx.db.startTransaction().execute()
 
@@ -660,16 +716,12 @@ describe('custom dialect: controlled transaction', () => {
   })
 
   it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
-    const trx = await db.startTransaction().execute()
-
     await expect(trx.savepoint('foo').execute()).to.be.rejectedWith(
       'The `savepoint` method is not supported by this driver',
     )
   })
 
   it('should throw an error when trying to rollback to a savepoint on a dialect that does not support it', async () => {
-    const trx = await db.startTransaction().execute()
-
     await expect(
       trx.rollbackToSavepoint('foo' as never).execute(),
     ).to.be.rejectedWith(
@@ -678,8 +730,6 @@ describe('custom dialect: controlled transaction', () => {
   })
 
   it('should throw an error when trying to release a savepoint on a dialect that does not support it', async () => {
-    const trx = await db.startTransaction().execute()
-
     await expect(
       trx.releaseSavepoint('foo' as never).execute(),
     ).to.be.rejectedWith(

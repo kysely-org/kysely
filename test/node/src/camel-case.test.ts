@@ -19,7 +19,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: camel case test`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: camel case`, () => {
     let ctx: TestContext
     let camelDb: Kysely<CamelDatabase>
 
@@ -51,7 +53,7 @@ for (const dialect of DIALECTS) {
         .addColumn('lastName', 'varchar(255)')
         .addColumn(
           'preferences',
-          dialect === 'mssql' ? 'varchar(8000)' : 'json',
+          sqlSpec === 'mssql' ? 'varchar(8000)' : 'json',
         )
         .addColumn('addressRow1', 'varchar(255)')
         .execute()
@@ -89,7 +91,7 @@ for (const dialect of DIALECTS) {
 
     // Can't run this test on SQLite because we can't access the same database
     // from the other Kysely instance.
-    if (dialect !== 'sqlite') {
+    if (sqlSpec !== 'sqlite' && variant !== 'pglite') {
       it('should have created the table and its columns in snake_case', async () => {
         const result = await sql<any>`select * from camel_person`.execute(
           ctx.db,
@@ -276,7 +278,7 @@ for (const dialect of DIALECTS) {
     it('should map nested objects by default', async () => {
       let db = camelDb.withoutPlugins()
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
+      if (sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
         db = db.withPlugin(new ParseJSONResultsPlugin())
       }
 
@@ -295,7 +297,7 @@ for (const dialect of DIALECTS) {
     it('should respect maintainNestedObjectKeys', async () => {
       let db = camelDb.withoutPlugins()
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
+      if (sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
         db = db.withPlugin(new ParseJSONResultsPlugin())
       }
 
@@ -355,7 +357,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('should convert merge queries', async () => {
         const query = camelDb
           .mergeInto('camelPerson')
