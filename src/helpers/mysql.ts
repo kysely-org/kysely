@@ -4,7 +4,11 @@ import { SelectQueryBuilderExpression } from '../query-builder/select-query-buil
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
 import { getJsonObjectArgs } from '../util/json-object-args.js'
-import { Simplify } from '../util/type-utils.js'
+import {
+  ShallowDehydrateObject,
+  ShallowDehydrateValue,
+  Simplify,
+} from '../util/type-utils.js'
 
 /**
  * A MySQL helper for aggregating a subquery into a JSON array.
@@ -56,7 +60,7 @@ import { Simplify } from '../util/type-utils.js'
  */
 export function jsonArrayFrom<O>(
   expr: SelectQueryBuilderExpression<O>,
-): RawBuilder<Simplify<O>[]> {
+): RawBuilder<Simplify<ShallowDehydrateObject<O>>[]> {
   return sql`(select cast(coalesce(json_arrayagg(json_object(${sql.join(
     getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg'),
   )})), '[]') as json) from ${expr} as agg)`
@@ -114,7 +118,7 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: SelectQueryBuilderExpression<O>,
-): RawBuilder<Simplify<O> | null> {
+): RawBuilder<Simplify<ShallowDehydrateObject<O>> | null> {
   return sql`(select json_object(${sql.join(
     getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj'),
   )}) from ${expr} as obj)`
@@ -164,7 +168,9 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O,
 ): RawBuilder<
   Simplify<{
-    [K in keyof O]: O[K] extends Expression<infer V> ? V : never
+    [K in keyof O]: O[K] extends Expression<infer V>
+      ? ShallowDehydrateValue<V>
+      : never
   }>
 > {
   return sql`json_object(${sql.join(

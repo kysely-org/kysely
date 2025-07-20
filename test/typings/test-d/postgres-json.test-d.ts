@@ -5,9 +5,8 @@ import {
   jsonObjectFrom,
   sql,
   ExpressionBuilder,
-  Selectable,
 } from '..'
-import { Database, Pet } from '../shared'
+import { Database } from '../shared'
 import { expectType } from 'tsd'
 
 async function testPostgresJsonSelects(db: Kysely<Database>) {
@@ -43,7 +42,34 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
         first: eb.ref('first_name'),
         last: eb.ref('last_name'),
         full: sql<string>`first_name || ' ' || last_name`,
+        modified_at: eb.ref('modified_at'),
       }).as('name'),
+
+    // Nest other people with same first name.
+    (eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom('person as other')
+          .where('other.id', '!=', eb.ref('person.id'))
+          .where('other.first_name', '=', eb.ref('person.first_name'))
+          .selectAll(),
+      ).as('people_same_first_name'),
+
+    // Nest an object that holds the first person that might be a match from the opposite gender and is not married.
+    (eb) =>
+      jsonObjectFrom(
+        eb
+          .selectFrom('person as match')
+          .where('match.gender', '!=', eb.ref('person.gender'))
+          .where('match.marital_status', '!=', 'married')
+          .where(
+            (eb) => eb.fn('abs', [eb('match.age', '-', eb.ref('person.age'))]),
+            '<=',
+            5,
+          )
+          .limit(1)
+          .selectAll(),
+      ).as('potential_match'),
   ])
 
   const r1 = await query.execute()
@@ -53,7 +79,32 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
       first_name: string
       pets: { name: string; species: 'dog' | 'cat' }[]
       doggo: { doggo_name: string } | null
-      name: { first: string; last: string | null; full: string }
+      name: {
+        first: string
+        last: string | null
+        full: string
+        modified_at: string
+      }
+      people_same_first_name: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      }[]
+      potential_match: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      } | null
     }[]
   >(r1)
 }
@@ -78,54 +129,85 @@ async function testPostgresConditionalJsonSelects(db: Kysely<Database>) {
 
 async function testPostgresJsonAgg(db: Kysely<Database>) {
   const r1 = await db
-    .selectFrom('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .select((eb) => ['first_name', eb.fn.jsonAgg('pet').as('pets')])
-    .groupBy('person.first_name')
+    .selectFrom('pet')
+    .innerJoin('person', 'pet.owner_id', 'person.id')
+    .select((eb) => ['pet.name', eb.fn.jsonAgg('person').as('people')])
+    .groupBy('pet.name')
     .execute()
 
   expectType<
     {
-      first_name: string
-      pets: Selectable<Pet>[]
+      name: string
+      people: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      }[]
     }[]
   >(r1)
 
   const r2 = await db
-    .selectFrom('person')
+    .selectFrom('pet')
     .select((eb) => [
-      'first_name',
+      'name',
       eb
-        .selectFrom('pet')
-        .select((eb) => eb.fn.jsonAgg('pet').as('pet'))
+        .selectFrom('person')
+        .select((eb) => eb.fn.jsonAgg('person').as('people'))
         .whereRef('pet.owner_id', '=', 'person.id')
-        .as('pets'),
+        .as('people'),
     ])
     .execute()
 
   expectType<
     {
-      first_name: string
-      pets: Selectable<Pet>[] | null
+      name: string
+      people:
+        | {
+            id: number
+            first_name: string
+            last_name: string | null
+            age: number
+            gender: 'male' | 'female' | 'other'
+            marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+            modified_at: string
+            deleted_at: string | null
+          }[]
+        | null
     }[]
   >(r2)
 
   const r3 = await db
-    .selectFrom('person')
+    .selectFrom('pet')
     .select((eb) => [
-      'first_name',
+      'name',
       eb
-        .selectFrom('pet')
-        .select((eb) => eb.fn.jsonAgg(eb.table('pet')).as('pet'))
+        .selectFrom('person')
+        .select((eb) => eb.fn.jsonAgg(eb.table('person')).as('people'))
         .whereRef('pet.owner_id', '=', 'person.id')
-        .as('pets'),
+        .as('people'),
     ])
     .execute()
 
   expectType<
     {
-      first_name: string
-      pets: Selectable<Pet>[] | null
+      name: string
+      people:
+        | {
+            id: number
+            first_name: string
+            last_name: string | null
+            age: number
+            gender: 'male' | 'female' | 'other'
+            marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+            modified_at: string
+            deleted_at: string | null
+          }[]
+        | null
     }[]
   >(r3)
 
@@ -155,7 +237,7 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
               }),
             )
             .filterWhere('transaction.id', 'is not', null),
-          sql`'[]'`,
+          sql<[]>`'[]'`,
         )
         .as('transactions'),
     ])
@@ -171,31 +253,43 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
   }>(r4)
 
   const r5 = await db
-    .selectFrom('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .select((eb) => ['first_name', eb.fn.jsonAgg('owner_id').as('pet_names')])
-    .groupBy('person.first_name')
+    .selectFrom('pet')
+    .innerJoin('person', 'pet.owner_id', 'person.id')
+    .select((eb) => [
+      'name',
+      eb.fn.jsonAgg('person.modified_at').as('modified_at'),
+    ])
+    .groupBy('name')
     .execute()
 
   expectType<
     {
-      first_name: string
-      pet_names: number[] | null
+      name: string
+      modified_at: string[] | null
     }[]
   >(r5)
 }
 
 async function testPostgresToJson(db: Kysely<Database>) {
   const r1 = await db
-    .selectFrom('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .select((eb) => ['first_name', eb.fn.toJson('pet').as('pet')])
+    .selectFrom('pet')
+    .innerJoin('person', 'pet.owner_id', 'person.id')
+    .select((eb) => ['name', eb.fn.toJson('person').as('person')])
     .execute()
 
   expectType<
     {
-      first_name: string
-      pet: Selectable<Pet>
+      name: string
+      person: {
+        id: number
+        first_name: string
+        last_name: string | null
+        age: number
+        gender: 'male' | 'female' | 'other'
+        marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+        modified_at: string
+        deleted_at: string | null
+      }
     }[]
   >(r1)
 }
