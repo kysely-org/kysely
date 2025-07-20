@@ -55,7 +55,6 @@ import {
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
-import { ParensNode } from '../operation-node/parens-node.js'
 
 /**
  * This builder can be used to create a `alter table` query.

@@ -39,7 +39,6 @@ import {
   CheckConstraintBuilder,
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
-import { ParensNode } from '../operation-node/parens-node.js'
 
 /**
  * This builder can be used to create a `create table` query.
