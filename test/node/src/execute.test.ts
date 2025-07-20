@@ -16,7 +16,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: execute`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: execute`, () => {
     let ctx: TestContext
 
     before(async function () {
