@@ -12,7 +12,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: raw queries`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: raw queries`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -42,7 +44,11 @@ for (const dialect of DIALECTS) {
 
       expect(result.insertId).to.equal(undefined)
       expect(result.numAffectedRows).to.equal(
-        dialect === 'mssql' ? 2n : undefined,
+        {
+          [variant]: undefined,
+          mssql: 2n,
+          pglite: 0n,
+        }[variant],
       )
       expect(result.rows).to.eql([
         { first_name: 'Arnold' },
@@ -73,7 +79,7 @@ for (const dialect of DIALECTS) {
       expect(result.rows).to.eql([])
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should run a raw insert query', async () => {
         const firstName = 'New'
         const lastName = 'Personsson'
@@ -91,7 +97,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should run a raw insert query', async () => {
         const firstName = 'New'
         const lastName = 'Personsson'

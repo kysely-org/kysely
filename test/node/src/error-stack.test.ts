@@ -10,7 +10,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: error stack`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: error stack`, () => {
     let ctx: TestContext
 
     before(async function () {
