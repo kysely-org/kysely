@@ -19,7 +19,9 @@ import {
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: aggregate functions`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: aggregate functions`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -660,7 +662,7 @@ for (const dialect of DIALECTS) {
           await query.execute()
         })
 
-        if (dialect === 'postgres' || dialect === 'sqlite') {
+        if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
           it(`should execute a query with ${funcName}(column) filter(where ...) in select clause`, async () => {
             const query = ctx.db
               .selectFrom('person')
@@ -909,7 +911,7 @@ for (const dialect of DIALECTS) {
             await query.execute()
           })
 
-          if (dialect === 'postgres') {
+          if (sqlSpec === 'postgres') {
             it(`should execute a query with ${funcName}(table.*) in select clause`, async () => {
               const query = ctx.db
                 .selectFrom('person')
@@ -986,7 +988,7 @@ for (const dialect of DIALECTS) {
             await query.execute()
           })
 
-          if (dialect === 'postgres' || dialect === 'sqlite') {
+          if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
             it(`should execute a query with ${funcName}(*) filter(where ...) in select clause`, async () => {
               const query = ctx.db
                 .selectFrom('person')
@@ -1035,29 +1037,29 @@ for (const dialect of DIALECTS) {
     it('should execute "dynamic" aggregate functions', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .$if(dialect === 'mssql', (qb) => qb.groupBy('person.first_name'))
+        .$if(sqlSpec === 'mssql', (qb) => qb.groupBy('person.first_name'))
         .select([
           ctx.db.fn
             .agg('rank')
-            .over((ob) => (dialect === 'mssql' ? ob.orderBy('first_name') : ob))
+            .over((ob) => (sqlSpec === 'mssql' ? ob.orderBy('first_name') : ob))
             .as('rank'),
           (eb) =>
             eb.fn
               .agg('rank')
               .over((ob) =>
-                dialect === 'mssql' ? ob.orderBy('first_name') : ob,
+                sqlSpec === 'mssql' ? ob.orderBy('first_name') : ob,
               )
               .as('another_rank'),
         ])
-        .$if(dialect === 'postgres' || dialect === 'mssql', (qb) =>
+        .$if(sqlSpec === 'postgres' || sqlSpec === 'mssql', (qb) =>
           qb.select((eb) =>
             eb.fn
               .agg('string_agg', ['first_name', sql.lit(',')])
-              .$call((eb) => (dialect === 'mssql' ? eb : eb.distinct()))
+              .$call((eb) => (sqlSpec === 'mssql' ? eb : eb.distinct()))
               .as('first_names'),
           ),
         )
-        .$if(dialect === 'mysql' || dialect === 'sqlite', (qb) =>
+        .$if(sqlSpec === 'mysql' || sqlSpec === 'sqlite', (qb) =>
           qb.select((eb) =>
             eb.fn
               .agg('group_concat', ['first_name'])
@@ -1111,11 +1113,11 @@ for (const dialect of DIALECTS) {
 
     describe('should execute order-sensitive aggregate functions', () => {
       if (
-        dialect === 'postgres' ||
-        dialect === 'mysql' ||
-        dialect === 'sqlite'
+        sqlSpec === 'postgres' ||
+        sqlSpec === 'mysql' ||
+        sqlSpec === 'sqlite'
       ) {
-        const isMySql = dialect === 'mysql'
+        const isMySql = sqlSpec === 'mysql'
         const funcName = isMySql ? 'group_concat' : 'string_agg'
         const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
           'first_name',
@@ -1163,13 +1165,13 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         it(`should execute a query with within group (order by column) in select clause`, async () => {
           const query = ctx.db.selectFrom('toy').select((eb) =>
             eb.fn
               .agg('percentile_cont', [sql.lit(0.5)])
               .withinGroupOrderBy('toy.price')
-              .$call((ab) => (dialect === 'mssql' ? ab.over() : ab))
+              .$call((ab) => (sqlSpec === 'mssql' ? ab.over() : ab))
               .as('median_price'),
           )
 
