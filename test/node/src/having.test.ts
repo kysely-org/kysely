@@ -12,7 +12,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: having`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: having`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -112,7 +114,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
+      if (sqlSpec === 'mssql' || sqlSpec === 'sqlite' || variant === 'pglite') {
         expect(result).to.containSubset([
           { first_name: 'Jennifer', num_pets: 2 },
           { first_name: 'Arnold', num_pets: 2 },
@@ -181,7 +183,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
+      if (sqlSpec === 'mssql' || sqlSpec === 'sqlite' || variant === 'pglite') {
         expect(result).to.containSubset([{ num_pets: 2 }, { num_pets: 2 }])
       } else {
         expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])

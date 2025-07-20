@@ -10,7 +10,6 @@ import {
   Migrator,
   NO_MIGRATIONS,
   MigratorProps,
-  type QueryExecutor,
   type Kysely,
 } from '../../../'
 
@@ -30,7 +29,9 @@ const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
 const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: migration`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: migration`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -1018,7 +1019,7 @@ for (const dialect of DIALECTS) {
     }
 
     async function deleteMigrationTables(): Promise<void> {
-      if (dialect !== 'sqlite') {
+      if (sqlSpec !== 'sqlite') {
         await ctx.db.schema
           .withSchema(CUSTOM_MIGRATION_SCHEMA)
           .dropTable(CUSTOM_MIGRATION_TABLE)

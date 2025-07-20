@@ -18,7 +18,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: raw sql`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: raw sql`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -157,14 +159,14 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('sql.id should separate multiple arguments by dots', async () => {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
           .where(
             sql<boolean>`${sql.id(
-              dialect === 'postgres' ? 'public' : 'dbo',
+              sqlSpec === 'postgres' ? 'public' : 'dbo',
               'person',
               'first_name',
             )} between ${'A'} and ${'B'}`,
@@ -215,14 +217,14 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('sql.ref should support schemas and table names', async () => {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
           .where(
             sql<boolean>`${sql.ref(
-              `${dialect === 'postgres' ? 'public' : 'dbo'}.person.first_name`,
+              `${sqlSpec === 'postgres' ? 'public' : 'dbo'}.person.first_name`,
             )} between ${'A'} and ${'B'}`,
           )
 
@@ -270,12 +272,12 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('sql.table should support schemas', async () => {
         const query = ctx.db
           .selectFrom(
             sql`${sql.table(
-              `${dialect === 'postgres' ? 'public' : 'dbo'}.person`,
+              `${sqlSpec === 'postgres' ? 'public' : 'dbo'}.person`,
             )}`.as('person'),
           )
           .selectAll()
@@ -327,7 +329,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('second argument of sql.join should specify the separator', async () => {
         const names = ['Jennifer', 'Arnold', 'Sylvester']
 
@@ -352,7 +354,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('CompiledQuery should support raw query with parameters', async () => {
         const query = CompiledQuery.raw(
           'select * from "person" where "public"."person"."first_name" between $1 and $2',

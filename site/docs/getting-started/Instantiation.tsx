@@ -208,5 +208,16 @@ const dialect = new ${dialectClassName}({
 })`
   }
 
+  if (dialect === 'pglite') {
+    const driverImportName = 'PGlite'
+
+    return `import { ${driverImportName} } from '${driverNPMPackageName}'
+import { Kysely, ${dialectClassName} } from 'kysely'
+
+const dialect = new ${dialectClassName}({
+  pglite: new ${driverImportName}(),
+})`
+  }
+
   throw new Error(`Unsupported dialect: ${dialect}`)
 }
