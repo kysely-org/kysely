@@ -791,7 +791,7 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql(['migration2', 'migration4'])
       })
 
-      it('should not execute in transaction if disableTransactions is true', async () => {
+      it('should not execute in transaction if disableTransactions is true on the `Migrator` instance', async () => {
         const [migrator, executedUpMethods] = createMigrations(['migration1'], {
           disableTransactions: true,
         })
@@ -807,12 +807,52 @@ for (const dialect of DIALECTS) {
         expect(transactionSpy.called).to.be.false
       })
 
-      it('should execute in transaction if disableTransactions is false and transactionDdl supported', async () => {
+      it('should not execute in transaction if disableTransactions is true when calling `migrateUp`', async () => {
+        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
+          disableTransactions: false,
+        })
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: true,
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should execute in transaction if disableTransactions is false on the `Migrator` instance and transactionDdl supported', async () => {
         const [migrator, executedUpMethods] = createMigrations(['migration1'], {
           disableTransactions: false,
         })
 
         const { results } = await migrator.migrateUp()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+          expect(transactionSpy.called).to.be.true
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
+      })
+
+      it('should execute in transaction if disableTransactions is false when calling `migrateUp` and transactionDdl supported', async () => {
+        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
+          disableTransactions: true,
+        })
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: false,
+        })
 
         expect(results).to.eql([
           { migrationName: 'migration1', direction: 'Up', status: 'Success' },
