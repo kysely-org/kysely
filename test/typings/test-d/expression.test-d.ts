@@ -1,18 +1,20 @@
 import {
   expectAssignable,
-  expectNotAssignable,
   expectError,
+  expectNotAssignable,
   expectType,
 } from 'tsd'
 import {
+  ColumnType,
   Expression,
   ExpressionBuilder,
+  Generated,
   Kysely,
   SqlBool,
   expressionBuilder,
 } from '..'
-import { Database } from '../shared'
 import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
+import { Database } from '../shared'
 
 function testExpression(db: Kysely<Database>) {
   const e1: Expression<number> = undefined!
@@ -200,6 +202,30 @@ async function textExpressionBuilderAny(
 
   // Not an array
   expectError(eb(eb.val('Jen'), '=', eb.fn.any('id')))
+}
+
+async function testExpressionBuilderAnyWithColumnType(
+  eb: ExpressionBuilder<
+    Database & {
+      person_with_column_type: {
+        id: Generated<number>
+        ids: ColumnType<number[] | null>
+        names: ColumnType<string[], never, string[]>
+        regular_array: number[]
+      }
+    },
+    'person_with_column_type'
+  >,
+) {
+  expectAssignable<Expression<number>>(eb.fn.any('ids'))
+  expectAssignable<Expression<string>>(eb.fn.any('names'))
+  expectAssignable<Expression<number>>(eb.fn.any('regular_array'))
+
+  // Should work in where clauses
+  expectAssignable<Expression<SqlBool>>(eb(eb.val(42), '=', eb.fn.any('ids')))
+  expectAssignable<Expression<SqlBool>>(
+    eb(eb.val('test'), '=', eb.fn.any('names')),
+  )
 }
 
 function testExpressionBuilderTuple(db: Kysely<Database>) {
