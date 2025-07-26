@@ -1,6 +1,6 @@
 import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
-import { isPlainObject, isString } from '../../util/object-utils.js'
+import { freeze, isPlainObject, isString } from '../../util/object-utils.js'
 import { UnknownRow } from '../../util/type-utils.js'
 import {
   KyselyPlugin,
@@ -9,6 +9,13 @@ import {
 } from '../kysely-plugin.js'
 
 export interface ParseJSONResultsPluginOptions {
+  /**
+   * A function that returns `true` if the given string is a JSON string.
+   *
+   * Defaults to a function that checks if the string starts and ends with `{}` or `[]`.
+   */
+  isJSON?: (value: string) => boolean
+
   /**
    * When `'in-place'`, arrays' and objects' values are parsed in-place. This is
    * the most time and space efficient option.
@@ -20,9 +27,26 @@ export interface ParseJSONResultsPluginOptions {
    * Defaults to `'in-place'`.
    */
   objectStrategy?: ObjectStrategy
+
+  /**
+   * The reviver function that will be passed to `JSON.parse`.
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#the_reviver_parameter | The reviver parameter}.
+   */
+  reviver?: (key: string, value: unknown, context?: any) => unknown
+
+  /**
+   * An array of keys that should not be parsed inside an object, even if they contain JSON strings.
+   */
+  skipKeys?: string[]
 }
 
 type ObjectStrategy = 'in-place' | 'create'
+
+type ProcessedParseJSONResultsPluginOptions = {
+  readonly [K in keyof ParseJSONResultsPluginOptions]-?: K extends 'skipKeys'
+    ? Record<string, true>
+    : ParseJSONResultsPluginOptions[K]
+}
 
 /**
  * Parses JSON strings in query results into JSON objects.
@@ -69,10 +93,21 @@ type ObjectStrategy = 'in-place' | 'create'
  * ```
  */
 export class ParseJSONResultsPlugin implements KyselyPlugin {
-  readonly #objectStrategy: ObjectStrategy
+  readonly #options: ProcessedParseJSONResultsPluginOptions
 
   constructor(readonly opt: ParseJSONResultsPluginOptions = {}) {
-    this.#objectStrategy = opt.objectStrategy || 'in-place'
+    this.#options = freeze({
+      isJSON: opt.isJSON || maybeJson,
+      objectStrategy: opt.objectStrategy || 'in-place',
+      reviver: opt.reviver || ((_, value) => value),
+      skipKeys: (opt.skipKeys || []).reduce(
+        (acc, key) => {
+          acc[key] = true
+          return acc
+        },
+        {} as Record<string, true>,
+      ),
+    })
   }
 
   // noop
@@ -85,41 +120,58 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
   ): Promise<QueryResult<UnknownRow>> {
     return {
       ...args.result,
-      rows: parseArray(args.result.rows, this.#objectStrategy),
+      rows: parseArray(args.result.rows, this.#options),
     }
   }
 }
 
-function parseArray<T>(arr: T[], objectStrategy: ObjectStrategy): T[] {
-  const target = objectStrategy === 'create' ? new Array(arr.length) : arr
+function parseArray<T>(
+  arr: T[],
+  options: ProcessedParseJSONResultsPluginOptions,
+): T[] {
+  const target =
+    options.objectStrategy === 'create' ? new Array(arr.length) : arr
 
   for (let i = 0; i < arr.length; ++i) {
-    target[i] = parse(arr[i], objectStrategy) as T
+    target[i] = parse(arr[i], options) as T
   }
 
   return target
 }
 
-function parse(obj: unknown, objectStrategy: ObjectStrategy): unknown {
-  if (isString(obj)) {
-    return parseString(obj)
+function parse(
+  value: unknown,
+  options: ProcessedParseJSONResultsPluginOptions,
+): unknown {
+  if (isString(value)) {
+    return parseString(value, options)
   }
 
-  if (Array.isArray(obj)) {
-    return parseArray(obj, objectStrategy)
+  if (Array.isArray(value)) {
+    return parseArray(value, options)
   }
 
-  if (isPlainObject(obj)) {
-    return parseObject(obj, objectStrategy)
+  if (isPlainObject(value)) {
+    return parseObject(value, options)
   }
 
-  return obj
+  return value
 }
 
-function parseString(str: string): unknown {
-  if (maybeJson(str)) {
+function parseString(
+  str: string,
+  options: ProcessedParseJSONResultsPluginOptions,
+): unknown {
+  if (options.isJSON(str)) {
     try {
-      return parse(JSON.parse(str), 'in-place')
+      return parse(
+        JSON.parse(str, (...args) => {
+          // prevent prototype pollution
+          if (args[0] === '__proto__') return
+          return options.reviver(...args)
+        }),
+        { ...options, objectStrategy: 'in-place' },
+      )
     } catch (err) {
       // this catch block is intentionally empty.
     }
@@ -129,17 +181,22 @@ function parseString(str: string): unknown {
 }
 
 function maybeJson(value: string): boolean {
-  return value.match(/^[\[\{]/) != null
+  return (
+    (value.startsWith('{') && value.endsWith('}')) ||
+    (value.startsWith('[') && value.endsWith(']'))
+  )
 }
 
 function parseObject(
   obj: Record<string, unknown>,
-  objectStrategy: ObjectStrategy,
+  options: ProcessedParseJSONResultsPluginOptions,
 ): Record<string, unknown> {
+  const { objectStrategy, skipKeys } = options
+
   const target = objectStrategy === 'create' ? {} : obj
 
   for (const key in obj) {
-    target[key] = parse(obj[key], objectStrategy)
+    target[key] = skipKeys[key] ? obj[key] : parse(obj[key], options)
   }
 
   return target
