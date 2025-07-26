@@ -1,4 +1,5 @@
 import {
+  ControlConnectionProvider,
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
@@ -39,7 +40,10 @@ export class MysqlDriver implements Driver {
     let connection = this.#connections.get(rawConnection)
 
     if (!connection) {
-      connection = new MysqlConnection(rawConnection)
+      connection = new MysqlConnection(
+        rawConnection,
+        this.#config.createConnection,
+      )
       this.#connections.set(rawConnection, connection)
 
       // The driver must take care of calling `onCreateConnection` when a new
@@ -55,18 +59,6 @@ export class MysqlDriver implements Driver {
     }
 
     return connection
-  }
-
-  async #acquireConnection(): Promise<MysqlPoolConnection> {
-    return new Promise((resolve, reject) => {
-      this.#pool!.getConnection(async (err, rawConnection) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(rawConnection)
-        }
-      })
-    })
   }
 
   async beginTransaction(
@@ -155,6 +147,18 @@ export class MysqlDriver implements Driver {
       })
     })
   }
+
+  async #acquireConnection(): Promise<MysqlPoolConnection> {
+    return new Promise((resolve, reject) => {
+      this.#pool!.getConnection(async (err, rawConnection) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(rawConnection)
+        }
+      })
+    })
+  }
 }
 
 function isOkPacket(obj: unknown): obj is MysqlOkPacket {
@@ -162,48 +166,129 @@ function isOkPacket(obj: unknown): obj is MysqlOkPacket {
 }
 
 class MysqlConnection implements DatabaseConnection {
+  readonly #createConnection: MysqlDialectConfig['createConnection']
   readonly #rawConnection: MysqlPoolConnection
 
-  constructor(rawConnection: MysqlPoolConnection) {
+  constructor(
+    rawConnection: MysqlPoolConnection,
+    createConnection: MysqlDialectConfig['createConnection'],
+  ) {
+    this.#createConnection = createConnection
     this.#rawConnection = rawConnection
+  }
+
+  async cancelQuery(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    try {
+      // this removes the connection from the pool.
+      // this is done to avoid picking it up after the `kill` command next, which
+      // would cause an error when attempting to query.
+      this.#rawConnection.destroy()
+    } catch {
+      // noop
+    }
+
+    const { config, threadId } = this.#rawConnection
+
+    // this kills the query and the connection database-side.
+    // we're not using `kill query <connection_id>` here because it doesn't
+    // guarantee that the query is killed immediately. we saw that in tests,
+    // the query can still run for a while after - including registering writes.
+    const cancelQuery = `kill connection ${threadId}`
+
+    if (this.#createConnection && config) {
+      const controlConnection = await this.#createConnection({ ...config })
+
+      return await new Promise((resolve, reject) => {
+        controlConnection.connect((connectError) => {
+          if (connectError) {
+            return reject(connectError)
+          }
+
+          controlConnection.query(cancelQuery, [], (error) => {
+            controlConnection.destroy()
+
+            if (error) {
+              return reject(error)
+            }
+
+            resolve()
+          })
+        })
+      })
+    }
+
+    await controlConnectionProvider(async (controlConnection) => {
+      await controlConnection.executeQuery(CompiledQuery.raw(cancelQuery, []))
+    })
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
       const result = await this.#executeQuery(compiledQuery)
 
-      if (isOkPacket(result)) {
-        const { insertId, affectedRows, changedRows } = result
-
+      if (!isOkPacket(result)) {
         return {
-          insertId:
-            insertId !== undefined &&
-            insertId !== null &&
-            insertId.toString() !== '0'
-              ? BigInt(insertId)
-              : undefined,
-          numAffectedRows:
-            affectedRows !== undefined && affectedRows !== null
-              ? BigInt(affectedRows)
-              : undefined,
-          numChangedRows:
-            changedRows !== undefined && changedRows !== null
-              ? BigInt(changedRows)
-              : undefined,
-          rows: [],
-        }
-      } else if (Array.isArray(result)) {
-        return {
-          rows: result as O[],
+          rows: (Array.isArray(result) ? result : []) as never,
         }
       }
 
+      const { insertId, affectedRows, changedRows } = result
+
       return {
+        insertId:
+          insertId !== undefined &&
+          insertId !== null &&
+          insertId.toString() !== '0'
+            ? BigInt(insertId)
+            : undefined,
+        numAffectedRows:
+          affectedRows !== undefined && affectedRows !== null
+            ? BigInt(affectedRows)
+            : undefined,
+        numChangedRows:
+          changedRows !== undefined && changedRows !== null
+            ? BigInt(changedRows)
+            : undefined,
         rows: [],
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
     }
+  }
+
+  async *streamQuery<O>(
+    compiledQuery: CompiledQuery,
+    _chunkSize: number,
+  ): AsyncIterableIterator<QueryResult<O>> {
+    const stream = this.#rawConnection
+      .query(compiledQuery.sql, compiledQuery.parameters)
+      .stream<O>({ objectMode: true })
+
+    try {
+      for await (const row of stream) {
+        yield {
+          rows: [row],
+        }
+      }
+    } catch (error) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'ERR_STREAM_PREMATURE_CLOSE'
+      ) {
+        // Most likely because of https://github.com/mysqljs/mysql/blob/master/lib/protocol/sequences/Query.js#L220
+        return
+      }
+
+      throw error
+    }
+  }
+
+  [PRIVATE_RELEASE_METHOD](): void {
+    this.#rawConnection.release()
   }
 
   #executeQuery(compiledQuery: CompiledQuery): Promise<MysqlQueryResult> {
@@ -220,41 +305,5 @@ class MysqlConnection implements DatabaseConnection {
         },
       )
     })
-  }
-
-  async *streamQuery<O>(
-    compiledQuery: CompiledQuery,
-    _chunkSize: number,
-  ): AsyncIterableIterator<QueryResult<O>> {
-    const stream = this.#rawConnection
-      .query(compiledQuery.sql, compiledQuery.parameters)
-      .stream<O>({
-        objectMode: true,
-      })
-
-    try {
-      for await (const row of stream) {
-        yield {
-          rows: [row],
-        }
-      }
-    } catch (ex) {
-      if (
-        ex &&
-        typeof ex === 'object' &&
-        'code' in ex &&
-        // @ts-ignore
-        ex.code === 'ERR_STREAM_PREMATURE_CLOSE'
-      ) {
-        // Most likely because of https://github.com/mysqljs/mysql/blob/master/lib/protocol/sequences/Query.js#L220
-        return
-      }
-
-      throw ex
-    }
-  }
-
-  [PRIVATE_RELEASE_METHOD](): void {
-    this.#rawConnection.release()
   }
 }
