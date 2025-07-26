@@ -3,6 +3,7 @@ import type {
   Generated,
   GeneratedAlways,
   Insertable,
+  Json,
   Kysely,
   Selectable,
   SqlBool,
@@ -13,6 +14,7 @@ export interface Database {
   audit: AuditTable
   person: PersonTable
   person_backup: PersonTable
+  person_metadata: PersonMetadataTable
   pet: PetTable
   toy: ToyTable
   wine: WineTable
@@ -45,6 +47,14 @@ interface PersonTable {
   } | null
   updated_at: ColumnType<Date | null, string | null | undefined, string | null>
   marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+}
+
+interface PersonMetadataTable {
+  id: Generated<number>
+  personId: number
+  experience: Json<{ title: string; company: string }[]>
+  preferences: Json<{ locale: string; timezone: string }> | null
+  profile: Json<{ email_verified: boolean }> | null
 }
 
 interface PetTable {
