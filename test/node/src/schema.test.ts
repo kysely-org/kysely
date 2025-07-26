@@ -517,6 +517,33 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
+      if (sqlSpec === 'mysql') {
+        it('should create a table with a unique constraints using expressions', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'varchar(255)')
+            .addColumn('b', 'varchar(255)')
+            .addColumn('c', 'varchar(255)')
+            .addUniqueConstraint('a_b_unique', [
+              sql`(lower(a))`,
+              sql`(lower(b))`,
+            ])
+            .addUniqueConstraint('a_c_unique', [sql`(lower(a))`, 'c'])
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique ((lower(a)), (lower(b))), constraint `a_c_unique` unique ((lower(a)), `c`))',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
       if (sqlSpec === 'postgres') {
         it('should create a table with a unique constraint and "nulls not distinct" option', async () => {
           const builder = ctx.db.schema
@@ -3364,6 +3391,29 @@ for (const dialect of DIALECTS) {
               await builder.execute()
             })
           }
+        })
+      }
+
+      if (sqlSpec === 'mysql') {
+        it('should add a unique constraint using expressions', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addUniqueConstraint('unique_constraint', [
+              sql`(lower(varchar_col))`,
+              'integer_col',
+            ])
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: 'alter table `test` add constraint `unique_constraint` unique ((lower(varchar_col)), `integer_col`)',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
         })
       }
 
