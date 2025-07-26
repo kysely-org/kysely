@@ -527,7 +527,6 @@ for (const dialect of DIALECTS) {
               sql`(lower(b))`,
             ])
             .addUniqueConstraint('a_c_unique', [sql`(lower(a))`, 'c'])
-          console.log('foo', builder.compile())
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
