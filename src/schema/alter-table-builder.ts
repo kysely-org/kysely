@@ -188,7 +188,6 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
               ? ColumnNode.create(column)
               : parseExpression(column),
           ),
-
           constraintName,
         ),
       ),
