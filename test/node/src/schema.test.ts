@@ -517,7 +517,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect == 'mysql') {
+      if (sqlSpec === 'mysql') {
         it('should create a table with a unique constraints using expressions', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -544,7 +544,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should create a table with a unique constraint and "nulls not distinct" option', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -3394,7 +3394,7 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (dialect == 'mysql') {
+      if (sqlSpec === 'mysql') {
         it('should add a unique constraint using expressions', async () => {
           const builder = ctx.db.schema
             .alterTable('test')
