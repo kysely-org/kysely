@@ -655,7 +655,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   any<RE extends StringReference<DB, TB>>(
     expr: RE,
   ): Exclude<
-    ExtractTypeFromStringReference<DB, TB, RE>,
+    ExtractTypeFromReferenceExpression<DB, TB, RE>,
     null
   > extends ReadonlyArray<infer I>
     ? ExpressionWrapper<DB, TB, I>
