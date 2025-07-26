@@ -9,7 +9,7 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import {
@@ -30,7 +30,10 @@ import {
   UniqueConstraintNodeBuilder,
   UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
-import { parseExpression } from '../parser/expression-parser.js'
+import {
+  ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 import {
   PrimaryKeyConstraintBuilder,
   PrimaryKeyConstraintBuilderCallback,
@@ -243,15 +246,39 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   )
    *   .execute()
    * ```
+   *
+   * In dialects such as MySQL you create unique constraints on expressions as follows:
+   *
+   * ```ts
+   *
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addUniqueConstraint(
+   *     'first_name_last_name_unique',
+   *     [sql`(lower('first_name'))`, 'last_name']
+   *   )
+   *   .execute()
+   * ```
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: C[],
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName),
+        UniqueConstraintNode.create(
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+          constraintName,
+        ),
       ),
     )
 
