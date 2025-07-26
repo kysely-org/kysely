@@ -55,6 +55,10 @@ import {
   type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import {
+  ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -173,12 +177,19 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: string[],
+    columns: (string | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): AlterTableExecutor {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName),
+        UniqueConstraintNode.create(
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+          constraintName,
+        ),
       ),
     )
 
