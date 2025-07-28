@@ -60,7 +60,7 @@
     "test:browser:build": "rm -rf test/browser/bundle.js && esbuild test/browser/main.ts --bundle --outfile=test/browser/bundle.js",
     "test:browser": "pnpm build && pnpm test:browser:build && node test/browser/test.js",
     "test:bun": "pnpm build && bun link && cd test/bun && bun install && bun run test",
-    "test:cloudflare-workers": "pnpm build && cd test/cloudflare-workers && pnpm i && pnpm test",
+    "test:cloudflare-workers": "pnpm build && pnpm -r test --filter kysely-cloudflare-workers-test",
     "test:deno": "deno run --allow-env --allow-read --allow-net test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net test/deno/cdn.test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",

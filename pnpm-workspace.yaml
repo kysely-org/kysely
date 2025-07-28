@@ -1,6 +1,12 @@
 packages:
 - './test/cloudflare-workers'
 
+# `postinstall` ignore list
+ignoredBuiltDependencies:
+- sharp # wrangler dependency
+
+# `postinstall` allow list
 onlyBuiltDependencies:
 - better-sqlite3
 - esbuild
+- workerd # wrangler dependency
