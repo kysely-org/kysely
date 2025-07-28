@@ -16,7 +16,6 @@ on:
       - '.nvmrc'
       - '.prettierignore'
       - '.prettierrc.json'
-      - '.renovaterc.json'
       - '*.md'
       - 'deno.check*'
       - 'docker-compose.yml'
