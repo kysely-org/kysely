@@ -102,7 +102,6 @@
     "better-sqlite3": "^11.9.1",
     "chai": "^5.2.0",
     "chai-as-promised": "^8.0.1",
-    "chai-subset": "^1.6.0",
     "esbuild": "^0.25.3",
     "lodash": "^4.17.21",
     "mocha": "^11.2.2",
