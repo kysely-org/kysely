@@ -64,8 +64,36 @@ export type Generated<S> = ColumnType<S, S | undefined, S>
 export type GeneratedAlways<S> = ColumnType<S, never, never>
 
 /**
+ * A shortcut for defining type-safe JSON columns. Inserts/updates require passing
+ * values that are wrapped with `eb.jval` or `sql.jval` instead of `JSON.stringify`.
+ */
+export type Json<
+  SelectType extends object | null,
+  InsertType extends Serialized<SelectType> | Extract<null, SelectType> =
+    | Serialized<SelectType>
+    | Extract<null, SelectType>,
+  UpdateType extends Serialized<SelectType> | Extract<null, SelectType> =
+    | Serialized<SelectType>
+    | Extract<null, SelectType>,
+> = ColumnType<SelectType, InsertType, UpdateType>
+
+/**
+ * A symbol that is used to brand serialized objects/arrays.
+ * @internal
+ */
+declare const SerializedBrand: unique symbol
+
+/**
+ * A type that is used to brand serialized objects/arrays.
+ */
+export type Serialized<O extends object | null> = O & {
+  readonly [SerializedBrand]: '⚠️ When you insert into or update columns of type `Json` (or similar), you should wrap your JSON value with `eb.jval` or `sql.jval`, instead of `JSON.stringify`. ⚠️'
+}
+
+/**
  * A shortcut for defining JSON columns, which are by default inserted/updated
  * as stringified JSON strings.
+ * @deprecated Use {@link Json} instead.
  */
 export type JSONColumnType<
   SelectType extends object | null,
