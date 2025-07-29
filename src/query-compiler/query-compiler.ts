@@ -1,4 +1,5 @@
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
+import { AlterTypeNode } from '../operation-node/alter-type-node.js'
 import { CreateIndexNode } from '../operation-node/create-index-node.js'
 import { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import { CreateTableNode } from '../operation-node/create-table-node.js'
@@ -31,6 +32,7 @@ export type RootOperationNode =
   | RawNode
   | CreateTypeNode
   | DropTypeNode
+  | AlterTypeNode
   | MergeQueryNode
 
 /**
