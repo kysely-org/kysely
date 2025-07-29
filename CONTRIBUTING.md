@@ -144,9 +144,17 @@ for all cases, are best left for consumers to implement.
 
 1. clone your fork.
 
-1. install node.js (preferably the latest even-numbered version).
+1. install Node.js (preferably the latest even-numbered version). we recommend using [`fnm`](https://github.com/Schniz/fnm) for managing Node.js versions.
 
-1. run `npm i` in your terminal to install dependencies.
+1. install `corepack` by running `npm i -g corepack` in your terminal.
+
+1. run `corepack enable` in your terminal.
+
+1. `cd` into the repository.
+
+1. run `corepack install` in your terminal to install the exact package manager and version used in this project.
+
+1. run `pnpm i` in your terminal to install dependencies. if `pnpm` tells you it ignored a `postinstall` script from some package - tells us immediately via issue or Discord - this is a security concern!
 
 1. create a branch (we don't care about naming).
 
@@ -161,8 +169,8 @@ PR's description. E.g. `closes #123` will link the PR to issue/pull request #123
 
 1. write typings tests @ [/test/typings](https://github.com/kysely-org/kysely/tree/master/test/typings)
 
-1. install docker.
+1. install Docker.
 
-1. run `docker compose up` in your terminal to spin up database instances.
+1. run `docker compose up -d` in your terminal to spin up database instances.
 
-1. run `npm test` in another terminal to run tests.
+1. run `pnpm test` in your terminal.

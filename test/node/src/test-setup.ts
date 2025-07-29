@@ -1,6 +1,5 @@
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import * as chaiSubset from 'chai-subset'
 import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
@@ -9,7 +8,6 @@ import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
 import { PoolOptions } from 'mysql2'
 
-chai.use(chaiSubset)
 chai.use(chaiAsPromised)
 
 import {

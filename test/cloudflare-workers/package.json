@@ -5,9 +5,10 @@
   "scripts": {
     "test": "node --experimental-strip-types test.ts"
   },
+  "dependencies": {
+    "hono": "^4.8.9" 
+  },
   "devDependencies": {
-    "hono": "^4.5.8",
-    "tsx": "^4.18.0",
-    "wrangler": "^3.72.2"
+    "wrangler": "^4.26.0"
   }
 }

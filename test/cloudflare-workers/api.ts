@@ -33,11 +33,9 @@ app.get('/', async (c) => {
     throw new Error('Unexpected SQL')
   }
 
-  const {
-    rows: [row],
-  } = await sql`select 1 as ok`.execute(db)
+  await sql`select 1 as ok`.execute(db)
 
-  return c.json(row as object)
+  return c.body(null)
 })
 
 export default app

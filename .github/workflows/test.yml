@@ -10,10 +10,10 @@ on:
       - 'docs/**'
       - 'example/**'
       - 'site/**'
-      - '.npmignore'
+      - '.node-version'
+      - '.nvmrc'
       - '.prettierignore'
-      - '.prettierrc'
-      - '.renovaterc.json'
+      - '.prettierrc.json'
       - '*.md'
       - 'LICENSE'
   pull_request:
@@ -23,10 +23,10 @@ on:
       - 'docs/**'
       - 'example/**'
       - 'site/**'
-      - '.npmignore'
+      - '.node-version'
+      - '.nvmrc'
       - '.prettierignore'
-      - '.prettierrc'
-      - '.renovaterc.json'
+      - '.prettierrc.json'
       - '*.md'
       - 'LICENSE'
   workflow_dispatch:
@@ -46,24 +46,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run docker compose
         run: docker compose up -d
 
       - name: Run node tests
-        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}npm test
+        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
-        run: npm run test:esbuild
+        run: pnpm test:esbuild
 
   deno:
     name: Deno
@@ -78,11 +81,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Use Deno ${{ matrix.deno-version }}
         uses: denoland/setup-deno@v2
@@ -90,16 +96,16 @@ jobs:
           deno-version: ${{ matrix.deno-version }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run docker compose
         run: docker compose up -d
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Run deno tests
-        run: npm run test:deno
+        run: pnpm test:deno
 
   bun:
     name: Bun
@@ -113,14 +119,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Use Bun ${{ matrix.bun-version }}
         uses: oven-sh/setup-bun@v2
@@ -131,7 +140,7 @@ jobs:
         run: docker compose up -d
 
       - name: Run bun tests
-        run: npm run test:bun
+        run: pnpm test:bun
 
   browser:
     name: Browser
@@ -140,20 +149,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Install playwright
-        run: npx playwright install chromium
+        run: pnpx playwright install chromium
 
       - name: Run browser tests
-        run: npm run test:browser
+        run: pnpm test:browser
 
   cloudflare-workers:
     name: Cloudflare Workers
@@ -162,20 +174,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run docker compose
         run: docker compose up -d
 
       - name: Run cloudflare workers test
-        run: npm run test:cloudflare-workers
+        run: pnpm test:cloudflare-workers
 
   older-typescript-version:
     name: Older TypeScript version
@@ -198,30 +213,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: 20.x
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run build with newer TypeScript
-        run: npm run build
+        run: pnpm build
 
       - run: |
           echo "TS_VERSION=${{ matrix.typescript-version }}" >> $GITHUB_ENV
           echo "TSD_VERSION=${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[env.TS_VERSION] }} >> $GITHUB_ENV"
 
       - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
-        run: npm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
+        run: pnpm i -w -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Exclude non-backward compatible tests
-        run: npx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
+        run: pnpx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
 
       - name: Run tests with older TypeScript version
-        run: npm run test:typings && npm run test:node:build
+        run: pnpm test:typings && pnpm test:node:build
 
   jsdocs:
     name: JSDocs
@@ -230,11 +248,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Use Deno
         uses: denoland/setup-deno@v2
@@ -242,13 +263,13 @@ jobs:
           deno-version: 2.x
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Type-check JSDocs code blocks
-        run: npm run test:jsdocs
+        run: pnpm test:jsdocs
 
   typescript-benchmarks:
     name: TypeScript Benchmarks
@@ -257,17 +278,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run benchmarks
-        run: npm run bench:ts
+        run: pnpm bench:ts
 
   typescript-native:
     name: TypeScript Native
@@ -276,17 +300,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
+          cache: 'pnpm'
           node-version: lts/*
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci && npm install -D @typescript/native-preview
+        run: pnpm i && pnpm i -w -D @typescript/native-preview
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Run TypeScript Native tests
-        run: npx tsgo --project ./tsconfig.json && npx tsgo --project ./test/node/tsconfig.json
+        run: pnpm tsgo --project ./tsconfig.json && pnpm tsgo --project ./test/node/tsconfig.json

@@ -12,11 +12,13 @@ on:
       - 'example/**'
       - 'site/**'
       - 'test/**'
-      - '.npmignore'
+      - '.node-version'
+      - '.nvmrc'
       - '.prettierignore'
-      - '.prettierrc'
-      - '.renovaterc.json'
+      - '.prettierrc.json'
       - '*.md'
+      - 'deno.check*'
+      - 'docker-compose.yml'
       - 'LICENSE'
 
 jobs:
@@ -27,17 +29,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          cache: 'npm'
+          cache: 'pnpm'
           node-version: lts/*
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Release preview version
-        run: npx pkg-pr-new@0.0.50 publish --template './example'
+        run: pnpx pkg-pr-new@0.0.50 publish --template './example'
