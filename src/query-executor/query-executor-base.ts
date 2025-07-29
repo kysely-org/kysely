@@ -9,8 +9,10 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
-import { QueryExecutor } from './query-executor.js'
+import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
+import { AbortError, assertNotAborted } from '../util/abort.js'
+import { Deferred } from '../util/deferred.js'
 import { logOnce } from '../util/log-once.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
@@ -60,35 +62,186 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    return await this.provideConnection(async (connection) => {
-      const result = await connection.executeQuery(compiledQuery)
+  async executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: ExecuteQueryOptions,
+  ): Promise<QueryResult<R>> {
+    const { abortSignal } = options || {}
 
-      if ('numUpdatedOrDeletedRows' in result) {
-        logOnce(
-          'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
-        )
+    if (!abortSignal) {
+      return await this.provideConnection(async (connection) => {
+        const result = await connection.executeQuery(compiledQuery)
+
+        return await this.#transformResult<R>(result, compiledQuery.queryId)
+      })
+    }
+
+    assertNotAborted(abortSignal, 'aborted before query execution')
+
+    const { connection, release } = await provideControlledConnection(this)
+
+    if (!connection.cancelQuery) {
+      logOnce(
+        'this kysely dialect does not implement the `cancelQuery` method. this means, queries will not be cancelled on the database side when the `abortSignal` is triggered.',
+      )
+    }
+
+    const { promise: abortPromise, resolve } = new Deferred<void>()
+
+    const abortListener = () => {
+      resolve()
+      abortSignal?.removeEventListener('abort', abortListener)
+    }
+    abortSignal?.addEventListener('abort', abortListener)
+
+    try {
+      assertNotAborted(abortSignal, 'aborted before query execution')
+
+      const queryPromise = connection.executeQuery(compiledQuery, {
+        cancelable: true,
+      })
+
+      const result = await Promise.race([abortPromise, queryPromise])
+
+      // aborted.
+      if (!result) {
+        void Promise.allSettled([
+          queryPromise,
+          void connection.cancelQuery?.(this.provideConnection.bind(this)),
+        ]).catch(() => {
+          // noop
+        })
+
+        throw new AbortError('aborted during query execution')
       }
 
-      return await this.#transformResult(result, compiledQuery.queryId)
-    })
+      const transformPromise = this.#transformResult<R>(
+        result,
+        compiledQuery.queryId,
+      )
+
+      const transformedResult = await Promise.race([
+        abortPromise,
+        transformPromise,
+      ])
+
+      // aborted.
+      if (!transformedResult) {
+        transformPromise.catch(() => {
+          // noop
+        })
+
+        throw new AbortError('aborted during result transformation')
+      }
+
+      return transformedResult
+    } finally {
+      release()
+      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+    }
   }
 
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
+    const { abortSignal } = options || {}
+
+    if (!abortSignal) {
+      const { connection, release } = await provideControlledConnection(this)
+
+      try {
+        for await (const result of connection.streamQuery(
+          compiledQuery,
+          chunkSize,
+        )) {
+          yield await this.#transformResult<R>(result, compiledQuery.queryId)
+        }
+      } finally {
+        release()
+      }
+
+      return
+    }
+
+    assertNotAborted(abortSignal, 'aborted before connection acquisition')
+
     const { connection, release } = await provideControlledConnection(this)
 
+    const { promise: abortPromise, resolve } = new Deferred<void>()
+
+    const abortListener = () => {
+      resolve()
+      abortSignal.removeEventListener('abort', abortListener)
+    }
+    abortSignal.addEventListener('abort', abortListener)
+
+    // might have already abort before adding the listener.
+    if (abortSignal.aborted) {
+      abortListener()
+    }
+
+    let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
+
     try {
-      for await (const result of connection.streamQuery(
-        compiledQuery,
-        chunkSize,
-      )) {
-        yield await this.#transformResult(result, compiledQuery.queryId)
+      assertNotAborted(abortSignal, 'aborted before query streaming')
+
+      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
+        cancelable: true,
+      })
+
+      const { queryId } = compiledQuery
+      const controlConnectionProvider = this.provideConnection.bind(this)
+
+      while (true) {
+        assertNotAborted(abortSignal, 'aborted during query streaming')
+
+        const nextPromise = asyncIterator.next()
+
+        const result = await Promise.race([abortPromise, nextPromise])
+
+        // aborted.
+        if (!result) {
+          void Promise.allSettled([
+            nextPromise,
+            void connection.cancelQuery?.(controlConnectionProvider),
+          ]).catch(() => {
+            // noop
+          })
+
+          throw new AbortError('aborted during query streaming')
+        }
+
+        if (result.done) {
+          break
+        }
+
+        const transformPromise = this.#transformResult<R>(result.value, queryId)
+
+        const transformedResult = await Promise.race([
+          abortPromise,
+          transformPromise,
+        ])
+
+        // aborted.
+        if (!transformedResult) {
+          void Promise.allSettled([
+            transformPromise,
+            void connection.cancelQuery?.(controlConnectionProvider),
+          ]).catch(() => {
+            // noop
+          })
+
+          throw new AbortError('aborted during result transformation')
+        }
+
+        yield transformedResult
       }
     } finally {
       release()
+      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+      await asyncIterator?.return?.()
     }
   }
 

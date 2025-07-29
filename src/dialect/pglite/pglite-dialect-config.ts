@@ -36,14 +36,14 @@ export interface PGlite {
   query<T>(
     query: string,
     params?: any[],
-    options?: QueryOptions,
-  ): Promise<Results<T>>
+    options?: PGliteQueryOptions,
+  ): Promise<PGliteQueryResults<T>>
   ready: boolean
   transaction<T>(callback: (tx: PGliteTransaction) => Promise<T>): Promise<T>
   waitReady: Promise<void>
 }
 
-export interface QueryOptions {
+export interface PGliteQueryOptions {
   blob?: Blob | File
   onNotice?: (notice: any) => void
   paramTypes?: number[]
@@ -52,7 +52,7 @@ export interface QueryOptions {
   serializers?: Record<number, (value: any) => string>
 }
 
-export interface Results<T> {
+export interface PGliteQueryResults<T> {
   affectedRows?: number
   blob?: Blob
   fields: {

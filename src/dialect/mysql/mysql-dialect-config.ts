@@ -7,6 +7,13 @@ import { DatabaseConnection } from '../../driver/database-connection.js'
  */
 export interface MysqlDialectConfig {
   /**
+   * The `mysql2` `createConnection` function or similar.
+   *
+   * TODO: ...
+   */
+  createConnection?: (opts: any) => MysqlConnection | Promise<MysqlConnection>
+
+  /**
    * A mysql2 Pool instance or a function that returns one.
    *
    * If a function is provided, it's called once when the first query is executed.
@@ -41,7 +48,10 @@ export interface MysqlPool {
   end(callback: (error: unknown) => void): void
 }
 
-export interface MysqlPoolConnection {
+export interface MysqlConnection {
+  config: unknown
+  connect(callback?: (error: unknown) => void): void
+  destroy(): void
   query(
     sql: string,
     parameters: ReadonlyArray<unknown>,
@@ -51,6 +61,12 @@ export interface MysqlPoolConnection {
     parameters: ReadonlyArray<unknown>,
     callback: (error: unknown, result: MysqlQueryResult) => void,
   ): void
+  threadId: number
+}
+
+export type MysqlConectionConstructor = new (opts?: object) => MysqlConnection
+
+export interface MysqlPoolConnection extends MysqlConnection {
   release(): void
 }
 
