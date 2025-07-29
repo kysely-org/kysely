@@ -1,8 +1,11 @@
 packages:
+- './site'
 - './test/cloudflare-workers'
 
 # `postinstall` ignore list
 ignoredBuiltDependencies:
+- core-js # site dependency
+- core-js-pure # site dependency
 - sharp # wrangler dependency
 
 # `postinstall` allow list
