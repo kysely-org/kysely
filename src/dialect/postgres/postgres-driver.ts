@@ -1,5 +1,7 @@
 import {
+  ControlConnectionProvider,
   DatabaseConnection,
+  QueryOptions,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
@@ -7,9 +9,10 @@ import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
-import { createQueryId } from '../../util/query-id.js'
+import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
+  PostgresClientConstructor,
   PostgresCursorConstructor,
   PostgresDialectConfig,
   PostgresPool,
@@ -39,7 +42,9 @@ export class PostgresDriver implements Driver {
 
     if (!connection) {
       connection = new PostgresConnection(client, {
+        Client: this.#config.controlClient || this.#pool!.Client,
         cursor: this.#config.cursor ?? null,
+        poolOptions: this.#pool!.options,
       })
       this.#connections.set(client, connection)
 
@@ -140,24 +145,81 @@ export class PostgresDriver implements Driver {
 }
 
 interface PostgresConnectionOptions {
+  Client?: PostgresClientConstructor
   cursor: PostgresCursorConstructor | null
+  poolOptions: object
 }
 
 class PostgresConnection implements DatabaseConnection {
-  #client: PostgresPoolClient
-  #options: PostgresConnectionOptions
+  readonly #client: PostgresPoolClient
+  readonly #options: PostgresConnectionOptions
+  #queryId?: QueryId
+  #pid?: number
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
     this.#options = options
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async cancelQuery(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    if (!this.#queryId) {
+      return
+    }
+
+    const { Client, poolOptions } = this.#options
+
+    const queryIdToCancel = this.#queryId
+    const cancelQuery = `select pg_cancel_backend(${this.#pid})`
+
+    // we fallback to a pool connection, and execute a SQL query to cancel the
+    // query. this is not ideal, as we might have to wait for an idle connection.
+    if (!Client) {
+      return await controlConnectionProvider(async (controlConnection) => {
+        // by the time we get the connection, another query might have been executed.
+        // we need to ensure we're not canceling the wrong query.
+        if (queryIdToCancel === this.#queryId) {
+          await controlConnection.executeQuery(
+            CompiledQuery.raw(cancelQuery, []),
+          )
+        }
+      })
+    }
+
+    const controlClient = new Client({ ...poolOptions })
+
     try {
-      const { command, rowCount, rows } = await this.#client.query<O>(
-        compiledQuery.sql,
-        [...compiledQuery.parameters],
-      )
+      await controlClient.connect()
+
+      // by the time we get the connection, another query might have been executed.
+      // we need to ensure we're not canceling the wrong query.
+      if (queryIdToCancel !== this.#queryId) {
+        return
+      }
+
+      await controlClient.query(cancelQuery, [])
+    } finally {
+      controlClient.end()
+    }
+  }
+
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    options?: QueryOptions,
+  ): Promise<QueryResult<O>> {
+    try {
+      if (options?.cancelable) {
+        await this.#setupCancelability()
+      }
+
+      this.#queryId = compiledQuery.queryId
+
+      const result = await this.#client.query<O>(compiledQuery.sql, [
+        ...compiledQuery.parameters,
+      ])
+
+      const { command, rowCount, rows } = result
 
       return {
         numAffectedRows:
@@ -171,12 +233,15 @@ class PostgresConnection implements DatabaseConnection {
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
+    } finally {
+      this.#queryId = undefined
     }
   }
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
+    options?: QueryOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
@@ -187,6 +252,12 @@ class PostgresConnection implements DatabaseConnection {
     if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
       throw new Error('chunkSize must be a positive integer')
     }
+
+    if (options?.cancelable) {
+      await this.#setupCancelability()
+    }
+
+    this.#queryId = compiledQuery.queryId
 
     const cursor = this.#client.query(
       new this.#options.cursor<O>(
@@ -208,11 +279,37 @@ class PostgresConnection implements DatabaseConnection {
         }
       }
     } finally {
+      this.#queryId = undefined
       await cursor.close()
     }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
     this.#client.release()
+  }
+
+  async #setupCancelability(): Promise<void> {
+    if (this.#pid) {
+      return
+    }
+
+    const { processID } = this.#client
+
+    // `processID` is an undocumented member of the `Client` class.
+    // it might not exist in old or future versions of the `pg` driver.
+    // if it does, use it.
+    if (processID) {
+      this.#pid = processID
+      return
+    }
+
+    const {
+      rows: [{ pid }],
+    } = await this.#client.query<{ pid: string }>(
+      'select pg_backend_pid() as pid',
+      [],
+    )
+
+    this.#pid = Number(pid)
   }
 }
