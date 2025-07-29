@@ -233,7 +233,7 @@ jobs:
           echo "TSD_VERSION=${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[env.TS_VERSION] }} >> $GITHUB_ENV"
 
       - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
-        run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
+        run: pnpm i -w -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Exclude non-backward compatible tests
         run: pnpx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
@@ -310,7 +310,7 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm i && pnpm i -D @typescript/native-preview
+        run: pnpm i && pnpm i -w -D @typescript/native-preview
 
       - name: Build
         run: pnpm build
