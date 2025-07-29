@@ -72,7 +72,7 @@ for (const dialect of DIALECTS) {
             .addColumn('t', 'time(6)')
             .addColumn('tz', 'timetz(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp`),
+              col.notNull().defaultCurrentTimestamp(),
             )
             .addColumn('v', 'timestamptz(6)')
             .addColumn('w', 'char(4)')
@@ -229,7 +229,7 @@ for (const dialect of DIALECTS) {
             .addColumn('q', 'time(6)')
             .addColumn('r', 'datetime(6)')
             .addColumn('s', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp(6)`),
+              col.notNull().defaultCurrentTimestamp(6),
             )
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
@@ -325,9 +325,7 @@ for (const dialect of DIALECTS) {
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', sql`bit`, (col) => col.notNull().defaultTo(0))
             .addColumn('m', 'date')
-            .addColumn('n', 'datetime', (col) =>
-              col.defaultTo(sql`current_timestamp`),
-            )
+            .addColumn('n', 'datetime', (col) => col.defaultCurrentTimestamp())
             .addColumn('o', sql`uniqueidentifier`, (col) =>
               col.notNull().defaultTo(sql`newid()`),
             )
@@ -410,7 +408,9 @@ for (const dialect of DIALECTS) {
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
             .addColumn('m', 'date')
-            .addColumn('n', 'timestamptz')
+            .addColumn('n', 'timestamptz', (col) =>
+              col.defaultCurrentTimestamp(),
+            )
             .addColumn('o', 'int2')
             .addColumn('p', 'int4')
             .addColumn('q', 'int8')
@@ -440,7 +440,7 @@ for (const dialect of DIALECTS) {
                 '"k" decimal(8, 4),',
                 '"l" boolean default false not null,',
                 '"m" date,',
-                '"n" timestamptz,',
+                '"n" timestamptz default current_timestamp,',
                 '"o" int2,',
                 '"p" int4,',
                 '"q" int8,',
