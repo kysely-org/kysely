@@ -231,18 +231,27 @@ export type ShallowDehydrateObject<O> = {
 /**
  * Dehydrates a value when it is not a valid JSON type.
  *
- * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
+ * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`,
+ * and anything in {@link NumbersWhenDataTypeNotAvailable} and convert it to `number`.
  */
-export type ShallowDehydrateValue<T> = [T] extends [
-  (infer U)[] | null | undefined,
-]
-  ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
-  : T extends Exclude<T, StringsWhenDataTypeNotAvailable>
-    ? T
-    : string | Exclude<T, StringsWhenDataTypeNotAvailable>
+export type ShallowDehydrateValue<T> = T extends null | undefined
+  ? T
+  : T extends (infer U)[] | null | undefined
+    ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
+    :
+        | Exclude<
+            T,
+            StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
+          >
+        | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
+            ? never
+            : number)
+        | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+            ? never
+            : string)
 
-export type StringsWhenDataTypeNotAvailable =
-  | ArrayBuffer
-  | bigint
-  | Buffer
-  | Date
+export type StringsWhenDataTypeNotAvailable = Date | Buffer | ArrayBuffer
+
+export type NumbersWhenDataTypeNotAvailable = bigint | NumericString
+
+export type NumericString = `${number}`
