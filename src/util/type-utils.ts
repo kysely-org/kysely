@@ -231,7 +231,8 @@ export type ShallowDehydrateObject<O> = {
 /**
  * Dehydrates a value when it is not a valid JSON type.
  *
- * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
+ * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`,
+ * and anything in {@link NumbersWhenDataTypeNotAvailable} and convert it to `number`.
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
@@ -242,13 +243,15 @@ export type ShallowDehydrateValue<T> = T extends null | undefined
             T,
             StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
           >
-        | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
-            ? never
-            : string)
         | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
             ? never
             : number)
+        | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+            ? never
+            : string)
 
 export type StringsWhenDataTypeNotAvailable = Date | Buffer | ArrayBuffer
 
-export type NumbersWhenDataTypeNotAvailable = bigint
+export type NumbersWhenDataTypeNotAvailable = bigint | NumericString
+
+export type NumericString = `${number}`
