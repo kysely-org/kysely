@@ -68,7 +68,8 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
             5,
           )
           .limit(1)
-          .selectAll(),
+          .selectAll()
+          .select(sql.lit(null).as('matched_at')),
       ).as('potential_match'),
   ])
 
@@ -104,6 +105,7 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
         marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
         modified_at: string
         deleted_at: string | null
+        matched_at: null
       } | null
     }[]
   >(r1)
