@@ -5,6 +5,7 @@ import {
   jsonObjectFrom,
   sql,
   ExpressionBuilder,
+  NumericString,
 } from '..'
 import { Database } from '../shared'
 import { expectType } from 'tsd'
@@ -43,6 +44,8 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
         last: eb.ref('last_name'),
         full: sql<string>`first_name || ' ' || last_name`,
         modified_at: eb.ref('modified_at'),
+        people_with_same_name_by_2050: sql<bigint>`custom_function(first_name)`,
+        people_with_same_name_by_2050_str: sql<NumericString>`custom_function(first_name)::text`,
       }).as('name'),
 
     // Nest other people with same first name.
@@ -85,6 +88,8 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
         last: string | null
         full: string
         modified_at: string
+        people_with_same_name_by_2050: number
+        people_with_same_name_by_2050_str: number
       }
       people_same_first_name: {
         id: number
