@@ -75,7 +75,7 @@
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
-    "script:align-site-version": "node scripts/align-site-version.js",
+    "script:align-site-version": "node --experimental-strip-types scripts/align-site-version.mts",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
     "prepublishOnly": "pnpm build && pnpm test:exports",
     "version": "pnpm script:align-site-version && git add ."
