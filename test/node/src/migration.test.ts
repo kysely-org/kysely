@@ -825,6 +825,43 @@ for (const dialect of DIALECTS) {
           expect(transactionSpy.called).to.be.false
         }
       })
+
+      it('should run migrations using a provided transaction', async () => {
+        const migrationName = 'trx_connection_method_fail_case'
+        const executedUpMethodsForThisTest: string[] = []
+
+        const testSpecificProvider: MigrationProvider = {
+          getMigrations: async () => ({
+            [migrationName]: {
+              async up(_db: Kysely<any>): Promise<void> {
+                executedUpMethodsForThisTest.push(migrationName)
+              },
+              async down(_db: Kysely<any>): Promise<void> {},
+            },
+          }),
+        }
+
+        const trx = await db.startTransaction().execute()
+        
+        const migratorInTransaction = new Migrator({
+          db: trx,
+          provider: testSpecificProvider,
+        })
+
+        const { results, error } = await migratorInTransaction.migrateUp()
+        
+        await trx.rollback().execute().catch(() => {})
+
+        expect(error).to.be.undefined
+        expect(results).to.eql([
+          { migrationName, direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethodsForThisTest).to.eql(
+          [migrationName],
+          "The migration's 'up' method should have been executed.",
+        )
+      })
     })
 
     describe('migrateDown', () => {
