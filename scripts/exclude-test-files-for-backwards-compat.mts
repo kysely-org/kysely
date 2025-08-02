@@ -16,6 +16,7 @@ if (lt(typescriptVersion, '5.0.0')) {
     ),
     JSON.stringify({
       ...tsconfig,
+      // @ts-ignore
       exclude: [...(tsconfig.exclude || []), 'src/async-dispose.test.ts'],
     }),
   )
