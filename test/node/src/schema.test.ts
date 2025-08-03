@@ -2524,7 +2524,7 @@ for (const dialect of DIALECTS) {
     })
 
     describe('alter type', () => {
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -2534,14 +2534,17 @@ for (const dialect of DIALECTS) {
             .createType('species')
             .asEnum(['cat', 'dog', 'frog'])
             .execute()
+          await sql`DROP USER IF EXISTS alter_test_temp`.execute(ctx.db);
         }
 
         it('should alter the type owner', async () => {
-          const builder = ctx.db.schema.alterType('species').ownerTo('kysely')
+
+          await sql`CREATE USER alter_test_temp`.execute(ctx.db);
+          const builder = ctx.db.schema.alterType('species').ownerTo('alter_test_temp')
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `alter type "species" owner to "kysely"`,
+              sql: `alter type "species" owner to "alter_test_temp"`,
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
