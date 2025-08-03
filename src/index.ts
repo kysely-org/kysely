@@ -224,6 +224,8 @@ export * from './operation-node/values-node.js'
 export * from './operation-node/when-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
+export * from './operation-node/alter-type-node.js'
+export * from './operation-node/add-value-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
