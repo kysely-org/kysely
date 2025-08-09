@@ -291,7 +291,17 @@ jobs:
         run: pnpm install
 
       - name: Run benchmarks
-        run: pnpm bench:ts
+        run: pnpm bench:ts | tee bench-output.txt
+
+      - name: Calculate output hash
+        id: hash
+        run: echo "sha=$(shasum -a 256 bench-output.txt | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: PR comment
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
+        with:
+          comment-tag: ${{ steps.hash.outputs.sha }}
+          file-path: bench-output.txt
 
   typescript-native:
     name: TypeScript Native
