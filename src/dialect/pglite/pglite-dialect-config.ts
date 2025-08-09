@@ -19,7 +19,7 @@ export interface PGliteDialectConfig {
    *
    * https://pglite.dev/docs/api#main-constructor
    */
-  pglite: PGlite | (() => Promise<PGlite>)
+  pglite: PGlite | (() => PGlite | Promise<PGlite>)
 }
 
 /**
