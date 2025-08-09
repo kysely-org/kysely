@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "include": ["./**/*"],
+  "exclude": ["test-d/generic-pre-5.4.test-d.ts"],
   "compilerOptions": {
     "exactOptionalPropertyTypes": true,
     "module": "CommonJS"
