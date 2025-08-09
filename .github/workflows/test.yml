@@ -273,6 +273,8 @@ jobs:
 
   typescript-benchmarks:
     name: TypeScript Benchmarks
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
@@ -291,7 +293,32 @@ jobs:
         run: pnpm install
 
       - name: Run benchmarks
-        run: pnpm bench:ts
+        id: bench
+        run: |
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Calculate output hash
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        id: hash
+        env:
+          SUMMARY_OUTPUT: ${{ steps.bench.outputs.summary }}
+        run: echo "sha=$(echo -n "$SUMMARY_OUTPUT" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: PR comment
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
+        with:
+          comment-tag: ${{ steps.hash.outputs.sha }}
+          message: |
+            <details>
+            <summary>⏱️ TypeScript Benchmarks</summary>
+
+            ```
+            ${{ steps.bench.outputs.summary }}
+            ```
+            </details>
 
   typescript-native:
     name: TypeScript Native
