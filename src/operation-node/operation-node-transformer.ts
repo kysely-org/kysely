@@ -99,7 +99,8 @@ import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
-
+import { AlterTypeNode } from './alter-type-node.js'
+import { AddValueNode } from './add-value-node.js'
 /**
  * Transforms an operation node tree into another one.
  *
@@ -242,6 +243,8 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    AlterTypeNode: this.transformAlterType.bind(this),
+    AddValueNode: this.transformAddValue.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -1352,5 +1355,33 @@ export class OperationNodeTransformer {
   ): CollateNode {
     // An Object.freezed leaf node. No need to clone.
     return node
+  }
+
+  protected transformAlterType(
+    node: AlterTypeNode,
+    queryId?: QueryId,
+  ): AlterTypeNode {
+    return requireAllProps<AlterTypeNode>({
+      kind: 'AlterTypeNode',
+      name: this.transformNode(node.name, queryId),
+      ownerTo: this.transformNode(node.ownerTo, queryId),
+      renameTo: this.transformNode(node.renameTo, queryId),
+      renameValueNewName: this.transformNode(node.renameValueNewName, queryId),
+      renameValueOldName: this.transformNode(node.renameValueOldName, queryId),
+      setSchema: this.transformNode(node.setSchema, queryId),
+      addValue: this.transformNode(node.addValue),
+    })
+  }
+  protected transformAddValue(
+    node: AddValueNode,
+    queryId?: QueryId,
+  ): AddValueNode {
+    return requireAllProps<AddValueNode>({
+      kind: 'AddValueNode',
+      value: this.transformNode(node.value, queryId),
+      ifNotExists: node.ifNotExists,
+      before: this.transformNode(node.before, queryId),
+      after: this.transformNode(node.after, queryId),
+    })
   }
 }

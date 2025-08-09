@@ -2523,6 +2523,167 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    describe('alter type', () => {
+      if (sqlSpec === 'postgres') {
+        beforeEach(cleanup)
+        afterEach(cleanup)
+
+        async function cleanup() {
+          await ctx.db.schema.dropType('species').ifExists().execute()
+          await ctx.db.schema
+            .createType('species')
+            .asEnum(['cat', 'dog', 'frog'])
+            .execute()
+          await sql`DROP USER IF EXISTS alter_test_temp`.execute(ctx.db);
+        }
+
+        it('should alter the type owner', async () => {
+
+          await sql`CREATE USER alter_test_temp`.execute(ctx.db);
+          const builder = ctx.db.schema.alterType('species').ownerTo('alter_test_temp')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" owner to "alter_test_temp"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+        it('should rename the type', async () => {
+          await ctx.db.schema.dropType('new_species').ifExists().execute()
+          const builder = ctx.db.schema
+            .alterType('species')
+            .renameTo('new_species')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" rename to "new_species"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+          await ctx.db.schema.dropType('new_species').ifExists().execute()
+        })
+
+        it('should alter the type schema', async () => {
+          const builder = ctx.db.schema.alterType('species').setSchema('public')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" set schema "public"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+        })
+
+        it('should rename values inside an enum type', () => {
+          const builder = ctx.db.schema
+            .alterType('species')
+            .renameValue('cat', 'capybara')
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" rename value 'cat' to 'capybara'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+          return builder.execute()
+        })
+
+        describe('add value, enum type', () => {
+          it('should add a value', async () => {
+            const builder = ctx.db.schema
+              .alterType('species')
+              .addValue('capybara')
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter type "species" add value 'capybara'`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+            await builder.execute()
+          })
+          it('should not throw error if value already exists and ifNotExists is specified', async () => {
+            const builder = ctx.db.schema
+              .alterType('species')
+              .addValue('cat', (eb) => eb.ifNotExists())
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter type "species" add value if not exists 'cat'`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+            await builder.execute()
+          })
+          it('should be able to add a value before another value', async () => {
+            const builder = ctx.db.schema
+              .alterType('species')
+              .addValue('capybara', (eb) => eb.before('dog'))
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter type "species" add value 'capybara' before 'dog'`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+            await builder.execute()
+          })
+          it('should be able to add a value after another value', async () => {
+            const builder = ctx.db.schema
+              .alterType('species')
+              .addValue('capybara', (eb) => eb.after('dog'))
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter type "species" add value 'capybara' after 'dog'`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+            await builder.execute()
+          })
+          it('should enforce before and after be mutually exclusive, by using the last one specified', async () => {
+            const builder = ctx.db.schema
+              .alterType('species')
+              .addValue('capybara', (eb) => eb.before('dog').after('cat'))
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter type "species" add value 'capybara' after 'cat'`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+            await builder.execute()
+          })
+        })
+      }
+    })
+
     describe('drop type', () => {
       if (sqlSpec === 'postgres') {
         beforeEach(cleanup)
