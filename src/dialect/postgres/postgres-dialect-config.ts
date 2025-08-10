@@ -39,6 +39,11 @@ export interface PostgresDialectConfig {
    * Called every time a connection is acquired from the pool.
    */
   onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * @todo: docs
+   */
+  types?: Record<number, (value: string) => any>
 }
 
 /**
@@ -61,6 +66,7 @@ export interface PostgresPoolClient {
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
+  setTypeParser(typeOrOid: number, parser: (val: string) => any): void
 }
 
 export interface PostgresCursor<T> {

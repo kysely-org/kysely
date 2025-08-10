@@ -1,3 +1,4 @@
+import { types } from 'pg'
 import { Expression } from '../expression/expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
@@ -226,4 +227,66 @@ export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
  */
 export function mergeAction(): RawBuilder<MergeAction> {
   return sql`merge_action()`
+}
+
+/**
+ * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
+ * compared to Postgres' (microseconds).
+ *
+ * @private
+ */
+function postgresTimestamptzToIsoString(value: string): string {
+  /*
+    Anatomy:
+      (\d{4}-\d{2}-\d{2}) = Date
+      \s+ = Space between date and time
+      (\d{2}:\d{2}:\d{2}\.\d+) = Time (HH:mm:ss.ZZZZZZ)
+      ([+-]\d{2})(:\d{2})? = Timezone offset (+HH[:MM] or -HH[:MM])
+    Example: 2025-08-10 14:44:40.687342+02
+   */
+  const match = value.match(
+    /^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)?([+-]\d{2})(:\d{2})?$/,
+  )
+
+  if (!match) {
+    throw new Error(`Invalid timestamptz format: ${value}`)
+  }
+
+  const [, date, time, offsetHour, offsetMinute = ':00'] = match
+  return `${date}T${time}${offsetHour}${offsetMinute}`
+}
+
+/**
+ * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
+ * compared to Postgres' (microseconds).
+ *
+ * @private
+ */
+function postgresTimestampToIsoString(value: string): string {
+  /*
+    Anatomy:
+      (\d{4}-\d{2}-\d{2}) = Date
+      \s+ = Space between date and time
+      (\d{2}:\d{2}:\d{2}\.\d+) = Time (HH:mm:ss.ZZZZZZ)
+      ([+-]\d{2})(:\d{2})? = Timezone offset (+HH[:MM] or -HH[:MM])
+    Example: 2025-08-10 14:44:40.687342+02
+   */
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)?$/)
+
+  if (!match) {
+    throw new Error(`Invalid timestamptz format: ${value}`)
+  }
+
+  const [, date, time] = match
+  return `${date}T${time}`
+}
+
+/**
+ * @todo:
+ */
+export const SENSIBLE_TYPES: Record<number, (value: string) => any> = {
+  [types.builtins.TIMESTAMPTZ]: (v) => postgresTimestamptzToIsoString(v),
+  [types.builtins.TIMESTAMP]: (v) => postgresTimestampToIsoString(v),
+  [types.builtins.DATE]: (v) => v,
+  // [types.builtins.INT8]: (v) => parseInt(v),
 }
