@@ -231,7 +231,7 @@ export function mergeAction(): RawBuilder<MergeAction> {
 
 /**
  * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
- * compared to Postgres' (microseconds).
+ * compared to Postgres' (microseconds). @todo: check, it seems that it truncates fractionals to 3 digits (from 6)
  *
  * @private
  */
@@ -268,8 +268,7 @@ function postgresTimestampToIsoString(value: string): string {
       (\d{4}-\d{2}-\d{2}) = Date
       \s+ = Space between date and time
       (\d{2}:\d{2}:\d{2}\.\d+) = Time (HH:mm:ss.ZZZZZZ)
-      ([+-]\d{2})(:\d{2})? = Timezone offset (+HH[:MM] or -HH[:MM])
-    Example: 2025-08-10 14:44:40.687342+02
+    Example: 2025-08-10 14:44:40.687342
    */
   const match = value.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)?$/)
 
@@ -282,7 +281,7 @@ function postgresTimestampToIsoString(value: string): string {
 }
 
 /**
- * @todo:
+ * @todo: document
  */
 export const SENSIBLE_TYPES: Record<number, (value: string) => any> = {
   [types.builtins.TIMESTAMPTZ]: (v) => postgresTimestamptzToIsoString(v),
