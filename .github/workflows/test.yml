@@ -273,6 +273,8 @@ jobs:
 
   typescript-benchmarks:
     name: TypeScript Benchmarks
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
@@ -291,7 +293,26 @@ jobs:
         run: pnpm install
 
       - name: Run benchmarks
-        run: pnpm bench:ts
+        id: bench
+        run: |
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: PR comment
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
+        with:
+          # edits the existing pr comment if exists. github ui allows checking edit history.
+          comment-tag: typescript-benchmarks
+          message: |
+            <details>
+            <summary>⏱️ TypeScript Benchmarks following ${{ github.event.pull_request.head.sha }}</summary>
+
+            ```
+            ${{ steps.bench.outputs.summary }}
+            ```
+            </details>
 
   typescript-native:
     name: TypeScript Native
