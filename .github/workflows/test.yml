@@ -303,10 +303,11 @@ jobs:
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
         with:
+          # edits the existing pr comment if exists. github ui allows checking edit history.
           comment-tag: typescript-benchmarks
           message: |
             <details>
-            <summary>⏱️ TypeScript Benchmarks</summary>
+            <summary>⏱️ TypeScript Benchmarks following ${{ github.event.pull_request.head.sha }}</summary>
 
             ```
             ${{ steps.bench.outputs.summary }}
