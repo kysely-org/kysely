@@ -1,4 +1,3 @@
-import { types } from 'pg'
 import { Expression } from '../expression/expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
@@ -231,60 +230,27 @@ export function mergeAction(): RawBuilder<MergeAction> {
 
 /**
  * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
- * compared to Postgres' (microseconds). @todo: check, it seems that it truncates fractionals to 3 digits (from 6)
- *
- * @private
- */
-function postgresTimestamptzToIsoString(value: string): string {
-  /*
-    Anatomy:
-      (\d{4}-\d{2}-\d{2}) = Date
-      \s+ = Space between date and time
-      (\d{2}:\d{2}:\d{2}\.\d+) = Time (HH:mm:ss.ZZZZZZ)
-      ([+-]\d{2})(:\d{2})? = Timezone offset (+HH[:MM] or -HH[:MM])
-    Example: 2025-08-10 14:44:40.687342+02
-   */
-  const match = value.match(
-    /^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)?([+-]\d{2})(:\d{2})?$/,
-  )
-
-  if (!match) {
-    throw new Error(`Invalid timestamptz format: ${value}`)
-  }
-
-  const [, date, time, offsetHour, offsetMinute = ':00'] = match
-  return `${date}T${time}${offsetHour}${offsetMinute}`
-}
-
-/**
- * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
  * compared to Postgres' (microseconds).
  *
+ * @see https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-OUTPUT
  * @private
  */
 function postgresTimestampToIsoString(value: string): string {
-  /*
-    Anatomy:
-      (\d{4}-\d{2}-\d{2}) = Date
-      \s+ = Space between date and time
-      (\d{2}:\d{2}:\d{2}\.\d+) = Time (HH:mm:ss.ZZZZZZ)
-    Example: 2025-08-10 14:44:40.687342
-   */
-  const match = value.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)?$/)
-
-  if (!match) {
-    throw new Error(`Invalid timestamptz format: ${value}`)
-  }
-
-  const [, date, time] = match
-  return `${date}T${time}`
+  return value.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')
 }
 
+// Reference: https://github.com/brianc/node-pg-types/blob/master/lib/builtins.js
+const TIMESTAMP = 1114
+const TIMESTAMPTZ = 1184
+const DATE = 1082
+
 /**
- * @todo: document
+ * Sets sensible type parsers that are optimised for:
+ *  - No loss of data
+ *  - Matching the output of `jsonArrayFrom`/`jsonObjectFrom`
  */
 export const SENSIBLE_TYPES: Record<number, (value: string) => any> = {
-  [types.builtins.TIMESTAMPTZ]: (v) => postgresTimestamptzToIsoString(v),
-  [types.builtins.TIMESTAMP]: (v) => postgresTimestampToIsoString(v),
-  [types.builtins.DATE]: (v) => v,
+  [TIMESTAMP]: (v) => postgresTimestampToIsoString(v),
+  [TIMESTAMPTZ]: (v) => postgresTimestampToIsoString(v),
+  [DATE]: (v) => v,
 }

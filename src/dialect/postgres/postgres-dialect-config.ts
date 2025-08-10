@@ -41,7 +41,16 @@ export interface PostgresDialectConfig {
   onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
 
   /**
-   * @todo: docs
+   * Used to define type parsers.
+   *
+   * @example
+   * ```
+   * new PostgresDialect({
+   *  pool: new Pool('postgres://localhost:5432/mydb'),
+   *  types: {
+   *    [types.builtins.DATE]: (v) => v,
+   *  }
+   * })
    */
   types?: Record<number, (value: string) => any>
 }

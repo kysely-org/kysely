@@ -24,9 +24,6 @@ interface Values {
   time: string
   timetz: string
   array: number[]
-  // @todo: bytea
-  // @todo: money
-  // @todo: range types
 }
 
 if (DIALECTS.includes('postgres')) {
