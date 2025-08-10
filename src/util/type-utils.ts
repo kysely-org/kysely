@@ -250,7 +250,12 @@ export type ShallowDehydrateValue<T> = T extends null | undefined
             ? never
             : string)
 
-export type StringsWhenDataTypeNotAvailable = Date | Buffer | ArrayBuffer
+export type StringsWhenDataTypeNotAvailable =
+  | Date
+  // Many Node.js drivers return `Buffer` by default for some column data types.
+  // Buffer is a subclass of `Uint8Array`. `Buffer` doesn't exist in non-Node TypeScript
+  // environments - and results in `any` or a compilation error if used.
+  | Uint8Array
 
 export type NumbersWhenDataTypeNotAvailable = bigint | NumericString
 
