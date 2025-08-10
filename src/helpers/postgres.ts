@@ -287,5 +287,4 @@ export const SENSIBLE_TYPES: Record<number, (value: string) => any> = {
   [types.builtins.TIMESTAMPTZ]: (v) => postgresTimestamptzToIsoString(v),
   [types.builtins.TIMESTAMP]: (v) => postgresTimestampToIsoString(v),
   [types.builtins.DATE]: (v) => v,
-  // [types.builtins.INT8]: (v) => parseInt(v),
 }
