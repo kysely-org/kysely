@@ -18,6 +18,7 @@ export default {
       comments: false,
       headingIds: false,
     },
+    mermaid: true,
   },
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -173,6 +174,7 @@ export default {
       theme: themes.github,
     },
   } satisfies PresetClassicThemeConfig,
+  themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
   url: 'https://kysely.dev',
 } satisfies Config

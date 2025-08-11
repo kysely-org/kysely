@@ -18,6 +18,7 @@
     "@docusaurus/core": "^3.5.2",
     "@docusaurus/preset-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.8.1",
+    "@docusaurus/theme-mermaid": "^3.8.1",
     "@mdx-js/react": "^3.0.1",
     "@radix-ui/colors": "^0.1.9",
     "clsx": "^2.1.1",
