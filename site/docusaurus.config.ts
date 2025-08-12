@@ -3,6 +3,7 @@ import type {
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
 
 export default {
@@ -140,6 +141,14 @@ export default {
         },
       ],
       style: 'dark',
+    },
+    mermaid: {
+      options: {
+        sequence: {
+          mirrorActors: false,
+          showSequenceNumbers: true,
+        },
+      } satisfies MermaidConfig,
     },
     navbar: {
       items: [

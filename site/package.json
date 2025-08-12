@@ -31,6 +31,7 @@
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
     "@types/react": "^19.1.9",
+    "mermaid": "^11.9.0",
     "typescript": "^5.9.2"
   },
   "browserslist": {
