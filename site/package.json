@@ -18,6 +18,7 @@
     "@docusaurus/core": "^3.5.2",
     "@docusaurus/preset-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.8.1",
+    "@docusaurus/theme-mermaid": "^3.8.1",
     "@mdx-js/react": "^3.0.1",
     "@radix-ui/colors": "^0.1.9",
     "clsx": "^2.1.1",
@@ -30,6 +31,7 @@
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
     "@types/react": "^19.1.9",
+    "mermaid": "^11.9.0",
     "typescript": "^5.9.2"
   },
   "browserslist": {

@@ -3,6 +3,7 @@ import type {
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
 
 export default {
@@ -18,6 +19,7 @@ export default {
       comments: false,
       headingIds: false,
     },
+    mermaid: true,
   },
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -140,6 +142,14 @@ export default {
       ],
       style: 'dark',
     },
+    mermaid: {
+      options: {
+        sequence: {
+          mirrorActors: false,
+          showSequenceNumbers: true,
+        },
+      } satisfies MermaidConfig,
+    },
     navbar: {
       items: [
         {
@@ -173,6 +183,7 @@ export default {
       theme: themes.github,
     },
   } satisfies PresetClassicThemeConfig,
+  themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
   url: 'https://kysely.dev',
 } satisfies Config
