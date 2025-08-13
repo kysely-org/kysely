@@ -1428,7 +1428,11 @@ export class DefaultQueryCompiler
       this.append('if exists ')
     }
 
-    this.visitNode(node.name)
+    this.compileList([node.name, ...(node.additionalNames ?? [])])
+
+    if (node.modifier) {
+      this.append(` ${node.modifier}`)
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
