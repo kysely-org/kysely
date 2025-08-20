@@ -351,6 +351,32 @@ for (const dialect of DIALECTS.filter(
       })
     })
 
+    describe('merge into', () => {
+      it('should add schema', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .mergeInto('pet')
+          .using('pet as p', 'pet.id', 'p.id')
+          .whenMatched()
+          .thenDelete()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "mammals"."pet" using "mammals"."pet" as "p" on "mammals"."pet"."id" = "p"."id" when matched then delete',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "mammals"."pet" using "mammals"."pet" as "p" on "mammals"."pet"."id" = "p"."id" when matched then delete;',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
     describe('with', () => {
       it('should not add schema for common table expression names', async () => {
         const query = ctx.db

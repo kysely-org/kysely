@@ -2,6 +2,7 @@ import { AggregateFunctionNode } from '../../operation-node/aggregate-function-n
 import { AliasNode } from '../../operation-node/alias-node.js'
 import { FunctionNode } from '../../operation-node/function-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
+import { JoinNode } from '../../operation-node/join-node.js'
 import { ListNode } from '../../operation-node/list-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
@@ -200,7 +201,11 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
 
     if ('using' in node && node.using) {
-      this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
+      if (JoinNode.is(node.using)) {
+        this.#collectSchemableIdsFromTableExpr(node.using.table, schemableIds)
+      } else {
+        this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
+      }    
     }
 
     return schemableIds
