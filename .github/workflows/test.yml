@@ -44,6 +44,11 @@ jobs:
     name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -79,6 +84,11 @@ jobs:
         deno-version: [2.2.x, 2.4.x]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -117,6 +127,11 @@ jobs:
         bun-version: [1.1, 1.2]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -147,6 +162,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -172,6 +192,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -211,6 +236,11 @@ jobs:
           ]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -246,6 +276,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -278,6 +313,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
@@ -319,6 +359,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
