@@ -105,6 +105,10 @@ jobs:
         with:
           deno-version: ${{ matrix.deno-version }}
 
+      - name: Delete deno.lock for 2.2.x
+        if: matrix.deno-version == '2.2.x'
+        run: rm -f test/deno/deno.lock
+
       - name: Install dependencies
         run: pnpm install
 
