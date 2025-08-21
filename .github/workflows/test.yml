@@ -76,7 +76,7 @@ jobs:
       fail-fast: false
       matrix:
         # https://endoflife.date/deno
-        deno-version: [2.1.x, 2.2.x, 2.3.x]
+        deno-version: [2.2.x, 2.4.x]
 
     steps:
       - uses: actions/checkout@v4
