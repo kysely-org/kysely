@@ -61,7 +61,7 @@
     "test:browser": "pnpm build && pnpm test:browser:build && node test/browser/test.js",
     "test:bun": "pnpm build && bun link && cd test/bun && bun install && bun run test",
     "test:cloudflare-workers": "pnpm build && pnpm -r test --filter kysely-cloudflare-workers-test",
-    "test:deno": "deno run --allow-env --allow-read --allow-net test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net test/deno/cdn.test.ts",
+    "test:deno": "deno run --allow-env --allow-read --allow-net --no-lock test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net --no-lock test/deno/cdn.test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
