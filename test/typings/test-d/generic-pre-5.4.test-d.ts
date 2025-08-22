@@ -104,10 +104,10 @@ async function testSelectsInVariable(db: Kysely<Database>) {
 
 async function testSelectFromDynamic(db: Kysely<Database>) {
   const r1 = await getIdDynamic(db, 'person')
-  expectType<{ id: number }>(r1)
+  expectType<{ id: number | string }>(r1)
 
   const r2 = await getIdDynamic(db, 'pet')
-  expectType<{ id: string }>(r2)
+  expectType<{ id: string | number }>(r2)
 
   const r3 = await getRowDynamic(db, 'movie')
   expectType<Selectable<Movie>>(r3)
@@ -126,7 +126,7 @@ async function getIdDynamic<T extends 'person' | 'pet'>(
   const { table } = db.dynamic
 
   return await db
-    .selectFrom(table(t).as('t'))
+    .selectFrom(table<'person' | 'pet'>(t).as('t'))
     .select('t.id')
     .executeTakeFirstOrThrow()
 }
