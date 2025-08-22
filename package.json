@@ -125,7 +125,6 @@
     "tsd5.3": "npm:tsd@0.30.7",
     "tsd5.4": "npm:tsd@0.31.2",
     "tsd5.8": "npm:tsd@0.32.0",
-    "tsd5.9": "npm:tsd@0.33.0",
     "typescript": "~5.9.2",
     "typescript4.6": "npm:typescript@~4.6.4",
     "typescript4.7": "npm:typescript@~4.7.4",

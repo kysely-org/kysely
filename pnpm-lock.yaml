@@ -122,9 +122,6 @@ importers:
       tsd5.8:
         specifier: npm:tsd@0.32.0
         version: tsd@0.32.0
-      tsd5.9:
-        specifier: npm:tsd@0.33.0
-        version: tsd@0.33.0
       typescript:
         specifier: ~5.9.2
         version: 5.9.2
