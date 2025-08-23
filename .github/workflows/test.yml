@@ -255,7 +255,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
-          node-version: 20.x
+          node-version: lts/*
 
       - name: Install dependencies
         run: pnpm install
