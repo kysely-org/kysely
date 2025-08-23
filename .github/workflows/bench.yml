@@ -73,8 +73,11 @@ jobs:
         id: bench
         run: |
           # Run the benchmark command and capture its exit code
-          summary_output=$(pnpm bench:ts | grep -v "> " | sed '/./,$!d')
+          pnpm bench:ts > /tmp/benchmark_output.txt 2>&1
           exit_code=$?
+
+          # Process the output
+          summary_output=$(cat /tmp/benchmark_output.txt | grep -v "> " | sed '/./,$!d')
 
           # Set a boolean output indicating if it failed with exit code 1
           if [ $exit_code -eq 1 ]; then
