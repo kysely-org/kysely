@@ -3,7 +3,7 @@ import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { SectionFeatures } from '../components/SectionFeatures'
 import { DemoVideo } from '../components/DemoVideo'
@@ -96,12 +96,30 @@ function SectionPlayground() {
   const { colorMode } = useColorMode()
 
   const [src, setSrc] = useState('')
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     STACKBLITZ_PARAMS.set('theme', colorMode)
 
     setSrc(`${STACKBLITZ_URL}?${STACKBLITZ_PARAMS}`)
   }, [colorMode])
+
+  // Prevent automatic focus on mobile
+  useEffect(() => {
+    if (window.innerWidth > 768) return // Only apply on mobile
+
+    const preventInitialFocus = () => {
+      if (iframeRef.current) {
+        iframeRef.current.blur()
+      }
+    }
+
+    // Prevent focus immediately and after a short delay
+    preventInitialFocus()
+    const timeout = setTimeout(preventInitialFocus, 1000)
+
+    return () => clearTimeout(timeout)
+  }, [src])
 
   return (
     <section className={styles.playgroundSection}>
@@ -111,6 +129,7 @@ function SectionPlayground() {
           Modify the query on the left and view the generated SQL on the right.
         </p>
         <iframe
+          ref={iframeRef}
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
           className={styles.playground}
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"

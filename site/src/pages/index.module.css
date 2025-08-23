@@ -131,6 +131,13 @@
   width: 100%;
 }
 
+/* Prevent mobile browser from scrolling to iframe on page load */
+@media (max-width: 768px) {
+  .playground {
+    overflow-anchor: none;
+  }
+}
+
 .playgroundContainer {
   align-items: center;
   border: 0;
