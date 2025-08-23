@@ -370,7 +370,7 @@ jobs:
           comment-tag: typescript-benchmarks
           message: |
             <details>
-            <summary>⏱️ **Benchmark changes detected** following `${{ github.event.pull_request.head.sha }}`</summary>
+            <summary>⏱️ **Benchmark changes detected** following ${{ github.event.pull_request.head.sha }}</summary>
 
             The following benchmarks have changed from the baseline:
             ```
@@ -383,7 +383,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
         with:
           comment-tag: typescript-benchmarks
-          message: ⏱️ **No benchmark changes detected** following `${{ github.event.pull_request.head.sha }}`.
+          message: ✅ ⏱️ **No benchmark changes detected** following ${{ github.event.pull_request.head.sha }}.
 
   typescript-native:
     name: TypeScript Native
