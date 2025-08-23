@@ -44,7 +44,7 @@ on:
 
 jobs:
   typescript:
-    name: TypeScript
+    name: TypeScript Benchmarks
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
