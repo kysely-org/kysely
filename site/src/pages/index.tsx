@@ -1,3 +1,4 @@
+import React from 'react'
 import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
@@ -114,6 +115,7 @@ function SectionPlayground() {
           className={styles.playground}
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
           src={src}
+          tabIndex={-1}
           title="Kysely Demo"
         />
       </div>
