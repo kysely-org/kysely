@@ -336,10 +336,10 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm i && pnpm i -D @typescript/native-preview
+        run: pnpm i && pnpm i -w -D @typescript/native-preview
 
       - name: Build
         run: pnpm build
 
       - name: Run TypeScript Native tests
-        run: pnpm tsgo --project ./test/node/tsconfig.json && pnpm tsgo --project ./tsconfig.json
+        run: pnpm tsgo --project ./tsconfig.json && pnpm tsgo --project ./test/node/tsconfig.json
