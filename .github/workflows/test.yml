@@ -378,7 +378,7 @@ jobs:
               if (baseline_val > 0) {
                 delta = ((result_val / baseline_val) - 1) * 100
                 # Append the newly calculated, formatted Delta line to the block
-                block_text = sprintf("%s\n  📊 Delta: %+.2f%%", block_text, delta)
+                block_text = sprintf("%s\n📊 Delta: %+.2f%%", block_text, delta)
               }
             }
             
