@@ -58,20 +58,6 @@ function HomepageHeader() {
 
         <DemoVideo />
       </div>
-
-      <span
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 'calc(50% - 20px)',
-          color: 'black',
-          width: 40,
-          fontSize: 24,
-          textAlign: 'center',
-        }}
-      >
-        ↓
-      </span>
     </header>
   )
 }
