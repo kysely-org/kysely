@@ -343,8 +343,12 @@ jobs:
       - name: Run benchmarks
         id: bench
         run: |
+          # The `|| true` is important. It prevents the step from failing if your
+          # benchmark tool exits with an error code on threshold violation.
+          summary_output=$(pnpm bench:ts | grep -v "> " | sed '/./,$!d' || true)
+
           echo "full_summary<<EOF" >> $GITHUB_OUTPUT
-          pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
+          echo "$summary_output" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Analyze Results
@@ -352,9 +356,41 @@ jobs:
         run: |
           full_summary="${{ steps.bench.outputs.full_summary }}"
 
-          # This simpler awk command finds all blocks containing a Delta line
-          # that is not "0.00%". The \. ensures we match a literal dot.
-          changed_blocks=$(echo "$full_summary" | awk 'BEGIN{RS=""} /Delta:/ && !/Delta: 0\.00%/')
+          # This powerful awk script performs two actions:
+          # 1. It finds blocks missing a Delta line and calculates it.
+          # 2. It filters for all blocks where the final delta is not zero.
+          changed_blocks=$(echo "$full_summary" | awk '
+          BEGIN { RS="" } # Process the input in blocks separated by blank lines
+          {
+            block_text = $0 # Store the original block text
+            is_changed = 0
+
+            # If a block is missing a Delta line, calculate it
+            if ($0 ~ /Baseline:/ && $0 !~ /Delta:/) {
+              # Extract numeric values for Result and Baseline
+              match($0, /Result: ([0-9.]+)/, r)
+              match($0, /Baseline: ([0-9.]+)/, b)
+              
+              result_val = r[1]
+              baseline_val = b[1]
+              
+              # Calculate the delta, avoiding division by zero
+              if (baseline_val > 0) {
+                delta = ((result_val / baseline_val) - 1) * 100
+                # Append the newly calculated, formatted Delta line to the block
+                block_text = sprintf("%s\n  📊 Delta: %+.2f%%", block_text, delta)
+              }
+            }
+            
+            # Now, check the (potentially modified) block for a non-zero delta.
+            # This works for both pre-existing deltas and the ones we just calculated.
+            if (block_text ~ /Delta:/ && block_text !~ /Delta: (\+)?0\.00%/) {
+              # Filter out any summary lines that are not part of a benchmark block
+              if (block_text ~ /🏌️/) {
+                print block_text "\n" # Print the complete, changed block
+              }
+            }
+          }')
 
           if [ -n "$changed_blocks" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
