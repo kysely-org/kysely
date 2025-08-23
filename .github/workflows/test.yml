@@ -372,7 +372,7 @@ jobs:
           comment-tag: typescript-benchmarks
           message: |
             <details>
-            <summary>⏱️ **Benchmark changes detected** following ${{ github.event.pull_request.head.sha }}</summary>
+            <summary>⏱️ <strong>Benchmark changes detected</strong> following ${{ github.event.pull_request.head.sha }}</summary>
 
             The following benchmarks have changed from the baseline:
             ```
