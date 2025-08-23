@@ -314,54 +314,6 @@ jobs:
       - name: Type-check JSDocs code blocks
         run: pnpm test:jsdocs
 
-  typescript-benchmarks:
-    name: TypeScript Benchmarks
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
-        with:
-          cache: 'pnpm'
-          node-version: lts/*
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Run benchmarks
-        id: bench
-        run: |
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: PR comment
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
-        with:
-          # edits the existing pr comment if exists. github ui allows checking edit history.
-          comment-tag: typescript-benchmarks
-          message: |
-            <details>
-            <summary>⏱️ TypeScript Benchmarks following ${{ github.event.pull_request.head.sha }}</summary>
-
-            ```
-            ${{ steps.bench.outputs.summary }}
-            ```
-            </details>
-
   typescript-native:
     name: TypeScript Native
     runs-on: ubuntu-latest
