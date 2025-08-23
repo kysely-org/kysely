@@ -83,7 +83,7 @@ bench('kyselyAny.selectFrom([~table])', () => {
 
 bench('kyselyAny.selectFrom([table as alias])', () => {
   return kyselyAny.selectFrom(['my_table as mt'])
-}).types([24, 'instantiations'])
+}).types([132, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table, table])', () => {
   return kyselyAny.selectFrom([
