@@ -86,10 +86,13 @@ export default function Home(): JSX.Element {
 
 const STACKBLITZ_URL = 'https://stackblitz.com/edit/react-ts-pppzf5'
 const STACKBLITZ_PARAMS = new URLSearchParams({
+  ctl: '1',
   embed: '1',
   file: 'playground.ts',
+  hidedevtools: '1',
   hideExplorer: '1',
   hideNavigation: '1',
+  showSidebar: '0'
 })
 
 function SectionPlayground() {
@@ -104,21 +107,44 @@ function SectionPlayground() {
     setSrc(`${STACKBLITZ_URL}?${STACKBLITZ_PARAMS}`)
   }, [colorMode])
 
-  // Prevent automatic focus on mobile
+  // Prevent automatic focus and scrolling on mobile
   useEffect(() => {
     if (window.innerWidth > 768) return // Only apply on mobile
 
-    const preventInitialFocus = () => {
-      if (iframeRef.current) {
+    const preventFocus = (e: FocusEvent) => {
+      if (iframeRef.current && e.target === iframeRef.current) {
+        e.preventDefault()
+        e.stopPropagation()
         iframeRef.current.blur()
+        return false
       }
     }
 
-    // Prevent focus immediately and after a short delay
-    preventInitialFocus()
-    const timeout = setTimeout(preventInitialFocus, 1000)
+    const preventScroll = () => {
+      // If the page has scrolled due to the iframe, scroll back to top
+      if (window.scrollY > 100 && iframeRef.current) {
+        const rect = iframeRef.current.getBoundingClientRect()
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      }
+    }
 
-    return () => clearTimeout(timeout)
+    const iframe = iframeRef.current
+    if (iframe) {
+      iframe.addEventListener('focus', preventFocus, true)
+      iframe.addEventListener('focusin', preventFocus, true)
+
+      // Monitor scroll position
+      const scrollHandler = () => setTimeout(preventScroll, 100)
+      window.addEventListener('scroll', scrollHandler)
+
+      return () => {
+        iframe.removeEventListener('focus', preventFocus, true)
+        iframe.removeEventListener('focusin', preventFocus, true)
+        window.removeEventListener('scroll', scrollHandler)
+      }
+    }
   }, [src])
 
   return (
@@ -136,6 +162,7 @@ function SectionPlayground() {
           src={src}
           tabIndex={-1}
           title="Kysely Demo"
+          loading="lazy"
         />
       </div>
     </section>

@@ -135,6 +135,12 @@
 @media (max-width: 768px) {
   .playground {
     overflow-anchor: none;
+    /* Make iframe not focusable but still interactive */
+    pointer-events: auto;
+  }
+
+  .playground:focus {
+    outline: none;
   }
 }
 
