@@ -40,7 +40,7 @@ bench('kysely..orderBy(~column)', () =>
 ).types([189, 'instantiations'])
 
 bench('kysely..orderBy(O)', () => query.orderBy('e862ca')).types([
-  69,
+  70,
   'instantiations',
 ])
 
