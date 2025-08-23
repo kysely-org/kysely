@@ -6,6 +6,8 @@ import { devDependencies } from '../package.json'
 const typescriptVersion = devDependencies.typescript.replace(/^[~^]/, '')
 const testTsConfigRelativePath = '../test/node/tsconfig.json'
 
+console.log('typescriptVersion', typescriptVersion)
+
 if (lt(typescriptVersion, '5.0.0')) {
   const tsconfigPath = resolve(
     dirname(new URL(import.meta.url).pathname),
@@ -18,6 +20,8 @@ if (lt(typescriptVersion, '5.0.0')) {
     ...tsconfig,
     exclude: (tsconfig.exclude || []).concat('src/async-dispose.test.ts'),
   })
+
+  console.log(`Updated ${tsconfigPath} to exclude async-dispose.test.ts`)
 }
 
 if (lt(typescriptVersion, '5.4.0')) {
@@ -39,4 +43,8 @@ if (lt(typescriptVersion, '5.4.0')) {
     'test-d/generic.test-d.ts'
 
   await writeTSConfig(tsdTsConfigPath, { ...tsdTsConfig, exclude })
+
+  console.log(
+    `Updated ${tsdTsConfigPath} to include generic-pre-5.4.test-d.ts and exclude generic.test-d.ts`,
+  )
 }
