@@ -40,9 +40,9 @@ function HomepageHeader() {
               href="/docs/getting-started"
               className="button button--primary button--md button--block"
               style={{
-                background: 'var(--gray12)',
-                color: 'var(--gray1)',
-                borderColor: 'var(--gray12)',
+                background: 'var(--gray-12)',
+                color: 'var(--gray-1)',
+                borderColor: 'var(--gray-12)',
               }}
             >
               Getting started
