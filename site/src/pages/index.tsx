@@ -3,7 +3,7 @@ import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { SectionFeatures } from '../components/SectionFeatures'
 import { DemoVideo } from '../components/DemoVideo'
@@ -99,38 +99,12 @@ function SectionPlayground() {
   const { colorMode } = useColorMode()
 
   const [src, setSrc] = useState('')
-  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     STACKBLITZ_PARAMS.set('theme', colorMode)
 
     setSrc(`${STACKBLITZ_URL}?${STACKBLITZ_PARAMS}`)
   }, [colorMode])
-
-  // Prevent automatic focus on mobile
-  useEffect(() => {
-    if (window.innerWidth > 768) return // Only apply on mobile
-
-    const preventFocus = (e: FocusEvent) => {
-      if (iframeRef.current && e.target === iframeRef.current) {
-        e.preventDefault()
-        e.stopPropagation()
-        iframeRef.current.blur()
-        return false
-      }
-    }
-
-    const iframe = iframeRef.current
-    if (iframe) {
-      iframe.addEventListener('focus', preventFocus, true)
-      iframe.addEventListener('focusin', preventFocus, true)
-
-      return () => {
-        iframe.removeEventListener('focus', preventFocus, true)
-        iframe.removeEventListener('focusin', preventFocus, true)
-      }
-    }
-  }, [src])
 
   return (
     <section className={styles.playgroundSection}>
@@ -140,7 +114,6 @@ function SectionPlayground() {
           Modify the query on the left and view the generated SQL on the right.
         </p>
         <iframe
-          ref={iframeRef}
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
           className={styles.playground}
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
