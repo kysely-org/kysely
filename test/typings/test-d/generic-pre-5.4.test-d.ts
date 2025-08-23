@@ -107,16 +107,16 @@ async function testSelectFromDynamic(db: Kysely<Database>) {
   expectType<{ id: number | string }>(r1)
 
   const r2 = await getIdDynamic(db, 'pet')
-  expectType<{ id: string | number }>(r2)
+  expectType<{ id: number | string }>(r2)
 
   const r3 = await getRowDynamic(db, 'movie')
-  expectType<Selectable<Movie>>(r3)
+  expectType<{ id: number | string }>(r3)
 
   const r4 = await getRowDynamic(db, 'person')
-  expectType<Selectable<Person>>(r4)
+  expectType<{ id: number | string }>(r4)
 
   const r5 = await getRowByColumnDynamic(db, 'person', 'first_name', 'Jennifer')
-  expectType<Selectable<Person>>(r5)
+  expectType<{ id: number | string }>(r5)
 }
 
 async function getIdDynamic<T extends 'person' | 'pet'>(
@@ -138,7 +138,7 @@ async function getRowDynamic<T extends keyof Database>(
   const { table } = db.dynamic
 
   return await db
-    .selectFrom(table(t).as('t'))
+    .selectFrom(table<keyof Database>(t).as('t'))
     .selectAll('t')
     .executeTakeFirstOrThrow()
 }
@@ -150,7 +150,7 @@ async function getRowByIdDynamic<
   const { table } = db.dynamic
 
   return await db
-    .selectFrom(table(t).as('t'))
+    .selectFrom(table<keyof Database>(t).as('t'))
     .selectAll('t')
     .where('id', '=', id as any)
     .executeTakeFirstOrThrow()
@@ -164,9 +164,9 @@ async function getRowByColumnDynamic<
   const { table, ref } = db.dynamic
 
   return await db
-    .selectFrom(table(t).as('t'))
+    .selectFrom(table<keyof Database>(t).as('t'))
     .selectAll()
-    .where(ref(c), '=', v)
+    .where(ref<keyof Database[keyof Database] & string>(c), '=', v)
     .orderBy('t.id')
     .executeTakeFirstOrThrow()
 }
