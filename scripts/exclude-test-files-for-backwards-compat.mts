@@ -30,30 +30,30 @@ if (lt(typescriptVersion, '5.0.0')) {
   )
 }
 
-if (lt(typescriptVersion, '5.4.0')) {
-  // Swap to the pre-5.4 version of the generic test
-  const tsdTsConfigPath = resolve(
-    dirname(new URL(import.meta.url).pathname),
-    '../test/typings/tsconfig.json',
-  )
+// if (lt(typescriptVersion, '5.4.0')) {
+//   // Swap to the pre-5.4 version of the generic test
+//   const tsdTsConfigPath = resolve(
+//     dirname(new URL(import.meta.url).pathname),
+//     '../test/typings/tsconfig.json',
+//   )
 
-  const tsdTsConfig = await readTSConfig(tsdTsConfigPath)
+//   const tsdTsConfig = await readTSConfig(tsdTsConfigPath)
 
-  const exclude = tsdTsConfig.exclude || []
+//   const exclude = tsdTsConfig.exclude || []
 
-  const indexForReplacement = exclude.indexOf(
-    './test-d/generic-pre-5.4.test-d.ts',
-  )
+//   const indexForReplacement = exclude.indexOf(
+//     './test-d/generic-pre-5.4.test-d.ts',
+//   )
 
-  exclude[indexForReplacement !== -1 ? indexForReplacement : exclude.length] =
-    './test-d/generic.test-d.ts'
+//   exclude[indexForReplacement !== -1 ? indexForReplacement : exclude.length] =
+//     './test-d/generic.test-d.ts'
 
-  const updatedTSConfig = { ...tsdTsConfig, exclude }
+//   const updatedTSConfig = { ...tsdTsConfig, exclude }
 
-  await writeTSConfig(tsdTsConfigPath, updatedTSConfig)
+//   await writeTSConfig(tsdTsConfigPath, updatedTSConfig)
 
-  console.log(
-    `Updated ${tsdTsConfigPath} to include generic-pre-5.4.test-d.ts and exclude generic.test-d.ts`,
-    JSON.stringify(updatedTSConfig, null, 2),
-  )
-}
+//   console.log(
+//     `Updated ${tsdTsConfigPath} to include generic-pre-5.4.test-d.ts and exclude generic.test-d.ts`,
+//     JSON.stringify(updatedTSConfig, null, 2),
+//   )
+// }
