@@ -343,24 +343,47 @@ jobs:
       - name: Run benchmarks
         id: bench
         run: |
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "full_summary<<EOF" >> $GITHUB_OUTPUT
           pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: PR comment
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+      - name: Analyze Results
+        id: analyze
+        run: |
+          full_summary="${{ steps.bench.outputs.full_summary }}"
+          changed_blocks=$(echo "$full_summary" | awk 'BEGIN{RS=""} /Delta:/ && !/Delta: 0\.00%/ {printf "%s\n\n", $0}')
+
+          if [ -n "$changed_blocks" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            # This output now contains ONLY the raw text, not the formatted message.
+            echo "changed_blocks<<EOF" >> $GITHUB_OUTPUT
+            echo "$changed_blocks" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: PR Comment on Changes
+        if: steps.analyze.outputs.has_changes == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
         with:
-          # edits the existing pr comment if exists. github ui allows checking edit history.
           comment-tag: typescript-benchmarks
           message: |
             <details>
-            <summary>⏱️ TypeScript Benchmarks following ${{ github.event.pull_request.head.sha }}</summary>
+            <summary>⏱️ **Benchmark changes detected** following `${{ github.event.pull_request.head.sha }}`</summary>
 
+            The following benchmarks have changed from the baseline:
             ```
-            ${{ steps.bench.outputs.summary }}
+            ${{ steps.analyze.outputs.changed_blocks }}
             ```
             </details>
+
+      - name: PR Comment on No Changes
+        if: steps.analyze.outputs.has_changes == 'false' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
+        with:
+          comment-tag: typescript-benchmarks
+          message: ⏱️ **No benchmark changes detected** following `${{ github.event.pull_request.head.sha }}`.
 
   typescript-native:
     name: TypeScript Native
