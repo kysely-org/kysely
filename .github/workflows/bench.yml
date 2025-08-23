@@ -72,9 +72,16 @@ jobs:
       - name: Run benchmarks
         id: bench
         run: |
-          # The `|| true` is important. It prevents the step from failing if your
-          # benchmark tool exits with an error code on threshold violation.
-          summary_output=$(pnpm bench:ts | grep -v "> " | sed '/./,$!d' || true)
+          # Run the benchmark command and capture its exit code
+          summary_output=$(pnpm bench:ts | grep -v "> " | sed '/./,$!d')
+          exit_code=$?
+
+          # Set a boolean output indicating if it failed with exit code 1
+          if [ $exit_code -eq 1 ]; then
+            echo "benchmark_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "benchmark_failed=false" >> $GITHUB_OUTPUT
+          fi
 
           echo "full_summary<<EOF" >> $GITHUB_OUTPUT
           echo "$summary_output" >> $GITHUB_OUTPUT
@@ -151,3 +158,9 @@ jobs:
         with:
           comment-tag: typescript-benchmarks
           message: ✅ ⏱️ **No benchmark changes detected** following ${{ github.event.pull_request.head.sha }}.
+
+      - name: Fail job if benchmark command failed
+        if: steps.bench.outputs.benchmark_failed == 'true'
+        run: |
+          echo "Benchmark command failed with exit code 1"
+          exit 1
