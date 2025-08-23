@@ -1,6 +1,5 @@
 import { DynamicReferenceBuilder } from './dynamic-reference-builder.js'
 import { DynamicTableBuilder } from './dynamic-table-builder.js'
-import { AnyTable } from '../parser/table-parser.js'
 
 export class DynamicModule<DB> {
   /**
@@ -125,7 +124,7 @@ export class DynamicModule<DB> {
    * const person = await getRowByColumn('person', 'first_name', 'Arnold')
    * ```
    */
-  table<T extends AnyTable<DB>>(table: T): DynamicTableBuilder<T> {
+  table<T extends keyof DB & string>(table: T): DynamicTableBuilder<T> {
     return new DynamicTableBuilder<T>(table)
   }
 }
