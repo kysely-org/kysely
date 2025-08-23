@@ -351,11 +351,15 @@ jobs:
         id: analyze
         run: |
           full_summary="${{ steps.bench.outputs.full_summary }}"
-          changed_blocks=$(echo "$full_summary" | awk 'BEGIN{RS=""} /Delta:/ && !/Delta: 0\.00%/ {printf "%s\n\n", $0}')
+
+          # This improved awk script finds blocks where:
+          # 1. A "Delta:" exists but is not "0.00%"
+          # OR
+          # 2. A "Baseline:" exists but "Delta:" is missing entirely
+          changed_blocks=$(echo "$full_summary" | awk 'BEGIN{RS=""} (/Baseline:/ && !/Delta:/) || (/Delta:/ && !/Delta: 0\.00%/) {printf "%s\n\n", $0}')
 
           if [ -n "$changed_blocks" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            # This output now contains ONLY the raw text, not the formatted message.
             echo "changed_blocks<<EOF" >> $GITHUB_OUTPUT
             echo "$changed_blocks" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
