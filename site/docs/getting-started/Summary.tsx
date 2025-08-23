@@ -1,7 +1,7 @@
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
-import { IUseADifferentDatabase } from './IUseADifferentDatabase'
+import { IUseADifferentDialect } from './IUseADifferentDialect'
 import {
   PRETTY_DIALECT_NAMES,
   type Dialect,
@@ -115,7 +115,7 @@ ${dialectSpecificCodeSnippet}
   })
 })`}
       </CodeBlock>
-      <IUseADifferentDatabase {...props} />
+      <IUseADifferentDialect {...props} />
       <Admonition type="info" title="Migrations">
         As you can see, Kysely supports DDL queries. It also supports classic
         "up/down" migrations. Find out more at{' '}

@@ -28,31 +28,19 @@ import { Summary } from './getting-started/Summary'
 
 ## Dialects
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Dialects
-      packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager',
-      )}
-      packageManagersURL="#installation"
-    />
-  )}
-</BrowserOnly>
+<Dialects
+  packageManagerSearchParam="package-manager"
+  packageManagerSelectionID="installation"
+/>
 
 ## Instantiation
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Instantiation
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
-      packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager',
-      )}
-      packageManagersURL="#installation"
-    />
-  )}
-</BrowserOnly>
+<Instantiation
+  dialectSearchParam="dialect"
+  dialectSelectionID="dialects"
+  packageManagerSearchParam="package-manager"
+  packageManagerSelectionID="installation"
+/>
 
 ## Querying
 
@@ -60,7 +48,7 @@ import { Summary } from './getting-started/Summary'
   {() => (
     <Querying
       dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
+      dialectSelectionID="#dialects"
     />
   )}
 </BrowserOnly>
@@ -71,7 +59,7 @@ import { Summary } from './getting-started/Summary'
   {() => (
     <Summary
       dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
+      dialectSelectionID="#dialects"
     />
   )}
 </BrowserOnly>

@@ -7,31 +7,35 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - '.github/workflows/preview.yml'
-      - 'assets/**'
-      - 'docs/**'
-      - 'example/**'
-      - 'site/**'
-      - '.node-version'
-      - '.nvmrc'
-      - '.prettierignore'
-      - '.prettierrc.json'
-      - '*.md'
-      - 'LICENSE'
+    paths:
+      - '**/*'
+      - '!.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
+      - '!assets/**'
+      - '!docs/**'
+      - '!example/**'
+      - '!site/**'
+      - '!.node-version'
+      - '!.nvmrc'
+      - '!.prettierignore'
+      - '!.prettierrc.json'
+      - '!*.md'
+      - '!LICENSE'
   pull_request:
-    paths-ignore:
-      - '.github/workflows/preview.yml'
-      - 'assets/**'
-      - 'docs/**'
-      - 'example/**'
-      - 'site/**'
-      - '.node-version'
-      - '.nvmrc'
-      - '.prettierignore'
-      - '.prettierrc.json'
-      - '*.md'
-      - 'LICENSE'
+    paths:
+      - '**/*'
+      - '!.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
+      - '!assets/**'
+      - '!docs/**'
+      - '!example/**'
+      - '!site/**'
+      - '!.node-version'
+      - '!.nvmrc'
+      - '!.prettierignore'
+      - '!.prettierrc.json'
+      - '!*.md'
+      - '!LICENSE'
   workflow_dispatch:
 
 jobs:
@@ -336,10 +340,10 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm i && pnpm i -w -D @typescript/native-preview
+        run: pnpm i
 
       - name: Build
         run: pnpm build
 
       - name: Run TypeScript Native tests
-        run: pnpm tsgo --project ./tsconfig.json && pnpm tsgo --project ./test/node/tsconfig.json
+        run: pnpx @typescript/native-preview --project ./test/node/tsconfig.json

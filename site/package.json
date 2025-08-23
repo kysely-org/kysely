@@ -30,6 +30,7 @@
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
+    "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
     "@types/react": "^19.1.11",
     "mermaid": "^11.10.1",
     "typescript": "^5.9.2"

@@ -1,7 +1,7 @@
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
-import { IUseADifferentDatabase } from './IUseADifferentDatabase'
+import { IUseADifferentDialect } from './IUseADifferentDialect'
 import type { Dialect, PropsWithDialect } from './shared'
 
 const postgresqlCodeSnippet = `export async function createPerson(person: NewPerson) {
@@ -123,7 +123,7 @@ export async function updatePerson(id: number, updateWith: PersonUpdate) {
 
 ${dialectSpecificCodeSnippet}`}
       </CodeBlock>
-      <IUseADifferentDatabase {...props} />
+      <IUseADifferentDialect {...props} />
       <Admonition type="info" title="But wait, there's more!">
         This is a simplified example with basic CRUD operations. Kysely supports
         many more SQL features including: joins, subqueries, complex boolean

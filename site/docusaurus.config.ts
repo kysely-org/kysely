@@ -5,6 +5,7 @@ import type {
 import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
+import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 
 export default {
   baseUrl: '/',
@@ -24,6 +25,34 @@ export default {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   organizationName: 'kysely-org',
+  plugins: [
+    [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+        content: {
+          // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
+          contentSelectors: [
+            '.theme-doc-markdown', // Docusaurus main content area
+            'main .container .col', // Bootstrap-style layout
+            'main .theme-doc-wrapper', // Docusaurus wrapper
+            'article', // Semantic article element
+            'main .container', // Broader container
+            'main', // Fallback to main element
+            '.code-example',
+          ],
+          enableLlmsFullTxt: true,
+          includeGeneratedIndex: false,
+          includePages: true,
+          includeVersionedDocs: false,
+          relativePaths: false,
+        },
+        depth: 3,
+        onRouteError: 'throw',
+        siteDescription: 'The type-safe SQL query builder for TypeScript',
+        siteTitle: 'Kysely',
+      } satisfies LLMsTXTPluginOptions,
+    ],
+  ],
   presets: [
     [
       'classic',

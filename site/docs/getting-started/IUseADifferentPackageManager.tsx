@@ -1,20 +1,28 @@
 import Link from '@docusaurus/Link'
-import { PRETTY_PACKAGE_MANAGER_NAMES, type PackageManager } from './shared'
-
-export interface IUseADifferentPackageManagerProps {
-  packageManager: PackageManager | undefined
-  packageManagersURL: string
-}
+import {
+  DEFAULT_PACKAGE_MANAGER,
+  PRETTY_PACKAGE_MANAGER_NAMES,
+  type PropsWithPackageManager,
+} from './shared'
 
 export function IUseADifferentPackageManager(
-  props: IUseADifferentPackageManagerProps,
+  props: Pick<
+    PropsWithPackageManager,
+    'packageManager' | 'packageManagerSelectionID'
+  >,
 ) {
+  const { packageManager, packageManagerSelectionID } = props
+
+  if (!packageManagerSelectionID) {
+    return null
+  }
+
   const packageManagerName =
-    PRETTY_PACKAGE_MANAGER_NAMES[props.packageManager || 'npm']
+    PRETTY_PACKAGE_MANAGER_NAMES[packageManager || DEFAULT_PACKAGE_MANAGER]
 
   return (
     <p style={{ display: 'flex', justifyContent: 'end' }}>
-      <Link to={props.packageManagersURL}>
+      <Link to={`#${packageManagerSelectionID}`}>
         I use a different package manager (not {packageManagerName})
       </Link>
     </p>

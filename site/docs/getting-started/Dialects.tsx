@@ -15,12 +15,13 @@ import {
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
   type PackageManager,
+  PACKAGE_MANAGERS,
+  type PropsWithPackageManager,
+  useSearchState,
+  DEFAULT_PACKAGE_MANAGER,
 } from './shared'
 
-export interface DialectsProps {
-  packageManager: PackageManager | undefined
-  packageManagersURL: string
-}
+export type DialectsProps = PropsWithPackageManager
 
 interface BuiltInDialect {
   value: Dialect
@@ -51,7 +52,14 @@ const builtInDialects: BuiltInDialect[] = [
 ]
 
 export function Dialects(props: DialectsProps) {
-  const packageManager = props.packageManager || 'npm'
+  const { packageManagerSelectionID } = props
+
+  const packageManager = useSearchState({
+    defaultValue: DEFAULT_PACKAGE_MANAGER,
+    searchParam: props.packageManagerSearchParam,
+    validator: (value) => PACKAGE_MANAGERS.includes(value as never),
+    value: props.packageManager,
+  })
 
   return (
     <>
@@ -131,7 +139,10 @@ export function Dialects(props: DialectsProps) {
           )
         })}
       </Tabs>
-      <IUseADifferentPackageManager {...props} />
+      <IUseADifferentPackageManager
+        packageManager={packageManager}
+        packageManagerSelectionID={packageManagerSelectionID}
+      />
       <Admonition type="info" title="Driverless">
         Kysely can also work in compile-only mode that doesn't require a
         database driver. Find out more at{' '}

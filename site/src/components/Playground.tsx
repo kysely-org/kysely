@@ -1,18 +1,64 @@
 import { useColorMode } from '@docusaurus/theme-common'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './Playground.module.css'
 import { GENERATED_PLAYGROUND_EXAMPLE_TYPES } from './playground-example-types'
+import clsx from 'clsx'
+import CodeBlock from '@theme/CodeBlock'
 
 export function Playground(props: PlaygroundProps) {
   const src = useSrc(props)
+  const [loadFailed, setLoadFailed] = useState<boolean>(false)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+
+  useEffect(() => {
+    const { current: iframe } = iframeRef
+
+    if (!iframe) {
+      return
+    }
+
+    let failTimer: NodeJS.Timeout
+
+    const handleLoad = () => {
+      clearTimeout(failTimer)
+    }
+
+    iframe.addEventListener('load', handleLoad)
+
+    failTimer = setTimeout(() => {
+      setLoadFailed(true)
+    }, 500)
+
+    return () => {
+      iframe.removeEventListener('load', handleLoad)
+      clearTimeout(failTimer)
+    }
+  }, [src])
 
   return (
-    <iframe
-      allow="clipboard-write"
-      autoFocus
-      className={styles.playground}
-      src={src}
-    />
+    <>
+      {!loadFailed && (
+        <iframe
+          allow="clipboard-write"
+          autoFocus
+          className={styles.playground}
+          ref={iframeRef}
+          src={src}
+        />
+      )}
+      <div
+        className={clsx(
+          'code-example',
+          !loadFailed ? styles.visuallyHidden : undefined,
+        )}
+      >
+        <CodeBlock language="ts">
+          {[GENERATED_PLAYGROUND_EXAMPLE_TYPES, props.setupCode, props.code]
+            .filter(Boolean)
+            .join('\n\n')}
+        </CodeBlock>
+      </div>
+    </>
   )
 }
 
