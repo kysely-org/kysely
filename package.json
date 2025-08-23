@@ -77,6 +77,7 @@
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "script:align-site-version": "node --experimental-strip-types scripts/align-site-version.mts",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
+    "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
     "version": "pnpm script:align-site-version && git add ."
   },
@@ -88,7 +89,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@ark/attest": "^0.46.0",
+    "@ark/attest": "^0.48.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.2",
@@ -108,14 +109,15 @@
     "pathe": "^2.0.3",
     "pg": "^8.15.6",
     "pg-cursor": "^2.14.6",
+    "pkg-types": "^2.3.0",
     "playwright": "^1.55.0",
     "prettier": "^3.5.3",
     "semver": "^7.7.1",
     "sinon": "^21.0.0",
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
-    "tsd": "^0.32.0",
-    "typescript": "^5.8.3"
+    "tsd": "^0.33.0",
+    "typescript": "~5.9.2"
   },
   "packageManager": "pnpm@10.14.0-0+sha512.2cd47a0cbf5f1d1de7693a88307a0ede5be94e0d3b34853d800ee775efbea0650cb562b77605ec80bc8d925f5cd27c4dfe8bb04d3a0b76090784c664450d32d6"
 }
