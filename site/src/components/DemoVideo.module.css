@@ -1,19 +1,19 @@
 .videoContainer {
-  width: 100%;
+  background: transparent;
   max-width: 832px;
   position: relative;
-  background: transparent;
+  width: 100%;
 }
 
 .videoContainer video {
-  width: 100%;
-  height: auto;
-  max-height: 610px;
-  display: block;
   background: transparent;
   border: none;
-  outline: none;
-  margin: 0;
-  padding: 0;
   border-radius: 24px;
+  display: block;
+  height: auto;
+  margin: 0;
+  max-height: 610px;
+  outline: none;
+  padding: 0;
+  width: 100%;
 }
