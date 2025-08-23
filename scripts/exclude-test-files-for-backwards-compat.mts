@@ -16,12 +16,17 @@ if (lt(typescriptVersion, '5.0.0')) {
 
   const tsconfig = await readTSConfig(tsconfigPath)
 
-  await writeTSConfig(tsconfigPath, {
+  const updatedTSConfig = {
     ...tsconfig,
     exclude: (tsconfig.exclude || []).concat('src/async-dispose.test.ts'),
-  })
+  }
 
-  console.log(`Updated ${tsconfigPath} to exclude async-dispose.test.ts`)
+  await writeTSConfig(tsconfigPath, updatedTSConfig)
+
+  console.log(
+    `Updated ${tsconfigPath} to exclude async-dispose.test.ts`,
+    JSON.stringify(updatedTSConfig, null, 2),
+  )
 }
 
 if (lt(typescriptVersion, '5.4.0')) {
@@ -42,9 +47,12 @@ if (lt(typescriptVersion, '5.4.0')) {
   exclude[indexForReplacement !== -1 ? indexForReplacement : exclude.length] =
     'test-d/generic.test-d.ts'
 
-  await writeTSConfig(tsdTsConfigPath, { ...tsdTsConfig, exclude })
+  const updatedTSConfig = { ...tsdTsConfig, exclude }
+
+  await writeTSConfig(tsdTsConfigPath, updatedTSConfig)
 
   console.log(
     `Updated ${tsdTsConfigPath} to include generic-pre-5.4.test-d.ts and exclude generic.test-d.ts`,
+    JSON.stringify(updatedTSConfig, null, 2),
   )
 }
