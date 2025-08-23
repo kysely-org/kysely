@@ -1,9 +1,10 @@
 import { dirname, resolve } from 'pathe'
-import { readTSConfig, writeTSConfig } from 'pkg-types'
+import { readPackageJSON, readTSConfig, writeTSConfig } from 'pkg-types'
 import { lt } from 'semver'
-import { devDependencies } from '../package.json'
 
-const typescriptVersion = devDependencies.typescript.replace(/^[~^]/, '')
+const { devDependencies } = await readPackageJSON()
+
+const typescriptVersion = devDependencies!.typescript.replace(/^[~^]/, '')
 const testTsConfigRelativePath = '../test/node/tsconfig.json'
 
 console.log('typescriptVersion', typescriptVersion)
@@ -41,11 +42,11 @@ if (lt(typescriptVersion, '5.4.0')) {
   const exclude = tsdTsConfig.exclude || []
 
   const indexForReplacement = exclude.indexOf(
-    'test-d/generic-pre-5.4.test-d.ts',
+    './test-d/generic-pre-5.4.test-d.ts',
   )
 
   exclude[indexForReplacement !== -1 ? indexForReplacement : exclude.length] =
-    'test-d/generic.test-d.ts'
+    './test-d/generic.test-d.ts'
 
   const updatedTSConfig = { ...tsdTsConfig, exclude }
 
