@@ -9,7 +9,7 @@ const testTsConfigRelativePath = '../test/node/tsconfig.json'
 
 console.log('typescriptVersion', typescriptVersion)
 
-if (lt(typescriptVersion, '5.0.0')) {
+if (lt(typescriptVersion, '5.2.0')) {
   const tsconfigPath = resolve(
     dirname(new URL(import.meta.url).pathname),
     testTsConfigRelativePath,
