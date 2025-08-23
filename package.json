@@ -116,26 +116,7 @@
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
     "tsd": "^0.33.0",
-    "tsd4.6": "npm:tsd@0.20.0",
-    "tsd4.7": "npm:tsd@0.22.0",
-    "tsd4.8": "npm:tsd@0.24.1",
-    "tsd4.9": "npm:tsd@0.27.0",
-    "tsd5.0": "npm:tsd@0.28.1",
-    "tsd5.2": "npm:tsd@0.29.0",
-    "tsd5.3": "npm:tsd@0.30.7",
-    "tsd5.4": "npm:tsd@0.31.2",
-    "tsd5.8": "npm:tsd@0.32.0",
-    "typescript": "~5.9.2",
-    "typescript4.6": "npm:typescript@~4.6.4",
-    "typescript4.7": "npm:typescript@~4.7.4",
-    "typescript4.8": "npm:typescript@~4.8.4",
-    "typescript4.9": "npm:typescript@~4.9.5",
-    "typescript5.0": "npm:typescript@~5.0.4",
-    "typescript5.1": "npm:typescript@~5.1.6",
-    "typescript5.2": "npm:typescript@~5.2.2",
-    "typescript5.3": "npm:typescript@~5.3.3",
-    "typescript5.4": "npm:typescript@~5.4.5",
-    "typescript5.8": "npm:typescript@~5.8.3"
+    "typescript": "~5.9.2"
   },
   "packageManager": "pnpm@10.14.0-0+sha512.2cd47a0cbf5f1d1de7693a88307a0ede5be94e0d3b34853d800ee775efbea0650cb562b77605ec80bc8d925f5cd27c4dfe8bb04d3a0b76090784c664450d32d6"
 }
