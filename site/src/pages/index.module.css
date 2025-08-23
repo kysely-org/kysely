@@ -8,10 +8,10 @@
   position: relative;
   background: linear-gradient(
     315deg,
-    var(--sky7) 3%,
-    var(--blue7) 38%,
-    var(--sky7) 68%,
-    var(--blue7) 98%
+    var(--sky-7) 3%,
+    var(--blue-7) 38%,
+    var(--sky-7) 68%,
+    var(--blue-7) 98%
   );
   animation: gradient 95s ease infinite;
   background-size: 400% 400%;
@@ -33,13 +33,13 @@
 .heroTitle {
   font-size: 90px;
   font-weight: 200;
-  color: var(--sky12);
+  color: var(--sky-12);
 }
 
 .heroSubtitle {
   font-size: 24px;
   font-weight: 300;
-  color: var(--sky12);
+  color: var(--sky-12);
   line-height: 1.2;
 }
 
@@ -124,11 +124,24 @@
 
 .playground {
   border-radius: 8px;
-  border: 1px solid var(--gray11);
+  border: 1px solid var(--gray-11);
   height: 100%;
   overflow: hidden;
   padding: 0;
   width: 100%;
+}
+
+/* Prevent mobile browser from scrolling to iframe on page load */
+@media (max-width: 768px) {
+  .playground {
+    overflow-anchor: none;
+    /* Make iframe not focusable but still interactive */
+    pointer-events: auto;
+  }
+
+  .playground:focus {
+    outline: none;
+  }
 }
 
 .playgroundContainer {
@@ -145,17 +158,17 @@
 }
 
 [data-theme='dark'] .playgroundSection {
-  background: var(--gray12);
+  background: var(--gray-12);
 }
 
 .examplesCTASection {
-  background: radial-gradient(circle, var(--sky4) 0%, white 20%);
+  background: radial-gradient(circle, var(--sky-4) 0%, white 20%);
   display: grid;
   place-items: center;
 }
 
 [data-theme='dark'] .examplesCTASection {
-  background: radial-gradient(circle, var(--blue12) 0%, var(--gray12) 20%);
+  background: radial-gradient(circle, var(--blue-12) 0%, var(--gray-12) 20%);
 }
 
 .examplesCTAContainer {

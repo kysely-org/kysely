@@ -1,3 +1,4 @@
+import React, { JSX } from 'react'
 import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
@@ -40,9 +41,9 @@ function HomepageHeader() {
               href="/docs/getting-started"
               className="button button--primary button--md button--block"
               style={{
-                background: 'var(--gray12)',
-                color: 'var(--gray1)',
-                borderColor: 'var(--gray12)',
+                background: 'var(--gray-12)',
+                color: 'var(--gray-1)',
+                borderColor: 'var(--gray-12)',
               }}
             >
               Getting started
@@ -58,20 +59,6 @@ function HomepageHeader() {
 
         <DemoVideo />
       </div>
-
-      <span
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 'calc(50% - 20px)',
-          color: 'black',
-          width: 40,
-          fontSize: 24,
-          textAlign: 'center',
-        }}
-      >
-        ↓
-      </span>
     </header>
   )
 }
@@ -99,10 +86,13 @@ export default function Home(): JSX.Element {
 
 const STACKBLITZ_URL = 'https://stackblitz.com/edit/react-ts-pppzf5'
 const STACKBLITZ_PARAMS = new URLSearchParams({
+  ctl: '1',
   embed: '1',
   file: 'playground.ts',
+  hidedevtools: '1',
   hideExplorer: '1',
   hideNavigation: '1',
+  showSidebar: '0',
 })
 
 function SectionPlayground() {
@@ -128,7 +118,9 @@ function SectionPlayground() {
           className={styles.playground}
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
           src={src}
+          tabIndex={-1}
           title="Kysely Demo"
+          loading="lazy"
         />
       </div>
     </section>

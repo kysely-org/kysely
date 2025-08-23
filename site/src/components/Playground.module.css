@@ -1,5 +1,5 @@
 .playground {
-  border: 1px solid var(--gray3);
+  border: 1px solid var(--gray-3);
   border-radius: 7px;
   min-height: 600px;
   width: 100%;

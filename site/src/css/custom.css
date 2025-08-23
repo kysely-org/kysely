@@ -8,26 +8,29 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: var(--sky9);
-  --ifm-color-primary-dark: var(--sky10);
-  --ifm-color-primary-darker: var(--sky11);
-  --ifm-color-primary-darkest: var(--sky12);
-  --ifm-color-primary-light: var(--sky8);
-  --ifm-color-primary-lighter: var(--sky7);
-  --ifm-color-primary-lightest: var(--sky6);
-  --ifm-footer-background-color: var(--sky12);
+  --ifm-color-primary: var(--sky-9);
+  --ifm-color-primary-dark: var(--sky-10);
+  --ifm-color-primary-darker: var(--sky-11);
+  --ifm-color-primary-darkest: var(--sky-12);
+  --ifm-color-primary-light: var(--sky-8);
+  --ifm-color-primary-lighter: var(--sky-7);
+  --ifm-color-primary-lightest: var(--sky-6);
+  --ifm-footer-background-color: var(--sky-12);
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-button-font-weight: 500;
   --shadow-color: 0deg 0% 0%;
-  --shadow-elevation-low: -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
+  --shadow-elevation-low:
+    -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
     -0.2px 0.8px 0.9px -1.2px hsl(var(--shadow-color) / 0.1),
     -0.6px 2px 2.3px -2.5px hsl(var(--shadow-color) / 0.1);
-  --shadow-elevation-medium: -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.11),
+  --shadow-elevation-medium:
+    -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.11),
     -0.5px 1.7px 2px -0.8px hsl(var(--shadow-color) / 0.11),
     -1.2px 4.2px 4.9px -1.7px hsl(var(--shadow-color) / 0.11),
     -3px 10.1px 11.9px -2.5px hsl(var(--shadow-color) / 0.11);
-  --shadow-elevation-high: -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
+  --shadow-elevation-high:
+    -0.1px 0.5px 0.6px hsl(var(--shadow-color) / 0.1),
     -0.9px 3px 3.5px -0.4px hsl(var(--shadow-color) / 0.1),
     -1.6px 5.5px 6.4px -0.7px hsl(var(--shadow-color) / 0.1),
     -2.6px 9.1px 10.6px -1.1px hsl(var(--shadow-color) / 0.1),
@@ -43,14 +46,14 @@
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: var(--sky9);
-  --ifm-color-primary-dark: var(--sky10);
-  --ifm-color-primary-darker: var(--sky11);
-  --ifm-color-primary-darkest: var(--sky12);
-  --ifm-color-primary-light: var(--sky6);
-  --ifm-color-primary-lighter: var(--sky4);
-  --ifm-color-primary-lightest: var(--sky2);
-  --ifm-footer-background-color: var(--sky12);
+  --ifm-color-primary: var(--sky-9);
+  --ifm-color-primary-dark: var(--sky-10);
+  --ifm-color-primary-darker: var(--sky-11);
+  --ifm-color-primary-darkest: var(--sky-12);
+  --ifm-color-primary-light: var(--sky-6);
+  --ifm-color-primary-lighter: var(--sky-4);
+  --ifm-color-primary-lightest: var(--sky-2);
+  --ifm-footer-background-color: var(--sky-12);
 }
 
 [data-theme='light'] .footer {
@@ -68,7 +71,7 @@
     hsl(211deg 100% 93%) 100%
   );
   --ifm-footer-title-color: var(--ifm-color-black);
-  --ifm-footer-link-color: var(--gray12);
+  --ifm-footer-link-color: var(--gray-12);
 }
 
 [data-theme='dark'] .footer {

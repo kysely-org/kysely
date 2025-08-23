@@ -12,7 +12,7 @@
 }
 
 [data-theme='dark'] .quoteContainer {
-  background-color: var(--gray12);
+  background-color: var(--gray-12);
 }
 
 .quoteInnerContainer {
@@ -28,31 +28,31 @@
 
 .quoteTitle,
 .quoteSubtitle {
-  color: var(--gray11);
+  color: var(--gray-11);
 }
 
 [data-theme='dark'] .quoteTitle,
 [data-theme='dark'] .quoteSubtitle {
-  color: var(--gray9);
+  color: var(--gray-9);
 }
 
 .quoteText {
-  color: var(--gray12);
+  color: var(--gray-12);
   text-align: left;
 }
 
 [data-theme='dark'] .quoteText {
-  color: var(--gray6);
+  color: var(--gray-6);
 }
 
 .quotesSection {
-  background: radial-gradient(circle, var(--sky4) 0%, white 65%);
+  background: radial-gradient(circle, var(--sky-4) 0%, white 65%);
   display: grid;
   place-items: center;
 }
 
 [data-theme='dark'] .quotesSection {
-  background: radial-gradient(circle, var(--blue12) 0%, var(--gray12) 65%);
+  background: radial-gradient(circle, var(--blue-12) 0%, var(--gray-12) 65%);
 }
 
 .quotesContainer {
