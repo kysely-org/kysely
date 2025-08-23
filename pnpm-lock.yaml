@@ -117,8 +117,8 @@ importers:
         specifier: ^3.0.1
         version: 3.1.0(@types/react@19.1.11)(react@19.1.1)
       '@radix-ui/colors':
-        specifier: ^2.0.0
-        version: 2.1.0
+        specifier: ^3.0.0
+        version: 3.0.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1971,8 +1971,8 @@ packages:
     peerDependencies:
       prettier: '*'
 
-  '@radix-ui/colors@2.1.0':
-    resolution: {integrity: sha512-gcBnxjS2u2c6thQz/9K1+Pt2ZYcm5WKU4SLi0emYkRmYbVUw+37rlc5wgLtYOsSsRP9nxVtbJJYj6WVO7UUmZg==}
+  '@radix-ui/colors@3.0.0':
+    resolution: {integrity: sha512-FUOsGBkHrYJwCSEtWRCIfQbZG7q1e6DgxCIOe1SUQzDe/7rXXeA47s8yCn6fuTNQAj1Zq4oTFi9Yjp3wzElcxg==}
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -9539,7 +9539,7 @@ snapshots:
       make-synchronized: 0.4.2
       prettier: 3.5.3
 
-  '@radix-ui/colors@2.1.0': {}
+  '@radix-ui/colors@3.0.0': {}
 
   '@sideway/address@4.1.5':
     dependencies:
