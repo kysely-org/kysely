@@ -73,10 +73,6 @@ export default {
           editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
           sidebarPath: require.resolve('./sidebars.js'),
         },
-        gtag: {
-          anonymizeIP: true,
-          trackingID: 'G-DWKJ0RXL1F',
-        },
         theme: {
           customCss: [
             require.resolve('./src/css/custom.css'),
