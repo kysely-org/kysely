@@ -40,7 +40,7 @@ jobs:
         run: pnpm build
 
       - name: Download old file
-        run: curl -o old-llms-full.txt 'https://kysely-git-fork-igalklebanov-llms-txt-kysely-team.vercel.app/llms-full.txt'
+        run: curl -o old-llms-full.txt 'https://kysely.dev/llms-full.txt'
 
       - name: Diff local vs. deployed
         uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
