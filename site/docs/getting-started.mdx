@@ -48,11 +48,4 @@ import { Summary } from './getting-started/Summary'
 
 ## Summary
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Summary
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectSelectionID="#dialects"
-    />
-  )}
-</BrowserOnly>
+<Summary dialectSearchParam="dialect" dialectSelectionID="dialects" />

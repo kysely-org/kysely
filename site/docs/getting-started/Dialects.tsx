@@ -52,8 +52,6 @@ const builtInDialects: BuiltInDialect[] = [
 ]
 
 export function Dialects(props: DialectsProps) {
-  const { packageManagerSelectionID } = props
-
   const packageManager = useSearchState({
     defaultValue: DEFAULT_PACKAGE_MANAGER,
     searchParam: props.packageManagerSearchParam,
@@ -141,7 +139,7 @@ export function Dialects(props: DialectsProps) {
       </Tabs>
       <IUseADifferentPackageManager
         packageManager={packageManager}
-        packageManagerSelectionID={packageManagerSelectionID}
+        packageManagerSelectionID={props.packageManagerSelectionID}
       />
       <Admonition type="info" title="Driverless">
         Kysely can also work in compile-only mode that doesn't require a
