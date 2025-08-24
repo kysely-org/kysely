@@ -179,9 +179,11 @@ export function useSearchState<Value extends string>(
     [search],
   )
 
-  if (value && value !== state) {
-    setState(value)
-  }
+  useEffect(() => {
+    if (value && value !== state) {
+      setState(value)
+    }
+  }, [value, state])
 
   return state
 }
