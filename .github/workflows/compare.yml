@@ -1,0 +1,47 @@
+name: compare
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/compare.yml'
+      - 'site/**'
+
+jobs:
+  llms-full.txt:
+    name: Diff llms-full.txt file.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: 'pnpm'
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        working-directory: site
+        run: pnpm build
+
+      - name: Diff local vs. deployed
+        working-directory: site
+        uses: andstor/file-diff-action@v1
+        with:
+          fail: false
+          file1: 'https://kysely.dev/llms-full.txt'
+          file2: build/llms-full.txt
