@@ -44,14 +44,7 @@ import { Summary } from './getting-started/Summary'
 
 ## Querying
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Querying
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectSelectionID="#dialects"
-    />
-  )}
-</BrowserOnly>
+<Querying dialectSearchParam="dialect" dialectSelectionID="dialects" />
 
 ## Summary
 
