@@ -39,12 +39,14 @@ jobs:
         working-directory: site
         run: pnpm build
 
+      - name: Download old file
+        run: curl -o old-llms-full.txt 'https://kysely-git-fork-igalklebanov-llms-txt-kysely-team.vercel.app/llms-full.txt'
+
       - name: Diff local vs. deployed
         uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
         with:
           mode: addition
           new: ./site/build/llms-full.txt
-          # old: 'https://kysely.dev/llms-full.txt'
-          old: 'https://kysely-git-fork-igalklebanov-llms-txt-kysely-team.vercel.app/llms-full.txt'
-          output: llms-full-diff.txt
+          old: old-llms-full.txt
+          output: diff-llms-full.txt
           tolerance: mixed-better
