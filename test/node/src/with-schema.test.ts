@@ -360,7 +360,7 @@ for (const dialect of DIALECTS.filter(
       })
     })
 
-    describe.only('merge into', () => {
+    describe('merge into', () => {
       it('should add schema', async () => {
         const query = ctx.db
           .withSchema('mammals')
