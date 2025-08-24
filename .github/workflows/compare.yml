@@ -40,8 +40,10 @@ jobs:
 
       - name: Diff local vs. deployed
         working-directory: site
-        uses: andstor/file-diff-action@v1
+        uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
         with:
-          fail: false
-          file1: 'https://kysely.dev/llms-full.txt'
-          file2: build/llms-full.txt
+          mode: addition
+          new: build/llms-full.txt
+          old: 'https://kysely.dev/llms-full.txt'
+          output: llms-full-diff.txt
+          tolerance: mixed-better
