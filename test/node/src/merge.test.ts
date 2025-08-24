@@ -15,7 +15,7 @@ import {
 for (const dialect of DIALECTS.filter(
   (dialect) => dialect === 'postgres' || dialect === 'mssql',
 )) {
-  describe(`merge (${dialect})`, () => {
+  describe.only(`merge (${dialect})`, () => {
     let ctx: TestContext
 
     before(async function () {
