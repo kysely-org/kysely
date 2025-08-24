@@ -205,7 +205,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
         this.#collectSchemableIdsFromTableExpr(node.using.table, schemableIds)
       } else {
         this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
-      }    
+      }
     }
 
     return schemableIds

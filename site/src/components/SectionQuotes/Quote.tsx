@@ -24,8 +24,6 @@ export function Quote(props: QuoteProps) {
 
   const [domainName] = new URL(link).hostname.split('.')
 
-  console.log(domainName)
-
   return (
     <a className={styles.quoteContainer} href={link} target="_blank">
       <div className={styles.quoteInnerContainer}>
