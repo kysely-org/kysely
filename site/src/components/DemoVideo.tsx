@@ -37,6 +37,7 @@ export function DemoVideo() {
         ref={videoRef}
         width="824"
       >
+        <source src="/demo_optimized.webm" type="video/webm" />
         <source src="/demo.mp4" type="video/mp4" />
       </video>
     </div>
