@@ -72,6 +72,13 @@ export const quotes: QuoteProps[] = [
     text: 'Utterly astounded by how Kysely manages to make all of this typesafe. Seems like no matter how complex you get, it can infer it correctly.',
   },
   {
+    authorName: 'Sean Brydon',
+    authorTitle: 'Cal.com SWE',
+    avatar: '/img/avatars/sean.jpg',
+    link: 'https://github.com/kysely-org/kysely/issues/320#issuecomment-2990566802',
+    text: 'We are using Kysely for some of our more complex queries in Cal.com where we needed more control of the sql generated.',
+  },
+  {
     authorName: 'Dax "thdxr" Raad',
     authorTitle: 'SST & opencode core team',
     avatar: '/img/avatars/daxraad.jpeg',
