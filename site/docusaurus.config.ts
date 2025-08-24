@@ -64,13 +64,11 @@ export default {
     [
       'classic',
       {
-        blog: {
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          showReadingTime: true,
-        },
+        blog: false,
         docs: {
           editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
           sidebarPath: require.resolve('./sidebars.js'),
         },
         theme: {
