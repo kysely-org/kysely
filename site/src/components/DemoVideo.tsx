@@ -28,14 +28,14 @@ export function DemoVideo() {
   return (
     <div className={styles.videoContainer}>
       <video
-        height="468"
+        height="610"
         loop
         muted
         playsInline
         poster="/demo-poster.jpg"
         preload="none"
         ref={videoRef}
-        width="832"
+        width="824"
       >
         <source src="/demo.mp4" type="video/mp4" />
       </video>
