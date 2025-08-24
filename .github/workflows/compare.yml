@@ -39,14 +39,21 @@ jobs:
         working-directory: site
         run: pnpm build
 
-      - name: Download old file
-        run: curl -o old-llms-full.txt 'https://kysely.dev/llms-full.txt'
+      - name: Checkout target branch and build
+        run: |
+          TARGET_BRANCH=${{ github.event.pull_request.base.ref || 'master' }}
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+          git checkout $TARGET_BRANCH
+          pnpm install
+          cd site && pnpm build
+          cp build/llms-full.txt ../target-llms-full.txt
+          git checkout -
 
-      - name: Diff local vs. deployed
+      - name: Diff local vs. target
         uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
         with:
           mode: addition
           new: ./site/build/llms-full.txt
-          old: old-llms-full.txt
+          old: target-llms-full.txt
           output: diff-llms-full.txt
           tolerance: mixed-better
