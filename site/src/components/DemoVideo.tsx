@@ -1,9 +1,42 @@
+import { useEffect, useRef } from 'react'
 import styles from './DemoVideo.module.css'
 
 export function DemoVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const { current: video } = videoRef
+
+    if (!video) {
+      return
+    }
+
+    video.load()
+
+    const handleCanPlay = () => {
+      video.play().catch(() => {})
+      video.removeEventListener('canplay', handleCanPlay)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay)
+    }
+  }, [])
+
   return (
     <div className={styles.videoContainer}>
-      <video autoPlay muted playsInline loop width="832" height="468">
+      <video
+        height="468"
+        loop
+        muted
+        playsInline
+        poster="/demo-poster.jpg"
+        preload="none"
+        ref={videoRef}
+        width="832"
+      >
         <source src="/demo.mp4" type="video/mp4" />
       </video>
     </div>
