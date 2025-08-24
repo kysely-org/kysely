@@ -1,0 +1,115 @@
+name: compare llms-full.txt
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/compare.yml'
+      - 'site/**'
+  workflow_dispatch:
+
+jobs:
+  build-current:
+    name: Build current branch
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: current-llms-full-txt
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: 'pnpm'
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        working-directory: site
+        run: pnpm build
+
+      - name: Upload current build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-llms-full-txt
+          path: site/build/llms-full.txt
+
+  build-target:
+    name: Build target branch
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: target-llms-full-txt
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: 'pnpm'
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Checkout target branch and build
+        run: |
+          TARGET_BRANCH=${{ github.event.pull_request.base.ref || 'master' }}
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+          git checkout $TARGET_BRANCH
+          pnpm install
+          cd site && pnpm build
+
+      - name: Upload target build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-llms-full-txt
+          path: site/build/llms-full.txt
+
+  diff:
+    name: Diff current branch vs. target branch
+    runs-on: ubuntu-latest
+    needs: [build-current, build-target]
+
+    steps:
+      - name: Download current build
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: current-llms-full-txt
+          path: current/
+
+      - name: Download target build
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: target-llms-full-txt
+          path: target/
+
+      - name: Diff current vs. target
+        uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
+        with:
+          mode: addition
+          new: current/llms-full.txt
+          old: target/llms-full.txt
+          output: diff-llms-full.txt
+          tolerance: mixed-better
