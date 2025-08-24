@@ -6,6 +6,7 @@ import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
+import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 
 export default {
   baseUrl: '/',
@@ -22,8 +23,10 @@ export default {
     },
     mermaid: true,
   },
+  onBrokenAnchors: 'throw',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenMarkdownLinks: 'throw',
+  onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
     [
@@ -51,6 +54,10 @@ export default {
         siteDescription: 'The type-safe SQL query builder for TypeScript',
         siteTitle: 'Kysely',
       } satisfies LLMsTXTPluginOptions,
+    ],
+    [
+      'vercel-analytics',
+      { debug: true, mode: 'auto' } satisfies VercelAnalyticsPluginOptions,
     ],
   ],
   presets: [
