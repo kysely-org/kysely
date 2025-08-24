@@ -67,8 +67,6 @@ export default {
         blog: false,
         docs: {
           editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
-          showLastUpdateAuthor: true,
-          showLastUpdateTime: true,
           sidebarPath: require.resolve('./sidebars.js'),
         },
         theme: {
