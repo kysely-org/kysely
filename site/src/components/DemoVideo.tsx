@@ -32,7 +32,7 @@ export function DemoVideo() {
         loop
         muted
         playsInline
-        poster="/demo-poster.jpg"
+        poster="/demo-poster.webp"
         preload="none"
         ref={videoRef}
         width="824"
