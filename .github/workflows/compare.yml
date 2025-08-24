@@ -44,6 +44,7 @@ jobs:
         with:
           mode: addition
           new: ./site/build/llms-full.txt
-          old: 'https://kysely.dev/llms-full.txt'
+          # old: 'https://kysely.dev/llms-full.txt'
+          old: 'https://kysely-git-fork-igalklebanov-llms-txt-kysely-team.vercel.app/llms-full.txt'
           output: llms-full-diff.txt
           tolerance: mixed-better
