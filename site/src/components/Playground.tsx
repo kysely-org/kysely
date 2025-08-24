@@ -25,7 +25,9 @@ export function Playground(props: PlaygroundProps) {
 
     iframe.addEventListener('load', handleLoad)
 
-    }, 2000)
+    failTimer = setTimeout(() => {
+      setLoadFailed(true)
+    }, 500)
 
     return () => {
       iframe.removeEventListener('load', handleLoad)
