@@ -24,14 +24,21 @@ export function Quote(props: QuoteProps) {
 
   const [domainName] = new URL(link).hostname.split('.')
 
+  // Construct paths from avatar filename
+  const webpSrc = `/img/avatars/${avatar}.webp`
+  const jpgSrc = `/img/avatars/${avatar}.jpg`
+
   return (
     <a className={styles.quoteContainer} href={link} target="_blank">
       <div className={styles.quoteInnerContainer}>
-        <img
-          alt={`${authorName}'s avatar picture`}
-          className="avatar__photo"
-          src={avatar}
-        />
+        <picture>
+          <source srcSet={webpSrc} type="image/webp" />
+          <img
+            alt={`${authorName}'s avatar picture`}
+            className="avatar__photo"
+            src={jpgSrc}
+          />
+        </picture>
         <div className={styles.quoteHeader}>
           <span className={styles.quoteTitle}>{authorName}</span>
           <small className={styles.quoteSubtitle}>{authorTitle}</small>
