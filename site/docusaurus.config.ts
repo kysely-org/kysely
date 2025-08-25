@@ -57,7 +57,10 @@ export default {
     ],
     [
       'vercel-analytics',
-      { debug: true, mode: 'auto' } satisfies VercelAnalyticsPluginOptions,
+      { debug: true, mode: 'auto' } satisfies Omit<
+        VercelAnalyticsPluginOptions,
+        'id'
+      >,
     ],
   ],
   presets: [

@@ -109,7 +109,7 @@ function SectionPlayground() {
   return (
     <section className={styles.playgroundSection}>
       <div className={clsx('container', styles.playgroundContainer)}>
-        <h1>Try it out for yourself!</h1>
+        <h2>Try it out for yourself!</h2>
         <p>
           Modify the query on the left and view the generated SQL on the right.
         </p>
@@ -131,7 +131,7 @@ function SectionExamplesCTA() {
   return (
     <section className={styles.examplesCTASection}>
       <div className={styles.examplesCTAContainer}>
-        <h1>Looking for code examples?</h1>
+        <h2>Looking for code examples?</h2>
         <p>
           From finding a single record to complex joins, our docs have examples
           to get you started quickly.

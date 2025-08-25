@@ -46,3 +46,8 @@
 [data-theme='dark'] .featureDescription {
   color: var(--gray-8);
 }
+
+.sectionHeading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
