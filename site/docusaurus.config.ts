@@ -195,6 +195,15 @@ export default {
         },
         tagName: 'link',
       },
+      {
+        attributes: {
+          as: 'image',
+          fetchpriority: 'high',
+          href: '/demo-poster.webp',
+          rel: 'preload',
+        },
+        tagName: 'link',
+      },
     ],
     mermaid: {
       options: {
