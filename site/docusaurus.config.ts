@@ -51,7 +51,8 @@ export default {
         },
         depth: 3,
         onRouteError: 'throw',
-        siteDescription: 'The type-safe SQL query builder for TypeScript',
+        siteDescription:
+          'The most powerful type-safe SQL query builder for TypeScript',
         siteTitle: 'Kysely',
       } satisfies LLMsTXTPluginOptions,
     ],
@@ -86,7 +87,7 @@ export default {
     ],
   ],
   projectName: 'kysely',
-  tagline: 'The type-safe SQL query builder for TypeScript',
+  tagline: 'The most powerful type-safe SQL query builder for TypeScript',
   themeConfig: {
     algolia: {
       // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
@@ -216,6 +217,13 @@ export default {
         },
       } satisfies MermaidConfig,
     },
+    metadata: [
+      {
+        content:
+          'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime overhead.',
+        name: 'description',
+      },
+    ],
     navbar: {
       items: [
         {
