@@ -98,7 +98,7 @@ const STACKBLITZ_PARAMS = new URLSearchParams({
 function SectionPlayground() {
   const { colorMode } = useColorMode()
 
-  const [src, setSrc] = useState('')
+  const [src, setSrc] = useState(STACKBLITZ_URL)
 
   useEffect(() => {
     STACKBLITZ_PARAMS.set('theme', colorMode)

@@ -112,4 +112,4 @@ jobs:
           new: current/llms-full.txt
           old: target/llms-full.txt
           output: diff-llms-full.txt
-          tolerance: mixed-better
+          tolerance: mixed
