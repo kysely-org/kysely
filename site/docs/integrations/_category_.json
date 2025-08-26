@@ -1,0 +1,8 @@
+{
+  "label": "Integrations",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "description": "Kysely integrations with other libraries, ORMs, and AI assistants."
+  }
+}

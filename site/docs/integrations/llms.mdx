@@ -1,0 +1,103 @@
+---
+sidebar_position: 10
+title: 'LLMs'
+---
+
+# LLMs
+
+Kysely provides [LLMs.txt](https://llmstxt.org/) files to help Large Language Models better understand and work with the Kysely codebase and documentation.
+
+## What is LLMs.txt?
+
+LLMs.txt is a community-driven standard that allows projects to provide structured information about themselves in a format that's easily consumable by AI assistants and Large Language Models. This helps LLMs:
+
+- Understand the project's purpose and capabilities
+- Access accurate documentation and examples
+- Provide better assistance when working with the codebase
+- Stay up-to-date with the latest features and best practices
+
+## Kysely's LLM Files
+
+Kysely exposes two LLM files:
+
+### llms.txt
+
+A concise overview of Kysely containing:
+
+- Project description and key features
+- Installation instructions
+- Basic usage examples
+- API reference links
+- Supported dialects and tools
+
+**URL:** https://kysely.dev/llms.txt
+
+### llms-full.txt
+
+A comprehensive guide with:
+
+- Detailed query examples (SELECT, INSERT, UPDATE, DELETE)
+- Complex WHERE clauses and relations
+- JSON functions for nested queries
+- Raw SQL usage patterns
+- Plugin system explanation
+- Type generation tools
+- All supported dialects and community extensions
+- Advanced recipes and best practices
+
+**URL:** https://kysely.dev/llms-full.txt
+
+## How to Use
+
+### For LLM Users
+
+When working with Kysely code, you can reference these files to get accurate, up-to-date information about:
+
+- Type-safe query building patterns
+- Database dialect support
+- Plugin and extension usage
+- Best practices for complex queries
+- Integration with different JavaScript runtimes
+
+### For Developers
+
+If you're using an LLM assistant to help with Kysely development, point it to these URLs so it can:
+
+- Understand Kysely's type system and query building approach
+- Access current examples and documentation
+- Provide more accurate code suggestions
+- Help troubleshoot issues with proper context
+
+## Examples
+
+Here's a quick example of how an LLM might use this information:
+
+````
+User: How do I build a complex join query in Kysely?
+
+LLM: Based on the llms-full.txt file, here's how to build complex joins:
+
+```typescript
+const result = await db
+  .selectFrom('person')
+  .innerJoin('pet', 'person.id', 'pet.owner_id')
+  .leftJoin('owner', 'person.owner_id', 'owner.id')
+  .select([
+    'person.first_name',
+    'pet.name as pet_name',
+    'owner.name as owner_name'
+  ])
+  .where('person.age', '>', 18)
+  .execute()
+````
+
+This uses Kysely's fluent API to build type-safe SQL queries with proper joins and column selection.
+
+```
+
+## Contributing
+
+If you maintain an LLM or AI assistant, consider supporting the LLMs.txt standard to help users get better assistance with open source projects like Kysely.
+
+For more information about the LLMs.txt standard, visit [llmstxt.org](https://llmstxt.org/).
+```
