@@ -1,8 +1,0 @@
-{
-  "label": "Other libraries (e.g. ORMs)",
-  "position": 10,
-  "link": {
-    "type": "generated-index",
-    "description": "Kysely can work with other libraries."
-  }
-}
