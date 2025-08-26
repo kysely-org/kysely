@@ -1,103 +1,81 @@
----
-sidebar_position: 10
-title: 'LLMs'
----
-
 # LLMs
 
-Kysely provides [LLMs.txt](https://llmstxt.org/) files to help Large Language Models better understand and work with the Kysely codebase and documentation.
+Kysely provides LLM-friendly documentation to help AI tools like **Cursor**, **Windsurf**, **GitHub Copilot**, **ChatGPT**, **Claude**, and **Claude Code** understand and work with it.
 
-## What is LLMs.txt?
+`llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
 
-LLMs.txt is a community-driven standard that allows projects to provide structured information about themselves in a format that's easily consumable by AI assistants and Large Language Models. This helps LLMs:
+## Documentation Structure
 
-- Understand the project's purpose and capabilities
-- Access accurate documentation and examples
-- Provide better assistance when working with the codebase
-- Stay up-to-date with the latest features and best practices
+The [llms.txt](https://kysely.dev/llms.txt) file acts as a summary and index to all the docs pages.
 
-## Kysely's LLM Files
+The [llms-full.txt](https://kysely.dev/llms-full.txt) file includes all of the Kysely docs in a single file.
 
-Kysely exposes two LLM files:
+## Usage with AI Tools
 
-### llms.txt
+### Cursor
 
-A concise overview of Kysely containing:
+In Cursor, you can reference the documentation using the `@Docs` feature:
 
-- Project description and key features
-- Installation instructions
-- Basic usage examples
-- API reference links
-- Supported dialects and tools
+1. Type `@Docs` in your prompt
+2. Reference the Kysely documentation URL: `https://kysely.dev/llms-full.txt`
+3. Ask questions about Kysely queries, types, or database operations
 
-**URL:** https://kysely.dev/llms.txt
+### Windsurf
 
-### llms-full.txt
+For Windsurf users:
 
-A comprehensive guide with:
+1. Reference the documentation using `@https://kysely.dev/llms-full.txt`
+2. Or add it to your `.windsurfrules` file for persistent access
 
-- Detailed query examples (SELECT, INSERT, UPDATE, DELETE)
-- Complex WHERE clauses and relations
-- JSON functions for nested queries
-- Raw SQL usage patterns
-- Plugin system explanation
-- Type generation tools
-- All supported dialects and community extensions
-- Advanced recipes and best practices
+### ChatGPT & Claude
 
-**URL:** https://kysely.dev/llms-full.txt
+When using ChatGPT or Claude:
 
-## How to Use
+1. Mention that you're using Kysely
+2. Reference the documentation URL: `https://kysely.dev/llms-full.txt`
+3. The AI will fetch and use the documentation to provide accurate answers
 
-### For LLM Users
+### GitHub Copilot
 
-When working with Kysely code, you can reference these files to get accurate, up-to-date information about:
+While Copilot doesn't directly support external documentation, you can:
 
-- Type-safe query building patterns
-- Database dialect support
-- Plugin and extension usage
-- Best practices for complex queries
-- Integration with different JavaScript runtimes
+1. Include relevant documentation snippets in your comments
+2. Reference query builder methods and types accurately for better suggestions
 
-### For Developers
+### Claude Code
 
-If you're using an LLM assistant to help with Kysely development, point it to these URLs so it can:
+For Claude Code users:
 
-- Understand Kysely's type system and query building approach
-- Access current examples and documentation
-- Provide more accurate code suggestions
-- Help troubleshoot issues with proper context
+1. Reference the documentation by mentioning the URL: `https://kysely.dev/llms-full.txt`
+2. Ask Claude Code to analyze the documentation for specific Kysely patterns
+3. Use commands like: `claude -p "Using the Kysely docs at https://kysely.dev/llms-full.txt, help me build a type-safe query"`
 
-## Examples
+## Example Prompts
 
-Here's a quick example of how an LLM might use this information:
+Here are some example prompts you can use with AI tools:
 
-````
-User: How do I build a complex join query in Kysely?
+- "Using Kysely, how do I build a type-safe SELECT query with JOINs?"
+- "Show me how to define a database schema interface for Kysely"
+- "How can I use transactions with Kysely?"
+- "Create a complex query with subqueries and aggregations"
+- "How to handle database migrations with Kysely?"
 
-LLM: Based on the llms-full.txt file, here's how to build complex joins:
+## Documentation Generation
 
-```typescript
-const result = await db
-  .selectFrom('person')
-  .innerJoin('pet', 'person.id', 'pet.owner_id')
-  .leftJoin('owner', 'person.owner_id', 'owner.id')
-  .select([
-    'person.first_name',
-    'pet.name as pet_name',
-    'owner.name as owner_name'
-  ])
-  .where('person.age', '>', 18)
-  .execute()
-````
+The LLM documentation is automatically generated from our source files using the `@signalwire/docusaurus-plugin-llms-txt` plugin. It includes:
 
-This uses Kysely's fluent API to build type-safe SQL queries with proper joins and column selection.
+- Component documentation from MDX files
+- API reference from TypeScript definitions
+- Code examples and practical patterns
+- Database dialect documentation
+- FAQ content and troubleshooting guides
 
-```
+To ensure you have the latest documentation, we regenerate the llms.txt files with each release. The files follow the [LLMs.txt](https://llmstxt.org/) standard for better compatibility with AI tools.
 
 ## Contributing
 
-If you maintain an LLM or AI assistant, consider supporting the LLMs.txt standard to help users get better assistance with open source projects like Kysely.
+If you find any issues with the LLM documentation or have suggestions for improvement, please [open an issue](https://github.com/kysely-org/kysely/issues) on our GitHub repository.
 
-For more information about the LLMs.txt standard, visit [llmstxt.org](https://llmstxt.org/).
+```
+
 ```
