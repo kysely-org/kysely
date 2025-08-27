@@ -75,6 +75,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('ns.nspname', '!=', 'information_schema')
       // Filter out internal cockroachdb schema
       .where('ns.nspname', '!=', 'crdb_internal')
+      // Only schemas where we are allowed access
+      .where(sql<boolean>`has_schema_privilege(ns.nspname, 'USAGE')`)
       // No system columns
       .where('a.attnum', '>=', 0)
       .where('a.attisdropped', '!=', true)
