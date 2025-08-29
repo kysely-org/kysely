@@ -44,8 +44,6 @@ export default (_context: LoadContext): Plugin => ({
     try {
       await clearPreviouslyGeneratedExamples()
 
-      // await execAsync('docusaurus clear')
-
       const dirents = await readdir(SOURCE_CODE_FOLDER_PATH, {
         recursive: true,
         withFileTypes: true,
