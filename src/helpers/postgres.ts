@@ -227,3 +227,30 @@ export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
 export function mergeAction(): RawBuilder<MergeAction> {
   return sql`merge_action()`
 }
+
+/**
+ * We can't use `new Date(v).toISOString()` because `Date` has less precision (milliseconds)
+ * compared to Postgres' (microseconds).
+ *
+ * @see https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-OUTPUT
+ * @private
+ */
+function postgresTimestampToIsoString(value: string): string {
+  return value.replace(' ', 'T').replace(/([+-]\d{2})$/, '$1:00')
+}
+
+// Reference: https://github.com/brianc/node-pg-types/blob/master/lib/builtins.js
+const TIMESTAMP = 1114
+const TIMESTAMPTZ = 1184
+const DATE = 1082
+
+/**
+ * Sets sensible type parsers that are optimised for:
+ *  - No loss of data
+ *  - Matching the output of `jsonArrayFrom`/`jsonObjectFrom`
+ */
+export const SENSIBLE_TYPES: Record<number, (value: string) => any> = {
+  [TIMESTAMP]: (v) => postgresTimestampToIsoString(v),
+  [TIMESTAMPTZ]: (v) => postgresTimestampToIsoString(v),
+  [DATE]: (v) => v,
+}
