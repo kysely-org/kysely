@@ -1,0 +1,61 @@
+# LLMs
+
+Kysely provides LLM-friendly documentation to help AI tools like **Cursor**, **Windsurf**, **GitHub Copilot**, **ChatGPT**, **Claude**, and **Claude Code** understand and work with it.
+
+`llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
+
+## Documentation Structure
+
+The [llms.txt](https://kysely.dev/llms.txt) file acts as a summary and index to all the docs pages.
+
+The [llms-full.txt](https://kysely.dev/llms-full.txt) file includes all of the Kysely docs in a single file.
+
+## Usage with AI Tools
+
+### Cursor
+
+In Cursor, you can reference the documentation using the `@Docs` feature:
+
+1. Type `@Docs` in your prompt
+2. Reference the Kysely documentation URL: `https://kysely.dev/llms-full.txt`
+3. Ask questions about Kysely queries, types, or database operations
+
+### Windsurf
+
+For Windsurf users:
+
+1. Reference the documentation using `@https://kysely.dev/llms-full.txt`
+2. Or add it to your `.windsurfrules` file for persistent access
+
+### ChatGPT & Claude
+
+When using ChatGPT or Claude:
+
+1. Mention that you're using Kysely
+2. Reference the documentation URL: `https://kysely.dev/llms-full.txt`
+3. The AI will fetch and use the documentation to provide accurate answers
+
+### GitHub Copilot
+
+While Copilot doesn't directly support external documentation, you can:
+
+1. Include relevant documentation snippets in your comments
+2. Reference query builder methods and types accurately for better suggestions
+
+### Claude Code
+
+For Claude Code users:
+
+1. Reference the documentation by mentioning the URL: `https://kysely.dev/llms-full.txt`
+2. Ask Claude Code to analyze the documentation for specific Kysely patterns
+3. Use commands like: `claude -p "Using the Kysely docs at https://kysely.dev/llms-full.txt, help me build a type-safe query"`
+
+## Example Prompts
+
+Here are some example prompts you can use with AI tools:
+
+- "Using Kysely, how do I build a type-safe SELECT query with JOINs?"
+- "Show me how to define a database schema interface for Kysely"
+- "How can I use transactions with Kysely?"
+- "Create a complex query with subqueries and aggregations"
+- "How to handle database migrations with Kysely?"

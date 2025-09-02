@@ -28,50 +28,24 @@ import { Summary } from './getting-started/Summary'
 
 ## Dialects
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Dialects
-      packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager',
-      )}
-      packageManagersURL="#installation"
-    />
-  )}
-</BrowserOnly>
+<Dialects
+  packageManagerSearchParam="package-manager"
+  packageManagerSelectionID="installation"
+/>
 
 ## Instantiation
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Instantiation
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
-      packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager',
-      )}
-      packageManagersURL="#installation"
-    />
-  )}
-</BrowserOnly>
+<Instantiation
+  dialectSearchParam="dialect"
+  dialectSelectionID="dialects"
+  packageManagerSearchParam="package-manager"
+  packageManagerSelectionID="installation"
+/>
 
 ## Querying
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Querying
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
-    />
-  )}
-</BrowserOnly>
+<Querying dialectSearchParam="dialect" dialectSelectionID="dialects" />
 
 ## Summary
 
-<BrowserOnly fallback={<div>Loading...</div>}>
-  {() => (
-    <Summary
-      dialect={new URLSearchParams(document.location.search).get('dialect')}
-      dialectsURL="#dialects"
-    />
-  )}
-</BrowserOnly>
+<Summary dialectSearchParam="dialect" dialectSelectionID="dialects" />

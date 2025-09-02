@@ -1,14 +1,30 @@
-import type { ReactNode } from 'react'
+import { useLocation } from '@docusaurus/router'
+import { useEffect, useState, type ReactNode } from 'react'
 import packageJson from '../../package.json'
 
-export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'mssql'
+export const DIALECTS = ['postgresql', 'mysql', 'sqlite', 'mssql'] as const
+
+export type Dialect = (typeof DIALECTS)[number]
+
+export const DEFAULT_DIALECT = 'postgresql' satisfies Dialect
 
 export type PropsWithDialect<P = {}> = P & {
-  dialect: Dialect | undefined
-  dialectsURL: string
+  dialect?: Dialect
+  dialectSearchParam?: string
+  dialectSelectionID?: string
 }
 
-export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'deno' | 'bun'
+export type PropsWithPackageManager<P = {}> = P & {
+  packageManager?: PackageManager
+  packageManagerSearchParam?: string
+  packageManagerSelectionID?: string
+}
+
+export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'deno', 'bun'] as const
+
+export type PackageManager = (typeof PACKAGE_MANAGERS)[number]
+
+export const DEFAULT_PACKAGE_MANAGER = 'npm' satisfies PackageManager
 
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
@@ -123,4 +139,51 @@ export function getDenoCommand(
     language: 'json',
     title: 'deno.json',
   }
+}
+
+export interface UseSearchStateProps<Value extends string> {
+  defaultValue?: Value
+  searchParam?: string
+  validator?: (searchValue: string | null) => boolean
+  value?: Value
+}
+
+export function useSearchState<Value extends string>(
+  props: UseSearchStateProps<Value>,
+): Value {
+  const { defaultValue, searchParam, validator, value } = props
+
+  const [state, setState] = useState<Value>(value || defaultValue)
+  const { search } = useLocation()
+
+  useEffect(
+    function syncStateWithSearch() {
+      // value overrides search value.
+      // no search param? ignore URL.
+      if (value || !searchParam) {
+        return
+      }
+
+      const searchValue = new URLSearchParams(search).get(searchParam)
+
+      if (
+        searchValue == null ||
+        searchValue === state ||
+        (validator && !validator(searchValue))
+      ) {
+        return
+      }
+
+      setState(searchValue as Value)
+    },
+    [search],
+  )
+
+  useEffect(() => {
+    if (value && value !== state) {
+      setState(value)
+    }
+  }, [value, state])
+
+  return state
 }

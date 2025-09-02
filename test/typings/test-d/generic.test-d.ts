@@ -143,11 +143,10 @@ async function getRowDynamic<T extends keyof Database>(
     .executeTakeFirstOrThrow()
 }
 
-async function getRowByIdDynamic<T extends keyof Database, ID extends SelectType<Database[T]['id']>>(
-  db: Kysely<Database>,
-  t: T,
-  id: ID,
-) {
+async function getRowByIdDynamic<
+  T extends keyof Database,
+  ID extends SelectType<Database[T]['id']>,
+>(db: Kysely<Database>, t: T, id: ID) {
   const { table } = db.dynamic
 
   return await db

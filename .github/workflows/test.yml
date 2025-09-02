@@ -1,34 +1,41 @@
 name: test
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
       - master
-    paths-ignore:
-      - '.github/workflows/preview.yml'
-      - 'assets/**'
-      - 'docs/**'
-      - 'example/**'
-      - 'site/**'
-      - '.node-version'
-      - '.nvmrc'
-      - '.prettierignore'
-      - '.prettierrc.json'
-      - '*.md'
-      - 'LICENSE'
+    paths:
+      - '**/*'
+      - '!.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
+      - '!assets/**'
+      - '!docs/**'
+      - '!example/**'
+      - '!site/**'
+      - '!.node-version'
+      - '!.nvmrc'
+      - '!.prettierignore'
+      - '!.prettierrc.json'
+      - '!*.md'
+      - '!LICENSE'
   pull_request:
-    paths-ignore:
-      - '.github/workflows/preview.yml'
-      - 'assets/**'
-      - 'docs/**'
-      - 'example/**'
-      - 'site/**'
-      - '.node-version'
-      - '.nvmrc'
-      - '.prettierignore'
-      - '.prettierrc.json'
-      - '*.md'
-      - 'LICENSE'
+    paths:
+      - '**/*'
+      - '!.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
+      - '!assets/**'
+      - '!docs/**'
+      - '!example/**'
+      - '!site/**'
+      - '!.node-version'
+      - '!.nvmrc'
+      - '!.prettierignore'
+      - '!.prettierrc.json'
+      - '!*.md'
+      - '!LICENSE'
   workflow_dispatch:
 
 jobs:
@@ -44,13 +51,18 @@ jobs:
     name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: ${{ matrix.node-version }}
@@ -76,22 +88,27 @@ jobs:
       fail-fast: false
       matrix:
         # https://endoflife.date/deno
-        deno-version: [2.1.x, 2.2.x, 2.3.x]
+        deno-version: [2.2.x, 2.4.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
 
       - name: Use Deno ${{ matrix.deno-version }}
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # 2.0.3
         with:
           deno-version: ${{ matrix.deno-version }}
 
@@ -117,13 +134,18 @@ jobs:
         bun-version: [1.1, 1.2]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
@@ -132,7 +154,7 @@ jobs:
         run: pnpm install
 
       - name: Use Bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # 2.0.2
         with:
           bun-version: ${{ matrix.bun-version }}
 
@@ -147,13 +169,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
@@ -172,13 +199,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
@@ -200,27 +232,34 @@ jobs:
       fail-fast: false
       matrix:
         typescript-version: [
-            ^4.6, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
-            ^4.7, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
-            ^4.8, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
-            ^4.9, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
-            ^5.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
-            ^5.2, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
-            ^5.3, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
-            ^5.4, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+            ~4.6.0, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
+            ~4.7.0, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
+            ~4.8.0, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
+            ~4.9.0, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
+            ~5.0.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
+            ~5.2.0, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+            ~5.3.0, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
+            ~5.4.0, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+            ~5.8.0, # 28.2.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/
+            # ~5.9.0, # 1.8.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/
           ]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
-          node-version: 20.x
+          node-version: lts/*
 
       - name: Install dependencies
         run: pnpm install
@@ -228,37 +267,45 @@ jobs:
       - name: Run build with newer TypeScript
         run: pnpm build
 
-      - run: |
-          echo "TS_VERSION=${{ matrix.typescript-version }}" >> $GITHUB_ENV
-          echo "TSD_VERSION=${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[env.TS_VERSION] }} >> $GITHUB_ENV"
+      - name: Set TypeScript and TSD versions
+        run: |
+          TS_VERSION="${{ matrix.typescript-version }}"
+          echo "TS_VERSION=$TS_VERSION" >> $GITHUB_ENV
+          TSD_VERSION=$(echo '{"~4.6.0":"0.20.0", "~4.7.0":"0.22.0", "~4.8.0":"0.24.1", "~4.9.0":"0.27.0", "~5.0.0":"0.28.1", "~5.2.0":"0.29.0", "~5.3.0":"0.30.7", "~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
+          echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
 
       - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
-        run: pnpm i -w -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
+        run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Exclude non-backward compatible tests
-        run: pnpx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
+        run: pnpm script:exclude-test-files-for-backwards-compat
 
       - name: Run tests with older TypeScript version
-        run: pnpm test:typings && pnpm test:node:build
+        run: pnpm test:typings${{ env.TS_VERSION != '~4.6.0' && ' && pnpm test:node:build' || '' }}
 
   jsdocs:
     name: JSDocs
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
 
       - name: Use Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # 2.0.3
         with:
           deno-version: 2.x
 
@@ -271,70 +318,32 @@ jobs:
       - name: Type-check JSDocs code blocks
         run: pnpm test:jsdocs
 
-  typescript-benchmarks:
-    name: TypeScript Benchmarks
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache: 'pnpm'
-          node-version: lts/*
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Run benchmarks
-        id: bench
-        run: |
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          pnpm bench:ts | grep -v "> " | sed '/./,$!d' | tee -a $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: PR comment
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # 3.0.1
-        with:
-          # edits the existing pr comment if exists. github ui allows checking edit history.
-          comment-tag: typescript-benchmarks
-          message: |
-            <details>
-            <summary>⏱️ TypeScript Benchmarks following ${{ github.event.pull_request.head.sha }}</summary>
-
-            ```
-            ${{ steps.bench.outputs.summary }}
-            ```
-            </details>
-
   typescript-native:
     name: TypeScript Native
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # 2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # 4.4.0
         with:
           cache: 'pnpm'
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm i && pnpm i -w -D @typescript/native-preview
+        run: pnpm i
 
       - name: Build
         run: pnpm build
 
       - name: Run TypeScript Native tests
-        run: pnpm tsgo --project ./tsconfig.json && pnpm tsgo --project ./test/node/tsconfig.json
+        run: pnpx @typescript/native-preview --project ./test/node/tsconfig.json

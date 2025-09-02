@@ -1,0 +1,61 @@
+# Supabase
+
+Supabase is an open-source Firebase alternative that provides a suite of tools
+for building applications. At the core, it is a managed PostgreSQL database vendor.
+They provide a CLI library called `supabase` that's at the heart of their ecosystem.
+It manages your database, migrates it and can generate TypeScript types from it.
+They also provide a JavaScript client library called `@supabase/supabase-js` that wraps
+a PostgREST API, and is pretty limited - doesn't even allow raw SQL. This is where
+Kysely comes in.
+
+We provide a bridge library called `kysely-supabase` that allows you to translate
+`supabase`'s generated TypeScript types into types compatible with Kysely.
+
+## Prerequisites
+
+1. `supabase` CLI installed and a Supabase project set up.
+
+1. `kysely` installed.
+
+1. A PostgreSQL driver installed - e.g. `pg` or `postgres`. The latter requires
+   `kysely-postgres-js` to be installed as well.
+
+## Installation
+
+```bash
+npm i -D kysely-supabase
+```
+
+## Usage
+
+### Generate TypeScript types using `supabase` CLI
+
+```bash
+npx supabase gen types typescript --local > path/to/supabase/generated/types/file
+```
+
+### Translate Supabase types to Kysely types
+
+```ts title="src/types.ts"
+import type { Database as SupabaseDatabase } from 'path/to/supabase/generated/types/file'
+import type { KyselifyDatabase } from 'kysely-supabase'
+
+export type Database = KyselifyDatabase<SupabaseDatabase>
+```
+
+### Pass translated types to Kysely constructor
+
+```ts title="src/db.ts"
+import { Kysely, PostgresDialect } from 'kysely'
+import { Pool } from 'pg'
+import type { Database } from './types'
+
+export const db = new Kysely<Database>({
+  //                         ^^^^^^^^
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      connectionString: process.env.DATABASE_URL,
+    }),
+  }),
+})
+```

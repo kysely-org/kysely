@@ -1,9 +1,11 @@
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
-import { IUseADifferentDatabase } from './IUseADifferentDatabase'
+import { IUseADifferentDialect } from './IUseADifferentDialect'
 import {
-  PRETTY_DIALECT_NAMES,
+  DEFAULT_DIALECT,
+  DIALECTS,
+  useSearchState,
   type Dialect,
   type PropsWithDialect,
 } from './shared'
@@ -56,7 +58,12 @@ const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
 }
 
 export function Summary(props: PropsWithDialect) {
-  const dialect = props.dialect || 'postgresql'
+  const dialect = useSearchState({
+    defaultValue: DEFAULT_DIALECT,
+    searchParam: props.dialectSearchParam,
+    validator: (value) => DIALECTS.includes(value as never),
+    value: props.dialect,
+  })
 
   const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
   const dialectSpecificTruncateSnippet =
@@ -115,7 +122,10 @@ ${dialectSpecificCodeSnippet}
   })
 })`}
       </CodeBlock>
-      <IUseADifferentDatabase {...props} />
+      <IUseADifferentDialect
+        dialect={dialect}
+        dialectSelectionID={props.dialectSelectionID}
+      />
       <Admonition type="info" title="Migrations">
         As you can see, Kysely supports DDL queries. It also supports classic
         "up/down" migrations. Find out more at{' '}

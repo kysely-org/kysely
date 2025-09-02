@@ -3,7 +3,10 @@ import type {
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
+import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
+import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 
 export default {
   baseUrl: '/',
@@ -18,26 +21,57 @@ export default {
       comments: false,
       headingIds: false,
     },
+    mermaid: true,
   },
+  onBrokenAnchors: 'throw',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenMarkdownLinks: 'throw',
+  onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
+  plugins: [
+    [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+        content: {
+          // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
+          contentSelectors: [
+            '.theme-doc-markdown', // Docusaurus main content area
+            'main .container .col', // Bootstrap-style layout
+            'main .theme-doc-wrapper', // Docusaurus wrapper
+            'article', // Semantic article element
+            'main .container', // Broader container
+            'main', // Fallback to main element
+            '.code-example',
+          ],
+          enableLlmsFullTxt: true,
+          includeGeneratedIndex: false,
+          includePages: true,
+          includeVersionedDocs: false,
+          relativePaths: false,
+        },
+        depth: 3,
+        onRouteError: 'throw',
+        siteDescription:
+          'The most powerful type-safe SQL query builder for TypeScript',
+        siteTitle: 'Kysely',
+      } satisfies LLMsTXTPluginOptions,
+    ],
+    [
+      'vercel-analytics',
+      { debug: true, mode: 'auto' } satisfies Omit<
+        VercelAnalyticsPluginOptions,
+        'id'
+      >,
+    ],
+  ],
   presets: [
     [
       'classic',
       {
-        blog: {
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          showReadingTime: true,
-        },
+        blog: false,
         docs: {
           editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
           sidebarPath: require.resolve('./sidebars.js'),
-        },
-        gtag: {
-          anonymizeIP: true,
-          trackingID: 'G-DWKJ0RXL1F',
         },
         theme: {
           customCss: [
@@ -53,7 +87,7 @@ export default {
     ],
   ],
   projectName: 'kysely',
-  tagline: 'The type-safe SQL query builder for TypeScript',
+  tagline: 'The most powerful type-safe SQL query builder for TypeScript',
   themeConfig: {
     algolia: {
       // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
@@ -140,6 +174,56 @@ export default {
       ],
       style: 'dark',
     },
+    headTags: [
+      {
+        attributes: {
+          href: 'https://fonts.googleapis.com',
+          rel: 'preconnect',
+        },
+        tagName: 'link',
+      },
+      {
+        attributes: {
+          crossOrigin: 'anonymous',
+          href: 'https://fonts.gstatic.com',
+          rel: 'preconnect',
+        },
+        tagName: 'link',
+      },
+      {
+        attributes: {
+          as: 'style',
+          onLoad: "this.onload=null;this.rel='stylesheet'",
+          href: 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+          rel: 'preload',
+        },
+        tagName: 'link',
+      },
+      {
+        attributes: {
+          as: 'image',
+          fetchpriority: 'high',
+          href: '/demo-poster.webp',
+          rel: 'preload',
+        },
+        tagName: 'link',
+      },
+    ],
+    mermaid: {
+      options: {
+        sequence: {
+          mirrorActors: false,
+          showSequenceNumbers: true,
+        },
+      } satisfies MermaidConfig,
+    },
+    metadata: [
+      {
+        content:
+          'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime overhead.',
+        name: 'description',
+      },
+    ],
     navbar: {
       items: [
         {
@@ -173,6 +257,7 @@ export default {
       theme: themes.github,
     },
   } satisfies PresetClassicThemeConfig,
+  themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
   url: 'https://kysely.dev',
 } satisfies Config

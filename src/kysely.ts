@@ -50,12 +50,15 @@ import {
 import { ConnectionProvider } from './driver/connection-provider.js'
 import { logOnce } from './util/log-once.js'
 
-// @ts-ignore
-Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
-
 declare global {
   interface AsyncDisposable {}
+  interface SymbolConstructor {
+    readonly asyncDispose: unique symbol
+  }
 }
+
+// @ts-ignore
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
 
 /**
  * The main Kysely class.
