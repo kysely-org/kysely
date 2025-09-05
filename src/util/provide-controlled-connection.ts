@@ -1,6 +1,6 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import { DatabaseConnection } from '../driver/database-connection.js'
-import { Deferred } from './deferred.js'
+import { promiseWithResolvers } from './promise-with-resolvers.js'
 import { freeze } from './object-utils.js'
 
 export interface ControlledConnection {
@@ -11,8 +11,8 @@ export interface ControlledConnection {
 export async function provideControlledConnection(
   connectionProvider: ConnectionProvider,
 ): Promise<ControlledConnection> {
-  const connectionDefer = new Deferred<DatabaseConnection>()
-  const connectionReleaseDefer = new Deferred<void>()
+  const connectionDefer = promiseWithResolvers<DatabaseConnection>()
+  const connectionReleaseDefer = promiseWithResolvers<void>()
 
   connectionProvider
     .provideConnection(async (connection) => {

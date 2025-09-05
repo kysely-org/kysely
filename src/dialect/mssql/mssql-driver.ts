@@ -29,7 +29,7 @@ import {
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
-import { Deferred } from '../../util/deferred.js'
+import { promiseWithResolvers } from '../../util/promise-with-resolvers.js'
 
 const PRIVATE_RESET_METHOD: unique symbol = Symbol()
 const PRIVATE_DESTROY_METHOD: unique symbol = Symbol()
@@ -159,7 +159,7 @@ class MssqlConnection implements DatabaseConnection {
   }
 
   async connect(): Promise<this> {
-    const { promise: waitForConnected, reject, resolve } = new Deferred<void>()
+    const { promise: waitForConnected, reject, resolve } = promiseWithResolvers<void>()
 
     this.#connection.connect((error) => {
       if (error) {
@@ -201,7 +201,7 @@ class MssqlConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const deferred = new Deferred<OnDone<O>>()
+      const deferred = promiseWithResolvers<OnDone<O>>()
 
       const request = new MssqlRequest<O>({
         compiledQuery,
@@ -341,7 +341,7 @@ class MssqlConnection implements DatabaseConnection {
     }
 
     try {
-      const deferred = new Deferred<OnDone<unknown>>()
+      const deferred = promiseWithResolvers<OnDone<unknown>>()
 
       const request = new MssqlRequest<unknown>({
         compiledQuery: CompiledQuery.raw('select 1'),
@@ -538,7 +538,7 @@ class MssqlRequest<O> {
 
 interface MssqlRequestProps<O> {
   compiledQuery: CompiledQuery
-  onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>
+  onDone?: ReturnType<typeof promiseWithResolvers<OnDone<O>>> | PlainDeferred<OnDone<O>>
   streamChunkSize?: number
   tedious: Tedious
 }
