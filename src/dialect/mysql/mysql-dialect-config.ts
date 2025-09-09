@@ -56,7 +56,7 @@ export interface MysqlPoolConnection {
 
 export interface MysqlStreamOptions {
   highWaterMark?: number
-  objectMode?: boolean
+  objectMode?: true
 }
 
 export interface MysqlStream<T> {
