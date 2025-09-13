@@ -20,7 +20,7 @@
     "@docusaurus/preset-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.8.1",
     "@docusaurus/theme-mermaid": "^3.8.1",
-    "@mdx-js/react": "^3.0.1",
+    "@mdx-js/react": "^3.1.1",
     "@radix-ui/colors": "^3.0.0",
     "clsx": "^2.1.1",
     "prism-react-renderer": "^2.3.1",
@@ -32,8 +32,8 @@
     "@docusaurus/tsconfig": "^3.5.2",
     "@docusaurus/types": "^3.4.0",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
-    "@types/react": "^19.1.11",
-    "mermaid": "^11.10.1",
+    "@types/react": "^19.1.13",
+    "mermaid": "^11.11.0",
     "typescript": "^5.9.2"
   },
   "browserslist": {
