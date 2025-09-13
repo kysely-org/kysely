@@ -42,7 +42,7 @@ jobs:
         run: pnpm build
 
       - name: Upload current build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: current-llms-full-txt
           path: site/build/llms-full.txt
@@ -82,7 +82,7 @@ jobs:
           cd site && pnpm build
 
       - name: Upload target build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: target-llms-full-txt
           path: site/build/llms-full.txt
