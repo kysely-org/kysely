@@ -6,6 +6,24 @@
     "type": "git",
     "url": "git://github.com/kysely-org/kysely.git"
   },
+  "homepage": "https://kysely.dev",
+  "keywords": [
+    "query",
+    "builder",
+    "query builder",
+    "sql",
+    "typescript",
+    "postgres",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "mssql",
+    "ms sql server",
+    "sql server",
+    "type-safe",
+    "type-safety",
+    "plugins"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
