@@ -60,6 +60,8 @@ export * from './schema/drop-view-builder.js'
 export * from './schema/alter-column-builder.js'
 
 export * from './dynamic/dynamic.js'
+export * from './dynamic/dynamic-reference-builder.js'
+export * from './dynamic/dynamic-table-builder.js'
 
 export * from './driver/driver.js'
 export * from './driver/database-connection.js'
