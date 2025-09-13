@@ -4,3 +4,4 @@ dist
 node_modules
 .vscode
 .idea
+tsconfig.tsbuildinfo

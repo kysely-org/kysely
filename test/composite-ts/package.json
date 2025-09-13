@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "precheck:types": "cd ../.. && npm run build && cp -r dist test/composite-ts/node_modules/kysely/",
+    "precheck:types": "cd ../.. && pnpm build && cp -r dist test/composite-ts/node_modules/kysely/",
     "check:types": "tsc --noEmit"
   },
   "devDependencies": {
