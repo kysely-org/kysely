@@ -39,6 +39,20 @@ export interface PostgresDialectConfig {
    * Called every time a connection is acquired from the pool.
    */
   onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * Used to define type parsers.
+   *
+   * @example
+   * ```
+   * new PostgresDialect({
+   *  pool: new Pool('postgres://localhost:5432/mydb'),
+   *  types: {
+   *    [types.builtins.DATE]: (v) => v,
+   *  }
+   * })
+   */
+  types?: Record<number, (value: string) => any>
 }
 
 /**
@@ -61,6 +75,7 @@ export interface PostgresPoolClient {
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
+  setTypeParser(typeOrOid: number, parser: (val: string) => any): void
 }
 
 export interface PostgresCursor<T> {

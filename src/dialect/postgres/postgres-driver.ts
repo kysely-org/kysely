@@ -35,9 +35,17 @@ export class PostgresDriver implements Driver {
 
   async acquireConnection(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
+
     let connection = this.#connections.get(client)
 
     if (!connection) {
+      if (this.#config.types) {
+        for (const [typeId, parserFn] of Object.entries(this.#config.types)) {
+          const id = Number(typeId)
+          client.setTypeParser(id, parserFn)
+        }
+      }
+
       connection = new PostgresConnection(client, {
         cursor: this.#config.cursor ?? null,
       })
