@@ -6,13 +6,13 @@
   },
   "dependencies": {
     "kysely": "link:kysely",
-    "mysql2": "^3.14.3",
+    "mysql2": "^3.14.5",
     "pg": "^8.16.3",
     "tarn": "^3.0.2",
     "tedious": "^19.0.0"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.20",
+    "@types/bun": "^1.2.21",
     "typescript": "^5.9.2"
   }
 }
