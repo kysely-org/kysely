@@ -29,6 +29,7 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    require.resolve('./src/plugins/generate-examples-plugin'),
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
