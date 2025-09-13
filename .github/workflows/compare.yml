@@ -106,7 +106,7 @@ jobs:
           path: target/
 
       - name: Diff current vs. target
-        uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.0.0
+        uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.2.0
         with:
           mode: addition
           new: current/llms-full.txt
