@@ -758,14 +758,21 @@ export class TransactionBuilder<DB> {
         executor,
       })
 
+      let transactionBegun = false
       try {
         await this.#props.driver.beginTransaction(connection, settings)
+        transactionBegun = true
+
         const result = await callback(transaction)
+
         await this.#props.driver.commitTransaction(connection)
 
         return result
       } catch (error) {
-        await this.#props.driver.rollbackTransaction(connection)
+        if (transactionBegun) {
+          await this.#props.driver.rollbackTransaction(connection)
+        }
+
         throw error
       }
     })

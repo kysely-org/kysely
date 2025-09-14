@@ -1,6 +1,14 @@
 import * as sinon from 'sinon'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
-import { CompiledQuery, Transaction, TRANSACTION_ACCESS_MODES } from '../../../'
+import {
+  CompiledQuery,
+  MssqlDriver,
+  MysqlDriver,
+  PostgresDriver,
+  SqliteDriver,
+  Transaction,
+  TRANSACTION_ACCESS_MODES,
+} from '../../../'
 
 import {
   clearDatabase,
@@ -247,6 +255,31 @@ for (const dialect of DIALECTS) {
 
         expect((error as Error).stack).to.include('transaction.test.js')
       }
+    })
+
+    it('should not attempt to rollback if transaction failed to begin', async () => {
+      const driverProto = {
+        postgres: PostgresDriver,
+        mysql: MysqlDriver,
+        mssql: MssqlDriver,
+        sqlite: SqliteDriver,
+      }[dialect].prototype
+      const beginStub = sandbox.stub(driverProto, 'beginTransaction').throws()
+      const callbackSpy = sandbox.spy()
+      const rollbackSpy = sandbox.spy(driverProto, 'rollbackTransaction')
+
+      await ctx.db
+        .transaction()
+        .execute(async (trx) => {
+          callbackSpy()
+          await trx.selectFrom('person').where('id', 'in', -1).execute()
+        })
+        .catch(() => {})
+
+      expect(beginStub.called, 'begin called').to.be.true
+      beginStub.restore()
+      expect(callbackSpy.notCalled, 'callback not called').to.be.true
+      expect(rollbackSpy.notCalled, 'rollback not called').to.be.true
     })
 
     async function insertPet(
