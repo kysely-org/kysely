@@ -10,9 +10,6 @@ ignoredBuiltDependencies:
 
 minimumReleaseAge: 1440 # install package versions that are at least 1 day old (in minutes).
 
-minimumReleaseAgeExclude:
-  - '@types/node'
-
 # `postinstall` allow list
 onlyBuiltDependencies:
   - better-sqlite3
