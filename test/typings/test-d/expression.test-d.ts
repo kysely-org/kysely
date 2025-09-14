@@ -12,6 +12,7 @@ import {
   Kysely,
   SqlBool,
   expressionBuilder,
+  sql,
 } from '..'
 import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
 import { Database } from '../shared'
@@ -38,6 +39,11 @@ async function testExpressionBuilder(
 ) {
   // Binary expression
   expectAssignable<Expression<number>>(eb('age', '+', 1))
+  expectAssignable<Expression<SqlBool>>(eb('age', '=', 1))
+  expectAssignable<Expression<SqlBool>>(eb('age', sql`OP`, 1))
+  expectAssignable<Expression<SqlBool>>(eb('age', sql<SqlBool>`OP`, 1))
+  expectAssignable<Expression<number>>(eb('age', sql<number>`OP`, 1))
+  expectAssignable<Expression<string>>(eb('age', sql<string>`OP`, 1))
 
   // `not` expression
   expectAssignable<Expression<SqlBool>>(eb.not(eb('age', '>', 10)))

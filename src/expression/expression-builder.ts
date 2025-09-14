@@ -183,7 +183,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     TB,
     OP extends ComparisonOperator
       ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+      : OP extends Expression<infer T>
+        ? unknown extends T
+          ? SqlBool
+          : T
+        : ExtractTypeFromReferenceExpression<DB, TB, RE>
   >
 
   /**
@@ -1164,7 +1168,11 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     TB,
     OP extends ComparisonOperator
       ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+      : OP extends Expression<infer T>
+        ? unknown extends T
+          ? SqlBool
+          : T
+        : ExtractTypeFromReferenceExpression<DB, TB, RE>
   > {
     return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
   }
