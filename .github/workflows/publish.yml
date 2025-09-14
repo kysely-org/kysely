@@ -1,0 +1,80 @@
+# https://docs.npmjs.com/trusted-publishers#github-actions-configuration
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # Required for OIDC
+
+jobs:
+  npm:
+    if: github.repository == 'kysely-org/kysely'
+    environment: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0 # Need full history to check branch ancestry
+
+      - name: verify tag format and branch
+        run: |
+          # Validate ref_name format before assignment
+          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: tag does not follow semver!"
+            exit 1
+          fi
+
+          TAG="${{ github.ref_name }}"
+
+          # Check if tag points to a commit that exists on master branch
+          TAG_COMMIT=$(git rev-list -n 1 "$TAG")
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/master; then
+            echo "Error: tag is not based on master branch"
+            exit 1
+          fi
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Use Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          cache: pnpm
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org/
+
+      - name: verify package version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+
+          # Get version from package.json safely (parse as JSON, don't execute)
+          PACKAGE_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('./package.json', 'utf8')).version")
+
+          # Validate version format: must be MAJOR.MINOR.PATCH
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: package.json version does not follow semver!"
+            exit 1
+          fi
+
+          # Verify versions match
+          if [[ "$VERSION" != "$PACKAGE_VERSION" ]]; then
+            echo "Error: tag and package.json version don't match!"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm i -g npm@^11.5.2 && pnpm i --frozen-lockfile --prefer-offline
+
+      - name: Publish
+        run: pnpm publish --no-git-checks # the workflow runs in a detached head state, so git checks fail
