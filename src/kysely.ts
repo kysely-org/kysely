@@ -479,6 +479,74 @@ export class Kysely<DB>
   }
 
   /**
+   * Returns a copy of this Kysely instance without the given tables (provided as
+   * a union type of table names).
+   *
+   * This method only modifies the types and doesn't affect any of the executed
+   * queries in any way.
+   *
+   * See also {@link $pickTables} and {@link $withTables}.
+   *
+   * ### Examples
+   *
+   * The following example omits tables not used in the downstream query. This
+   * can help with compile-time performance as downstream checks and calculations
+   * work against a smaller scope of the database - less tables and columns.
+   *
+   * Don't optimize prematurely! Build your queries first, measure later. If you
+   * realize the query has a noticeable impact on compilation - try the helper.
+   *
+   * ```ts
+   * const results = await db
+   *   .$omitTables<'toy'>()
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The query is arguably less readable now, and changing it is less obvious -
+   * e.g. adding another table.
+   */
+  $omitTables<T extends keyof DB>(): Kysely<Omit<DB, T>> {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
+   * Returns a copy of this Kysely instance with just the given tables (provided as
+   * a union type of table names).
+   *
+   * This method only modifies the types and doesn't affect any of the executed
+   * queries in any way.
+   *
+   * See also {@link $omitTables} and {@link $withTables}.
+   *
+   * ### Examples
+   *
+   * The following example picks the tables used in the downstream query. This
+   * can help with compile-time performance as downstream checks and calculations
+   * work against a smaller scope of the database - less tables and columns.
+   *
+   * Don't optimize prematurely! Build your queries first, measure later. If you
+   * realize the query has a noticeable impact on compilation - try the helper.
+   *
+   * ```ts
+   * const results = await db
+   *   .$pickTables<'person' | 'pet'>()
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The query is arguably less readable now, and changing it is less obvious -
+   * e.g. adding another table.
+   */
+  $pickTables<T extends keyof DB>(): Kysely<Pick<DB, T>> {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
    * Returns a copy of this Kysely instance with tables added to its
    * database type.
    *
@@ -496,7 +564,7 @@ export class Kysely<DB>
    *   .addColumn('some_column', 'integer')
    *   .execute()
    *
-   * const tempDb = db.withTables<{
+   * const tempDb = db.$withTables<{
    *   temp_table: {
    *     some_column: number
    *   }
@@ -508,10 +576,19 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+  $withTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
   > {
     return new Kysely({ ...this.#props })
+  }
+
+  /**
+   * @deprecated use {@link $withTables} instead.
+   */
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  > {
+    return this.$withTables()
   }
 
   /**
