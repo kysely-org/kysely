@@ -34,15 +34,6 @@ export interface Driver {
   commitTransaction(connection: DatabaseConnection): Promise<void>
 
   /**
-   * Tells {@link TransactionBuilder} whether a transaction has begun in the database
-   * for the given connection.
-   *
-   * This is only useful if {@link beginTransaction} can fail after beginning a
-   * transaction. In such cases we still need to try and rollback the transaction.
-   */
-  hasBegunTransaction?(connection: DatabaseConnection): boolean
-
-  /**
    * Rolls back a transaction.
    */
   rollbackTransaction(connection: DatabaseConnection): Promise<void>
