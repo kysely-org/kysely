@@ -769,7 +769,10 @@ export class TransactionBuilder<DB> {
 
         return result
       } catch (error) {
-        if (transactionBegun) {
+        if (
+          transactionBegun ||
+          this.#props.driver.hasBegunTransaction?.(connection)
+        ) {
           await this.#props.driver.rollbackTransaction(connection)
         }
 
