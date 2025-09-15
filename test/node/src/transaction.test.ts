@@ -4,6 +4,7 @@ import {
   CompiledQuery,
   MssqlDriver,
   MysqlDriver,
+  PGliteDriver,
   PostgresDriver,
   SqliteDriver,
   Transaction,
@@ -272,7 +273,8 @@ for (const dialect of DIALECTS) {
         mysql: MysqlDriver,
         mssql: MssqlDriver,
         sqlite: SqliteDriver,
-      }[dialect].prototype
+        pglite: PGliteDriver,
+      }[variant].prototype
       const beginStub = sandbox.stub(driverProto, 'beginTransaction').throws()
       const callbackSpy = sandbox.spy()
       const rollbackSpy = sandbox.spy(driverProto, 'rollbackTransaction')
