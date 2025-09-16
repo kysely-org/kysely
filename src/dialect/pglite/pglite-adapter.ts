@@ -5,13 +5,13 @@ export class PGliteAdapter extends PostgresAdapter {
     return false
   }
 
-  async acquireMigrationLock(): Promise<void> {
+  override async acquireMigrationLock(): Promise<void> {
     // PGlite only has one connection that's reserved by the migration system
     // for the whole time between acquireMigrationLock and releaseMigrationLock.
     // We don't need to do anything here.
   }
 
-  async releaseMigrationLock(): Promise<void> {
+  override async releaseMigrationLock(): Promise<void> {
     // PGlite only has one connection that's reserved by the migration system
     // for the whole time between acquireMigrationLock and releaseMigrationLock.
     // We don't need to do anything here.
