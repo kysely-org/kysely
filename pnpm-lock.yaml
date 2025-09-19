@@ -1464,6 +1464,9 @@ packages:
     resolution: {integrity: sha512-P1ml0nvOmEFdmu0smSXOqTS1sxU5tqvnc0dA4MTKV39kye+bhQnjkIKEE18fNOvxjyB86k8esoCIFM3x4RykOQ==}
     engines: {node: '>=18.0'}
 
+  '@electric-sql/pglite@0.3.6':
+    resolution: {integrity: sha512-KFIoLIhiOzYQzT2TOxqWH9eAMZcZd4tzSGXDY+6qRboZY2P76yFDNTKS4SB2c3hy6vRqIrHSh24VDPi9FyNhlA==}
+
   '@emnapi/runtime@1.4.5':
     resolution: {integrity: sha512-++LApOtY0pEEz1zrd9vy1/zXVaVJJ/EbAF3u0fXIzPJEDtnITsBGbbK0EkM72amhl/R5b+5xx0Y/QhcVOpuulg==}
 
@@ -9310,6 +9313,8 @@ snapshots:
       - uglify-js
       - webpack-cli
 
+  '@electric-sql/pglite@0.3.6': {}
+
   '@emnapi/runtime@1.4.5':
     dependencies:
       tslib: 2.8.1
@@ -10344,6 +10349,10 @@ snapshots:
       negotiator: 0.6.3
 
   acorn-import-phases@1.0.4(acorn@8.15.0):
+    dependencies:
+      acorn: 8.15.0
+
+  acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
 
