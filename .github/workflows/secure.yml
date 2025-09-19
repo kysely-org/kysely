@@ -1,0 +1,33 @@
+name: secure
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Check provenance downgrades/changes
+        id: check
+        uses: danielroe/provenance-action@41bcc969e579d9e29af08ba44fcbfdf95cee6e6c # v0.1.1
+        with:
+          base-ref: origin/master
+          fail-on-downgrade: true
+          fail-on-provenance-change: true
+
+      - run: "echo 'Downgraded: ${{ steps.check.outputs.downgraded }}'"
