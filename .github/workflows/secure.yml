@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - next
 
 jobs:
   provenance:
@@ -28,7 +29,7 @@ jobs:
         id: check
         uses: danielroe/provenance-action@41bcc969e579d9e29af08ba44fcbfdf95cee6e6c # v0.1.1
         with:
-          base-ref: origin/master
+          base-ref: origin/${{ github.base_ref }}
           fail-on-downgrade: true
           fail-on-provenance-change: true
 
