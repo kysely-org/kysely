@@ -107,7 +107,7 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
     DB,
     TB,
     W,
-    ExtractTypeFromReferenceExpression<DB, TB, RE>
+    O | ExtractTypeFromReferenceExpression<DB, TB, RE>
   > {
     return new CaseWhenBuilder({
       ...this.#props,

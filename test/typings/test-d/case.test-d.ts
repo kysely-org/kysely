@@ -80,11 +80,13 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // refs
-  expectType<ExpressionWrapper<Database, 'person', string | null>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number | null>>(
     eb
       .case()
       .when('first_name', '=', eb.ref('last_name')) // TODO: whenRef
       .thenRef('first_name')
+      .when('deleted_at', 'is not', null)
+      .thenRef('age')
       // .elseRef('age')
       .end(),
   )
