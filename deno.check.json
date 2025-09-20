@@ -4,6 +4,7 @@
     "types": ["./deno.check.d.ts"]
   },
   "imports": {
+    "@electric-sql/pglite": "npm:@electric-sql/pglite",
     "better-sqlite3": "npm:better-sqlite3",
     "kysely": "./dist/esm",
     "kysely/helpers/mssql": "./dist/esm/helpers/mssql.js",
