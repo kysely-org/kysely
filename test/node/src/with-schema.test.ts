@@ -14,28 +14,37 @@ import {
   type Pet,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
-  const { sqlSpec, variant } = dialect
+for (const dialect of DIALECTS.filter(
+  (dialect) => dialect === 'postgres' || dialect === 'mssql',
+)) {
+  describe(`${dialect}: with schema`, () => {
+    let ctx: Omit<TestContext, 'db'> & {
+      db: Kysely<
+        Database & {
+          pet_staging: Pet
+        }
+      >
+    }
 
-  if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
-    describe(`${variant}: with schema`, () => {
-      let ctx: Omit<TestContext, 'db'> & {
-        db: Kysely<
-          Database & {
-            pet_staging: Pet
-          }
-        >
-      }
+    before(async function () {
+      ctx = (await initTest(this, dialect)) as never
+      await dropTables()
+      await createTables()
+    })
 
-      before(async function () {
-        ctx = (await initTest(this, dialect)) as never
-        await dropTables()
-        await createTables()
-      })
+    beforeEach(async () => {
+      const personId = await insert(
+        ctx as never,
+        ctx.db.insertInto('person').values({
+          first_name: 'Foo',
+          last_name: 'Bar',
+          gender: 'other',
+        }),
+      )
 
       beforeEach(async () => {
         const personId = await insert(
-          ctx as never,
+          ctx,
           ctx.db.insertInto('person').values({
             first_name: 'Foo',
             last_name: 'Bar',
@@ -43,25 +52,19 @@ for (const dialect of DIALECTS) {
           }),
         )
 
-        await ctx.db
-          .withSchema('mammals')
-          .insertInto('pet')
-          .values({
-            name: 'Catto',
-            owner_id: personId,
-            species: 'cat',
-          })
-          .execute()
-      })
+    afterEach(async () => {
+      await ctx.db.withSchema('mammals').deleteFrom('pet').execute()
+      await clearDatabase(ctx as never)
+    })
 
-      afterEach(async () => {
-        await ctx.db.withSchema('mammals').deleteFrom('pet').execute()
-        await clearDatabase(ctx as never)
-      })
+    after(async () => {
+      await dropTables()
+      await destroyTest(ctx as never)
+    })
 
       after(async () => {
         await dropTables()
-        await destroyTest(ctx as never)
+        await destroyTest(ctx)
       })
 
       describe('select from', () => {
@@ -341,41 +344,41 @@ for (const dialect of DIALECTS) {
         })
       })
 
-      describe('merge into', () => {
-        it('should add schema', async () => {
-          const query = ctx.db
-            .withSchema('mammals')
-            .mergeInto('pet as target')
-            .using('pet_staging as source', 'source.id', 'target.id')
-            .whenMatched()
-            .thenDelete()
+    describe('merge into', () => {
+      it('should add schema', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .mergeInto('pet as target')
+          .using('pet_staging as source', 'source.id', 'target.id')
+          .whenMatched()
+          .thenDelete()
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'merge into "mammals"."pet" as "target" using "mammals"."pet_staging" as "source" on "source"."id" = "target"."id" when matched then delete',
-              parameters: [],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql: 'merge into "mammals"."pet" as "target" using "mammals"."pet_staging" as "source" on "source"."id" = "target"."id" when matched then delete;',
-              parameters: [],
-            },
-            sqlite: NOT_SUPPORTED,
-          })
-
-          await query.execute()
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "mammals"."pet" as "target" using "mammals"."pet_staging" as "source" on "source"."id" = "target"."id" when matched then delete',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "mammals"."pet" as "target" using "mammals"."pet_staging" as "source" on "source"."id" = "target"."id" when matched then delete;',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
         })
-      })
 
-      describe('with', () => {
-        it('should not add schema for common table expression names', async () => {
-          const query = ctx.db
-            .withSchema('mammals')
-            .with('doggo', (db) =>
-              db.selectFrom('pet').where('pet.name', '=', 'Doggo').selectAll(),
-            )
-            .selectFrom('doggo')
-            .selectAll()
+        await query.execute()
+      })
+    })
+
+    describe('with', () => {
+      it('should not add schema for common table expression names', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .with('doggo', (db) =>
+            db.selectFrom('pet').where('pet.name', '=', 'Doggo').selectAll(),
+          )
+          .selectFrom('doggo')
+          .selectAll()
 
           testSql(query, dialect, {
             postgres: {
@@ -617,41 +620,46 @@ for (const dialect of DIALECTS) {
           .$call((qb) => (sqlSpec === 'postgres' ? qb.ifNotExists() : qb))
           .execute()
 
-        await Promise.all(
-          ['pet', 'pet_staging'].map(async (tableName) => {
-            const table = createTableWithId(
-              ctx.db.schema.withSchema('mammals'),
-              dialect,
-              tableName,
-            )
+      await Promise.all(
+        ['pet', 'pet_staging'].map(async (tableName) => {
+          const table = createTableWithId(
+            ctx.db.schema.withSchema('mammals'),
+            dialect,
+            tableName,
+          )
 
-            await table
-              .addColumn('name', 'varchar(50)', (col) => col.unique())
-              .addColumn('owner_id', 'integer', (col) =>
-                col
-                  .references(
-                    sqlSpec === 'postgres'
-                      ? 'public.person.id'
-                      : 'dbo.person.id',
-                  )
-                  .onDelete('cascade'),
-              )
-              .addColumn('species', 'varchar(50)')
-              .execute()
-          }),
-        )
-      }
+          await table
+            .addColumn('name', 'varchar(50)', (col) => col.unique())
+            .addColumn('owner_id', 'integer', (col) =>
+              col
+                .references(
+                  dialect === 'postgres' ? 'public.person.id' : 'dbo.person.id',
+                )
+                .onDelete('cascade'),
+            )
+            .addColumn('species', 'varchar(50)')
+            .execute()
+        }),
+      )
+    }
+
+    async function dropTables(): Promise<void> {
+      await Promise.all(
+        ['pet', 'pet_staging'].map((tableName) =>
+          ctx.db.schema
+            .withSchema('mammals')
+            .dropTable(tableName)
+            .ifExists()
+            .execute(),
+        ),
+      )
 
       async function dropTables(): Promise<void> {
-        await Promise.all(
-          ['pet', 'pet_staging'].map((tableName) =>
-            ctx.db.schema
-              .withSchema('mammals')
-              .dropTable(tableName)
-              .ifExists()
-              .execute(),
-          ),
-        )
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropTable('pet')
+          .ifExists()
+          .execute()
 
         await ctx.db.schema.dropSchema('mammals').ifExists().execute()
       }
