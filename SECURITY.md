@@ -16,7 +16,7 @@ We're not perfect. GitHub is not perfect. [NPM](https://npmjs.com) is not perfec
 
 These are not perfect.
 
-1. Our runtimes are not perfect. Keep yours up-to-date - [End Of Life (EOL) versions don't receive security updates](https://nodejs.org/en/blog/announcements/node-18-eol-support) and there are less eyes watching.
+1. Our runtimes are not perfect. Keep yours up-to-date - [End Of Life (EOL) versions don't receive security updates](https://nodejs.org/en/blog/announcements/node-18-eol-support) and there are fewer eyes watching.
 
 1. [`pnpm`](https://pnpm.io) is not perfect, but it's the [closest](https://pnpm.io/supply-chain-security) we have - use it as your package manager.
 
