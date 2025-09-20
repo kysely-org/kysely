@@ -86,7 +86,8 @@ export function Dialects(props: DialectsProps) {
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverDocsURL, poolDocsURL, value }) => {
           const driverNPMPackage = getDriverNPMPackageNames()[value]
-          const poolNPMPackage = POOL_NPM_PACKAGE_NAMES[value]
+          const poolNPMPackage =
+            POOL_NPM_PACKAGE_NAMES[value as keyof typeof POOL_NPM_PACKAGE_NAMES]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
           const installationCommand =
             packageManager === 'deno'
