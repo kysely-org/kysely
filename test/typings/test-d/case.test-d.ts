@@ -69,23 +69,23 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .end(),
   )
 
-  // references
+  // eb.refs
   expectType<ExpressionWrapper<Database, 'person', string | number>>(
     eb
       .case()
-      .when('gender', '=', 'male')
+      .when('first_name', '=', eb.ref('last_name'))
       .then(eb.ref('first_name'))
       .else(eb.ref('age'))
       .end(),
   )
 
-  // then references
+  // refs
   expectType<ExpressionWrapper<Database, 'person', string | number>>(
     eb
       .case()
-      .when('gender', '=', 'male')
+      .when('first_name', '=', eb.ref('last_name')) // TODO: whenRef
       .thenRef('first_name')
-      .else(eb.ref('age'))
+      // .elseRef('age')
       .end(),
   )
 
