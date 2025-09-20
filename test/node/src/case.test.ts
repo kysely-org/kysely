@@ -60,6 +60,40 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
+    it('should execute a query with a case...when...thenRef...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .when('gender', '=', 'male')
+            .thenRef('first_name')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "gender" = $1 then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
+        },
+        mysql: {
+          sql: 'select case when `gender` = ? then `first_name` end as `title` from `person`',
+          parameters: ['male'],
+        },
+        mssql: {
+          sql: `select case when "gender" = @1 then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
+        },
+        sqlite: {
+          sql: `select case when "gender" = ? then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('should execute a query with a case...value...when...then...end operator', async () => {
       const query = ctx.db
         .selectFrom('person')
@@ -312,57 +346,6 @@ for (const dialect of DIALECTS) {
             'end as "title" from "person"',
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
-        },
-      })
-
-      await query.execute()
-    })
-    it('should execute a query with a case...value...when...thenRef...when...thenRef...end operator', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select((eb) =>
-          eb
-            .case('gender')
-            .when(sql.lit('male'))
-            .thenRef('first_name')
-            .when(sql.lit('female'))
-            .thenRef('last_name')
-            .end()
-            .as('name'),
-        )
-
-      testSql(query, dialect, {
-        postgres: {
-          sql: [
-            `select case "gender" when 'male' then "first_name"`,
-            `when 'female' then "last_name"`,
-            `end as "name" from "person"`,
-          ],
-          parameters: [],
-        },
-        mysql: {
-          sql: [
-            "select case `gender` when 'male' then `first_name`",
-            "when 'female' then `last_name`",
-            'end as `name` from `person`',
-          ],
-          parameters: [],
-        },
-        mssql: {
-          sql: [
-            `select case "gender" when 'male' then "first_name"`,
-            `when 'female' then "last_name"`,
-            `end as "name" from "person"`,
-          ],
-          parameters: [],
-        },
-        sqlite: {
-          sql: [
-            `select case "gender" when 'male' then "first_name"`,
-            `when 'female' then "last_name"`,
-            `end as "name" from "person"`,
-          ],
-          parameters: [],
         },
       })
 
