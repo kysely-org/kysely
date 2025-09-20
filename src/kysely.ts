@@ -485,7 +485,7 @@ export class Kysely<DB>
    * This method only modifies the types and doesn't affect any of the executed
    * queries in any way.
    *
-   * See also {@link $pickTables} and {@link $withTables}.
+   * See also {@link $pickTables} and {@link $extendTables}.
    *
    * ### Examples
    *
@@ -519,7 +519,7 @@ export class Kysely<DB>
    * This method only modifies the types and doesn't affect any of the executed
    * queries in any way.
    *
-   * See also {@link $omitTables} and {@link $withTables}.
+   * See also {@link $omitTables} and {@link $extendTables}.
    *
    * ### Examples
    *
@@ -564,7 +564,7 @@ export class Kysely<DB>
    *   .addColumn('some_column', 'integer')
    *   .execute()
    *
-   * const tempDb = db.$withTables<{
+   * const tempDb = db.$extendTables<{
    *   temp_table: {
    *     some_column: number
    *   }
@@ -576,19 +576,19 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  $withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+  $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
   > {
     return new Kysely({ ...this.#props })
   }
 
   /**
-   * @deprecated use {@link $withTables} instead.
+   * @deprecated use {@link $extendTables} instead.
    */
   withTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
   > {
-    return this.$withTables()
+    return this.$extendTables()
   }
 
   /**
