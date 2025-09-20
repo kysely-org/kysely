@@ -14,6 +14,9 @@ importers:
       '@ark/attest':
         specifier: ^0.49.0
         version: 0.49.0(typescript@5.9.3)
+      '@electric-sql/pglite':
+        specifier: ^0.3.8
+        version: 0.3.8
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -1468,8 +1471,8 @@ packages:
     resolution: {integrity: sha512-YAL4yhhWLl9DXuf5MVig260a6INz4MehrBGFU/CZu8yXmRiYEuQvRFWh9ZsjfAOyaG7za1MNmBVZ4VVAi/CiJA==}
     engines: {node: '>=20.0'}
 
-  '@electric-sql/pglite@0.3.6':
-    resolution: {integrity: sha512-KFIoLIhiOzYQzT2TOxqWH9eAMZcZd4tzSGXDY+6qRboZY2P76yFDNTKS4SB2c3hy6vRqIrHSh24VDPi9FyNhlA==}
+  '@electric-sql/pglite@0.3.8':
+    resolution: {integrity: sha512-VlAz/R7mktifp9IHzNvjxWJM8p3fPH2lHpustYuRSOXOpXiAMTlA5qqxcufPaDnfee6CZCE9qrT1MHDT7riSHg==}
 
   '@emnapi/runtime@1.4.5':
     resolution: {integrity: sha512-++LApOtY0pEEz1zrd9vy1/zXVaVJJ/EbAF3u0fXIzPJEDtnITsBGbbK0EkM72amhl/R5b+5xx0Y/QhcVOpuulg==}
@@ -9356,7 +9359,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@electric-sql/pglite@0.3.6': {}
+  '@electric-sql/pglite@0.3.8': {}
 
   '@emnapi/runtime@1.4.5':
     dependencies:
@@ -10427,10 +10430,6 @@ snapshots:
       negotiator: 0.6.3
 
   acorn-import-phases@1.0.4(acorn@8.15.0):
-    dependencies:
-      acorn: 8.15.0
-
-  acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
 
