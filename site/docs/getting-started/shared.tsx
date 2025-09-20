@@ -2,7 +2,13 @@ import { useLocation } from '@docusaurus/router'
 import { useEffect, useState, type ReactNode } from 'react'
 import packageJson from '../../package.json'
 
-export const DIALECTS = ['postgresql', 'mysql', 'sqlite', 'mssql'] as const
+export const DIALECTS = [
+  'postgresql',
+  'mysql',
+  'sqlite',
+  'mssql',
+  'pglite',
+] as const
 
 export type Dialect = (typeof DIALECTS)[number]
 
@@ -117,7 +123,7 @@ export function getBashCommand(
 }
 
 export function getDenoCommand(
-  additionalImports?: Record<string, string>,
+  additionalImports?: Record<string, string | undefined>,
 ): Command {
   return {
     content: JSON.stringify(
@@ -145,7 +151,7 @@ export function getDenoCommand(
 }
 
 export interface UseSearchStateProps<Value extends string> {
-  defaultValue?: Value
+  defaultValue: Value
   searchParam?: string
   validator?: (searchValue: string | null) => boolean
   value?: Value
