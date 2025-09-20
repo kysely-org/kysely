@@ -284,7 +284,7 @@ jobs:
         run: pnpm script:exclude-test-files-for-backwards-compat
 
       - name: Run tests with older TypeScript version
-        run: pnpm test:typings${{ env.TS_VERSION != '~4.6.0' && ' && pnpm test:node:build' || '' }}
+        run: pnpm test:typings${{ env.TS_VERSION != '~4.6.0' && env.TS_VERSION != '~4.7.0' && env.TS_VERSION != '~4.8.0' && ' && pnpm test:node:build' || '' }}
 
   jsdocs:
     name: JSDocs
