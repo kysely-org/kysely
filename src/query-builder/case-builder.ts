@@ -93,6 +93,29 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
       ),
     })
   }
+
+  /**
+   * Adds a `then` clause to the `case` statement where the value is a reference to a column.
+   *
+   * A `thenRef` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
+   * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   */
+  thenRef<RE extends ReferenceExpression<DB, TB>>(
+    expression: RE,
+  ): CaseWhenBuilder<
+    DB,
+    TB,
+    W,
+    O | ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new CaseWhenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithThen(
+        this.#props.node,
+        parseReferenceExpression(expression),
+      ),
+    })
+  }
 }
 
 export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
@@ -196,7 +219,7 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   /**
    * Adds a `when` clause to the case statement.
    *
-   * A `when` call must be followed by a {@link CaseThenBuilder.then} call.
+   * A `when` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
    */
   when<
     RE extends ReferenceExpression<DB, TB>,
