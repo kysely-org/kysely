@@ -479,6 +479,42 @@ export class Kysely<DB>
   }
 
   /**
+   * Returns a copy of this Kysely instance with tables added to its
+   * database type.
+   *
+   * This method only modifies the types and doesn't affect any of the
+   * executed queries in any way.
+   *
+   * ### Examples
+   *
+   * The following example adds and uses a temporary table:
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('temp_table')
+   *   .temporary()
+   *   .addColumn('some_column', 'integer')
+   *   .execute()
+   *
+   * const tempDb = db.$extendTables<{
+   *   temp_table: {
+   *     some_column: number
+   *   }
+   * }>()
+   *
+   * await tempDb
+   *   .insertInto('temp_table')
+   *   .values({ some_column: 100 })
+   *   .execute()
+   * ```
+   */
+  $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  > {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
    * Returns a copy of this Kysely instance without the given tables (provided as
    * a union type of table names).
    *
@@ -543,42 +579,6 @@ export class Kysely<DB>
    * e.g. adding another table.
    */
   $pickTables<T extends keyof DB>(): Kysely<Pick<DB, T>> {
-    return new Kysely({ ...this.#props })
-  }
-
-  /**
-   * Returns a copy of this Kysely instance with tables added to its
-   * database type.
-   *
-   * This method only modifies the types and doesn't affect any of the
-   * executed queries in any way.
-   *
-   * ### Examples
-   *
-   * The following example adds and uses a temporary table:
-   *
-   * ```ts
-   * await db.schema
-   *   .createTable('temp_table')
-   *   .temporary()
-   *   .addColumn('some_column', 'integer')
-   *   .execute()
-   *
-   * const tempDb = db.$extendTables<{
-   *   temp_table: {
-   *     some_column: number
-   *   }
-   * }>()
-   *
-   * await tempDb
-   *   .insertInto('temp_table')
-   *   .values({ some_column: 100 })
-   *   .execute()
-   * ```
-   */
-  $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
-  > {
     return new Kysely({ ...this.#props })
   }
 
