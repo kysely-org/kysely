@@ -16,11 +16,13 @@ export function parseSchemableIdentifier(id: string): SchemableIdentifierNode {
   }
 }
 
-export function parseSchemableIdentifierArray(id: string | string[]): SchemableIdentifierNode[] {
+export function parseSchemableIdentifierArray(
+  id: string | string[],
+): SchemableIdentifierNode[] {
   if (!Array.isArray(id)) {
     id = [id]
   }
-  
+
   return id.map(parseSchemableIdentifier)
 }
 
