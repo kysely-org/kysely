@@ -12,7 +12,7 @@ export interface DropTypeNode extends OperationNode {
   readonly name: SchemableIdentifierNode
   readonly additionalNames?: SchemableIdentifierNode[]
   readonly ifExists?: boolean
-  readonly modifier?: 'cascade' | 'restrict'
+  readonly cascade?: boolean
 }
 
 /**
