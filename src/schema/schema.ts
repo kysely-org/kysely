@@ -25,7 +25,10 @@ import { CreateTypeBuilder } from './create-type-builder.js'
 import { DropTypeBuilder } from './drop-type-builder.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
-import { parseSchemableIdentifier } from '../parser/identifier-parser.js'
+import {
+  parseSchemableIdentifier,
+  parseSchemableIdentifierArray,
+} from '../parser/identifier-parser.js'
 import { RefreshMaterializedViewBuilder } from './refresh-materialized-view-builder.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
@@ -311,12 +314,22 @@ export class SchemaModule {
    *   .ifExists()
    *   .execute()
    * ```
+   *
+   * You can also provide multiple type names:
+   *
+   * ```ts
+   * await db.schema
+   *   .dropType(['species', 'colors'])
+   *   .ifExists()
+   *   .cascade()
+   *   .execute()
+   * ```
    */
-  dropType(typeName: string): DropTypeBuilder {
+  dropType(typeName: string | string[]): DropTypeBuilder {
     return new DropTypeBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      node: DropTypeNode.create(parseSchemableIdentifier(typeName)),
+      node: DropTypeNode.create(parseSchemableIdentifierArray(typeName)),
     })
   }
 
