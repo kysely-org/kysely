@@ -1438,6 +1438,15 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.additionalNames?.length) {
+      this.append(', ')
+      this.compileList(node.additionalNames)
+    }
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
