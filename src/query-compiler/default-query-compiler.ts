@@ -1435,8 +1435,8 @@ export class DefaultQueryCompiler
       this.compileList(node.additionalNames)
     }
 
-    if (node.modifier) {
-      this.append(` ${node.modifier}`)
+    if (node.cascade) {
+      this.append(' cascade')
     }
   }
 
