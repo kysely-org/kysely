@@ -13,11 +13,26 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
     this.#props = freeze(props)
   }
 
+  /**
+   * Adds `if exists` to the query.
+   */
   ifExists(): DropTypeBuilder {
     return new DropTypeBuilder({
       ...this.#props,
       node: DropTypeNode.cloneWith(this.#props.node, {
         ifExists: true,
+      }),
+    })
+  }
+
+  /**
+   * Adds `cascade` to the query.
+   */
+  cascade(): DropTypeBuilder {
+    return new DropTypeBuilder({
+      ...this.#props,
+      node: DropTypeNode.cloneWith(this.#props.node, {
+        cascade: true,
       }),
     })
   }
