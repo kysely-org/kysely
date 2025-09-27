@@ -311,6 +311,7 @@ export class SchemaModule {
    *   .ifExists()
    *   .execute()
    * ```
+   * You can also provide multiple type names:
    * 
    * ```ts
    * await db.schema
