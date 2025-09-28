@@ -4,6 +4,7 @@ import {
   TestContext,
   clearDatabase,
   destroyTest,
+  expect,
   initTest,
   insertDefaultDataSet,
   testSql,
@@ -346,6 +347,178 @@ for (const dialect of DIALECTS) {
             'end as "title" from "person"',
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('match')
+            .else('no')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "first_name" = "last_name" then $1 else $2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        mysql: {
+          sql: 'select case when `first_name` = `last_name` then ? else ? end as `title` from `person`',
+          parameters: ['match', 'no'],
+        },
+        mssql: {
+          sql: `select case when "first_name" = "last_name" then @1 else @2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        sqlite: {
+          sql: `select case when "first_name" = "last_name" then ? else ? end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...else...end operator and return at least one match', async () => {
+      // Insert a row with same first + last name
+      await ctx.db
+        .insertInto('person')
+        .values({
+          first_name: 'Foo',
+          last_name: 'Foo',
+          gender: 'other',
+          marital_status: 'single',
+        })
+        .execute()
+
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('match')
+            .else('no')
+            .end()
+            .as('title'),
+        )
+
+      const rows = await query.execute()
+
+      // There should be at least one row whose title is "match"
+      const hasMatch = rows.some((r) => r.title === 'match')
+      expect(hasMatch).to.equal(true)
+    })
+
+    it('should execute a query with a case...when...then...whenRef...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .when('gender', '=', 'male')
+            .then('male_match')
+            .whenRef('first_name', '=', 'last_name')
+            .then('name_match')
+            .else('no_match')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            'select case when "gender" = $1 then $2',
+            'when "first_name" = "last_name" then $3',
+            'else $4 end as "title" from "person"',
+          ],
+          parameters: ['male', 'male_match', 'name_match', 'no_match'],
+        },
+        mysql: {
+          sql: [
+            'select case when `gender` = ? then ?',
+            'when `first_name` = `last_name` then ?',
+            'else ? end as `title` from `person`',
+          ],
+          parameters: ['male', 'male_match', 'name_match', 'no_match'],
+        },
+        mssql: {
+          sql: [
+            'select case when "gender" = @1 then @2',
+            'when "first_name" = "last_name" then @3',
+            'else @4 end as "title" from "person"',
+          ],
+          parameters: ['male', 'male_match', 'name_match', 'no_match'],
+        },
+        sqlite: {
+          sql: [
+            'select case when "gender" = ? then ?',
+            'when "first_name" = "last_name" then ?',
+            'else ? end as "title" from "person"',
+          ],
+          parameters: ['male', 'male_match', 'name_match', 'no_match'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...when...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('name_match')
+            .when('gender', '=', 'female')
+            .then('female_match')
+            .else('no_match')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            'select case when "first_name" = "last_name" then $1',
+            'when "gender" = $2 then $3',
+            'else $4 end as "title" from "person"',
+          ],
+          parameters: ['name_match', 'female', 'female_match', 'no_match'],
+        },
+        mysql: {
+          sql: [
+            'select case when `first_name` = `last_name` then ?',
+            'when `gender` = ? then ?',
+            'else ? end as `title` from `person`',
+          ],
+          parameters: ['name_match', 'female', 'female_match', 'no_match'],
+        },
+        mssql: {
+          sql: [
+            'select case when "first_name" = "last_name" then @1',
+            'when "gender" = @2 then @3',
+            'else @4 end as "title" from "person"',
+          ],
+          parameters: ['name_match', 'female', 'female_match', 'no_match'],
+        },
+        sqlite: {
+          sql: [
+            'select case when "first_name" = "last_name" then ?',
+            'when "gender" = ? then ?',
+            'else ? end as "title" from "person"',
+          ],
+          parameters: ['name_match', 'female', 'female_match', 'no_match'],
         },
       })
 

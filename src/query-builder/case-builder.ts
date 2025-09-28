@@ -11,6 +11,7 @@ import { WhenNode } from '../operation-node/when-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
+  parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import {
@@ -55,6 +56,22 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
       node: CaseNode.cloneWithWhen(
         this.#props.node,
         WhenNode.create(parseValueBinaryOperationOrExpression(args)),
+      ),
+    })
+  }
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
       ),
     })
   }
@@ -157,6 +174,22 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
+      ),
+    })
+  }
+
   /**
    * Adds an `else` clause to the `case` statement.
    *
@@ -237,6 +270,14 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
     value: unknown extends W
       ? KyselyTypeError<'when(value) is only supported when using case(value)'>
       : W,
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
   ): CaseThenBuilder<DB, TB, W, O>
 }
 
