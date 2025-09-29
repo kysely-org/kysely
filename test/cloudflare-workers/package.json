@@ -6,9 +6,9 @@
     "test": "node --experimental-strip-types test.ts"
   },
   "dependencies": {
-    "hono": "^4.9.7"
+    "hono": "^4.9.9"
   },
   "devDependencies": {
-    "wrangler": "^4.37.1"
+    "wrangler": "^4.40.2"
   }
 }
