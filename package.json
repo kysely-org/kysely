@@ -117,7 +117,7 @@
     "@types/pg-cursor": "^2.7.2",
     "@types/semver": "^7.7.1",
     "@types/sinon": "^17.0.4",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
     "chai": "^6.2.0",
     "chai-as-promised": "^8.0.2",
     "esbuild": "^0.25.10",
