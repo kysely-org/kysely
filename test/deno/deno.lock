@@ -2,8 +2,8 @@
   "version": "5",
   "specifiers": {
     "npm:kysely@0.25": "0.25.0",
-    "npm:kysely@~0.28.5": "0.28.5",
-    "npm:mysql2@^3.14.5": "3.14.5",
+    "npm:kysely@~0.28.7": "0.28.7",
+    "npm:mysql2@^3.15.1": "3.15.1",
     "npm:pg-pool@^3.10.1": "3.10.1_pg@8.16.3",
     "npm:pg@^8.16.3": "8.16.3"
   },
@@ -32,8 +32,8 @@
     "kysely@0.25.0": {
       "integrity": "sha512-srn0efIMu5IoEBk0tBmtGnoUss4uwvxtbFQWG/U2MosfqIace1l43IFP1PmEpHRDp+Z79xIcKEqmHH3dAvQdQA=="
     },
-    "kysely@0.28.5": {
-      "integrity": "sha512-rlB0I/c6FBDWPcQoDtkxi9zIvpmnV5xoIalfCMSMCa7nuA6VGA3F54TW9mEgX4DVf10sXAWCF5fDbamI/5ZpKA=="
+    "kysely@0.28.7": {
+      "integrity": "sha512-u/cAuTL4DRIiO2/g4vNGRgklEKNIj5Q3CG7RoUB5DV5SfEC2hMvPxKi0GWPmnzwL2ryIeud2VTcEEmqzTzEPNw=="
     },
     "long@5.3.2": {
       "integrity": "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="
@@ -44,8 +44,8 @@
     "lru.min@1.1.2": {
       "integrity": "sha512-Nv9KddBcQSlQopmBHXSsZVY5xsdlZkdH/Iey0BlcBYggMd4two7cZnKOK9vmy3nY0O5RGH99z1PCeTpPqszUYg=="
     },
-    "mysql2@3.14.5": {
-      "integrity": "sha512-40hDf8LPUsuuJ2hFq+UgOuPwt2IFLIRDvMv6ez9hKbXeYuZPxDDwiJW7KdknvOsQqKznaKczOT1kELgFkhDvFg==",
+    "mysql2@3.15.1": {
+      "integrity": "sha512-WZMIRZstT2MFfouEaDz/AGFnGi1A2GwaDe7XvKTdRJEYiAHbOrh4S3d8KFmQeh11U85G+BFjIvS1Di5alusZsw==",
       "dependencies": [
         "aws-ssl-profiles",
         "denque",
@@ -144,8 +144,8 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:kysely@~0.28.5",
-      "npm:mysql2@^3.14.5",
+      "npm:kysely@~0.28.7",
+      "npm:mysql2@^3.15.1",
       "npm:pg-pool@^3.10.1",
       "npm:pg@^8.16.3"
     ]
