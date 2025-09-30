@@ -272,6 +272,13 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
       : W,
   ): CaseThenBuilder<DB, TB, W, O>
 
+  /**
+   * Adds a `when` clause to the case statement, where both sides of the 
+   * operator are references to columns.
+   *
+   * The normal `when` method treats the right hand side argument as a 
+   * value by default. `whenRef` treats it as a column reference.
+   */
   whenRef<RE extends ReferenceExpression<DB, TB>>(
     lhs: unknown extends W
       ? RE
