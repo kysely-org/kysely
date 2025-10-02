@@ -4,6 +4,7 @@ import {
   TestContext,
   clearDatabase,
   destroyTest,
+  expect,
   initTest,
   insertDefaultDataSet,
   testSql,
@@ -346,6 +347,41 @@ for (const dialect of DIALECTS) {
             'end as "title" from "person"',
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('match')
+            .else('no')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "first_name" = "last_name" then $1 else $2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        mysql: {
+          sql: 'select case when `first_name` = `last_name` then ? else ? end as `title` from `person`',
+          parameters: ['match', 'no'],
+        },
+        mssql: {
+          sql: `select case when "first_name" = "last_name" then @1 else @2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        sqlite: {
+          sql: `select case when "first_name" = "last_name" then ? else ? end as "title" from "person"`,
+          parameters: ['match', 'no'],
         },
       })
 
