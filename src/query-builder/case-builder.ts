@@ -57,6 +57,22 @@ export class CaseBuilder<
       ),
     })
   }
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
+      ),
+    })
+  }
 }
 
 interface CaseBuilderProps {
@@ -156,6 +172,22 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
+      ),
+    })
+  }
+
   /**
    * Adds an `else` clause to the `case` statement.
    *
@@ -238,6 +270,21 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
     value: unknown extends W
       ? KyselyTypeError<'when(value) is only supported when using case(value)'>
       : W,
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  /**
+   * Adds a `when` clause to the case statement, where both sides of the 
+   * operator are references to columns.
+   *
+   * The normal `when` method treats the right hand side argument as a 
+   * value by default. `whenRef` treats it as a column reference.
+   */
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
   ): CaseThenBuilder<DB, TB, W, O>
 }
 
