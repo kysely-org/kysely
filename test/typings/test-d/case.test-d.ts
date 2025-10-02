@@ -126,7 +126,11 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
     eb.case().whenRef('no_such_column', '=', 'last_name').then('Mr.').end(),
   )
   expectError(
-    eb.case().whenRef('first_name', 'no_such_operator', 'last_name').then('Mr.').end(),
+    eb
+      .case()
+      .whenRef('first_name', 'no_such_operator', 'last_name')
+      .then('Mr.')
+      .end(),
   )
   expectError(
     eb.case().whenRef('first_name', '=', 'no_such_column').then('Mr.').end(),
@@ -177,7 +181,6 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(eb.case('gender').when('robot').then('Mr.').end())
   expectError(eb.case('gender').when('gender', '=', 'male').then('Mr.').end())
 
-  // whenRef should not be available for simple CASE
   expectError(
     eb.case('gender').whenRef('first_name', '=', 'last_name').then('Mr.').end(),
   )
