@@ -155,6 +155,18 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
       .end(),
   )
 
+  // case...value...when...then...when...then...elseRef...end
+  expectType<ExpressionWrapper<Database, 'person', string | number | boolean>>(
+    eb
+      .case('gender')
+      .when('male')
+      .then('Mr.')
+      .when('female')
+      .then(12)
+      .elseRef('age')
+      .end(),
+  )
+
   // nested case
   expectType<
     ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>
@@ -183,5 +195,9 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
 
   expectError(
     eb.case('gender').whenRef('first_name', '=', 'last_name').then('Mr.').end(),
+  )
+
+  expectError(
+    eb.case('gender').when('male').then('Mr.').elseRef('no_such_column'),
   )
 }

@@ -212,6 +212,21 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
+  elseRef<RE extends ReferenceExpression<DB, TB>>(
+    expression: RE,
+  ): CaseEndBuilder<
+    DB,
+    TB,
+    O | ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new CaseEndBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWith(this.#props.node, {
+        else: parseReferenceExpression(expression),
+      }),
+    })
+  }
+
   end(): ExpressionWrapper<DB, TB, O | null> {
     return new ExpressionWrapper(
       CaseNode.cloneWith(this.#props.node, { isStatement: false }),
@@ -273,10 +288,10 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   ): CaseThenBuilder<DB, TB, W, O>
 
   /**
-   * Adds a `when` clause to the case statement, where both sides of the 
+   * Adds a `when` clause to the case statement, where both sides of the
    * operator are references to columns.
    *
-   * The normal `when` method treats the right hand side argument as a 
+   * The normal `when` method treats the right hand side argument as a
    * value by default. `whenRef` treats it as a column reference.
    */
   whenRef<RE extends ReferenceExpression<DB, TB>>(
