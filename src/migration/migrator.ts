@@ -897,12 +897,12 @@ export interface MigrationResult {
    * The execution status.
    *
    *  - `Success` means the migration was successfully executed. Note that
-   *    if any of the later migrations in the {@link MigrationResult.results}
+   *    if any of the later migrations in the {@link MigrationResultSet.results}
    *    list failed (have status `Error`) AND the dialect supports transactional
    *    DDL, even the successfull migrations were rolled back.
    *
    *  - `Error` means the migration failed. In this case the
-   *    {@link MigrationResult.error} contains the error.
+   *    {@link MigrationResultSet.error} contains the error.
    *
    *  - `NotExecuted` means that the migration was supposed to be executed
    *    but wasn't because an earlier migration failed.
