@@ -215,7 +215,7 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
   /**
    * Adds an `else` clause to the `case` statement where the value is a reference to a column.
    *
-   * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
+   * An `elseRef` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
   elseRef<RE extends ReferenceExpression<DB, TB>>(
     expression: RE,
