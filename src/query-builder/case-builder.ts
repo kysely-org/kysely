@@ -298,6 +298,8 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
    *
    * The normal `when` method treats the right hand side argument as a
    * value by default. `whenRef` treats it as a column reference.
+   *
+   * A `whenRef` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
    */
   whenRef<RE extends ReferenceExpression<DB, TB>>(
     lhs: unknown extends W
