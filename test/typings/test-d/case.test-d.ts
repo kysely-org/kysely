@@ -87,7 +87,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .thenRef('first_name')
       .when('deleted_at', 'is not', null)
       .thenRef('age')
-      // .elseRef('age')
+      .elseRef('age')
       .end(),
   )
 
@@ -135,6 +135,10 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(
     eb.case().whenRef('first_name', '=', 'no_such_column').then('Mr.').end(),
   )
+
+  expectError(
+    eb.case('gender').when('male').then('Mr.').elseRef('no_such_column'),
+  )
 }
 
 function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
@@ -152,18 +156,6 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
       .when('female')
       .then(12)
       .else(true)
-      .end(),
-  )
-
-  // case...value...when...then...when...then...elseRef...end
-  expectType<ExpressionWrapper<Database, 'person', string | number | boolean>>(
-    eb
-      .case('gender')
-      .when('male')
-      .then('Mr.')
-      .when('female')
-      .then(12)
-      .elseRef('age')
       .end(),
   )
 
@@ -195,9 +187,5 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
 
   expectError(
     eb.case('gender').whenRef('first_name', '=', 'last_name').then('Mr.').end(),
-  )
-
-  expectError(
-    eb.case('gender').when('male').then('Mr.').elseRef('no_such_column'),
   )
 }
