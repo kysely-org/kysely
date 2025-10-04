@@ -585,6 +585,7 @@ export class Kysely<DB>
   /**
    * @deprecated use {@link $extendTables} instead.
    */
+  // TODO: remove in 0.30
   withTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
   > {
