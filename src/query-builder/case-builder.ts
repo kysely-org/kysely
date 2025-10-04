@@ -193,6 +193,8 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
   /**
    * Adds an `else` clause to the `case` statement.
    *
+   * See {@link elseRef} for reference-first variant.
+   *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
   else<E extends Expression<unknown>>(
