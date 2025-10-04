@@ -283,6 +283,8 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   /**
    * Adds a `when` clause to the case statement.
    *
+   * See {@link Whenable.whenRef} for reference-first variant.
+   *
    * A `when` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
    */
   when<
