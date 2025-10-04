@@ -91,6 +91,8 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
   /**
    * Adds a `then` clause to the `case` statement.
    *
+   * See {@link thenRef} for reference-first variant.
+   *
    * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
