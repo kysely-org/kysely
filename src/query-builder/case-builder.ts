@@ -93,9 +93,9 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    *
    * See {@link thenRef} for reference-first variant.
    *
-  * A `then` call can be followed by {@link Whenable.when}, {@link Whenable.whenRef},
-  * {@link CaseWhenBuilder.else}, {@link CaseWhenBuilder.elseRef},
-  * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   * A `then` call can be followed by {@link Whenable.when}, {@link Whenable.whenRef},
+   * {@link CaseWhenBuilder.else}, {@link CaseWhenBuilder.elseRef},
+   * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
   then<E extends Expression<unknown>>(
     expression: E,
