@@ -298,8 +298,6 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
    * operator are references to columns.
    *
    * See {@link Whenable.when} for value-first variant.
-   * The normal `when` method treats the right hand side argument as a
-   * value by default. `whenRef` treats it as a column reference.
    *
    * A `whenRef` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
    */
