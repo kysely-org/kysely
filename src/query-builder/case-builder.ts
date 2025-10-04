@@ -119,7 +119,12 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    * Adds a `then` clause to the `case` statement where the value is a reference to a column.
    *
    * A `thenRef` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
-   * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+  *
+  * See {@link then} for value-first variant.
+  *
+  * A `thenRef` call can be followed by {@link Whenable.when}, {@link Whenable.whenRef},
+  * {@link CaseWhenBuilder.else}, {@link CaseWhenBuilder.elseRef},
+  * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
   thenRef<RE extends ReferenceExpression<DB, TB>>(
     expression: RE,
