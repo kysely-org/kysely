@@ -61,6 +61,21 @@ bench('kysely.selectFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.selectFrom(kysely.selectFrom('my_table').as('t'))
 }).types([1230, 'instantiations'])
 
+bench('kysely.$pickTables<tables>.selectFrom(table)', () => {
+  return kysely
+    .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
+    .selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
+}).types([113, 'instantiations'])
+
+bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
+  return (
+    kysely
+      .$pickTables<'my_table'>()
+      // @ts-expect-error
+      .selectFrom('my_table2')
+  )
+}).types([206, 'instantiations'])
+
 bench('kyselyAny.selectFrom(table)', () => {
   return kyselyAny.selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
 }).types([95, 'instantiations'])
