@@ -386,12 +386,6 @@ export class Migrator {
   async #ensureMigrationTableExists(): Promise<void> {
     if (!(await this.#doesTableExists(this.#migrationTable))) {
       try {
-        if (this.#migrationTableSchema) {
-          await this.#createIfNotExists(
-            this.#props.db.schema.createSchema(this.#migrationTableSchema),
-          )
-        }
-
         await this.#createIfNotExists(
           this.#props.db.schema
             .withPlugin(this.#schemaPlugin)
@@ -799,7 +793,7 @@ export interface MigratorProps {
    * the project, to the end of time or prepare to manually migrate the migration
    * tables.
    *
-   * This only works on postgres.
+   * This only works on postgres and mssql.
    */
   readonly migrationTableSchema?: string
 
