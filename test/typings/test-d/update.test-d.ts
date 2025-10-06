@@ -47,12 +47,26 @@ async function testUpdate(db: Kysely<Database>) {
     .execute()
   expectType<{ fn: string; person_id: number }[]>(r5)
 
+  const r6 = await db
+    .updateTable('pet as p')
+    .where('p.id', '=', '1')
+    .setRef('name', 'species')
+    .executeTakeFirst()
+  expectType<UpdateResult>(r6)
+
   // Non-existent column
   expectError(
     db
       .updateTable('pet as p')
       .where('p.id', '=', '1')
       .set({ name: 'Fluffy', not_a_column: 'not_a_column' }),
+  )
+
+  expectError(
+    db
+      .updateTable('pet as p')
+      .where('p.id', '=', '1')
+      .setRef('name', 'not_a_column'),
   )
 
   // Non-existent column in a callback
