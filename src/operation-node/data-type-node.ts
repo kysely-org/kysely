@@ -1,5 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
+import { CastDataType } from './cast-data-type-node.js'
 
 const SIMPLE_COLUMN_DATA_TYPES = [
   'varchar',
@@ -81,7 +82,7 @@ export type DataTypeParams = Omit<DataTypeNode, 'kind' | 'dataType'>
 
 export interface DataTypeNode extends OperationNode {
   readonly kind: 'DataTypeNode'
-  readonly dataType: ColumnDataType
+  readonly dataType: ColumnDataType | CastDataType
 }
 
 /**
@@ -92,7 +93,7 @@ export const DataTypeNode = freeze({
     return node.kind === 'DataTypeNode'
   },
 
-  create(dataType: ColumnDataType): DataTypeNode {
+  create(dataType: ColumnDataType | CastDataType): DataTypeNode {
     return freeze({
       kind: 'DataTypeNode',
       dataType,

@@ -76,6 +76,10 @@ import {
   DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
+import {
+  CastDataTypeExpression,
+  parseCastDataTypeExpression,
+} from '../parser/cast-data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
 import { SelectFrom } from '../parser/select-from-parser.js'
 
@@ -1142,7 +1146,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   cast<T, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
     expr: RE,
-    dataType: DataTypeExpression,
+    dataType: CastDataTypeExpression,
   ): ExpressionWrapper<DB, TB, T>
 
   /**
@@ -1360,12 +1364,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     cast<T, RE extends ReferenceExpression<DB, TB>>(
       expr: RE,
-      dataType: DataTypeExpression,
+      dataType: CastDataTypeExpression,
     ) {
       return new ExpressionWrapper<DB, TB, T>(
         CastNode.create(
           parseReferenceExpression(expr),
-          parseDataTypeExpression(dataType),
+          parseCastDataTypeExpression(dataType),
         ),
       )
     },
