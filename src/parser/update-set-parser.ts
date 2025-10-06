@@ -62,6 +62,18 @@ export function parseUpdate(
   return parseUpdateObjectExpression(args[0])
 }
 
+export function parseUpdateWithRef(
+  key: ReferenceExpression<any, any>,
+  value: ReferenceExpression<any, any>,
+): ReadonlyArray<ColumnUpdateNode> {
+  return [
+    ColumnUpdateNode.create(
+      parseReferenceExpression(key),
+      parseReferenceExpression(value),
+    ),
+  ]
+}
+
 export function parseUpdateObjectExpression(
   update: UpdateObjectExpression<any, any, any>,
 ): ReadonlyArray<ColumnUpdateNode> {

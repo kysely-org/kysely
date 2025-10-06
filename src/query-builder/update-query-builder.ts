@@ -24,7 +24,11 @@ import {
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ExtractTypeFromReferenceExpression,
+  MatchingReferenceExpression,
+  ReferenceExpression,
+} from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   DrainOuterGeneric,
@@ -40,6 +44,7 @@ import {
   UpdateObjectExpression,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
+  parseUpdateWithRef,
 } from '../parser/update-set-parser.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -739,6 +744,52 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
         parseUpdate(...args),
+      ),
+    })
+  }
+
+  /**
+   * Sets a column to the value of another column with type-safe column matching.
+   *
+   * Unlike {@link set}, this method only allows you to reference columns that have
+   * the same type as the target column, ensuring type safety at compile time.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .setRef('first_name', 'last_name')
+   *   .where('id', '=', 1)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person" set "first_name" = "last_name" where "id" = $1
+   * ```
+   *
+   * Type errors for mismatched types:
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .setRef('first_name', 'id') // Error: 'id' is number, 'first_name' is string
+   *   .execute()
+   * ```
+   */
+  setRef<RE extends ReferenceExpression<DB, UT>>(
+    key: RE,
+    value: MatchingReferenceExpression<
+      DB,
+      UT,
+      ExtractUpdateTypeFromReferenceExpression<DB, UT, RE>
+    >,
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: UpdateQueryNode.cloneWithUpdates(
+        this.#props.queryNode,
+        parseUpdateWithRef(key, value),
       ),
     })
   }
