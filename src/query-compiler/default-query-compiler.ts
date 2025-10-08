@@ -308,7 +308,7 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (isSubQuery && !node.mergeThen) {
       this.append('(')
     }
 
@@ -378,7 +378,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (isSubQuery && !node.mergeThen) {
       this.append(')')
     }
 
@@ -798,7 +798,7 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (isSubQuery && !node.mergeThen) {
       this.append('(')
     }
 
@@ -866,7 +866,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (isSubQuery && !node.mergeThen) {
       this.append(')')
     }
 

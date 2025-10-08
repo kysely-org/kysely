@@ -430,6 +430,7 @@ export class OperationNodeTransformer {
       defaultValues: node.defaultValues,
       top: this.transformNode(node.top, queryId),
       output: this.transformNode(node.output, queryId),
+      mergeThen: node.mergeThen,
     })
   }
 
@@ -598,6 +599,7 @@ export class OperationNodeTransformer {
       top: this.transformNode(node.top, queryId),
       output: this.transformNode(node.output, queryId),
       orderBy: this.transformNode(node.orderBy, queryId),
+      mergeThen: node.mergeThen,
     })
   }
 

@@ -32,6 +32,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly top?: TopNode
   readonly output?: OutputNode
+  readonly mergeThen?: boolean
 }
 
 /**

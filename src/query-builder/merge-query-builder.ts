@@ -1069,7 +1069,7 @@ export class MatchedThenableMergeQueryBuilder<
             new UpdateQueryBuilder({
               queryId: this.#props.queryId,
               executor: NOOP_QUERY_EXECUTOR,
-              queryNode: UpdateQueryNode.createWithoutTable(),
+              queryNode: UpdateQueryNode.createWithoutTable({ mergeThen: true }),
             }) as QB,
           ),
         ),
@@ -1229,6 +1229,7 @@ export class NotMatchedThenableMergeQueryBuilder<
           InsertQueryNode.cloneWith(InsertQueryNode.createWithoutInto(), {
             columns,
             values,
+            mergeThen: true,
           }),
         ),
       ),

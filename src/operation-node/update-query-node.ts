@@ -30,6 +30,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly top?: TopNode
   readonly output?: OutputNode
   readonly orderBy?: OrderByNode
+  readonly mergeThen?: boolean
 }
 
 /**
@@ -53,9 +54,10 @@ export const UpdateQueryNode = freeze({
     })
   },
 
-  createWithoutTable(): UpdateQueryNode {
+  createWithoutTable(props?: Partial<UpdateQueryNode>): UpdateQueryNode {
     return freeze({
       kind: 'UpdateQueryNode',
+      ...props,
     })
   },
 

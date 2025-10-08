@@ -338,6 +338,56 @@ for (const dialect of DIALECTS) {
           updated_first_name: 'Jennifer',
         })
       })
+
+      it('should create a merge query with insert, update and delete CTEs', async () => {
+        const query = ctx.db
+          .with('deleted_arnold', (db) =>
+            db
+              .deleteFrom('person')
+              .where('first_name', '=', 'Arnold')
+              .returning('first_name as deleted_first_name'),
+          )
+          .with('inserted_matt', (db) =>
+            db
+              .insertInto('person')
+              .values({
+                first_name: 'Matt',
+                last_name: 'Damon',
+                gender: 'male',
+              })
+              .returning('first_name as inserted_first_name'),
+          )
+          .with('updated_jennifer', (db) =>
+            db
+              .updateTable('person')
+              .where('first_name', '=', 'Jennifer')
+              .set({ last_name: 'Lawrence' })
+              .returning('first_name as updated_first_name'),
+          )
+          .mergeInto('person')
+          .using('updated_jennifer', (join) => join.onTrue())
+          .whenMatched()
+          .thenDoNothing()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "deleted_arnold" as (delete from "person" where "first_name" = $1 returning "first_name" as "deleted_first_name"), "inserted_matt" as (insert into "person" ("first_name", "last_name", "gender") values ($2, $3, $4) returning "first_name" as "inserted_first_name"), "updated_jennifer" as (update "person" set "last_name" = $5 where "first_name" = $6 returning "first_name" as "updated_first_name") merge into "person" using "updated_jennifer" on true when matched then do nothing',
+            parameters: [
+              'Arnold',
+              'Matt',
+              'Damon',
+              'male',
+              'Lawrence',
+              'Jennifer',
+            ],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     }
   })
 }
