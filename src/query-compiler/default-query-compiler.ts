@@ -301,7 +301,10 @@ export class DefaultQueryCompiler
 
   protected override visitInsertQuery(node: InsertQueryNode): void {
     const wrapInParens =
-      this.parentNode !== undefined && !WhenNode.is(this.parentNode)
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode) &&
+      !WhenNode.is(this.parentNode)
 
     if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
@@ -394,7 +397,10 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
-    const wrapInParens = this.parentNode !== undefined
+    const wrapInParens =
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode)
 
     if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
@@ -791,7 +797,10 @@ export class DefaultQueryCompiler
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
     const wrapInParens =
-      this.parentNode !== undefined && !WhenNode.is(this.parentNode)
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode) &&
+      !WhenNode.is(this.parentNode)
 
     if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
