@@ -81,8 +81,8 @@ importers:
         specifier: ^3.5.3
         version: 3.6.2
       semver:
-        specifier: ^7.7.1
-        version: 7.7.2
+        specifier: ^7.7.3
+        version: 7.7.3
       sinon:
         specifier: ^21.0.0
         version: 21.0.0
@@ -6275,6 +6275,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -7248,7 +7253,7 @@ snapshots:
       commander: 10.0.1
       marked: 9.1.6
       marked-terminal: 7.3.0(marked@9.1.6)
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@arethetypeswrong/core@0.18.2':
     dependencies:
@@ -7257,7 +7262,7 @@ snapshots:
       cjs-module-lexer: 1.4.3
       fflate: 0.8.2
       lru-cache: 11.1.0
-      semver: 7.7.2
+      semver: 7.7.3
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
@@ -12664,7 +12669,7 @@ snapshots:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.7.2
+      semver: 7.7.3
 
   jwa@1.4.2:
     dependencies:
@@ -13547,7 +13552,7 @@ snapshots:
 
   node-abi@3.75.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   node-emoji@2.2.0:
     dependencies:
@@ -13571,7 +13576,7 @@ snapshots:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.16.1
-      semver: 7.7.2
+      semver: 7.7.3
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -14793,6 +14798,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.2: {}
+
+  semver@7.7.3: {}
 
   send@0.19.0:
     dependencies:
