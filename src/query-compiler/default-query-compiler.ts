@@ -300,15 +300,18 @@ export class DefaultQueryCompiler
   }
 
   protected override visitInsertQuery(node: InsertQueryNode): void {
-    const rootQueryNode = this.nodeStack.find(QueryNode.is)!
-    const isSubQuery = rootQueryNode !== node
+    const wrapInParens =
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode) &&
+      !WhenNode.is(this.parentNode)
 
-    if (!isSubQuery && node.explain) {
+    if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (wrapInParens) {
       this.append('(')
     }
 
@@ -378,7 +381,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (wrapInParens) {
       this.append(')')
     }
 
@@ -394,14 +397,17 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
-    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+    const wrapInParens =
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode)
 
-    if (!isSubQuery && node.explain) {
+    if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery) {
+    if (wrapInParens) {
       this.append('(')
     }
 
@@ -454,7 +460,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery) {
+    if (wrapInParens) {
       this.append(')')
     }
 
@@ -790,15 +796,18 @@ export class DefaultQueryCompiler
   }
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
-    const rootQueryNode = this.nodeStack.find(QueryNode.is)!
-    const isSubQuery = rootQueryNode !== node
+    const wrapInParens =
+      this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
+      !RawNode.is(this.parentNode) &&
+      !WhenNode.is(this.parentNode)
 
-    if (!isSubQuery && node.explain) {
+    if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (wrapInParens) {
       this.append('(')
     }
 
@@ -866,7 +875,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
+    if (wrapInParens) {
       this.append(')')
     }
 
