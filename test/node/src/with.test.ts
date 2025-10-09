@@ -342,7 +342,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a merge query with common table expressions that include writes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
