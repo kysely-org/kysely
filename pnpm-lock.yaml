@@ -27,8 +27,8 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^24.5.2
-        version: 24.5.2
+        specifier: ^24.7.0
+        version: 24.7.0
       '@types/pg':
         specifier: ^8.15.5
         version: 8.15.5
@@ -2386,6 +2386,9 @@ packages:
 
   '@types/node@24.5.2':
     resolution: {integrity: sha512-FYxk1I7wPv3K2XBaoyH2cTnocQEu8AOZ60hPbsyukMPLv5/5qr7V1i8PLHdl6Zf87I+xZXFvPCXYjiTFq+YSDQ==}
+
+  '@types/node@24.7.0':
+    resolution: {integrity: sha512-IbKooQVqUBrlzWTi79E8Fw78l8k1RNtlDDNWsFZs7XonuQSJ8oNYfEeclhprUldXISRMLzBpILuKgPlIxm+/Yw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -6741,6 +6744,9 @@ packages:
   undici-types@7.12.0:
     resolution: {integrity: sha512-goOacqME2GYyOZZfb5Lgtu+1IDmAlAEu5xnD3+xTzS10hT0vzpf0SPjkXwAw9Jm+4n/mQGDP3LO8CPbYROeBfQ==}
 
+  undici-types@7.14.0:
+    resolution: {integrity: sha512-QQiYxHuyZ9gQUIrmPo3IA+hUl4KYk8uSA7cHrcKd/l3p1OTpZcM0Tbp9x7FAtXdAYhlasd60ncPpgu6ihG6TOA==}
+
   undici@7.14.0:
     resolution: {integrity: sha512-Vqs8HTzjpQXZeXdpsfChQTlafcMQaaIwnGwLam1wudSSjlJeQ3bw1j+TLPePgrCnCpUXx7Ba5Pdpf5OBih62NQ==}
     engines: {node: '>=20.18.1'}
@@ -9941,7 +9947,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -10185,22 +10191,26 @@ snapshots:
     dependencies:
       undici-types: 7.12.0
 
+  '@types/node@24.7.0':
+    dependencies:
+      undici-types: 7.14.0
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
       '@types/pg': 8.15.4
 
   '@types/pg@8.15.4':
     dependencies:
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
   '@types/pg@8.15.5':
     dependencies:
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
@@ -10233,7 +10243,7 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
 
   '@types/retry@0.12.2': {}
 
@@ -15171,7 +15181,7 @@ snapshots:
       '@azure/identity': 4.10.2
       '@azure/keyvault-keys': 4.10.0
       '@js-joda/core': 5.6.5
-      '@types/node': 24.5.2
+      '@types/node': 24.7.0
       bl: 6.1.0
       iconv-lite: 0.6.3
       js-md4: 0.3.2
@@ -15296,6 +15306,8 @@ snapshots:
   ufo@1.6.1: {}
 
   undici-types@7.12.0: {}
+
+  undici-types@7.14.0: {}
 
   undici@7.14.0: {}
 
