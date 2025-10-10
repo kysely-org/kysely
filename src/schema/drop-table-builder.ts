@@ -13,6 +13,20 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
     this.#props = freeze(props)
   }
 
+  /**
+   * Adds the "temporary" modifier.
+   *
+   * Use this to drop a temporary table.
+   */
+  temporary(): DropTableBuilder {
+    return new DropTableBuilder({
+      ...this.#props,
+      node: DropTableNode.cloneWith(this.#props.node, {
+        temporary: true,
+      }),
+    })
+  }
+
   ifExists(): DropTableBuilder {
     return new DropTableBuilder({
       ...this.#props,

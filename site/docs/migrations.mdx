@@ -88,6 +88,14 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
+You can also drop temporary tables using the `temporary()` modifier:
+
+```ts
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.schema.dropTable('temp_calculations').temporary().execute()
+}
+```
+
 ## SQLite migration example
 
 ```ts
