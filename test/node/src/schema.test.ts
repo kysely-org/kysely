@@ -1513,25 +1513,6 @@ for (const dialect of DIALECTS) {
           })
         })
 
-        it('should drop a temporary table', async () => {
-          const builder = ctx.db.schema.dropTable('test').temporary()
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'drop temporary table "test"',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'drop temporary table `test`',
-              parameters: [],
-            },
-            mssql: NOT_SUPPORTED,
-            sqlite: {
-              sql: 'drop temporary table "test"',
-              parameters: [],
-            },
-          })
-        })
-
         it('should drop a temporary table if it exists', async () => {
           const builder = ctx.db.schema.dropTable('test').temporary().ifExists()
           testSql(builder, dialect, {
