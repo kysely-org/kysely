@@ -60,19 +60,39 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
     })
   }
 
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    ref: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(ref) is only supported when using case(value)'>,
+  ): CaseThenBuilder<DB, TB, W, O>
+
   whenRef<RE extends ReferenceExpression<DB, TB>>(
     lhs: unknown extends W
       ? RE
       : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
     op: ComparisonOperatorExpression,
     rhs: RE,
-  ): CaseThenBuilder<DB, TB, W, O> {
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  whenRef(...args: any[]): any {
+    let whenNode
+
+    if (args.length === 1) {
+      // case(value).whenRef(other_column)
+      whenNode = WhenNode.create(parseReferenceExpression(args[0]))
+    } else if (args.length === 3) {
+      // case().whenRef(lhs, op, rhs)
+      whenNode = WhenNode.create(
+        parseReferentialBinaryOperation(args[0], args[1], args[2]),
+      )
+    } else {
+      throw new Error('Invalid arguments for whenRef()')
+    }
+
     return new CaseThenBuilder({
       ...this.#props,
-      node: CaseNode.cloneWithWhen(
-        this.#props.node,
-        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
-      ),
+      node: CaseNode.cloneWithWhen(this.#props.node, whenNode),
     })
   }
 }
@@ -180,19 +200,39 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    ref: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(ref) is only supported when using case(value)'>,
+  ): CaseThenBuilder<DB, TB, W, O>
+
   whenRef<RE extends ReferenceExpression<DB, TB>>(
     lhs: unknown extends W
       ? RE
       : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
     op: ComparisonOperatorExpression,
     rhs: RE,
-  ): CaseThenBuilder<DB, TB, W, O> {
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  whenRef(...args: any[]): any {
+    let whenNode
+
+    if (args.length === 1) {
+      // case(value).whenRef(column)
+      whenNode = WhenNode.create(parseReferenceExpression(args[0]))
+    } else if (args.length === 3) {
+      // case().whenRef(lhs, op, rhs)
+      whenNode = WhenNode.create(
+        parseReferentialBinaryOperation(args[0], args[1], args[2]),
+      )
+    } else {
+      throw new Error('Invalid arguments for whenRef()')
+    }
+
     return new CaseThenBuilder({
       ...this.#props,
-      node: CaseNode.cloneWithWhen(
-        this.#props.node,
-        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
-      ),
+      node: CaseNode.cloneWithWhen(this.#props.node, whenNode),
     })
   }
 
@@ -302,6 +342,13 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
     value: unknown extends W
       ? KyselyTypeError<'when(value) is only supported when using case(value)'>
       : W,
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    ref: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(ref) is only supported when using case(value)'>,    
   ): CaseThenBuilder<DB, TB, W, O>
 
   /**
