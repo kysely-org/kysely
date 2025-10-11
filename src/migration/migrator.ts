@@ -526,7 +526,16 @@ export class Migrator {
       }
     }
 
-    if (adapter.supportsTransactionalDdl && !this.#props.disableTransactions) {
+    if (this.#props.db.isTransaction) {
+      if (!adapter.supportsTransactionalDdl) {
+        throw new Error('Transactional DDL is not supported in this dialect. Passing a transaction to this migrator would result in failure or unexpected behavior.')
+      }
+
+      return run(this.#props.db)
+    } else if (
+      adapter.supportsTransactionalDdl &&
+      !this.#props.disableTransactions
+    ) {
       return this.#props.db.transaction().execute(run)
     } else {
       return this.#props.db.connection().execute(run)
