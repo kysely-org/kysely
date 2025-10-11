@@ -1513,7 +1513,7 @@ for (const dialect of DIALECTS) {
           })
         })
 
-        if (dialect === 'mysql') {
+        if (sqlSpec === 'mysql') {
           it('should drop a temporary table if it exists', async () => {
             const builder = ctx.db.schema.dropTable('test').temporary().ifExists()
             
