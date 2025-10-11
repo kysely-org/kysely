@@ -8,22 +8,30 @@ export interface CheckConstraintNode extends OperationNode {
   readonly name?: IdentifierNode
 }
 
-/**
- * @internal
- */
-export const CheckConstraintNode = freeze({
-  is(node: OperationNode): node is CheckConstraintNode {
-    return node.kind === 'CheckConstraintNode'
-  },
-
+type CheckConstraintNodeFactory = Readonly<{
+  is(node: OperationNode): node is CheckConstraintNode
   create(
     expression: OperationNode,
     constraintName?: string,
-  ): CheckConstraintNode {
-    return freeze({
-      kind: 'CheckConstraintNode',
-      expression,
-      name: constraintName ? IdentifierNode.create(constraintName) : undefined,
-    })
-  },
-})
+  ): Readonly<CheckConstraintNode>
+}>
+
+/**
+ * @internal
+ */
+export const CheckConstraintNode: CheckConstraintNodeFactory =
+  freeze<CheckConstraintNodeFactory>({
+    is(node): node is CheckConstraintNode {
+      return node.kind === 'CheckConstraintNode'
+    },
+
+    create(expression, constraintName?) {
+      return freeze({
+        kind: 'CheckConstraintNode',
+        expression,
+        name: constraintName
+          ? IdentifierNode.create(constraintName)
+          : undefined,
+      })
+    },
+  })

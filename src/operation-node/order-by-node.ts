@@ -7,25 +7,31 @@ export interface OrderByNode extends OperationNode {
   readonly items: ReadonlyArray<OrderByItemNode>
 }
 
+type OrderByNodeFactory = Readonly<{
+  is(node: OperationNode): node is OrderByNode
+  create(items: ReadonlyArray<OrderByItemNode>): Readonly<OrderByNode>
+  cloneWithItems(
+    orderBy: OrderByNode,
+    items: ReadonlyArray<OrderByItemNode>,
+  ): Readonly<OrderByNode>
+}>
+
 /**
  * @internal
  */
-export const OrderByNode = freeze({
-  is(node: OperationNode): node is OrderByNode {
+export const OrderByNode: OrderByNodeFactory = freeze<OrderByNodeFactory>({
+  is(node): node is OrderByNode {
     return node.kind === 'OrderByNode'
   },
 
-  create(items: ReadonlyArray<OrderByItemNode>): OrderByNode {
+  create(items) {
     return freeze({
       kind: 'OrderByNode',
       items: freeze([...items]),
     })
   },
 
-  cloneWithItems(
-    orderBy: OrderByNode,
-    items: ReadonlyArray<OrderByItemNode>,
-  ): OrderByNode {
+  cloneWithItems(orderBy, items) {
     return freeze({
       ...orderBy,
       items: freeze([...orderBy.items, ...items]),

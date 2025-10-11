@@ -10,18 +10,27 @@ export interface WithNode extends OperationNode {
   readonly recursive?: boolean
 }
 
-/**
- * @internal
- */
-export const WithNode = freeze({
-  is(node: OperationNode): node is WithNode {
-    return node.kind === 'WithNode'
-  },
-
+type WithNodeFactory = Readonly<{
+  is(node: OperationNode): node is WithNode
   create(
     expression: CommonTableExpressionNode,
     params?: WithNodeParams,
-  ): WithNode {
+  ): Readonly<WithNode>
+  cloneWithExpression(
+    withNode: WithNode,
+    expression: CommonTableExpressionNode,
+  ): Readonly<WithNode>
+}>
+
+/**
+ * @internal
+ */
+export const WithNode: WithNodeFactory = freeze<WithNodeFactory>({
+  is(node): node is WithNode {
+    return node.kind === 'WithNode'
+  },
+
+  create(expression, params?) {
     return freeze({
       kind: 'WithNode',
       expressions: freeze([expression]),
@@ -29,10 +38,7 @@ export const WithNode = freeze({
     })
   },
 
-  cloneWithExpression(
-    withNode: WithNode,
-    expression: CommonTableExpressionNode,
-  ): WithNode {
+  cloneWithExpression(withNode, expression) {
     return freeze({
       ...withNode,
       expressions: freeze([...withNode.expressions, expression]),

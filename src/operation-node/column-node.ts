@@ -7,15 +7,20 @@ export interface ColumnNode extends OperationNode {
   readonly column: IdentifierNode
 }
 
+type ColumnNodeFactory = Readonly<{
+  is(node: OperationNode): node is ColumnNode
+  create(column: string): Readonly<ColumnNode>
+}>
+
 /**
  * @internal
  */
-export const ColumnNode = freeze({
-  is(node: OperationNode): node is ColumnNode {
+export const ColumnNode: ColumnNodeFactory = freeze<ColumnNodeFactory>({
+  is(node): node is ColumnNode {
     return node.kind === 'ColumnNode'
   },
 
-  create(column: string): ColumnNode {
+  create(column) {
     return freeze({
       kind: 'ColumnNode',
       column: IdentifierNode.create(column),

@@ -9,24 +9,30 @@ export interface CommonTableExpressionNameNode extends OperationNode {
   readonly columns?: ReadonlyArray<ColumnNode>
 }
 
-/**
- * @internal
- */
-export const CommonTableExpressionNameNode = freeze({
-  is(node: OperationNode): node is CommonTableExpressionNameNode {
-    return node.kind === 'CommonTableExpressionNameNode'
-  },
-
+type CommonTableExpressionNameNodeFactory = Readonly<{
+  is(node: OperationNode): node is CommonTableExpressionNameNode
   create(
     tableName: string,
     columnNames?: ReadonlyArray<string>,
-  ): CommonTableExpressionNameNode {
-    return freeze({
-      kind: 'CommonTableExpressionNameNode',
-      table: TableNode.create(tableName),
-      columns: columnNames
-        ? freeze(columnNames.map(ColumnNode.create))
-        : undefined,
-    })
-  },
-})
+  ): Readonly<CommonTableExpressionNameNode>
+}>
+
+/**
+ * @internal
+ */
+export const CommonTableExpressionNameNode: CommonTableExpressionNameNodeFactory =
+  freeze<CommonTableExpressionNameNodeFactory>({
+    is(node): node is CommonTableExpressionNameNode {
+      return node.kind === 'CommonTableExpressionNameNode'
+    },
+
+    create(tableName, columnNames?) {
+      return freeze({
+        kind: 'CommonTableExpressionNameNode',
+        table: TableNode.create(tableName),
+        columns: columnNames
+          ? freeze(columnNames.map(ColumnNode.create))
+          : undefined,
+      })
+    },
+  })

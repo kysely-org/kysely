@@ -13,29 +13,39 @@ export interface CreateSchemaNode extends OperationNode {
   readonly ifNotExists?: boolean
 }
 
-/**
- * @internal
- */
-export const CreateSchemaNode = freeze({
-  is(node: OperationNode): node is CreateSchemaNode {
-    return node.kind === 'CreateSchemaNode'
-  },
-
-  create(schema: string, params?: CreateSchemaNodeParams): CreateSchemaNode {
-    return freeze({
-      kind: 'CreateSchemaNode',
-      schema: IdentifierNode.create(schema),
-      ...params,
-    })
-  },
-
+type CreateSchemaNodeFactory = Readonly<{
+  is(node: OperationNode): node is CreateSchemaNode
+  create(
+    schema: string,
+    params?: CreateSchemaNodeParams,
+  ): Readonly<CreateSchemaNode>
   cloneWith(
     createSchema: CreateSchemaNode,
     params: CreateSchemaNodeParams,
-  ): CreateSchemaNode {
-    return freeze({
-      ...createSchema,
-      ...params,
-    })
-  },
-})
+  ): Readonly<CreateSchemaNode>
+}>
+
+/**
+ * @internal
+ */
+export const CreateSchemaNode: CreateSchemaNodeFactory =
+  freeze<CreateSchemaNodeFactory>({
+    is(node): node is CreateSchemaNode {
+      return node.kind === 'CreateSchemaNode'
+    },
+
+    create(schema, params?) {
+      return freeze({
+        kind: 'CreateSchemaNode',
+        schema: IdentifierNode.create(schema),
+        ...params,
+      })
+    },
+
+    cloneWith(createSchema, params) {
+      return freeze({
+        ...createSchema,
+        ...params,
+      })
+    },
+  })

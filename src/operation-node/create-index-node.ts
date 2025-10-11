@@ -25,38 +25,46 @@ export interface CreateIndexNode extends OperationNode {
   readonly nullsNotDistinct?: boolean
 }
 
-/**
- * @internal
- */
-export const CreateIndexNode = freeze({
-  is(node: OperationNode): node is CreateIndexNode {
-    return node.kind === 'CreateIndexNode'
-  },
-
-  create(name: string): CreateIndexNode {
-    return freeze({
-      kind: 'CreateIndexNode',
-      name: IdentifierNode.create(name),
-    })
-  },
-
+type CreateIndexNodeFactory = Readonly<{
+  is(node: OperationNode): node is CreateIndexNode
+  create(name: string): Readonly<CreateIndexNode>
   cloneWith(
     node: CreateIndexNode,
     props: CreateIndexNodeProps,
-  ): CreateIndexNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-
+  ): Readonly<CreateIndexNode>
   cloneWithColumns(
     node: CreateIndexNode,
     columns: OperationNode[],
-  ): CreateIndexNode {
-    return freeze({
-      ...node,
-      columns: [...(node.columns || []), ...columns],
-    })
-  },
-})
+  ): Readonly<CreateIndexNode>
+}>
+
+/**
+ * @internal
+ */
+export const CreateIndexNode: CreateIndexNodeFactory =
+  freeze<CreateIndexNodeFactory>({
+    is(node): node is CreateIndexNode {
+      return node.kind === 'CreateIndexNode'
+    },
+
+    create(name) {
+      return freeze({
+        kind: 'CreateIndexNode',
+        name: IdentifierNode.create(name),
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+
+    cloneWithColumns(node, columns) {
+      return freeze({
+        ...node,
+        columns: [...(node.columns || []), ...columns],
+      })
+    },
+  })

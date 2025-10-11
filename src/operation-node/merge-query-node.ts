@@ -21,53 +21,71 @@ export interface MergeQueryNode extends OperationNode {
   readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
-/**
- * @internal
- */
-export const MergeQueryNode = freeze({
-  is(node: OperationNode): node is MergeQueryNode {
-    return node.kind === 'MergeQueryNode'
-  },
-
-  create(into: TableNode | AliasNode, withNode?: WithNode): MergeQueryNode {
-    return freeze({
-      kind: 'MergeQueryNode',
-      into,
-      ...(withNode && { with: withNode }),
-    })
-  },
-
-  cloneWithUsing(mergeNode: MergeQueryNode, using: JoinNode): MergeQueryNode {
-    return freeze({
-      ...mergeNode,
-      using,
-    })
-  },
-
-  cloneWithWhen(mergeNode: MergeQueryNode, when: WhenNode): MergeQueryNode {
-    return freeze({
-      ...mergeNode,
-      whens: mergeNode.whens
-        ? freeze([...mergeNode.whens, when])
-        : freeze([when]),
-    })
-  },
-
+type MergeQueryNodeFactory = Readonly<{
+  is(node: OperationNode): node is MergeQueryNode
+  create(
+    into: TableNode | AliasNode,
+    withNode?: WithNode,
+  ): Readonly<MergeQueryNode>
+  cloneWithUsing(
+    mergeNode: MergeQueryNode,
+    using: JoinNode,
+  ): Readonly<MergeQueryNode>
+  cloneWithWhen(
+    mergeNode: MergeQueryNode,
+    when: WhenNode,
+  ): Readonly<MergeQueryNode>
   cloneWithThen(
     mergeNode: MergeQueryNode,
     then: OperationNode,
-  ): MergeQueryNode {
-    return freeze({
-      ...mergeNode,
-      whens: mergeNode.whens
-        ? freeze([
-            ...mergeNode.whens.slice(0, -1),
-            WhenNode.cloneWithResult(
-              mergeNode.whens[mergeNode.whens.length - 1],
-              then,
-            ),
-          ])
-        : undefined,
-    })
-  },
-})
+  ): Readonly<MergeQueryNode>
+}>
+
+/**
+ * @internal
+ */
+export const MergeQueryNode: MergeQueryNodeFactory =
+  freeze<MergeQueryNodeFactory>({
+    is(node): node is MergeQueryNode {
+      return node.kind === 'MergeQueryNode'
+    },
+
+    create(into, withNode?) {
+      return freeze({
+        kind: 'MergeQueryNode',
+        into,
+        ...(withNode && { with: withNode }),
+      })
+    },
+
+    cloneWithUsing(mergeNode, using) {
+      return freeze({
+        ...mergeNode,
+        using,
+      })
+    },
+
+    cloneWithWhen(mergeNode, when) {
+      return freeze({
+        ...mergeNode,
+        whens: mergeNode.whens
+          ? freeze([...mergeNode.whens, when])
+          : freeze([when]),
+      })
+    },
+
+    cloneWithThen(mergeNode, then) {
+      return freeze({
+        ...mergeNode,
+        whens: mergeNode.whens
+          ? freeze([
+              ...mergeNode.whens.slice(0, -1),
+              WhenNode.cloneWithResult(
+                mergeNode.whens[mergeNode.whens.length - 1],
+                then,
+              ),
+            ])
+          : undefined,
+      })
+    },
+  })

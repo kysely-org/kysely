@@ -13,29 +13,37 @@ export interface DropIndexNode extends OperationNode {
   readonly cascade?: boolean
 }
 
-/**
- * @internal
- */
-export const DropIndexNode = freeze({
-  is(node: OperationNode): node is DropIndexNode {
-    return node.kind === 'DropIndexNode'
-  },
-
-  create(name: string, params?: DropIndexNodeProps): DropIndexNode {
-    return freeze({
-      kind: 'DropIndexNode',
-      name: SchemableIdentifierNode.create(name),
-      ...params,
-    })
-  },
-
+type DropIndexNodeFactory = Readonly<{
+  is(node: OperationNode): node is DropIndexNode
+  create(name: string, params?: DropIndexNodeProps): Readonly<DropIndexNode>
   cloneWith(
     dropIndex: DropIndexNode,
     props: DropIndexNodeProps,
-  ): DropIndexNode {
-    return freeze({
-      ...dropIndex,
-      ...props,
-    })
+  ): Readonly<DropIndexNode>
+}>
+
+/**
+ * @internal
+ */
+export const DropIndexNode: DropIndexNodeFactory = freeze<DropIndexNodeFactory>(
+  {
+    is(node): node is DropIndexNode {
+      return node.kind === 'DropIndexNode'
+    },
+
+    create(name, params?) {
+      return freeze({
+        kind: 'DropIndexNode',
+        name: SchemableIdentifierNode.create(name),
+        ...params,
+      })
+    },
+
+    cloneWith(dropIndex, props) {
+      return freeze({
+        ...dropIndex,
+        ...props,
+      })
+    },
   },
-})
+)

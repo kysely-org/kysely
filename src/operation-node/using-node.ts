@@ -6,25 +6,31 @@ export interface UsingNode extends OperationNode {
   readonly tables: ReadonlyArray<OperationNode>
 }
 
+type UsingNodeFactory = Readonly<{
+  is(node: OperationNode): node is UsingNode
+  create(tables: ReadonlyArray<OperationNode>): Readonly<UsingNode>
+  cloneWithTables(
+    using: UsingNode,
+    tables: ReadonlyArray<OperationNode>,
+  ): Readonly<UsingNode>
+}>
+
 /**
  * @internal
  */
-export const UsingNode = freeze({
-  is(node: OperationNode): node is UsingNode {
+export const UsingNode: UsingNodeFactory = freeze<UsingNodeFactory>({
+  is(node): node is UsingNode {
     return node.kind === 'UsingNode'
   },
 
-  create(tables: ReadonlyArray<OperationNode>): UsingNode {
+  create(tables) {
     return freeze({
       kind: 'UsingNode',
       tables: freeze(tables),
     })
   },
 
-  cloneWithTables(
-    using: UsingNode,
-    tables: ReadonlyArray<OperationNode>,
-  ): UsingNode {
+  cloneWithTables(using, tables) {
     return freeze({
       ...using,
       tables: freeze([...using.tables, ...tables]),

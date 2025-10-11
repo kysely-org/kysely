@@ -16,7 +16,7 @@ import {
   PostgresPoolClient,
 } from './postgres-dialect-config.js'
 
-const PRIVATE_RELEASE_METHOD = Symbol()
+const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
 
 export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig

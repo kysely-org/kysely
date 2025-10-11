@@ -7,19 +7,28 @@ export interface ColumnUpdateNode extends OperationNode {
   readonly value: OperationNode
 }
 
+type ColumnUpdateNodeFactory = Readonly<{
+  is(node: OperationNode): node is ColumnUpdateNode
+  create(
+    column: OperationNode,
+    value: OperationNode,
+  ): Readonly<ColumnUpdateNode>
+}>
+
 /**
  * @internal
  */
-export const ColumnUpdateNode = freeze({
-  is(node: OperationNode): node is ColumnUpdateNode {
-    return node.kind === 'ColumnUpdateNode'
-  },
+export const ColumnUpdateNode: ColumnUpdateNodeFactory =
+  freeze<ColumnUpdateNodeFactory>({
+    is(node): node is ColumnUpdateNode {
+      return node.kind === 'ColumnUpdateNode'
+    },
 
-  create(column: OperationNode, value: OperationNode): ColumnUpdateNode {
-    return freeze({
-      kind: 'ColumnUpdateNode',
-      column,
-      value,
-    })
-  },
-})
+    create(column, value) {
+      return freeze({
+        kind: 'ColumnUpdateNode',
+        column,
+        value,
+      })
+    },
+  })

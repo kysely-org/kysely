@@ -21,86 +21,101 @@ export interface OnConflictNode extends OperationNode {
   readonly doNothing?: boolean
 }
 
-/**
- * @internal
- */
-export const OnConflictNode = freeze({
-  is(node: OperationNode): node is OnConflictNode {
-    return node.kind === 'OnConflictNode'
-  },
-
-  create(): OnConflictNode {
-    return freeze({
-      kind: 'OnConflictNode',
-    })
-  },
-
-  cloneWith(node: OnConflictNode, props: OnConflictNodeProps): OnConflictNode {
-    return freeze({
-      ...node,
-      ...props,
-    })
-  },
-
+type OnConflictNodeFactory = Readonly<{
+  is(node: OperationNode): node is OnConflictNode
+  create(): Readonly<OnConflictNode>
+  cloneWith(
+    node: OnConflictNode,
+    props: OnConflictNodeProps,
+  ): Readonly<OnConflictNode>
   cloneWithIndexWhere(
     node: OnConflictNode,
     operation: OperationNode,
-  ): OnConflictNode {
-    return freeze({
-      ...node,
-      indexWhere: node.indexWhere
-        ? WhereNode.cloneWithOperation(node.indexWhere, 'And', operation)
-        : WhereNode.create(operation),
-    })
-  },
-
+  ): Readonly<OnConflictNode>
   cloneWithIndexOrWhere(
     node: OnConflictNode,
     operation: OperationNode,
-  ): OnConflictNode {
-    return freeze({
-      ...node,
-      indexWhere: node.indexWhere
-        ? WhereNode.cloneWithOperation(node.indexWhere, 'Or', operation)
-        : WhereNode.create(operation),
-    })
-  },
-
+  ): Readonly<OnConflictNode>
   cloneWithUpdateWhere(
     node: OnConflictNode,
     operation: OperationNode,
-  ): OnConflictNode {
-    return freeze({
-      ...node,
-      updateWhere: node.updateWhere
-        ? WhereNode.cloneWithOperation(node.updateWhere, 'And', operation)
-        : WhereNode.create(operation),
-    })
-  },
-
+  ): Readonly<OnConflictNode>
   cloneWithUpdateOrWhere(
     node: OnConflictNode,
     operation: OperationNode,
-  ): OnConflictNode {
-    return freeze({
-      ...node,
-      updateWhere: node.updateWhere
-        ? WhereNode.cloneWithOperation(node.updateWhere, 'Or', operation)
-        : WhereNode.create(operation),
-    })
-  },
+  ): Readonly<OnConflictNode>
+  cloneWithoutIndexWhere(node: OnConflictNode): Readonly<OnConflictNode>
+  cloneWithoutUpdateWhere(node: OnConflictNode): Readonly<OnConflictNode>
+}>
+/**
+ * @internal
+ */
+export const OnConflictNode: OnConflictNodeFactory =
+  freeze<OnConflictNodeFactory>({
+    is(node): node is OnConflictNode {
+      return node.kind === 'OnConflictNode'
+    },
 
-  cloneWithoutIndexWhere(node: OnConflictNode): OnConflictNode {
-    return freeze({
-      ...node,
-      indexWhere: undefined,
-    })
-  },
+    create() {
+      return freeze({
+        kind: 'OnConflictNode',
+      })
+    },
 
-  cloneWithoutUpdateWhere(node: OnConflictNode): OnConflictNode {
-    return freeze({
-      ...node,
-      updateWhere: undefined,
-    })
-  },
-})
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+
+    cloneWithIndexWhere(node, operation) {
+      return freeze({
+        ...node,
+        indexWhere: node.indexWhere
+          ? WhereNode.cloneWithOperation(node.indexWhere, 'And', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
+    cloneWithIndexOrWhere(node, operation) {
+      return freeze({
+        ...node,
+        indexWhere: node.indexWhere
+          ? WhereNode.cloneWithOperation(node.indexWhere, 'Or', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
+    cloneWithUpdateWhere(node, operation) {
+      return freeze({
+        ...node,
+        updateWhere: node.updateWhere
+          ? WhereNode.cloneWithOperation(node.updateWhere, 'And', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
+    cloneWithUpdateOrWhere(node, operation) {
+      return freeze({
+        ...node,
+        updateWhere: node.updateWhere
+          ? WhereNode.cloneWithOperation(node.updateWhere, 'Or', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
+    cloneWithoutIndexWhere(node) {
+      return freeze({
+        ...node,
+        indexWhere: undefined,
+      })
+    },
+
+    cloneWithoutUpdateWhere(node) {
+      return freeze({
+        ...node,
+        updateWhere: undefined,
+      })
+    },
+  })

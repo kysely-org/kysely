@@ -7,18 +7,24 @@ export interface DropColumnNode extends OperationNode {
   readonly column: ColumnNode
 }
 
+type DropColumnNodeFactory = Readonly<{
+  is(node: OperationNode): node is DropColumnNode
+  create(column: string): Readonly<DropColumnNode>
+}>
+
 /**
  * @internal
  */
-export const DropColumnNode = freeze({
-  is(node: OperationNode): node is DropColumnNode {
-    return node.kind === 'DropColumnNode'
-  },
+export const DropColumnNode: DropColumnNodeFactory =
+  freeze<DropColumnNodeFactory>({
+    is(node): node is DropColumnNode {
+      return node.kind === 'DropColumnNode'
+    },
 
-  create(column: string): DropColumnNode {
-    return freeze({
-      kind: 'DropColumnNode',
-      column: ColumnNode.create(column),
-    })
-  },
-})
+    create(column) {
+      return freeze({
+        kind: 'DropColumnNode',
+        column: ColumnNode.create(column),
+      })
+    },
+  })

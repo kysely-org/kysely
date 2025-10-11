@@ -8,19 +8,25 @@ export interface RenameColumnNode extends OperationNode {
   readonly renameTo: ColumnNode
 }
 
+type RenameColumnNodeFactory = Readonly<{
+  is(node: OperationNode): node is RenameColumnNode
+  create(column: string, newColumn: string): Readonly<RenameColumnNode>
+}>
+
 /**
  * @internal
  */
-export const RenameColumnNode = freeze({
-  is(node: OperationNode): node is RenameColumnNode {
-    return node.kind === 'RenameColumnNode'
-  },
+export const RenameColumnNode: RenameColumnNodeFactory =
+  freeze<RenameColumnNodeFactory>({
+    is(node): node is RenameColumnNode {
+      return node.kind === 'RenameColumnNode'
+    },
 
-  create(column: string, newColumn: string): RenameColumnNode {
-    return freeze({
-      kind: 'RenameColumnNode',
-      column: ColumnNode.create(column),
-      renameTo: ColumnNode.create(newColumn),
-    })
-  },
-})
+    create(column, newColumn) {
+      return freeze({
+        kind: 'RenameColumnNode',
+        column: ColumnNode.create(column),
+        renameTo: ColumnNode.create(newColumn),
+      })
+    },
+  })
