@@ -16,7 +16,7 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   /**
    * Adds the "temporary" modifier.
    *
-   * Use this to drop a temporary table.
+   * This is only supported by some dialects like MySQL.
    */
   temporary(): DropTableBuilder {
     return new DropTableBuilder({
