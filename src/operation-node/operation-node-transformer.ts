@@ -533,6 +533,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table, queryId),
       ifExists: node.ifExists,
       cascade: node.cascade,
+      temporary: node.temporary,
     })
   }
 
