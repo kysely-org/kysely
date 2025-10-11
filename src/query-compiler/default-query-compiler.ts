@@ -745,7 +745,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDropTable(node: DropTableNode): void {
-    this.append('drop table ')
+    this.append('drop ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    this.append('table ')
 
     if (node.ifExists) {
       this.append('if exists ')

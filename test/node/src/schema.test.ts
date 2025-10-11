@@ -1512,6 +1512,22 @@ for (const dialect of DIALECTS) {
             sqlite: NOT_SUPPORTED,
           })
         })
+
+        if (sqlSpec === 'mysql') {
+          it('should drop a temporary table if it exists', async () => {
+            const builder = ctx.db.schema.dropTable('test').temporary().ifExists()
+            
+            testSql(builder, dialect, {
+              postgres: NOT_SUPPORTED,
+              mysql: {
+                sql: 'drop temporary table if exists `test`',
+                parameters: [],
+              },
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+          })
+        }
       }
     })
 
