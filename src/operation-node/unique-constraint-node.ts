@@ -23,7 +23,7 @@ export type UniqueConstraintNodeProps = Omit<
  *
  * @internal
  */
-interface UniqueConstraintNodeFactory {
+type UniqueConstraintNodeFactory = Readonly<{
   is(node: OperationNode): node is UniqueConstraintNode
   create(
     columns: OperationNode[],
@@ -42,7 +42,7 @@ interface UniqueConstraintNodeFactory {
     node: UniqueConstraintNode,
     props: UniqueConstraintNodeProps,
   ): UniqueConstraintNode
-}
+}>
 
 /**
  * @internal
@@ -81,31 +81,3 @@ export const UniqueConstraintNode: UniqueConstraintNodeFactory = freeze({
     return freeze({ ...node, ...props })
   },
 })
-
-/**
- * @internal
- */
-export const UniqueConstraintNode: UniqueConstraintNodeFactory =
-  freeze<UniqueConstraintNodeFactory>({
-    is(node): node is UniqueConstraintNode {
-      return node.kind === 'UniqueConstraintNode'
-    },
-
-    create(columns, constraintName?, nullsNotDistinct?) {
-      return freeze({
-        kind: 'UniqueConstraintNode',
-        columns: freeze(columns.map(ColumnNode.create)),
-        name: constraintName
-          ? IdentifierNode.create(constraintName)
-          : undefined,
-        nullsNotDistinct,
-      })
-    },
-
-    cloneWith(node, props) {
-      return freeze({
-        ...node,
-        ...props,
-      })
-    },
-  })
