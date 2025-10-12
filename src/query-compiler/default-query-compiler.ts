@@ -134,6 +134,7 @@ export class DefaultQueryCompiler
     this.#sql = ''
     this.#parameters = []
     this.nodeStack.splice(0, this.nodeStack.length)
+
     this.visitNode(node)
 
     return freeze({
