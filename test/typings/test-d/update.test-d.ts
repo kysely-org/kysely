@@ -69,6 +69,20 @@ async function testUpdate(db: Kysely<Database>) {
       .setRef('name', 'not_a_column'),
   )
 
+  expectError(
+    db
+      .updateTable('pet as p')
+      .where('p.id', '=', '1')
+      .setRef({ name: 'not_a_column' }),
+  )
+
+  expectError(
+    db
+      .updateTable('pet as p')
+      .where('p.id', '=', '1')
+      .setRef({ not_a_column: 'not_a_column' }),
+  )
+
   // Non-existent column in a callback
   expectError(
     db
