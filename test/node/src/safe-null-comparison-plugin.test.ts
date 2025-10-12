@@ -11,7 +11,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: safe null comparison`, () => {
+  describe(`${dialect.variant}: safe null comparison`, () => {
     let ctx: TestContext
 
     before(async function () {
