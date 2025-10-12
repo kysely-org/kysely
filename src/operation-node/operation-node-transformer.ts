@@ -480,6 +480,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       constraints: this.transformNodeList(node.constraints, queryId),
+      indexes: this.transformNodeList(node.indexes, queryId),
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
       onCommit: node.onCommit,
