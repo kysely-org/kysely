@@ -14,6 +14,7 @@ export type CreateTableNodeParams = Omit<
   | 'table'
   | 'columns'
   | 'constraints'
+  | 'indexes'
   | 'frontModifiers'
   | 'endModifiers'
 >
@@ -23,6 +24,7 @@ export interface CreateTableNode extends OperationNode {
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
   readonly constraints?: ReadonlyArray<ConstraintNode>
+  readonly indexes?: ReadonlyArray<AddIndexNode>
   readonly temporary?: boolean
   readonly ifNotExists?: boolean
   readonly onCommit?: OnCommitAction
@@ -35,23 +37,27 @@ type CreateTableNodeFactory = Readonly<{
   is(node: OperationNode): node is CreateTableNode
   create(table: TableNode): Readonly<CreateTableNode>
   cloneWithColumn(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     column: ColumnDefinitionNode,
   ): Readonly<CreateTableNode>
   cloneWithConstraint(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     constraint: ConstraintNode,
   ): Readonly<CreateTableNode>
+  cloneWithIndex(
+    node: CreateTableNode,
+    index: AddIndexNode,
+  ): Readonly<CreateTableNode>
   cloneWithFrontModifier(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     modifier: OperationNode,
   ): Readonly<CreateTableNode>
   cloneWithEndModifier(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     modifier: OperationNode,
   ): Readonly<CreateTableNode>
   cloneWith(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     params: CreateTableNodeParams,
   ): Readonly<CreateTableNode>
 }>
@@ -73,43 +79,52 @@ export const CreateTableNode: CreateTableNodeFactory =
       })
     },
 
-    cloneWithColumn(createTable, column) {
+    cloneWithColumn(node, column) {
       return freeze({
-        ...createTable,
-        columns: freeze([...createTable.columns, column]),
+        ...node,
+        columns: freeze([...node.columns, column]),
       })
     },
 
-    cloneWithConstraint(createTable, constraint) {
+    cloneWithConstraint(node, constraint) {
       return freeze({
-        ...createTable,
-        constraints: createTable.constraints
-          ? freeze([...createTable.constraints, constraint])
+        ...node,
+        constraints: node.constraints
+          ? freeze([...node.constraints, constraint])
           : freeze([constraint]),
       })
     },
 
-    cloneWithFrontModifier(createTable, modifier) {
+    cloneWithIndex(node, index) {
       return freeze({
-        ...createTable,
-        frontModifiers: createTable.frontModifiers
-          ? freeze([...createTable.frontModifiers, modifier])
+        ...node,
+        indexes: node.indexes
+          ? freeze([...node.indexes, index])
+          : freeze([index]),
+      })
+    },
+
+    cloneWithFrontModifier(node, modifier) {
+      return freeze({
+        ...node,
+        frontModifiers: node.frontModifiers
+          ? freeze([...node.frontModifiers, modifier])
           : freeze([modifier]),
       })
     },
 
-    cloneWithEndModifier(createTable, modifier) {
+    cloneWithEndModifier(node, modifier) {
       return freeze({
-        ...createTable,
-        endModifiers: createTable.endModifiers
-          ? freeze([...createTable.endModifiers, modifier])
+        ...node,
+        endModifiers: node.endModifiers
+          ? freeze([...node.endModifiers, modifier])
           : freeze([modifier]),
       })
     },
 
-    cloneWith(createTable, params) {
+    cloneWith(node, params) {
       return freeze({
-        ...createTable,
+        ...node,
         ...params,
       })
     },
