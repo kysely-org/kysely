@@ -27,7 +27,6 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { OrderByNode } from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { ReferencesNode } from '../operation-node/references-node.js'
@@ -117,7 +116,6 @@ import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
-import { AddIndexTableNode } from '../operation-node/add-index-table-node.js'
 
 const LIT_WRAP_REGEX = /'/g
 
@@ -640,7 +638,7 @@ export class DefaultQueryCompiler
       this.compileList([
         ...node.columns,
         ...(node.constraints ?? []),
-        ...(node.addIndexTable ?? []),
+        ...(node.indexes ?? []),
       ])
       this.append(')')
 
@@ -1089,19 +1087,6 @@ export class DefaultQueryCompiler
     this.append(')')
 
     this.buildDeferrable(node)
-  }
-
-  protected override visitAddIndexTable(node: AddIndexTableNode): void {
-    this.append('index')
-    if (node.name) {
-      this.append(' ')
-      this.visitNode(node.name)
-      this.append(' ')
-    }
-
-    this.append(' (')
-    this.compileList(node.columns)
-    this.append(')')
   }
 
   protected override visitCheckConstraint(node: CheckConstraintNode): void {
@@ -1731,7 +1716,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')
