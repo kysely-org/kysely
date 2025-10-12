@@ -25,7 +25,7 @@ type AddIndexNodeFactory = Readonly<{
   // TODO: remove in 0.30
   cloneWith(
     node: AddIndexNode,
-    props: Pick<AddIndexNode, 'ifNotExists'>,
+    props: Required<Pick<AddIndexNode, 'ifNotExists'>>,
   ): Readonly<AddIndexNode>
   cloneWith(
     node: AddIndexNode,
