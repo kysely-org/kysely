@@ -99,7 +99,6 @@ import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
-import { AddIndexTableNode } from './add-index-table-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -243,7 +242,6 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
-    AddIndexTableNode: this.transformAddIndexTable.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -482,13 +480,13 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       constraints: this.transformNodeList(node.constraints, queryId),
+      indexes: this.transformNodeList(node.indexes, queryId),
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
       onCommit: node.onCommit,
       frontModifiers: this.transformNodeList(node.frontModifiers, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       selectQuery: this.transformNode(node.selectQuery, queryId),
-      addIndexTable: this.transformNodeList(node.addIndexTable),
     })
   }
 
@@ -717,14 +715,6 @@ export class OperationNodeTransformer {
       nullsNotDistinct: node.nullsNotDistinct,
       deferrable: node.deferrable,
       initiallyDeferred: node.initiallyDeferred,
-    })
-  }
-
-  protected transformAddIndexTable(node: AddIndexTableNode): AddIndexTableNode {
-    return requireAllProps<AddIndexTableNode>({
-      kind: 'AddIndexTableNode',
-      columns: this.transformNodeList(node.columns),
-      name: this.transformNode(node.name),
     })
   }
 
