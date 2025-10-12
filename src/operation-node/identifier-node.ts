@@ -6,18 +6,24 @@ export interface IdentifierNode extends OperationNode {
   readonly name: string
 }
 
+type IdentifierNodeFactory = Readonly<{
+  is(node: OperationNode): node is IdentifierNode
+  create(name: string): Readonly<IdentifierNode>
+}>
+
 /**
  * @internal
  */
-export const IdentifierNode = freeze({
-  is(node: OperationNode): node is IdentifierNode {
-    return node.kind === 'IdentifierNode'
-  },
+export const IdentifierNode: IdentifierNodeFactory =
+  freeze<IdentifierNodeFactory>({
+    is(node): node is IdentifierNode {
+      return node.kind === 'IdentifierNode'
+    },
 
-  create(name: string): IdentifierNode {
-    return freeze({
-      kind: 'IdentifierNode',
-      name,
-    })
-  },
-})
+    create(name) {
+      return freeze({
+        kind: 'IdentifierNode',
+        name,
+      })
+    },
+  })

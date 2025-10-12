@@ -9,19 +9,28 @@ export interface JSONPathLegNode extends OperationNode {
   readonly value: string | number
 }
 
+type JSONPathLegNodeFactory = Readonly<{
+  is(node: OperationNode): node is JSONPathLegNode
+  create(
+    type: JSONPathLegType,
+    value: string | number,
+  ): Readonly<JSONPathLegNode>
+}>
+
 /**
  * @internal
  */
-export const JSONPathLegNode = freeze({
-  is(node: OperationNode): node is JSONPathLegNode {
-    return node.kind === 'JSONPathLegNode'
-  },
+export const JSONPathLegNode: JSONPathLegNodeFactory =
+  freeze<JSONPathLegNodeFactory>({
+    is(node): node is JSONPathLegNode {
+      return node.kind === 'JSONPathLegNode'
+    },
 
-  create(type: JSONPathLegType, value: string | number): JSONPathLegNode {
-    return freeze({
-      kind: 'JSONPathLegNode',
-      type,
-      value,
-    })
-  },
-})
+    create(type, value) {
+      return freeze({
+        kind: 'JSONPathLegNode',
+        type,
+        value,
+      })
+    },
+  })

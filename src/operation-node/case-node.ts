@@ -10,29 +10,40 @@ export interface CaseNode extends OperationNode {
   readonly isStatement?: boolean
 }
 
+type CaseNodeFactory = Readonly<{
+  is(node: OperationNode): node is CaseNode
+  create(value?: OperationNode): Readonly<CaseNode>
+  cloneWithWhen(caseNode: CaseNode, when: WhenNode): Readonly<CaseNode>
+  cloneWithThen(caseNode: CaseNode, then: OperationNode): Readonly<CaseNode>
+  cloneWith(
+    caseNode: CaseNode,
+    props: Partial<Pick<CaseNode, 'else' | 'isStatement'>>,
+  ): Readonly<CaseNode>
+}>
+
 /**
  * @internal
  */
-export const CaseNode = freeze({
-  is(node: OperationNode): node is CaseNode {
+export const CaseNode: CaseNodeFactory = freeze<CaseNodeFactory>({
+  is(node): node is CaseNode {
     return node.kind === 'CaseNode'
   },
 
-  create(value?: OperationNode): CaseNode {
+  create(value?) {
     return freeze({
       kind: 'CaseNode',
       value,
     })
   },
 
-  cloneWithWhen(caseNode: CaseNode, when: WhenNode): CaseNode {
+  cloneWithWhen(caseNode, when) {
     return freeze({
       ...caseNode,
       when: freeze(caseNode.when ? [...caseNode.when, when] : [when]),
     })
   },
 
-  cloneWithThen(caseNode: CaseNode, then: OperationNode): CaseNode {
+  cloneWithThen(caseNode, then) {
     return freeze({
       ...caseNode,
       when: caseNode.when
@@ -47,10 +58,7 @@ export const CaseNode = freeze({
     })
   },
 
-  cloneWith(
-    caseNode: CaseNode,
-    props: Partial<Pick<CaseNode, 'else' | 'isStatement'>>,
-  ): CaseNode {
+  cloneWith(caseNode, props) {
     return freeze({
       ...caseNode,
       ...props,

@@ -495,7 +495,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * select "first_name", "last_name" from "person"
    * ```
    */
-  as(expression: Expression<unknown>) {
+  as(expression: Expression<unknown>): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWith(this.#props.node, {

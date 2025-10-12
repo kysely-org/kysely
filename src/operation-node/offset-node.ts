@@ -6,15 +6,20 @@ export interface OffsetNode extends OperationNode {
   readonly offset: OperationNode
 }
 
+type OffsetNodeFactory = Readonly<{
+  is(node: OperationNode): node is OffsetNode
+  create(offset: OperationNode): Readonly<OffsetNode>
+}>
+
 /**
  * @internal
  */
-export const OffsetNode = freeze({
-  is(node: OperationNode): node is OffsetNode {
+export const OffsetNode: OffsetNodeFactory = freeze<OffsetNodeFactory>({
+  is(node): node is OffsetNode {
     return node.kind === 'OffsetNode'
   },
 
-  create(offset: OperationNode): OffsetNode {
+  create(offset) {
     return freeze({
       kind: 'OffsetNode',
       offset,

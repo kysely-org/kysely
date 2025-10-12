@@ -5,17 +5,24 @@ export interface SelectAllNode extends OperationNode {
   readonly kind: 'SelectAllNode'
 }
 
+type SelectAllNodeFactory = Readonly<{
+  is(node: OperationNode): node is SelectAllNode
+  create(): Readonly<SelectAllNode>
+}>
+
 /**
  * @internal
  */
-export const SelectAllNode = freeze({
-  is(node: OperationNode): node is SelectAllNode {
-    return node.kind === 'SelectAllNode'
-  },
+export const SelectAllNode: SelectAllNodeFactory = freeze<SelectAllNodeFactory>(
+  {
+    is(node): node is SelectAllNode {
+      return node.kind === 'SelectAllNode'
+    },
 
-  create(): SelectAllNode {
-    return freeze({
-      kind: 'SelectAllNode',
-    })
+    create() {
+      return freeze({
+        kind: 'SelectAllNode',
+      })
+    },
   },
-})
+)

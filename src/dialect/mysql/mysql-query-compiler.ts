@@ -4,7 +4,7 @@ import { DefaultQueryCompiler } from '../../query-compiler/default-query-compile
 const ID_WRAP_REGEX = /`/g
 
 export class MysqlQueryCompiler extends DefaultQueryCompiler {
-  protected override getCurrentParameterPlaceholder() {
+  protected override getCurrentParameterPlaceholder(): string {
     return '?'
   }
 

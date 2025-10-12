@@ -17,29 +17,36 @@ export interface SelectModifierNode extends OperationNode {
   readonly of?: ReadonlyArray<OperationNode>
 }
 
-/**
- * @internal
- */
-export const SelectModifierNode = freeze({
-  is(node: OperationNode): node is SelectModifierNode {
-    return node.kind === 'SelectModifierNode'
-  },
-
+type SelectModifierNodeFactory = Readonly<{
+  is(node: OperationNode): node is SelectModifierNode
   create(
     modifier: SelectModifier,
     of?: ReadonlyArray<OperationNode>,
-  ): SelectModifierNode {
-    return freeze({
-      kind: 'SelectModifierNode',
-      modifier,
-      of,
-    })
-  },
+  ): Readonly<SelectModifierNode>
+  createWithExpression(modifier: OperationNode): Readonly<SelectModifierNode>
+}>
 
-  createWithExpression(modifier: OperationNode): SelectModifierNode {
-    return freeze({
-      kind: 'SelectModifierNode',
-      rawModifier: modifier,
-    })
-  },
-})
+/**
+ * @internal
+ */
+export const SelectModifierNode: SelectModifierNodeFactory =
+  freeze<SelectModifierNodeFactory>({
+    is(node): node is SelectModifierNode {
+      return node.kind === 'SelectModifierNode'
+    },
+
+    create(modifier, of?) {
+      return freeze({
+        kind: 'SelectModifierNode',
+        modifier,
+        of,
+      })
+    },
+
+    createWithExpression(modifier) {
+      return freeze({
+        kind: 'SelectModifierNode',
+        rawModifier: modifier,
+      })
+    },
+  })

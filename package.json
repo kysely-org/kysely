@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.28.7",
+  "version": "0.28.8",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -93,11 +93,12 @@
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
-    "script:align-site-version": "node --experimental-strip-types scripts/align-site-version.mts",
+    "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
     "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
+    "script:remove-global-augmentations": "node --experimental-strip-types scripts/remove-global-augmentations.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
-    "version": "pnpm script:align-site-version && git add ."
+    "version": "pnpm script:align-versions && git add ."
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
@@ -113,7 +114,7 @@
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.7.0",
     "@types/pg": "^8.15.5",
     "@types/pg-cursor": "^2.7.2",
     "@types/semver": "^7.7.1",
@@ -122,22 +123,23 @@
     "chai": "^6.2.0",
     "chai-as-promised": "^8.0.2",
     "esbuild": "^0.25.10",
+    "jsr": "^0.13.4",
     "lodash": "^4.17.21",
-    "mocha": "^11.7.2",
+    "mocha": "^11.7.4",
     "mysql2": "^3.15.1",
     "pathe": "^2.0.3",
     "pg": "^8.15.6",
     "pg-cursor": "^2.14.6",
     "pkg-types": "^2.3.0",
-    "playwright": "^1.55.1",
+    "playwright": "^1.56.0",
     "prettier": "^3.5.3",
-    "semver": "^7.7.1",
+    "semver": "^7.7.3",
     "sinon": "^21.0.0",
     "std-env": "^3.9.0",
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
     "tsd": "^0.33.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.3"
   },
   "packageManager": "pnpm@10.16.1+sha512.0e155aa2629db8672b49e8475da6226aa4bdea85fdcdfdc15350874946d4f3c91faaf64cbdc4a5d1ab8002f473d5c3fcedcd197989cf0390f9badd3c04678706"
 }

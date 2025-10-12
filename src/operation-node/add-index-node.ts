@@ -14,29 +14,42 @@ export interface AddIndexNode extends OperationNode {
   readonly ifNotExists?: boolean
 }
 
+type AddIndexNodeFactory = Readonly<{
+  is(node: OperationNode): node is AddIndexNode
+  create(name: string): Readonly<AddIndexNode>
+  cloneWith(
+    node: AddIndexNode,
+    props: Omit<AddIndexNode, 'kind' | 'name'>,
+  ): Readonly<AddIndexNode>
+  cloneWithColumns(
+    node: AddIndexNode,
+    columns: OperationNode[],
+  ): Readonly<AddIndexNode>
+}>
+
 /**
  * @internal
  */
-export const AddIndexNode = freeze({
-  is(node: OperationNode): node is AddIndexNode {
+export const AddIndexNode: AddIndexNodeFactory = freeze<AddIndexNodeFactory>({
+  is(node): node is AddIndexNode {
     return node.kind === 'AddIndexNode'
   },
 
-  create(name: string): AddIndexNode {
+  create(name) {
     return freeze({
       kind: 'AddIndexNode',
       name: IdentifierNode.create(name),
     })
   },
 
-  cloneWith(node: AddIndexNode, props: AddIndexNodeProps): AddIndexNode {
+  cloneWith(node, props) {
     return freeze({
       ...node,
       ...props,
     })
   },
 
-  cloneWithColumns(node: AddIndexNode, columns: OperationNode[]): AddIndexNode {
+  cloneWithColumns(node, columns) {
     return freeze({
       ...node,
       columns: [...(node.columns || []), ...columns],

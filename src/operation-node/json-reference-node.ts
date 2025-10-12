@@ -10,32 +10,39 @@ export interface JSONReferenceNode extends OperationNode {
   readonly traversal: JSONPathNode | JSONOperatorChainNode
 }
 
-/**
- * @internal
- */
-export const JSONReferenceNode = freeze({
-  is(node: OperationNode): node is JSONReferenceNode {
-    return node.kind === 'JSONReferenceNode'
-  },
-
+type JSONReferenceNodeFactory = Readonly<{
+  is(node: OperationNode): node is JSONReferenceNode
   create(
     reference: ReferenceNode,
     traversal: JSONPathNode | JSONOperatorChainNode,
-  ): JSONReferenceNode {
-    return freeze({
-      kind: 'JSONReferenceNode',
-      reference,
-      traversal,
-    })
-  },
-
+  ): Readonly<JSONReferenceNode>
   cloneWithTraversal(
     node: JSONReferenceNode,
     traversal: JSONPathNode | JSONOperatorChainNode,
-  ): JSONReferenceNode {
-    return freeze({
-      ...node,
-      traversal,
-    })
-  },
-})
+  ): Readonly<JSONReferenceNode>
+}>
+
+/**
+ * @internal
+ */
+export const JSONReferenceNode: JSONReferenceNodeFactory =
+  freeze<JSONReferenceNodeFactory>({
+    is(node): node is JSONReferenceNode {
+      return node.kind === 'JSONReferenceNode'
+    },
+
+    create(reference, traversal) {
+      return freeze({
+        kind: 'JSONReferenceNode',
+        reference,
+        traversal,
+      })
+    },
+
+    cloneWithTraversal(node, traversal) {
+      return freeze({
+        ...node,
+        traversal,
+      })
+    },
+  })

@@ -7,19 +7,28 @@ export interface UnaryOperationNode extends OperationNode {
   readonly operand: OperationNode
 }
 
+type UnaryOperationNodeFactory = Readonly<{
+  is(node: OperationNode): node is UnaryOperationNode
+  create(
+    operator: OperationNode,
+    operand: OperationNode,
+  ): Readonly<UnaryOperationNode>
+}>
+
 /**
  * @internal
  */
-export const UnaryOperationNode = freeze({
-  is(node: OperationNode): node is UnaryOperationNode {
-    return node.kind === 'UnaryOperationNode'
-  },
+export const UnaryOperationNode: UnaryOperationNodeFactory =
+  freeze<UnaryOperationNodeFactory>({
+    is(node): node is UnaryOperationNode {
+      return node.kind === 'UnaryOperationNode'
+    },
 
-  create(operator: OperationNode, operand: OperationNode): UnaryOperationNode {
-    return freeze({
-      kind: 'UnaryOperationNode',
-      operator,
-      operand,
-    })
-  },
-})
+    create(operator, operand) {
+      return freeze({
+        kind: 'UnaryOperationNode',
+        operator,
+        operand,
+      })
+    },
+  })

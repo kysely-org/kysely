@@ -8,29 +8,36 @@ export interface SchemableIdentifierNode extends OperationNode {
   readonly identifier: IdentifierNode
 }
 
-/**
- * @internal
- */
-export const SchemableIdentifierNode = freeze({
-  is(node: OperationNode): node is SchemableIdentifierNode {
-    return node.kind === 'SchemableIdentifierNode'
-  },
-
-  create(identifier: string): SchemableIdentifierNode {
-    return freeze({
-      kind: 'SchemableIdentifierNode',
-      identifier: IdentifierNode.create(identifier),
-    })
-  },
-
+type SchemableIdentifierNodeFactory = Readonly<{
+  is(node: OperationNode): node is SchemableIdentifierNode
+  create(identifier: string): Readonly<SchemableIdentifierNode>
   createWithSchema(
     schema: string,
     identifier: string,
-  ): SchemableIdentifierNode {
-    return freeze({
-      kind: 'SchemableIdentifierNode',
-      schema: IdentifierNode.create(schema),
-      identifier: IdentifierNode.create(identifier),
-    })
-  },
-})
+  ): Readonly<SchemableIdentifierNode>
+}>
+
+/**
+ * @internal
+ */
+export const SchemableIdentifierNode: SchemableIdentifierNodeFactory =
+  freeze<SchemableIdentifierNodeFactory>({
+    is(node): node is SchemableIdentifierNode {
+      return node.kind === 'SchemableIdentifierNode'
+    },
+
+    create(identifier) {
+      return freeze({
+        kind: 'SchemableIdentifierNode',
+        identifier: IdentifierNode.create(identifier),
+      })
+    },
+
+    createWithSchema(schema, identifier) {
+      return freeze({
+        kind: 'SchemableIdentifierNode',
+        schema: IdentifierNode.create(schema),
+        identifier: IdentifierNode.create(identifier),
+      })
+    },
+  })

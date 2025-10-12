@@ -42,4 +42,4 @@ export class NoopQueryExecutor extends QueryExecutorBase {
   }
 }
 
-export const NOOP_QUERY_EXECUTOR = new NoopQueryExecutor()
+export const NOOP_QUERY_EXECUTOR: NoopQueryExecutor = new NoopQueryExecutor()

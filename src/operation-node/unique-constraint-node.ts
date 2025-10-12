@@ -81,3 +81,31 @@ export const UniqueConstraintNode: UniqueConstraintNodeFactory = freeze({
     return freeze({ ...node, ...props })
   },
 })
+
+/**
+ * @internal
+ */
+export const UniqueConstraintNode: UniqueConstraintNodeFactory =
+  freeze<UniqueConstraintNodeFactory>({
+    is(node): node is UniqueConstraintNode {
+      return node.kind === 'UniqueConstraintNode'
+    },
+
+    create(columns, constraintName?, nullsNotDistinct?) {
+      return freeze({
+        kind: 'UniqueConstraintNode',
+        columns: freeze(columns.map(ColumnNode.create)),
+        name: constraintName
+          ? IdentifierNode.create(constraintName)
+          : undefined,
+        nullsNotDistinct,
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
+      })
+    },
+  })

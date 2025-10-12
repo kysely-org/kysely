@@ -5,7 +5,7 @@
     "check:types": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "kysely": "^0.28.7"

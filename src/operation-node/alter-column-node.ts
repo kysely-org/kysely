@@ -16,23 +16,29 @@ export interface AlterColumnNode extends OperationNode {
   readonly dropNotNull?: true
 }
 
-/**
- * @internal
- */
-export const AlterColumnNode = freeze({
-  is(node: OperationNode): node is AlterColumnNode {
-    return node.kind === 'AlterColumnNode'
-  },
-
+type AlterColumnNodeFactory = Readonly<{
+  is(node: OperationNode): node is AlterColumnNode
   create<T extends keyof AlterColumnNodeProps>(
     column: string,
     prop: T,
     value: Required<AlterColumnNodeProps>[T],
-  ): AlterColumnNode {
-    return freeze({
-      kind: 'AlterColumnNode',
-      column: ColumnNode.create(column),
-      [prop]: value,
-    })
-  },
-})
+  ): Readonly<AlterColumnNode>
+}>
+
+/**
+ * @internal
+ */
+export const AlterColumnNode: AlterColumnNodeFactory =
+  freeze<AlterColumnNodeFactory>({
+    is(node): node is AlterColumnNode {
+      return node.kind === 'AlterColumnNode'
+    },
+
+    create(column, prop, value) {
+      return freeze({
+        kind: 'AlterColumnNode',
+        column: ColumnNode.create(column),
+        [prop]: value,
+      })
+    },
+  })

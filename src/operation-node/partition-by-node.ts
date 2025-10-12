@@ -7,28 +7,35 @@ export interface PartitionByNode extends OperationNode {
   readonly items: ReadonlyArray<PartitionByItemNode>
 }
 
-/**
- * @internal
- */
-export const PartitionByNode = freeze({
-  is(node: OperationNode): node is PartitionByNode {
-    return node.kind === 'PartitionByNode'
-  },
-
-  create(items: ReadonlyArray<PartitionByItemNode>): PartitionByNode {
-    return freeze({
-      kind: 'PartitionByNode',
-      items: freeze(items),
-    })
-  },
-
+type PartitionByNodeFactory = Readonly<{
+  is(node: OperationNode): node is PartitionByNode
+  create(items: ReadonlyArray<PartitionByItemNode>): Readonly<PartitionByNode>
   cloneWithItems(
     partitionBy: PartitionByNode,
     items: ReadonlyArray<PartitionByItemNode>,
-  ): PartitionByNode {
-    return freeze({
-      ...partitionBy,
-      items: freeze([...partitionBy.items, ...items]),
-    })
-  },
-})
+  ): Readonly<PartitionByNode>
+}>
+
+/**
+ * @internal
+ */
+export const PartitionByNode: PartitionByNodeFactory =
+  freeze<PartitionByNodeFactory>({
+    is(node): node is PartitionByNode {
+      return node.kind === 'PartitionByNode'
+    },
+
+    create(items) {
+      return freeze({
+        kind: 'PartitionByNode',
+        items: freeze(items),
+      })
+    },
+
+    cloneWithItems(partitionBy, items) {
+      return freeze({
+        ...partitionBy,
+        items: freeze([...partitionBy.items, ...items]),
+      })
+    },
+  })

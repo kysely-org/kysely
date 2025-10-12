@@ -5,17 +5,23 @@ export interface DefaultInsertValueNode extends OperationNode {
   readonly kind: 'DefaultInsertValueNode'
 }
 
+type DefaultInsertValueNodeFactory = Readonly<{
+  is(node: OperationNode): node is DefaultInsertValueNode
+  create(): Readonly<DefaultInsertValueNode>
+}>
+
 /**
  * @internal
  */
-export const DefaultInsertValueNode = freeze({
-  is(node: OperationNode): node is DefaultInsertValueNode {
-    return node.kind === 'DefaultInsertValueNode'
-  },
+export const DefaultInsertValueNode: DefaultInsertValueNodeFactory =
+  freeze<DefaultInsertValueNodeFactory>({
+    is(node): node is DefaultInsertValueNode {
+      return node.kind === 'DefaultInsertValueNode'
+    },
 
-  create(): DefaultInsertValueNode {
-    return freeze({
-      kind: 'DefaultInsertValueNode',
-    })
-  },
-})
+    create() {
+      return freeze({
+        kind: 'DefaultInsertValueNode',
+      })
+    },
+  })

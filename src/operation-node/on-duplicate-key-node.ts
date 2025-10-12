@@ -9,18 +9,24 @@ export interface OnDuplicateKeyNode extends OperationNode {
   readonly updates: ReadonlyArray<ColumnUpdateNode>
 }
 
+type OnDuplicateKeyNodeFactory = Readonly<{
+  is(node: OperationNode): node is OnDuplicateKeyNode
+  create(updates: ReadonlyArray<ColumnUpdateNode>): Readonly<OnDuplicateKeyNode>
+}>
+
 /**
  * @internal
  */
-export const OnDuplicateKeyNode = freeze({
-  is(node: OperationNode): node is OnDuplicateKeyNode {
-    return node.kind === 'OnDuplicateKeyNode'
-  },
+export const OnDuplicateKeyNode: OnDuplicateKeyNodeFactory =
+  freeze<OnDuplicateKeyNodeFactory>({
+    is(node): node is OnDuplicateKeyNode {
+      return node.kind === 'OnDuplicateKeyNode'
+    },
 
-  create(updates: ReadonlyArray<ColumnUpdateNode>): OnDuplicateKeyNode {
-    return freeze({
-      kind: 'OnDuplicateKeyNode',
-      updates,
-    })
-  },
-})
+    create(updates) {
+      return freeze({
+        kind: 'OnDuplicateKeyNode',
+        updates,
+      })
+    },
+  })
