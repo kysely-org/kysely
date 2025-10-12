@@ -16,9 +16,9 @@ import type {
   PGliteTransaction,
 } from './pglite-dialect-config.js'
 
-const PRIVATE_BEGIN_TRANSACTION_METHOD = Symbol()
-const PRIVATE_COMMIT_TRANSACTION_METHOD = Symbol()
-const PRIVATE_ROLLBACK_TRANSACTION_METHOD = Symbol()
+const PRIVATE_BEGIN_TRANSACTION_METHOD: unique symbol = Symbol()
+const PRIVATE_COMMIT_TRANSACTION_METHOD: unique symbol = Symbol()
+const PRIVATE_ROLLBACK_TRANSACTION_METHOD: unique symbol = Symbol()
 
 export class PGliteDriver implements Driver {
   readonly #config: PGliteDialectConfig
