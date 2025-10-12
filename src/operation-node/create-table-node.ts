@@ -4,7 +4,7 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ArrayItemType } from '../util/type-utils.js'
-import { AddIndexTableNode } from './add-index-table-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
@@ -38,27 +38,27 @@ type CreateTableNodeFactory = Readonly<{
   is(node: OperationNode): node is CreateTableNode
   create(table: TableNode): Readonly<CreateTableNode>
   cloneWithColumn(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     column: ColumnDefinitionNode,
   ): Readonly<CreateTableNode>
   cloneWithConstraint(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     constraint: ConstraintNode,
   ): Readonly<CreateTableNode>
   cloneWithIndex(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     index: AddIndexNode,
   ): Readonly<CreateTableNode>
   cloneWithFrontModifier(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     modifier: OperationNode,
   ): Readonly<CreateTableNode>
   cloneWithEndModifier(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     modifier: OperationNode,
   ): Readonly<CreateTableNode>
   cloneWith(
-    createTable: CreateTableNode,
+    node: CreateTableNode,
     params: CreateTableNodeParams,
   ): Readonly<CreateTableNode>
 }>
@@ -80,52 +80,52 @@ export const CreateTableNode: CreateTableNodeFactory =
       })
     },
 
-    cloneWithColumn(createTable, column) {
+    cloneWithColumn(node, column) {
       return freeze({
-        ...createTable,
-        columns: freeze([...createTable.columns, column]),
+        ...node,
+        columns: freeze([...node.columns, column]),
       })
     },
 
-    cloneWithConstraint(createTable, constraint) {
+    cloneWithConstraint(node, constraint) {
       return freeze({
-        ...createTable,
-        constraints: createTable.constraints
-          ? freeze([...createTable.constraints, constraint])
+        ...node,
+        constraints: node.constraints
+          ? freeze([...node.constraints, constraint])
           : freeze([constraint]),
       })
     },
 
-    cloneWithIndex(createTable, index) {
+    cloneWithIndex(node, index) {
       return freeze({
-        ...createTable,
-        indexes: createTable.indexes
-          ? freeze([...createTable.indexes, index])
+        ...node,
+        indexes: node.indexes
+          ? freeze([...node.indexes, index])
           : freeze([index]),
       })
     },
 
-    cloneWithFrontModifier(createTable, modifier) {
+    cloneWithFrontModifier(node, modifier) {
       return freeze({
-        ...createTable,
-        frontModifiers: createTable.frontModifiers
-          ? freeze([...createTable.frontModifiers, modifier])
+        ...node,
+        frontModifiers: node.frontModifiers
+          ? freeze([...node.frontModifiers, modifier])
           : freeze([modifier]),
       })
     },
 
-    cloneWithEndModifier(createTable, modifier) {
+    cloneWithEndModifier(node, modifier) {
       return freeze({
-        ...createTable,
-        endModifiers: createTable.endModifiers
-          ? freeze([...createTable.endModifiers, modifier])
+        ...node,
+        endModifiers: node.endModifiers
+          ? freeze([...node.endModifiers, modifier])
           : freeze([modifier]),
       })
     },
 
-    cloneWith(createTable, params) {
+    cloneWith(node, params) {
       return freeze({
-        ...createTable,
+        ...node,
         ...params,
       })
     },
