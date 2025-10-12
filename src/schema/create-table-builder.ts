@@ -42,6 +42,11 @@ import {
   CheckConstraintBuilder,
   type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import {
+  CreateTableAddIndexBuilder,
+  CreateTableAddIndexBuilderCallback,
+} from './create-table-add-index-builder.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -287,6 +292,60 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
         uniqueConstraintBuilder.toOperationNode(),
+      ),
+    })
+  }
+
+  /**
+   * Adds an index that includes one or more columns.
+   *
+   * This is only supported by some dialects like MySQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addIndex('last_name_key', ['last_name'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `first_name` varchar(64) not null,
+   *   `last_name` varchar(64) not null,
+   *   index `last_name_key` (`last_name`)
+   * )
+   * ```
+   */
+  addIndex(
+    indexName: string,
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
+    build: CreateTableAddIndexBuilderCallback = noop,
+  ): CreateTableBuilder<TB, C> {
+    const addIndexBuilder = build(
+      new CreateTableAddIndexBuilder(
+        AddIndexNode.cloneWithColumns(
+          AddIndexNode.create(indexName),
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+        ),
+      ),
+    )
+
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWithIndex(
+        this.#props.node,
+        addIndexBuilder.toOperationNode(),
       ),
     })
   }
