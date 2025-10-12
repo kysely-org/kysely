@@ -19,6 +19,7 @@ export class SafeNullComparisonTransformer extends OperationNodeTransformer {
     }
 
     const op = operator.operator
+    
     if (op !== '=' && op !== '!=' && op !== '<>') {
       return node
     }
