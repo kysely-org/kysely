@@ -1295,14 +1295,16 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+      }
 
-        it('should create a table with index on nickname named nickname_key', async () => {
+      if (sqlSpec === 'mysql') {
+        it('should create a table with an index', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) => col.notNull())
             .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
             .addColumn('country', 'varchar(2)', (col) => col.notNull())
-            .addIndex(['nickname'], 'nickname_key')
+            .addIndex('nickname_key', ['nickname'])
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
@@ -1312,7 +1314,7 @@ for (const dialect of DIALECTS) {
                 '(`id` integer not null,',
                 '`nickname` varchar(64) not null,',
                 '`country` varchar(2) not null,',
-                'index `nickname_key`  (`nickname`))',
+                'index `nickname_key` (`nickname`))',
               ],
               parameters: [],
             },
@@ -1323,14 +1325,13 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create a table with indexes on nickname named nickname_key, and country names country_key', async () => {
+        it('should create a table with an index using hash', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) => col.notNull())
             .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
             .addColumn('country', 'varchar(2)', (col) => col.notNull())
-            .addIndex(['nickname'], 'nickname_key')
-            .addIndex(['country'], 'country_key')
+            .addIndex('nickname_key', ['nickname'], (ib) => ib.using('hash'))
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
@@ -1340,8 +1341,7 @@ for (const dialect of DIALECTS) {
                 '(`id` integer not null,',
                 '`nickname` varchar(64) not null,',
                 '`country` varchar(2) not null,',
-                'index `nickname_key`  (`nickname`),',
-                'index `country_key`  (`country`))',
+                'index `nickname_key` (`nickname`) using hash)',
               ],
               parameters: [],
             },
@@ -1352,13 +1352,14 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create a table with composite index on nickname and country without setting name', async () => {
+        it('should create a table with two indexes', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) => col.notNull())
             .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
             .addColumn('country', 'varchar(2)', (col) => col.notNull())
-            .addIndex(['nickname', 'country'])
+            .addIndex('nickname_key', ['nickname'])
+            .addIndex('country_key', ['country'])
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
@@ -1368,7 +1369,8 @@ for (const dialect of DIALECTS) {
                 '(`id` integer not null,',
                 '`nickname` varchar(64) not null,',
                 '`country` varchar(2) not null,',
-                'index (`nickname`, `country`))',
+                'index `nickname_key` (`nickname`),',
+                'index `country_key` (`country`))',
               ],
               parameters: [],
             },
@@ -1379,13 +1381,13 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create a table with index on nickname without setting name', async () => {
+        it('should create a table with a composite index', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) => col.notNull())
             .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
             .addColumn('country', 'varchar(2)', (col) => col.notNull())
-            .addIndex(['nickname'])
+            .addIndex('nickname_country_key', ['nickname', 'country'])
 
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
@@ -1395,7 +1397,7 @@ for (const dialect of DIALECTS) {
                 '(`id` integer not null,',
                 '`nickname` varchar(64) not null,',
                 '`country` varchar(2) not null,',
-                'index (`nickname`))',
+                'index `nickname_country_key` (`nickname`, `country`))',
               ],
               parameters: [],
             },
@@ -1625,8 +1627,11 @@ for (const dialect of DIALECTS) {
 
         if (sqlSpec === 'mysql') {
           it('should drop a temporary table if it exists', async () => {
-            const builder = ctx.db.schema.dropTable('test').temporary().ifExists()
-            
+            const builder = ctx.db.schema
+              .dropTable('test')
+              .temporary()
+              .ifExists()
+
             testSql(builder, dialect, {
               postgres: NOT_SUPPORTED,
               mysql: {

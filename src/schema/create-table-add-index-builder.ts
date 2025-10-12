@@ -26,7 +26,7 @@ export class CreateTableAddIndexBuilder implements OperationNodeSource {
    * The generated SQL (MySQL):
    *
    * ```sql
-   * create table `person` (`email` varchar(255), index `email_index` using hash (`email`))
+   * create table `person` (`email` varchar(255), index `email_index` (`email`) using hash)
    * ```
    */
   using(indexType: IndexType): CreateTableAddIndexBuilder
