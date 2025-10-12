@@ -38,8 +38,10 @@ import {
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   UpdateObjectExpression,
+  UpdateObjectWithRef,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
+  parseUpdateWithRef,
 } from '../parser/update-set-parser.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -739,6 +741,81 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
         parseUpdate(...args),
+      ),
+    })
+  }
+
+  /**
+   * Sets the values to update for an {@link Kysely.updateTable | update} query
+   * using column references instead of values.
+   *
+   * This method is similar to {@link set} but allows you to update columns by
+   * referencing other columns instead of providing literal values. This is useful
+   * when you want to copy values from one column to another or perform updates
+   * based on existing column values.
+   *
+   * You can provide either two arguments (column name and reference) or a single
+   * object where keys are column names and values are column references.
+   *
+   * ### Examples
+   *
+   * Update a column by referencing another column using the two-argument form:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .setRef('last_name', 'first_name')
+   *   .where('id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person" set "last_name" = "first_name" where "id" = $1
+   * ```
+   *
+   * You can reference columns from joined tables in a PostgreSQL `from` query:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .from('pet')
+   *   .setRef({
+   *     first_name: 'pet.name',
+   *   })
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = "pet"."name"
+   * from "pet"
+   * where "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  setRef<RE extends ReferenceExpression<DB, UT>>(
+    key: RE,
+    value: RE,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  setRef(
+    updates: UpdateObjectWithRef<DB, TB, UT>,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  setRef(
+    ...args:
+      | [ReferenceExpression<DB, UT>, ReferenceExpression<DB, UT>]
+      | [UpdateObjectWithRef<DB, TB, UT>]
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: UpdateQueryNode.cloneWithUpdates(
+        this.#props.queryNode,
+        parseUpdateWithRef(...args),
       ),
     })
   }

@@ -38,6 +38,14 @@ export type UpdateObjectExpression<
   UT extends keyof DB = TB,
 > = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
 
+export type UpdateObjectWithRef<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB = TB,
+> = DrainOuterGeneric<{
+  [C in AnyColumn<DB, UT>]?: ReferenceExpression<DB, TB>
+}>
+
 export type ExtractUpdateTypeFromReferenceExpression<
   DB,
   TB extends keyof DB,
@@ -60,6 +68,36 @@ export function parseUpdate(
   }
 
   return parseUpdateObjectExpression(args[0])
+}
+
+export function parseUpdateWithRef(
+  ...args:
+    | [ReferenceExpression<any, any>, ReferenceExpression<any, any>]
+    | [UpdateObjectWithRef<any, any, any>]
+): ReadonlyArray<ColumnUpdateNode> {
+  if (args.length === 2) {
+    return [
+      ColumnUpdateNode.create(
+        parseReferenceExpression(args[0]),
+        parseReferenceExpression(args[1]),
+      ),
+    ]
+  }
+
+  return parseUpdateObjectWithRef(args[0])
+}
+
+export function parseUpdateObjectWithRef(
+  update: UpdateObjectWithRef<any, any, any>,
+): ReadonlyArray<ColumnUpdateNode> {
+  return Object.entries(update)
+    .filter(([_, value]) => value !== undefined)
+    .map(([key, value]) => {
+      return ColumnUpdateNode.create(
+        ColumnNode.create(key),
+        parseReferenceExpression(value!),
+      )
+    })
 }
 
 export function parseUpdateObjectExpression(
