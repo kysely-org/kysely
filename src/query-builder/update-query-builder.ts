@@ -24,11 +24,7 @@ import {
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import {
-  ExtractTypeFromReferenceExpression,
-  MatchingReferenceExpression,
-  ReferenceExpression,
-} from '../parser/reference-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   DrainOuterGeneric,
@@ -42,6 +38,7 @@ import {
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   UpdateObjectExpression,
+  UpdateObjectWithRef,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
   parseUpdateWithRef,
@@ -749,47 +746,76 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Sets a column to the value of another column with type-safe column matching.
+   * Sets the values to update for an {@link Kysely.updateTable | update} query
+   * using column references instead of values.
    *
-   * Unlike {@link set}, this method only allows you to reference columns that have
-   * the same type as the target column, ensuring type safety at compile time.
+   * This method is similar to {@link set} but allows you to update columns by
+   * referencing other columns instead of providing literal values. This is useful
+   * when you want to copy values from one column to another or perform updates
+   * based on existing column values.
+   *
+   * You can provide either two arguments (column name and reference) or a single
+   * object where keys are column names and values are column references.
    *
    * ### Examples
    *
+   * Update a column by referencing another column using the two-argument form:
+   *
    * ```ts
-   * await db.updateTable('person')
-   *   .setRef('first_name', 'last_name')
+   * const result = await db
+   *   .updateTable('person')
+   *   .setRef('last_name', 'first_name')
    *   .where('id', '=', 1)
-   *   .execute()
+   *   .executeTakeFirst()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * update "person" set "first_name" = "last_name" where "id" = $1
+   * update "person" set "last_name" = "first_name" where "id" = $1
    * ```
    *
-   * Type errors for mismatched types:
+   * You can reference columns from joined tables in a PostgreSQL `from` query:
    *
    * ```ts
-   * await db.updateTable('person')
-   *   .setRef('first_name', 'id') // Error: 'id' is number, 'first_name' is string
-   *   .execute()
+   * const result = await db
+   *   .updateTable('person')
+   *   .from('pet')
+   *   .setRef({
+   *     first_name: 'pet.name',
+   *   })
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = "pet"."name"
+   * from "pet"
+   * where "pet"."owner_id" = "person"."id"
    * ```
    */
   setRef<RE extends ReferenceExpression<DB, UT>>(
     key: RE,
-    value: MatchingReferenceExpression<
-      DB,
-      UT,
-      ExtractUpdateTypeFromReferenceExpression<DB, UT, RE>
-    >,
+    value: RE,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  setRef(
+    updates: UpdateObjectWithRef<DB, TB, UT>,
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  setRef(
+    ...args:
+      | [ReferenceExpression<DB, UT>, ReferenceExpression<DB, UT>]
+      | [UpdateObjectWithRef<DB, TB, UT>]
   ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateWithRef(key, value),
+        parseUpdateWithRef(...args),
       ),
     })
   }

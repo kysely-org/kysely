@@ -109,30 +109,6 @@ export type ExtractColumnNameFromOrderedColumnName<C extends string> =
       : never
     : C
 
-/**
- * Helper type that filters columns by matching their UpdateType against TargetType.
- */
-type FilterMatchingColumns<
-  DB,
-  TB extends keyof DB,
-  Columns extends string,
-  TargetType,
-> = {
-  [C in Columns]: UpdateType<
-    ExtractRawTypeFromReferenceExpression<DB, TB, C>
-  > extends TargetType
-    ? C
-    : never
-}[Columns]
-
-/**
- * Filters reference expressions to only include columns whose type matches the target type.
- * This is useful for type-safe column-to-column operations where both columns must have the same type.
- */
-export type MatchingReferenceExpression<DB, TB extends keyof DB, TargetType> =
-  | FilterMatchingColumns<DB, TB, AnyColumn<DB, TB>, TargetType>
-  | FilterMatchingColumns<DB, TB, AnyColumnWithTable<DB, TB>, TargetType>
-
 export function parseSimpleReferenceExpression(
   exp: SimpleReferenceExpression<any, any>,
 ): SimpleReferenceExpressionNode {

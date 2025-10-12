@@ -399,6 +399,52 @@ for (const dialect of DIALECTS) {
       expect(jennifer.last_name).to.equal('Jennifer')
     })
 
+    it('should update one row using setRef with object', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .setRef({
+          last_name: 'first_name',
+        })
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
+      if (sqlSpec === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
+
+      const jennifer = await ctx.db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select('last_name')
+        .executeTakeFirstOrThrow()
+
+      expect(jennifer.last_name).to.equal('Jennifer')
+    })
+
     it('should update one row while ignoring undefined values', async () => {
       const query = ctx.db
         .updateTable('person')
