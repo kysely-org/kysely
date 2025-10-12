@@ -17,7 +17,9 @@ export interface DropTypeNode extends OperationNode {
 
 type DropTypeNodeFactory = Readonly<{
   is(node: OperationNode): node is DropTypeNode
-  create(name: SchemableIdentifierNode): Readonly<DropTypeNode>
+  create(
+    names: SchemableIdentifierNode | SchemableIdentifierNode[],
+  ): Readonly<DropTypeNode>
   cloneWith(
     dropType: DropTypeNode,
     params: DropTypeNodeParams,
@@ -32,9 +34,7 @@ export const DropTypeNode: DropTypeNodeFactory = freeze<DropTypeNodeFactory>({
     return node.kind === 'DropTypeNode'
   },
 
-  create(
-    names: SchemableIdentifierNode | SchemableIdentifierNode[],
-  ): DropTypeNode {
+  create(names) {
     if (!Array.isArray(names)) {
       names = [names]
     }
