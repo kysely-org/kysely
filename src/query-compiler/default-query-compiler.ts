@@ -27,7 +27,6 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { OrderByNode } from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { ReferencesNode } from '../operation-node/references-node.js'
@@ -637,7 +636,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.selectQuery)
     } else {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.indexes ?? []),
+      ])
       this.append(')')
 
       if (node.onCommit) {
@@ -1714,7 +1717,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')
