@@ -28,4 +28,4 @@ A plugin that allows handling `in ()` and `not in ()` with a chosen strategy. [L
 
 ### Safe null comparison plugin
 
-A plugin that automatically converts `=`, `!=` and `<>` to the equivalent `is` and `is not` predicates depending on the value of the variable. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/SafeNullComparisonPlugin.html).
+A plugin that converts `=`, `!=` and `<>` to the equivalent `is` and `is not` operators when the right-hand side value is `null`. [Learn more](https://kysely-org.github.io/kysely-apidoc/classes/SafeNullComparisonPlugin.html).
