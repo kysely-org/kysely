@@ -42,7 +42,11 @@ import {
   CheckConstraintBuilder,
   CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
-import { AddIndexTableNode } from '../operation-node/add-index-table-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import {
+  CreateTableAddIndexBuilder,
+  CreateTableAddIndexBuilderCallback,
+} from './create-table-add-index-builder.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -293,9 +297,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   }
 
   /**
-   * Adds index on one or more columns.
+   * Adds an index that includes one or more columns.
    *
-   * This only works on some dialects like MySQL.
+   * This is only supported by some dialects like MySQL.
    *
    * ### Examples
    *
@@ -304,7 +308,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .createTable('person')
    *   .addColumn('first_name', 'varchar(64)')
    *   .addColumn('last_name', 'varchar(64)')
-   *   .addIndex(['last_name'], 'last_name_key')
+   *   .addIndex('last_name_key', ['last_name'])
    *   .execute()
    * ```
    *
@@ -318,14 +322,30 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   index `last_name_key` (`last_name`)
    * )
    * ```
-   *
    */
-  addIndex(columns: C[], indexName?: string): CreateTableBuilder<TB, C> {
+  addIndex(
+    indexName: string,
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
+    build: CreateTableAddIndexBuilderCallback = noop,
+  ): CreateTableBuilder<TB, C> {
+    const addIndexBuilder = build(
+      new CreateTableAddIndexBuilder(
+        AddIndexNode.cloneWithColumns(
+          AddIndexNode.create(indexName),
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+        ),
+      ),
+    )
+
     return new CreateTableBuilder({
       ...this.#props,
-      node: CreateTableNode.cloneWithAddIndexTable(
+      node: CreateTableNode.cloneWithIndex(
         this.#props.node,
-        AddIndexTableNode.create(columns, indexName),
+        addIndexBuilder.toOperationNode(),
       ),
     })
   }
