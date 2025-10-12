@@ -3,23 +3,33 @@ import { IdentifierNode } from './identifier-node.js'
 import type { OperationNode } from './operation-node.js'
 import type { RawNode } from './raw-node.js'
 
-export type AddIndexNodeProps = Omit<AddIndexNode, 'kind' | 'name'>
-
 export interface AddIndexNode extends OperationNode {
   readonly kind: 'AddIndexNode'
   readonly name: IdentifierNode
   readonly columns?: OperationNode[]
   readonly unique?: boolean
   readonly using?: RawNode
+  /**
+   * @deprecated added by accident.
+   */
+  // TODO: remove in 0.30
   readonly ifNotExists?: boolean
 }
 
 type AddIndexNodeFactory = Readonly<{
   is(node: OperationNode): node is AddIndexNode
   create(name: string): Readonly<AddIndexNode>
+  /**
+   * @deprecated `ifNotExists` was added by accident.
+   */
+  // TODO: remove in 0.30
   cloneWith(
     node: AddIndexNode,
-    props: Omit<AddIndexNode, 'kind' | 'name'>,
+    props: Required<Pick<AddIndexNode, 'ifNotExists'>>,
+  ): Readonly<AddIndexNode>
+  cloneWith(
+    node: AddIndexNode,
+    props: Omit<AddIndexNode, 'kind' | 'name' | 'ifNotExists'>,
   ): Readonly<AddIndexNode>
   cloneWithColumns(
     node: AddIndexNode,
