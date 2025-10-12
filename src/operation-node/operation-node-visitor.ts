@@ -100,7 +100,6 @@ import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js
 import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
-import { AddIndexTableNode } from './add-index-table-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -208,7 +207,6 @@ export abstract class OperationNodeVisitor {
     OutputNode: this.visitOutput.bind(this),
     OrActionNode: this.visitOrAction.bind(this),
     CollateNode: this.visitCollate.bind(this),
-    AddIndexTableNode: this.visitAddIndexTable.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -255,7 +253,6 @@ export abstract class OperationNodeVisitor {
     node: PrimaryKeyConstraintNode,
   ): void
   protected abstract visitUniqueConstraint(node: UniqueConstraintNode): void
-  protected abstract visitAddIndexTable(node: AddIndexTableNode): void
   protected abstract visitReferences(node: ReferencesNode): void
   protected abstract visitCheckConstraint(node: CheckConstraintNode): void
   protected abstract visitWith(node: WithNode): void
