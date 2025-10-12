@@ -634,7 +634,11 @@ export class DefaultQueryCompiler
 
     if (!node.selectQuery) {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.indexes ?? []),
+      ])
       this.append(')')
     }
 
@@ -1720,7 +1724,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')
