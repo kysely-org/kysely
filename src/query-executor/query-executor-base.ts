@@ -92,6 +92,30 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     }
   }
 
+  async executeBatch<R>(
+    compiledQueries: ReadonlyArray<CompiledQuery>,
+  ): Promise<QueryResult<R>[]> {
+    return await this.provideConnection(async (connection) => {
+      if (!this.adapter.supportsBatch || !connection.executeBatch) {
+        throw new Error('Batching is not supported by this dialect')
+      }
+
+      const results = await connection.executeBatch<R>(compiledQueries)
+
+      const transformedResults = []
+      for (let i = 0; i < results.length; i++) {
+        const transformed = await this.#transformResult(
+          results[i],
+          compiledQueries[i].queryId,
+        )
+        transformedResults.push(transformed)
+      }
+
+      // Cast is safe: because we know the results are QueryResult<R>
+      return transformedResults as QueryResult<R>[]
+    })
+  }
+
   abstract withConnectionProvider(
     connectionProvider: ConnectionProvider,
   ): QueryExecutorBase

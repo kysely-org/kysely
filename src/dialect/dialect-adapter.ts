@@ -38,6 +38,14 @@ export interface DialectAdapter {
   readonly supportsOutput?: boolean
 
   /**
+   * Whether or not this dialect supports batched query execution.
+   *
+   * When true, multiple queries can be executed more efficiently by reducing
+   * network round trips. The actual batching mechanism is dialect-specific.
+   */
+  readonly supportsBatch: boolean
+
+  /**
    * This method is used to acquire a lock for the migrations so that
    * it's not possible for two migration operations to run in parallel.
    *

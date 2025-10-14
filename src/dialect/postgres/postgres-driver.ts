@@ -212,6 +212,30 @@ class PostgresConnection implements DatabaseConnection {
     }
   }
 
+  async executeBatch<R>(
+    compiledQueries: ReadonlyArray<CompiledQuery>,
+  ): Promise<QueryResult<R>[]> {
+    // FIXME: This does not actually use Postgres's pipeline mode, as it's not supported by node-postgres.
+    const results: QueryResult<R>[] = []
+
+    try {
+      await this.executeQuery(CompiledQuery.raw('begin'))
+
+      for (const compiledQuery of compiledQueries) {
+        const result = await this.executeQuery<R>(compiledQuery)
+        results.push(result)
+      }
+
+      await this.executeQuery(CompiledQuery.raw('commit'))
+
+      return results
+    } catch (error) {
+      await this.executeQuery(CompiledQuery.raw('rollback'))
+
+      throw error
+    }
+  }
+
   [PRIVATE_RELEASE_METHOD](): void {
     this.#client.release()
   }

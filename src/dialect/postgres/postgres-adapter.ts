@@ -15,6 +15,10 @@ export class PostgresAdapter extends DialectAdapterBase {
     return true
   }
 
+  override get supportsBatch(): boolean {
+    return true
+  }
+
   override async acquireMigrationLock(
     db: Kysely<any>,
     _opt: MigrationLockOptions,

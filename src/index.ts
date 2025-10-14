@@ -30,6 +30,7 @@ export * from './query-builder/json-path-builder.js'
 export * from './query-builder/merge-query-builder.js'
 export * from './query-builder/merge-result.js'
 export * from './query-builder/order-by-item-builder.js'
+export * from './query-builder/batch-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'

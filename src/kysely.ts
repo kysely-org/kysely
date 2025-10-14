@@ -49,6 +49,7 @@ import {
 } from './util/provide-controlled-connection.js'
 import { ConnectionProvider } from './driver/connection-provider.js'
 import { logOnce } from './util/log-once.js'
+import { BatchBuilder } from './query-builder/batch-builder.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -561,6 +562,47 @@ export class Kysely<DB>
     return this.getExecutor().executeQuery<R>(compiledQuery)
   }
 
+  /**
+   * Creates a batch builder for executing multiple queries efficiently.
+   *
+   * Batching queries can reduce network round trips when executing multiple
+   * independent queries. Whether batching provides performance benefits depends
+   * on the dialect - check {@link DialectAdapter.supportsBatch} to see if your
+   * dialect supports optimized batching.
+   *
+   * ### Examples
+   *
+   * Execute multiple queries and get type-safe results:
+   *
+   * ```ts
+   * const [persons, pets] = await db
+   *   .batch()
+   *   .add(db.selectFrom('person').selectAll())
+   *   .add(db.selectFrom('pet').selectAll())
+   *   .execute()
+   *
+   * // persons is Person[]
+   * // pets is Pet[]
+   * ```
+   *
+   * Mix different query types:
+   *
+   * ```ts
+   * const results = await db
+   *   .batch()
+   *   .add(db.selectFrom('person').selectAll().where('id', '=', 1))
+   *   .add(db.updateTable('person').set({ active: true }).where('id', '=', 1))
+   *   .add(db.deleteFrom('pet').where('id', '=', 123))
+   *   .execute()
+   * ```
+   */
+  batch(): BatchBuilder {
+    if (!this.#props.executor.adapter.supportsBatch) {
+      throw new Error('batch execution is not supported by this dialect')
+    }
+    return new BatchBuilder({ executor: this.#props.executor })
+  }
+
   async [Symbol.asyncDispose]() {
     await this.destroy()
   }
@@ -590,6 +632,12 @@ export class Transaction<DB> extends Kysely<DB> {
   override connection(): ConnectionBuilder<DB> {
     throw new Error(
       'calling the connection method for a Transaction is not supported',
+    )
+  }
+
+  override batch(): BatchBuilder {
+    throw new Error(
+      'calling the batch method for a Transaction is not supported',
     )
   }
 
@@ -1202,6 +1250,13 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.stream(compiledQuery, chunkSize)
+  }
+
+  executeBatch<R>(
+    compiledQueries: ReadonlyArray<CompiledQuery<R>>,
+  ): Promise<QueryResult<R>[]> {
+    assertNotCommittedOrRolledBack(this.#state)
+    return this.#executor.executeBatch(compiledQueries)
   }
 
   withConnectionProvider(

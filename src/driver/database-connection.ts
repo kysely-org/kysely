@@ -11,6 +11,16 @@ export interface DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize?: number,
   ): AsyncIterableIterator<QueryResult<R>>
+
+  /**
+   * Executes multiple queries in a batch.
+   *
+   * This is optional and only implemented by dialects that support batching.
+   * When not implemented, queries will be executed sequentially.
+   */
+  executeBatch?<R>(
+    compiledQueries: ReadonlyArray<CompiledQuery>,
+  ): Promise<QueryResult<R>[]>
 }
 
 export interface QueryResult<O> {

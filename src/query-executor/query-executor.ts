@@ -61,6 +61,20 @@ export interface QueryExecutor extends ConnectionProvider {
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**
+   * Executes multiple compiled queries as a batch.
+   *
+   * If the dialect supports batching (adapter.supportsBatch is true), queries
+   * will be executed using the connection's batch execution method. Otherwise,
+   * queries will be executed sequentially.
+   *
+   * Results are returned in the same order as the input queries, with each
+   * result transformed by the plugins' `transformResult` method.
+   */
+  executeBatch<R>(
+    compiledQueries: ReadonlyArray<CompiledQuery<R>>,
+  ): Promise<QueryResult<R>[]>
+
+  /**
    * Returns a copy of this executor with a new connection provider.
    */
   withConnectionProvider(connectionProvider: ConnectionProvider): QueryExecutor
