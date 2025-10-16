@@ -1,3 +1,5 @@
+import type { DatabaseSync, StatementSync } from 'node:sqlite'
+
 import {
   DatabaseConnection,
   QueryResult,
@@ -9,13 +11,13 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
-import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
+import { SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
   readonly #connectionMutex = new ConnectionMutex()
 
-  #db?: SqliteDatabase
+  #db?: DatabaseSync;
   #connection?: DatabaseConnection
 
   constructor(config: SqliteDialectConfig) {
@@ -102,33 +104,35 @@ export class SqliteDriver implements Driver {
 }
 
 class SqliteConnection implements DatabaseConnection {
-  readonly #db: SqliteDatabase
+  readonly #db: DatabaseSync
 
-  constructor(db: SqliteDatabase) {
+  constructor(db: DatabaseSync) {
     this.#db = db
   }
 
   executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
-    const stmt = this.#db.prepare(sql)
+    const stmt: StatementSync = this.#db.prepare(sql)
 
-    if (stmt.reader) {
+    // node:sqlite expects parameters as individual arguments, not array
+    // If parameters is an array, spread it; if not, pass nothing
+    const args = Array.isArray(parameters) ? parameters : []
+
+    if (/^\s*select/i.test(sql)) {
+      const rows = stmt.all(...args) as O[]
+      return Promise.resolve({ rows })
+    } else {
+      const result = stmt.run(...args)
       return Promise.resolve({
-        rows: stmt.all(parameters) as O[],
+        numAffectedRows:
+          result.changes !== undefined && result.changes !== null ? BigInt(result.changes) : undefined,
+        insertId:
+          result.lastInsertRowid !== undefined && result.lastInsertRowid !== null
+            ? BigInt(result.lastInsertRowid)
+            : undefined,
+        rows: [],
       })
     }
-
-    const { changes, lastInsertRowid } = stmt.run(parameters)
-
-    return Promise.resolve({
-      numAffectedRows:
-        changes !== undefined && changes !== null ? BigInt(changes) : undefined,
-      insertId:
-        lastInsertRowid !== undefined && lastInsertRowid !== null
-          ? BigInt(lastInsertRowid)
-          : undefined,
-      rows: [],
-    })
   }
 
   async *streamQuery<R>(
@@ -136,9 +140,10 @@ class SqliteConnection implements DatabaseConnection {
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters, query } = compiledQuery
-    const stmt = this.#db.prepare(sql)
+    const stmt: StatementSync = this.#db.prepare(sql)
+    const args = Array.isArray(parameters) ? parameters : []
     if (SelectQueryNode.is(query)) {
-      const iter = stmt.iterate(parameters) as IterableIterator<R>
+      const iter = stmt.iterate(...args) as IterableIterator<R>
       for (const row of iter) {
         yield {
           rows: [row],

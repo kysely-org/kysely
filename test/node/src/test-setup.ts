@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
-import * as Database from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
 import { PoolOptions } from 'mysql2'
@@ -209,7 +209,7 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   sqlite: {
     dialect: new SqliteDialect({
-      database: async () => new Database(DIALECT_CONFIGS.sqlite.databasePath),
+      database: async () => new DatabaseSync(DIALECT_CONFIGS.sqlite.databasePath, { enableForeignKeyConstraints: false }),
     }),
     plugins: PLUGINS,
   },
