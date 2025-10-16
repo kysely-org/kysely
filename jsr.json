@@ -8,7 +8,8 @@
     "./helpers/mysql": "./src/helpers/mysql.ts",
     "./helpers/mssql": "./src/helpers/mssql.ts",
     "./helpers/postgres": "./src/helpers/postgres.ts",
-    "./helpers/sqlite": "./src/helpers/sqlite.ts"
+    "./helpers/sqlite": "./src/helpers/sqlite.ts",
+    "./migration": "./src/migration/index.ts"
   },
   "publish": {
     "include": [

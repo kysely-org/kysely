@@ -111,8 +111,82 @@ export * from './dialect/pglite/pglite-dialect-config.js'
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
-export * from './migration/migrator.js'
-export * from './migration/file-migration-provider.js'
+export {
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  DEFAULT_ALLOW_UNORDERED_MIGRATIONS,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  DEFAULT_MIGRATION_LOCK_TABLE,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  DEFAULT_MIGRATION_TABLE,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MIGRATION_LOCK_ID,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigrateOptions,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  Migration,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigrationInfo,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigrationProvider,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigrationResult,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigrationResultSet,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  Migrator,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  MigratorProps,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  NO_MIGRATIONS,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  NoMigrations,
+} from './migration/migrator.js'
+export {
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  FileMigrationProvider,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  FileMigrationProviderFS,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  FileMigrationProviderPath,
+  /**
+   * @deprecated import from 'kysely/migration' instead.
+   */
+  FileMigrationProviderProps,
+} from './migration/file-migration-provider.js'
 
 export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
