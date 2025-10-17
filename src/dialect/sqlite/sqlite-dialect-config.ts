@@ -17,7 +17,7 @@ export interface SqliteDialectConfig {
   /**
    * Called once when the first query is executed.
    *
-   * This is a Kysely specific feature and does not come from the `better-sqlite3` module.
+   * This is a Kysely specific feature and does not come from the `node:sqlite` module.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>;
 }

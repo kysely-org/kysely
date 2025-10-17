@@ -56,7 +56,7 @@ export const getDriverNPMPackageNames = (
     postgresql: packageManager === 'deno' ? 'pg-pool' : 'pg',
     mysql: 'mysql2',
     mssql: 'tedious',
-    sqlite: 'better-sqlite3',
+    sqlite: 'node:sqlite',
   }) as const satisfies Record<Dialect, string>
 
 export const POOL_NPM_PACKAGE_NAMES = {

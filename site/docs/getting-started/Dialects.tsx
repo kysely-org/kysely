@@ -47,7 +47,7 @@ const builtInDialects: BuiltInDialect[] = [
   {
     value: 'sqlite',
     driverDocsURL:
-      'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
+      'https://nodejs.org/api/sqlite.html',
   },
 ]
 
