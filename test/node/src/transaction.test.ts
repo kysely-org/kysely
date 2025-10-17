@@ -21,7 +21,6 @@ import {
   DIALECTS,
 } from './test-setup.js'
 import { DatabaseError as PostgresError } from 'pg'
-import { SqliteError } from 'better-sqlite3'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: transaction`, () => {
@@ -248,7 +247,8 @@ for (const dialect of DIALECTS) {
         expect.fail('Expected transaction to fail')
       } catch (error) {
         if (dialect === 'sqlite') {
-          expect(error).to.be.instanceOf(SqliteError)
+          expect(error).to.be.instanceOf(Error)
+          expect((error as { code: string }).code).to.equal("ERR_SQLITE_ERROR")
         } else if (dialect === 'postgres') {
           expect(error).to.be.instanceOf(PostgresError)
         }
