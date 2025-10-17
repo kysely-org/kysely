@@ -112,15 +112,12 @@ class SqliteConnection implements DatabaseConnection {
   }
 
   executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    const { sql, parameters, query } = compiledQuery
+    const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 
-    // node:sqlite expects parameters as individual arguments, not array
-    // If parameters is an array, spread it; if not, pass nothing
     const args = Array.isArray(parameters) ? parameters : []
 
-    // TODO: Maybe use statement.columns() to determine if the query returns rows
-    if (SqliteConnection.isRequrningQuery(query)) {
+    if (stmt.columns().length > 0) {
       const rows = stmt.all(...args) as O[]
       return Promise.resolve({ rows });
     }
@@ -152,10 +149,6 @@ class SqliteConnection implements DatabaseConnection {
         rows: [row],
       }
     }
-  }
-
-  private static isRequrningQuery(query: RootOperationNode): boolean {
-    return QueryNode.is(query) && (SelectQueryNode.is(query) || !!query.returning)
   }
 }
 
