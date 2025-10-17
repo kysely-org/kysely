@@ -119,6 +119,7 @@ class SqliteConnection implements DatabaseConnection {
     // If parameters is an array, spread it; if not, pass nothing
     const args = Array.isArray(parameters) ? parameters : []
 
+    // TODO: Maybe use statement.columns() to determine if the query returns rows
     if (SqliteConnection.isRequrningQuery(query)) {
       const rows = stmt.all(...args) as O[]
       return Promise.resolve({ rows });
