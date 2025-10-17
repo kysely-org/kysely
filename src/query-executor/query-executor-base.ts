@@ -11,7 +11,7 @@ import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
-import { AbortError, assertNotAborted } from '../util/abort.js'
+import { KyselyAbortError, assertNotAborted } from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
 import { logOnce } from '../util/log-once.js'
 
@@ -66,9 +66,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     compiledQuery: CompiledQuery,
     options?: ExecuteQueryOptions,
   ): Promise<QueryResult<R>> {
-    const { abortSignal } = options || {}
+    const { signal } = options || {}
 
-    if (!abortSignal) {
+    if (!signal) {
       return await this.provideConnection(async (connection) => {
         const result = await connection.executeQuery(compiledQuery)
 
@@ -76,13 +76,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       })
     }
 
-    assertNotAborted(abortSignal, 'aborted before query execution')
+    assertNotAborted(signal, 'before query execution')
 
     const { connection, release } = await provideControlledConnection(this)
 
     if (!connection.cancelQuery) {
       logOnce(
-        'this kysely dialect does not implement the `cancelQuery` method. this means, queries will not be cancelled on the database side when the `abortSignal` is triggered.',
+        'This kysely dialect does not implement the `cancelQuery` method. This means queries will not be cancelled on the database side when the `signal` is aborted.',
       )
     }
 
@@ -90,12 +90,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const abortListener = () => {
       resolve()
-      abortSignal?.removeEventListener('abort', abortListener)
+      signal.removeEventListener('abort', abortListener)
     }
-    abortSignal?.addEventListener('abort', abortListener)
+    signal.addEventListener('abort', abortListener)
 
     try {
-      assertNotAborted(abortSignal, 'aborted before query execution')
+      assertNotAborted(signal, 'before query execution')
 
       const queryPromise = connection.executeQuery(compiledQuery, {
         cancelable: true,
@@ -107,12 +107,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       if (!result) {
         void Promise.allSettled([
           queryPromise,
-          void connection.cancelQuery?.(this.provideConnection.bind(this)),
-        ]).catch(() => {
-          // noop
-        })
+          connection.cancelQuery?.(this.provideConnection.bind(this)),
+        ])
 
-        throw new AbortError('aborted during query execution')
+        throw new KyselyAbortError('during query execution', signal.reason)
       }
 
       const transformPromise = this.#transformResult<R>(
@@ -131,7 +129,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           // noop
         })
 
-        throw new AbortError('aborted during result transformation')
+        throw new KyselyAbortError(
+          'during result transformation',
+          signal.reason,
+        )
       }
 
       return transformedResult
@@ -146,9 +147,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     chunkSize: number,
     options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
-    const { abortSignal } = options || {}
+    const { signal } = options || {}
 
-    if (!abortSignal) {
+    if (!signal) {
       const { connection, release } = await provideControlledConnection(this)
 
       try {
@@ -165,7 +166,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       return
     }
 
-    assertNotAborted(abortSignal, 'aborted before connection acquisition')
+    assertNotAborted(signal, 'before connection acquisition')
 
     const { connection, release } = await provideControlledConnection(this)
 
@@ -173,19 +174,19 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const abortListener = () => {
       resolve()
-      abortSignal.removeEventListener('abort', abortListener)
+      signal.removeEventListener('abort', abortListener)
     }
-    abortSignal.addEventListener('abort', abortListener)
+    signal.addEventListener('abort', abortListener)
 
     // might have already abort before adding the listener.
-    if (abortSignal.aborted) {
+    if (signal.aborted) {
       abortListener()
     }
 
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
 
     try {
-      assertNotAborted(abortSignal, 'aborted before query streaming')
+      assertNotAborted(signal, 'before query streaming')
 
       asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
         cancelable: true,
@@ -195,7 +196,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       const controlConnectionProvider = this.provideConnection.bind(this)
 
       while (true) {
-        assertNotAborted(abortSignal, 'aborted during query streaming')
+        assertNotAborted(signal, 'during query streaming')
 
         const nextPromise = asyncIterator.next()
 
@@ -205,12 +206,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         if (!result) {
           void Promise.allSettled([
             nextPromise,
-            void connection.cancelQuery?.(controlConnectionProvider),
-          ]).catch(() => {
-            // noop
-          })
+            connection.cancelQuery?.(controlConnectionProvider),
+          ])
 
-          throw new AbortError('aborted during query streaming')
+          throw new KyselyAbortError('during query streaming', signal.reason)
         }
 
         if (result.done) {
@@ -228,12 +227,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         if (!transformedResult) {
           void Promise.allSettled([
             transformPromise,
-            void connection.cancelQuery?.(controlConnectionProvider),
-          ]).catch(() => {
-            // noop
-          })
+            connection.cancelQuery?.(controlConnectionProvider),
+          ])
 
-          throw new AbortError('aborted during result transformation')
+          throw new KyselyAbortError(
+            'during result transformation',
+            signal.reason,
+          )
         }
 
         yield transformedResult

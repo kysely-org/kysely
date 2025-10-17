@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import { AbortError, RawBuilder, sql } from '../../..'
+import { KyselyAbortError, RawBuilder, sql } from '../../..'
 import {
   clearDatabase,
   destroyTest,
@@ -36,25 +36,28 @@ for (const dialect of DIALECTS) {
     it('should execute queries normally when not aborted', async () => {
       await expect(
         ctx.db.selectFrom('person').selectAll().executeTakeFirstOrThrow({
-          abortSignal: new AbortController().signal,
+          signal: new AbortController().signal,
         }),
       ).to.not.be.eventually.rejected
     })
 
     it('should throw an abort error when aborted before query execution', async () => {
-      const abortController = new AbortController()
-      abortController.abort()
+      const reason = "rip d'angelo"
 
       await expect(
         ctx.db
           .selectFrom('person')
           .selectAll()
-          .executeTakeFirstOrThrow({ abortSignal: abortController.signal }),
+          .executeTakeFirstOrThrow({ signal: AbortSignal.abort(reason) }),
       )
-        .to.eventually.be.rejectedWith(AbortError)
-        .and.satisfies((error: AbortError) =>
-          expect(error.reason).to.equal('aborted before query execution'),
-        )
+        .to.eventually.be.rejectedWith(KyselyAbortError)
+        .and.satisfies((error: KyselyAbortError) => {
+          expect(error.message).to.equal(
+            'The operation was aborted before query execution.',
+          )
+          expect(error.reason).to.equal(reason)
+          return true
+        })
     })
 
     // database-side cancellation was only implemented in PostgresDialect thus far.
@@ -78,17 +81,18 @@ for (const dialect of DIALECTS) {
           } as const satisfies Record<SQLSpec, RawBuilder<any>>
         )[sqlSpec]
 
-        const abortController = new AbortController()
-        setTimeout(10).then(() => abortController.abort())
-
         await expect(
-          delayedQuery.execute(ctx.db, { abortSignal: abortController.signal }),
+          delayedQuery.execute(ctx.db, { signal: AbortSignal.timeout(10) }),
         )
-          .to.eventually.be.rejectedWith(AbortError)
-          .and.satisfies(
-            (error: AbortError) =>
-              error.reason === 'aborted during query execution',
-          )
+          .to.eventually.be.rejectedWith(KyselyAbortError)
+          .and.satisfies((error: KyselyAbortError) => {
+            expect(error.message).to.equal(
+              'The operation was aborted during query execution.',
+            )
+            expect(error.reason).to.be.instanceOf(DOMException)
+            expect((error.reason as DOMException).name).to.equal('TimeoutError')
+            return true
+          })
 
         await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
         await expect(
@@ -106,6 +110,8 @@ for (const dialect of DIALECTS) {
     it('should throw an abort error when aborted during result transformation', async () => {
       const abortController = new AbortController()
 
+      const reason = 'i like trains'
+
       await expect(
         ctx.db
           .selectFrom('person')
@@ -113,16 +119,20 @@ for (const dialect of DIALECTS) {
           .withPlugin({
             transformQuery: (args) => args.node,
             transformResult: async (result) => {
-              abortController.abort()
+              abortController.abort(reason)
               return result.result
             },
           })
-          .executeTakeFirstOrThrow({ abortSignal: abortController.signal }),
+          .executeTakeFirstOrThrow({ signal: abortController.signal }),
       )
-        .to.eventually.be.rejectedWith(AbortError)
-        .and.satisfies((error: AbortError) =>
-          expect(error.reason).to.equal('aborted during result transformation'),
-        )
+        .to.eventually.be.rejectedWith(KyselyAbortError)
+        .and.satisfies((error: KyselyAbortError) => {
+          expect(error.message).to.equal(
+            'The operation was aborted during result transformation.',
+          )
+          expect(error.reason).to.equal(reason)
+          return true
+        })
     })
 
     // mssql hangs on abort because `cancelQuery` is not yet implemented in the database connection.
@@ -136,7 +146,7 @@ for (const dialect of DIALECTS) {
             for await (const _ of ctx.db
               .selectFrom('person')
               .selectAll()
-              .stream({ abortSignal: abortController.signal, chunkSize: 1 })) {
+              .stream({ signal: abortController.signal, chunkSize: 1 })) {
               // noop
             }
           })(),
@@ -144,48 +154,57 @@ for (const dialect of DIALECTS) {
       })
 
       it('should throw an abort error when streaming is aborted before query execution', async () => {
-        const abortController = new AbortController()
-        abortController.abort()
+        const reason = 'top of the morning!'
 
         await expect(
           (async () => {
             for await (const _ of ctx.db
               .selectFrom('person')
               .selectAll()
-              .stream({ abortSignal: abortController.signal, chunkSize: 1 })) {
+              .stream({ signal: AbortSignal.abort(reason), chunkSize: 1 })) {
               // noop
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(AbortError)
-          .and.satisfies((error: AbortError) =>
-            expect(error.reason).to.equal(
-              'aborted before connection acquisition',
-            ),
-          )
+          .to.eventually.be.rejectedWith(KyselyAbortError)
+          .and.satisfies((error: KyselyAbortError) => {
+            expect(error.message).to.equal(
+              'The operation was aborted before connection acquisition.',
+            )
+            expect(error.reason).to.equal(reason)
+            return true
+          })
       })
 
       it('should throw an abort error when streaming is aborted during query execution', async () => {
         const abortController = new AbortController()
 
+        const reason = 'ani kaki metumtam'
+
         await expect(
           (async () => {
             for await (const _ of ctx.db
               .selectFrom('person')
               .selectAll()
-              .stream({ abortSignal: abortController.signal, chunkSize: 1 })) {
-              abortController.abort()
+              .stream({ signal: abortController.signal, chunkSize: 1 })) {
+              abortController.abort(reason)
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(AbortError)
-          .and.satisfies((error: AbortError) =>
-            expect(error.reason).to.equal('aborted during query streaming'),
-          )
+          .to.eventually.be.rejectedWith(KyselyAbortError)
+          .and.satisfies((error: KyselyAbortError) => {
+            expect(error.message).to.equal(
+              'The operation was aborted during query streaming.',
+            )
+            expect(error.reason).to.equal(reason)
+            return true
+          })
       })
 
       it('should throw an abort error when streaming is aborted during result transformation', async () => {
         const abortController = new AbortController()
+
+        const reason = 'spaghetti and meat balls'
 
         await expect(
           (async () => {
@@ -195,24 +214,26 @@ for (const dialect of DIALECTS) {
               .withPlugin({
                 transformQuery: (args) => args.node,
                 transformResult: async (result) => {
-                  abortController.abort()
+                  abortController.abort(reason)
                   return result.result
                 },
               })
               .stream({
-                abortSignal: abortController.signal,
+                signal: abortController.signal,
                 chunkSize: 1,
               })) {
               // noop
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(AbortError)
-          .and.satisfies((error: AbortError) =>
-            expect(error.reason).to.equal(
-              'aborted during result transformation',
-            ),
-          )
+          .to.eventually.be.rejectedWith(KyselyAbortError)
+          .and.satisfies((error: KyselyAbortError) => {
+            expect(error.message).to.equal(
+              'The operation was aborted during result transformation.',
+            )
+            expect(error.reason).to.equal(reason)
+            return true
+          })
       })
     }
   })

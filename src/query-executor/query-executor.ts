@@ -103,5 +103,5 @@ export interface ExecuteQueryOptions {
    * Writes (insert, update, delete) are not cancellable in most database engines,
    * so this signal is mostly useful for read queries.
    */
-  abortSignal?: AbortSignal
+  signal?: AbortSignal
 }
