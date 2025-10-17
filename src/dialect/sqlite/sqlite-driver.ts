@@ -8,10 +8,11 @@ import { Driver } from '../../driver/driver.js'
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import { QueryCompiler, RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { SqliteDialectConfig } from './sqlite-dialect-config.js'
+import { QueryNode } from '../../operation-node/query-node.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
@@ -111,28 +112,25 @@ class SqliteConnection implements DatabaseConnection {
   }
 
   executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    const { sql, parameters } = compiledQuery
-    const stmt: StatementSync = this.#db.prepare(sql)
+    const { sql, parameters, query } = compiledQuery
+    const stmt = this.#db.prepare(sql)
 
     // node:sqlite expects parameters as individual arguments, not array
     // If parameters is an array, spread it; if not, pass nothing
     const args = Array.isArray(parameters) ? parameters : []
 
-    if (/^\s*select/i.test(sql)) {
+    if (SqliteConnection.isRequrningQuery(query)) {
       const rows = stmt.all(...args) as O[]
-      return Promise.resolve({ rows })
-    } else {
-      const result = stmt.run(...args)
-      return Promise.resolve({
-        numAffectedRows:
-          result.changes !== undefined && result.changes !== null ? BigInt(result.changes) : undefined,
-        insertId:
-          result.lastInsertRowid !== undefined && result.lastInsertRowid !== null
-            ? BigInt(result.lastInsertRowid)
-            : undefined,
-        rows: [],
-      })
+      return Promise.resolve({ rows });
     }
+
+    const result = stmt.run(...args)
+
+    return Promise.resolve({
+      numAffectedRows: BigInt(result.changes),
+      insertId: BigInt(result.lastInsertRowid),
+      rows: [],
+    })
   }
 
   async *streamQuery<R>(
@@ -142,16 +140,21 @@ class SqliteConnection implements DatabaseConnection {
     const { sql, parameters, query } = compiledQuery
     const stmt: StatementSync = this.#db.prepare(sql)
     const args = Array.isArray(parameters) ? parameters : []
-    if (SelectQueryNode.is(query)) {
-      const iter = stmt.iterate(...args) as IterableIterator<R>
-      for (const row of iter) {
-        yield {
-          rows: [row],
-        }
-      }
-    } else {
+
+    if (!SelectQueryNode.is(query)) {
       throw new Error('Sqlite driver only supports streaming of select queries')
     }
+
+    const iter = stmt.iterate(...args) as IterableIterator<R>
+    for (const row of iter) {
+      yield {
+        rows: [row],
+      }
+    }
+  }
+
+  private static isRequrningQuery(query: RootOperationNode): boolean {
+    return QueryNode.is(query) && (SelectQueryNode.is(query) || !!query.returning)
   }
 }
 
