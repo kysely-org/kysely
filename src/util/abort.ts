@@ -1,15 +1,14 @@
-export function assertNotAborted(
-  abortSignal: AbortSignal | undefined,
-  reason?: any,
-) {
-  if (abortSignal?.aborted) {
-    throw new AbortError(reason || abortSignal.reason)
+export function assertNotAborted(signal: AbortSignal, when: string): void {
+  if (signal.aborted) {
+    throw new KyselyAbortError(when, signal.reason)
   }
 }
 
-export class AbortError extends Error {
-  constructor(public readonly reason?: any) {
-    super('The operation was aborted.')
-    this.name = 'AbortError'
+export class KyselyAbortError extends DOMException {
+  constructor(
+    when: string,
+    public readonly reason: any,
+  ) {
+    super(`The operation was aborted ${when}.`, 'AbortError')
   }
 }
