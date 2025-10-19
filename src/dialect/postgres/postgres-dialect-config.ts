@@ -1,4 +1,5 @@
 import { DatabaseConnection } from '../../driver/database-connection.js'
+import { ExecuteQueryOptions } from '../../query-executor/query-executor.js'
 
 /**
  * Config for the PostgreSQL dialect.
@@ -34,12 +35,18 @@ export interface PostgresDialectConfig {
   /**
    * Called once for each created connection.
    */
-  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+  onCreateConnection?: (
+    connection: DatabaseConnection,
+    options?: ExecuteQueryOptions,
+  ) => Promise<void>
 
   /**
    * Called every time a connection is acquired from the pool.
    */
-  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
+  onReserveConnection?: (
+    connection: DatabaseConnection,
+    options?: ExecuteQueryOptions,
+  ) => Promise<void>
 
   /**
    * A postgres `Pool` instance or a function that returns one.
@@ -48,7 +55,9 @@ export interface PostgresDialectConfig {
    *
    * https://node-postgres.com/apis/pool
    */
-  pool: PostgresPool | (() => Promise<PostgresPool>)
+  pool:
+    | PostgresPool
+    | ((options?: ExecuteQueryOptions) => Promise<PostgresPool>)
 }
 
 /**

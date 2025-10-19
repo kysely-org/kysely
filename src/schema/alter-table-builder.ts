@@ -13,7 +13,10 @@ import {
   ColumnDefinitionBuilderCallback,
 } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import {
+  ExecuteQueryOptions,
+  QueryExecutor,
+} from '../query-executor/query-executor.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 import {
   DataTypeExpression,
@@ -514,8 +517,8 @@ export class AlterTableColumnAlteringBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: ExecuteQueryOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

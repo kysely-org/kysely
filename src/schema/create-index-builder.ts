@@ -12,7 +12,10 @@ import {
 import { parseTable } from '../parser/table-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import {
+  ExecuteQueryOptions,
+  QueryExecutor,
+} from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
@@ -300,8 +303,8 @@ export class CreateIndexBuilder<C = never>
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: ExecuteQueryOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

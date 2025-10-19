@@ -1,5 +1,6 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import { DatabaseConnection } from '../driver/database-connection.js'
+import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
 import { Deferred } from './deferred.js'
 import { freeze } from './object-utils.js'
 
@@ -10,15 +11,16 @@ export interface ControlledConnection {
 
 export async function provideControlledConnection(
   connectionProvider: ConnectionProvider,
+  options?: ExecuteQueryOptions,
 ): Promise<ControlledConnection> {
   const connectionDefer = new Deferred<DatabaseConnection>()
   const connectionReleaseDefer = new Deferred<void>()
 
-  connectionProvider
+  void connectionProvider
     .provideConnection(async (connection) => {
       connectionDefer.resolve(connection)
       return await connectionReleaseDefer.promise
-    })
+    }, options)
     .catch((ex) => connectionDefer.reject(ex))
 
   // Create composite of the connection and the release method instead of

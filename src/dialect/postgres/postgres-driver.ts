@@ -1,13 +1,13 @@
 import {
   ControlConnectionProvider,
   DatabaseConnection,
-  QueryOptions,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import { ExecuteQueryOptions } from '../../query-executor/query-executor.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -30,13 +30,15 @@ export class PostgresDriver implements Driver {
     this.#config = freeze({ ...config })
   }
 
-  async init(): Promise<void> {
+  async init(options?: ExecuteQueryOptions): Promise<void> {
     this.#pool = isFunction(this.#config.pool)
-      ? await this.#config.pool()
+      ? await this.#config.pool(options)
       : this.#config.pool
   }
 
-  async acquireConnection(): Promise<DatabaseConnection> {
+  async acquireConnection(
+    options?: ExecuteQueryOptions,
+  ): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
 
@@ -52,12 +54,12 @@ export class PostgresDriver implements Driver {
       // connection is created. The `pg` module doesn't provide an async hook
       // for the connection creation. We need to call the method explicitly.
       if (this.#config.onCreateConnection) {
-        await this.#config.onCreateConnection(connection)
+        await this.#config.onCreateConnection(connection, options)
       }
     }
 
     if (this.#config.onReserveConnection) {
-      await this.#config.onReserveConnection(connection)
+      await this.#config.onReserveConnection(connection, options)
     }
 
     return connection
@@ -66,9 +68,12 @@ export class PostgresDriver implements Driver {
   async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
+    options?: ExecuteQueryOptions,
   ): Promise<void> {
+    let sql = 'begin'
+
     if (settings.isolationLevel || settings.accessMode) {
-      let sql = 'start transaction'
+      sql = 'start transaction'
 
       if (settings.isolationLevel) {
         sql += ` isolation level ${settings.isolationLevel}`
@@ -77,31 +82,37 @@ export class PostgresDriver implements Driver {
       if (settings.accessMode) {
         sql += ` ${settings.accessMode}`
       }
-
-      await connection.executeQuery(CompiledQuery.raw(sql))
-    } else {
-      await connection.executeQuery(CompiledQuery.raw('begin'))
     }
+
+    await connection.executeQuery(CompiledQuery.raw(sql), options)
   }
 
-  async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+  async commitTransaction(
+    connection: DatabaseConnection,
+    options?: ExecuteQueryOptions,
+  ): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('commit'), options)
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+  async rollbackTransaction(
+    connection: DatabaseConnection,
+    options?: ExecuteQueryOptions,
+  ): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('rollback'), options)
   }
 
   async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: ExecuteQueryOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('savepoint', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -109,12 +120,14 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: ExecuteQueryOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('rollback to', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -122,12 +135,14 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: ExecuteQueryOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('release', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -206,10 +221,10 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(
     compiledQuery: CompiledQuery,
-    options?: QueryOptions,
+    options?: ExecuteQueryOptions,
   ): Promise<QueryResult<O>> {
     try {
-      if (options?.cancelable) {
+      if (options?.signal) {
         await this.#setupCancelability()
       }
 
@@ -241,7 +256,7 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: QueryOptions,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
@@ -253,7 +268,7 @@ class PostgresConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
-    if (options?.cancelable) {
+    if (options?.signal) {
       await this.#setupCancelability()
     }
 

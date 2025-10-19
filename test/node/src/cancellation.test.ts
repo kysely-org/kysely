@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import { KyselyAbortError, RawBuilder, sql } from '../../..'
+import { RawBuilder, sql } from '../../..'
 import {
   clearDatabase,
   destroyTest,
@@ -42,7 +42,7 @@ for (const dialect of DIALECTS) {
     })
 
     it('should throw an abort error when aborted before query execution', async () => {
-      const reason = "rip d'angelo"
+      const reason = new Error("rip d'angelo")
 
       await expect(
         ctx.db
@@ -50,12 +50,9 @@ for (const dialect of DIALECTS) {
           .selectAll()
           .executeTakeFirstOrThrow({ signal: AbortSignal.abort(reason) }),
       )
-        .to.eventually.be.rejectedWith(KyselyAbortError)
-        .and.satisfies((error: KyselyAbortError) => {
-          expect(error.message).to.equal(
-            'The operation was aborted before query execution.',
-          )
-          expect(error.reason).to.equal(reason)
+        .to.eventually.be.rejectedWith(reason)
+        .and.satisfies((error: { __kysely_timing__: string }) => {
+          expect(error.__kysely_timing__).to.equal('before query execution')
           return true
         })
     })
@@ -84,15 +81,14 @@ for (const dialect of DIALECTS) {
         await expect(
           delayedQuery.execute(ctx.db, { signal: AbortSignal.timeout(10) }),
         )
-          .to.eventually.be.rejectedWith(KyselyAbortError)
-          .and.satisfies((error: KyselyAbortError) => {
-            expect(error.message).to.equal(
-              'The operation was aborted during query execution.',
-            )
-            expect(error.reason).to.be.instanceOf(DOMException)
-            expect((error.reason as DOMException).name).to.equal('TimeoutError')
-            return true
-          })
+          .to.eventually.be.rejectedWith(DOMException)
+          .and.satisfies(
+            (error: DOMException & { __kysely_timing__: string }) => {
+              expect(error.name).to.equal('TimeoutError')
+              expect(error.__kysely_timing__).to.equal('during query execution')
+              return true
+            },
+          )
 
         await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
         await expect(
@@ -110,7 +106,7 @@ for (const dialect of DIALECTS) {
     it('should throw an abort error when aborted during result transformation', async () => {
       const abortController = new AbortController()
 
-      const reason = 'i like trains'
+      const reason = new Error('i like trains')
 
       await expect(
         ctx.db
@@ -125,12 +121,11 @@ for (const dialect of DIALECTS) {
           })
           .executeTakeFirstOrThrow({ signal: abortController.signal }),
       )
-        .to.eventually.be.rejectedWith(KyselyAbortError)
-        .and.satisfies((error: KyselyAbortError) => {
-          expect(error.message).to.equal(
-            'The operation was aborted during result transformation.',
+        .to.eventually.be.rejectedWith(reason)
+        .and.satisfies((error: { __kysely_timing__: string }) => {
+          expect(error.__kysely_timing__).to.equal(
+            'during result transformation',
           )
-          expect(error.reason).to.equal(reason)
           return true
         })
     })
@@ -154,7 +149,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should throw an abort error when streaming is aborted before query execution', async () => {
-        const reason = 'top of the morning!'
+        const reason = new Error('top of the morning!')
 
         await expect(
           (async () => {
@@ -166,12 +161,11 @@ for (const dialect of DIALECTS) {
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(KyselyAbortError)
-          .and.satisfies((error: KyselyAbortError) => {
-            expect(error.message).to.equal(
-              'The operation was aborted before connection acquisition.',
+          .to.eventually.be.rejectedWith(reason)
+          .and.satisfies((error: { __kysely_timing__: string }) => {
+            expect(error.__kysely_timing__).to.equal(
+              'before connection acquisition',
             )
-            expect(error.reason).to.equal(reason)
             return true
           })
       })
@@ -179,7 +173,7 @@ for (const dialect of DIALECTS) {
       it('should throw an abort error when streaming is aborted during query execution', async () => {
         const abortController = new AbortController()
 
-        const reason = 'ani kaki metumtam'
+        const reason = new Error('ani kaki metumtam')
 
         await expect(
           (async () => {
@@ -191,12 +185,9 @@ for (const dialect of DIALECTS) {
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(KyselyAbortError)
-          .and.satisfies((error: KyselyAbortError) => {
-            expect(error.message).to.equal(
-              'The operation was aborted during query streaming.',
-            )
-            expect(error.reason).to.equal(reason)
+          .to.eventually.be.rejectedWith(reason)
+          .and.satisfies((error: { __kysely_timing__: string }) => {
+            expect(error.__kysely_timing__).to.equal('during query streaming')
             return true
           })
       })
@@ -204,7 +195,7 @@ for (const dialect of DIALECTS) {
       it('should throw an abort error when streaming is aborted during result transformation', async () => {
         const abortController = new AbortController()
 
-        const reason = 'spaghetti and meat balls'
+        const reason = new Error('spaghetti and meat balls')
 
         await expect(
           (async () => {
@@ -226,12 +217,11 @@ for (const dialect of DIALECTS) {
             }
           })(),
         )
-          .to.eventually.be.rejectedWith(KyselyAbortError)
-          .and.satisfies((error: KyselyAbortError) => {
-            expect(error.message).to.equal(
-              'The operation was aborted during result transformation.',
+          .to.eventually.be.rejectedWith(reason)
+          .and.satisfies((error: { __kysely_timing__: string }) => {
+            expect(error.__kysely_timing__).to.equal(
+              'during result transformation',
             )
-            expect(error.reason).to.equal(reason)
             return true
           })
       })

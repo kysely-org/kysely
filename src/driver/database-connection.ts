@@ -1,4 +1,5 @@
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
 
 /**
  * A single connection to the database engine.
@@ -12,18 +13,14 @@ export interface DatabaseConnection {
 
   executeQuery<R>(
     compiledQuery: CompiledQuery,
-    options?: QueryOptions,
+    options?: ExecuteQueryOptions,
   ): Promise<QueryResult<R>>
 
   streamQuery<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: QueryOptions,
+    options?: ExecuteQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>>
-}
-
-export interface QueryOptions {
-  cancelable?: boolean
 }
 
 export type ControlConnectionProvider = (

@@ -1,3 +1,4 @@
+import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
 import { DatabaseConnection } from './database-connection.js'
 
 export interface ConnectionProvider {
@@ -7,5 +8,6 @@ export interface ConnectionProvider {
    */
   provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>,
+    options?: ExecuteQueryOptions,
   ): Promise<T>
 }

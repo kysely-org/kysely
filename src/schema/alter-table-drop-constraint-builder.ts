@@ -2,7 +2,10 @@ import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import {
+  ExecuteQueryOptions,
+  QueryExecutor,
+} from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
@@ -80,8 +83,8 @@ export class AlterTableDropConstraintBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: ExecuteQueryOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

@@ -1,14 +1,23 @@
-export function assertNotAborted(signal: AbortSignal, when: string): void {
+export function assertNotAborted(signal: AbortSignal, timing: string): void {
   if (signal.aborted) {
-    throw new KyselyAbortError(when, signal.reason)
+    throwReasonWithTiming(signal.reason, timing)
   }
 }
 
-export class KyselyAbortError extends DOMException {
-  constructor(
-    when: string,
-    public readonly reason: any,
+export function throwReasonWithTiming(reason: any, timing: string): never {
+  if (
+    reason != null &&
+    typeof reason === 'object' &&
+    !Object.isFrozen(reason)
   ) {
-    super(`The operation was aborted ${when}.`, 'AbortError')
+    // we use this in tests, but it can also be used to debug in userland.
+    Object.defineProperty(reason, '__kysely_timing__', {
+      configurable: true,
+      enumerable: false,
+      value: timing,
+      writable: false,
+    })
   }
+
+  throw reason
 }
