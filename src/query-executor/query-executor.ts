@@ -93,6 +93,7 @@ export interface QueryExecutor extends ConnectionProvider {
   withoutPlugins(): QueryExecutor
 }
 
+// ATTENTION! if adding more props to this interface, mind that it's being used in many places.
 export interface ExecuteQueryOptions {
   /**
    * An optional signal that can be used to abort the execution of the query.

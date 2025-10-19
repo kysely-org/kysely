@@ -75,4 +75,5 @@ export interface PluginTransformQueryArgs {
 export interface PluginTransformResultArgs {
   readonly queryId: QueryId
   readonly result: QueryResult<UnknownRow>
+  readonly signal?: AbortSignal
 }

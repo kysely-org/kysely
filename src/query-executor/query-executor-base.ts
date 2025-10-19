@@ -13,7 +13,7 @@ import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
-import { KyselyAbortError, assertNotAborted } from '../util/abort.js'
+import { assertNotAborted, throwReasonWithTiming } from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
 import { logOnce } from '../util/log-once.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
@@ -62,7 +62,11 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): CompiledQuery
 
   abstract provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>,
+    consumer: (
+      connection: DatabaseConnection,
+      options?: ExecuteQueryOptions,
+    ) => Promise<T>,
+    options?: ExecuteQueryOptions,
   ): Promise<T>
 
   async executeQuery<R>(
@@ -73,15 +77,22 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     if (!signal) {
       return await this.provideConnection(async (connection) => {
-        const result = await connection.executeQuery(compiledQuery)
+        const result = await connection.executeQuery(compiledQuery, options)
 
-        return await this.#transformResult<R>(result, compiledQuery.queryId)
-      })
+        return await this.#transformResult<R>(
+          result,
+          compiledQuery.queryId,
+          options,
+        )
+      }, options)
     }
 
     assertNotAborted(signal, 'before query execution')
 
-    const { connection, release } = await provideControlledConnection(this)
+    const { connection, release } = await provideControlledConnection(
+      this,
+      options,
+    )
 
     if (!connection.cancelQuery) {
       logOnce(
@@ -91,18 +102,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const { promise: abortPromise, resolve } = new Deferred<void>()
 
-    const abortListener = () => {
-      resolve()
-      signal.removeEventListener('abort', abortListener)
-    }
-    signal.addEventListener('abort', abortListener)
+    signal.addEventListener('abort', () => resolve(), { once: true })
 
     try {
       assertNotAborted(signal, 'before query execution')
 
-      const queryPromise = connection.executeQuery(compiledQuery, {
-        cancelable: true,
-      })
+      const queryPromise = connection.executeQuery(compiledQuery, options)
 
       const result = await Promise.race([abortPromise, queryPromise])
 
@@ -113,12 +118,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           connection.cancelQuery?.(this.provideConnection.bind(this)),
         ])
 
-        throw new KyselyAbortError('during query execution', signal.reason)
+        throwReasonWithTiming(signal.reason, 'during query execution')
       }
 
       const transformPromise = this.#transformResult<R>(
         result,
         compiledQuery.queryId,
+        options,
       )
 
       const transformedResult = await Promise.race([
@@ -132,16 +138,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           // noop
         })
 
-        throw new KyselyAbortError(
-          'during result transformation',
-          signal.reason,
-        )
+        throwReasonWithTiming(signal.reason, 'during result transformation')
       }
 
       return transformedResult
     } finally {
       release()
-      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+      resolve()
     }
   }
 
@@ -160,7 +163,11 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           compiledQuery,
           chunkSize,
         )) {
-          yield await this.#transformResult<R>(result, compiledQuery.queryId)
+          yield await this.#transformResult<R>(
+            result,
+            compiledQuery.queryId,
+            options,
+          )
         }
       } finally {
         release()
@@ -175,25 +182,14 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     const { promise: abortPromise, resolve } = new Deferred<void>()
 
-    const abortListener = () => {
-      resolve()
-      signal.removeEventListener('abort', abortListener)
-    }
-    signal.addEventListener('abort', abortListener)
-
-    // might have already abort before adding the listener.
-    if (signal.aborted) {
-      abortListener()
-    }
+    signal.addEventListener('abort', () => resolve(), { once: true })
 
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
 
     try {
       assertNotAborted(signal, 'before query streaming')
 
-      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, {
-        cancelable: true,
-      })
+      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, options)
 
       const { queryId } = compiledQuery
       const controlConnectionProvider = this.provideConnection.bind(this)
@@ -212,14 +208,18 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             connection.cancelQuery?.(controlConnectionProvider),
           ])
 
-          throw new KyselyAbortError('during query streaming', signal.reason)
+          throwReasonWithTiming(signal.reason, 'during query streaming')
         }
 
         if (result.done) {
           break
         }
 
-        const transformPromise = this.#transformResult<R>(result.value, queryId)
+        const transformPromise = this.#transformResult<R>(
+          result.value,
+          queryId,
+          options,
+        )
 
         const transformedResult = await Promise.race([
           abortPromise,
@@ -233,17 +233,14 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             connection.cancelQuery?.(controlConnectionProvider),
           ])
 
-          throw new KyselyAbortError(
-            'during result transformation',
-            signal.reason,
-          )
+          throwReasonWithTiming(signal.reason, 'during result transformation')
         }
 
         yield transformedResult
       }
     } finally {
       release()
-      abortListener() // we're calling it to resolve the abort promise and remove the listener.
+      resolve()
       await asyncIterator?.return?.()
     }
   }
@@ -260,9 +257,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async #transformResult<T>(
     result: QueryResult<any>,
     queryId: QueryId,
+    options: ExecuteQueryOptions | undefined,
   ): Promise<QueryResult<T>> {
     for (const plugin of this.#plugins) {
-      result = await plugin.transformResult({ result, queryId })
+      result = await plugin.transformResult({ ...options, result, queryId })
     }
 
     return result
