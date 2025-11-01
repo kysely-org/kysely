@@ -59,6 +59,7 @@ import {
   ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -514,8 +515,8 @@ export class AlterTableColumnAlteringBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

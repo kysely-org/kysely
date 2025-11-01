@@ -5,6 +5,7 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class RefreshMaterializedViewBuilder
   implements OperationNodeSource, Compilable
@@ -87,8 +88,8 @@ export class RefreshMaterializedViewBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

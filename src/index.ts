@@ -232,6 +232,7 @@ export * from './util/column-type.js'
 export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/streamable.js'
+export * from './util/executable.js'
 export * from './util/log.js'
 export {
   AnyAliasedColumn,
@@ -253,6 +254,7 @@ export {
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, QueryId } from './util/query-id.js'
+export { AbortableOperationOptions } from './util/abort.js'
 
 export {
   SelectExpression,

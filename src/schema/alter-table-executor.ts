@@ -2,6 +2,7 @@ import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
@@ -27,8 +28,8 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

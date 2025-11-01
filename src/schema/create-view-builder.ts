@@ -9,6 +9,7 @@ import { parseColumnName } from '../parser/reference-parser.js'
 import { ImmediateValuePlugin } from '../plugin/immediate-value/immediate-value-plugin.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class CreateViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateViewBuilderProps
@@ -116,8 +117,8 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

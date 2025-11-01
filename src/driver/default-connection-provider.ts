@@ -1,6 +1,7 @@
 import { DatabaseConnection } from './database-connection.js'
 import { ConnectionProvider } from './connection-provider.js'
 import { Driver } from './driver.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class DefaultConnectionProvider implements ConnectionProvider {
   readonly #driver: Driver
@@ -10,14 +11,18 @@ export class DefaultConnectionProvider implements ConnectionProvider {
   }
 
   async provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>,
+    consumer: (
+      connection: DatabaseConnection,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
-    const connection = await this.#driver.acquireConnection()
+    const connection = await this.#driver.acquireConnection(options)
 
     try {
-      return await consumer(connection)
+      return await consumer(connection, options)
     } finally {
-      await this.#driver.releaseConnection(connection)
+      await this.#driver.releaseConnection(connection, options)
     }
   }
 }

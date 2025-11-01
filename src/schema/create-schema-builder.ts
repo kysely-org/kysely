@@ -5,6 +5,7 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateSchemaBuilderProps
@@ -42,8 +43,8 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

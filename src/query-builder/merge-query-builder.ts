@@ -44,7 +44,12 @@ import { ValueExpression } from '../parser/value-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 import { Compilable } from '../util/compilable.js'
+import {
+  Executable,
+  ExecuteTakeFirstOrThrowOptions,
+} from '../util/executable.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import {
@@ -54,11 +59,7 @@ import {
   SqlBool,
 } from '../util/type-utils.js'
 import { MergeResult } from './merge-result.js'
-import {
-  NoResultError,
-  NoResultErrorConstructor,
-  isNoResultErrorConstructor,
-} from './no-result-error.js'
+import { NoResultError, isNoResultErrorConstructor } from './no-result-error.js'
 import {
   OutputCallback,
   OutputExpression,
@@ -323,10 +324,11 @@ export class WheneableMergeQueryBuilder<
     O,
   >
   implements
-    Compilable<O>,
     MultiTableReturningInterface<DB, TT | ST, O>,
     OutputInterface<DB, TT, O>,
-    OperationNodeSource
+    OperationNodeSource,
+    Compilable<O>,
+    Executable<O>
 {
   readonly #props: MergeQueryBuilderProps
 
@@ -875,15 +877,15 @@ export class WheneableMergeQueryBuilder<
     )
   }
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  async execute(): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as MergeQueryNode
@@ -892,37 +894,37 @@ export class WheneableMergeQueryBuilder<
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.rows as never
     }
 
-    return [new MergeResult(result.numAffectedRows) as any]
+    return [new MergeResult(result.numAffectedRows) as never]
   }
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
-   */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+    errorConstructorOrOptions?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
-    const result = await this.executeTakeFirst()
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -930,7 +932,7 @@ export class WheneableMergeQueryBuilder<
       throw error
     }
 
-    return result as SimplifyResult<O>
+    return result as never
   }
 }
 
