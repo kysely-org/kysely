@@ -44,11 +44,11 @@ import { ValueExpression } from '../parser/value-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 import { Compilable } from '../util/compilable.js'
 import {
   Executable,
-  ExecuteOptions,
-  ExecuteOrThrowOptions,
+  ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
@@ -877,7 +877,9 @@ export class WheneableMergeQueryBuilder<
     )
   }
 
-  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -899,7 +901,7 @@ export class WheneableMergeQueryBuilder<
   }
 
   async executeTakeFirst(
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 
@@ -908,8 +910,8 @@ export class WheneableMergeQueryBuilder<
 
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
-      | ExecuteOrThrowOptions
-      | ExecuteOrThrowOptions['errorConstructor'],
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
     if (typeof errorConstructorOrOptions === 'function') {
       errorConstructorOrOptions = {

@@ -9,6 +9,7 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryExecutorBase } from './query-executor-base.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryId } from '../util/query-id.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class DefaultQueryExecutor extends QueryExecutorBase {
   #compiler: QueryCompiler
@@ -37,9 +38,13 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
   }
 
   provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>,
+    consumer: (
+      connection: DatabaseConnection,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
-    return this.#connectionProvider.provideConnection(consumer)
+    return this.#connectionProvider.provideConnection(consumer, options)
   }
 
   withPlugins(plugins: ReadonlyArray<KyselyPlugin>): DefaultQueryExecutor {

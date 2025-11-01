@@ -2,10 +2,7 @@ import { Dialect } from './dialect/dialect.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from './query-executor/query-executor.js'
+import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
@@ -51,7 +48,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import { ConnectionProvider } from './driver/connection-provider.js'
-import { ExecuteOptions } from './util/executable.js'
+import { AbortableOperationOptions } from './util/abort.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -628,7 +625,7 @@ export class Kysely<DB>
    */
   async executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
@@ -778,8 +775,11 @@ export class ConnectionBuilder<DB> {
   }
 
   async execute<T>(
-    callback: (db: Kysely<DB>, options?: ExecuteQueryOptions) => Promise<T>,
-    options?: ExecuteQueryOptions,
+    callback: (
+      db: Kysely<DB>,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
     return this.#props.executor.provideConnection(async (connection) => {
       const executor = this.#props.executor.withConnectionProvider(
@@ -819,9 +819,9 @@ export class TransactionBuilder<DB> {
   async execute<T>(
     callback: (
       trx: Transaction<DB>,
-      options?: ExecuteQueryOptions,
+      options?: AbortableOperationOptions,
     ) => Promise<T>,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
     const { isolationLevel, accessMode, ...kyselyProps } = this.#props
     const settings = { isolationLevel, accessMode }
@@ -885,7 +885,7 @@ export class ControlledTransactionBuilder<DB> {
   }
 
   async execute(
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<ControlledTransaction<DB>> {
     const { isolationLevel, accessMode, ...props } = this.#props
     const settings = { isolationLevel, accessMode }
@@ -975,14 +975,16 @@ export class ControlledTransaction<
   commit(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (options?: ExecuteQueryOptions) => {
-      await this.#props.driver.commitTransaction(
-        this.#props.connection.connection,
-        options,
-      )
-      this.#state.isCommitted = true
-      this.#props.connection.release()
-    })
+    return new Command(
+      async (options?: AbortableOperationOptions): Promise<void> => {
+        await this.#props.driver.commitTransaction(
+          this.#props.connection.connection,
+          options,
+        )
+        this.#state.isCommitted = true
+        this.#props.connection.release()
+      },
+    )
   }
 
   /**
@@ -1012,14 +1014,16 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (options?: ExecuteQueryOptions) => {
-      await this.#props.driver.rollbackTransaction(
-        this.#props.connection.connection,
-        options,
-      )
-      this.#state.isRolledBack = true
-      this.#props.connection.release()
-    })
+    return new Command(
+      async (options?: AbortableOperationOptions): Promise<void> => {
+        await this.#props.driver.rollbackTransaction(
+          this.#props.connection.connection,
+          options,
+        )
+        this.#state.isRolledBack = true
+        this.#props.connection.release()
+      },
+    )
   }
 
   /**
@@ -1056,16 +1060,20 @@ export class ControlledTransaction<
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (options?: ExecuteQueryOptions) => {
-      await this.#props.driver.savepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-        options,
-      )
+    return new Command(
+      async (
+        options?: AbortableOperationOptions,
+      ): Promise<ControlledTransaction<DB, [...S, SN]>> => {
+        await this.#props.driver.savepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+          options,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    })
+        return new ControlledTransaction({ ...this.#props })
+      },
+    )
   }
 
   /**
@@ -1105,16 +1113,20 @@ export class ControlledTransaction<
     : never {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (options?: ExecuteQueryOptions) => {
-      await this.#props.driver.rollbackToSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-        options,
-      )
+    return new Command(
+      async (
+        options?: AbortableOperationOptions,
+      ): Promise<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>> => {
+        await this.#props.driver.rollbackToSavepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+          options,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   /**
@@ -1159,16 +1171,20 @@ export class ControlledTransaction<
     : never {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (options?: ExecuteQueryOptions) => {
-      await this.#props.driver.releaseSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-        options,
-      )
+    return new Command(
+      async (
+        options?: AbortableOperationOptions,
+      ): Promise<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> => {
+        await this.#props.driver.releaseSavepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+          options,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
@@ -1211,7 +1227,7 @@ interface ControlledTransactionProps extends KyselyProps {
 }
 
 export class Command<T> {
-  readonly #cb: (options?: ExecuteQueryOptions) => Promise<T>
+  readonly #cb: (options?: AbortableOperationOptions) => Promise<T>
 
   constructor(cb: () => Promise<T>) {
     this.#cb = cb
@@ -1220,7 +1236,7 @@ export class Command<T> {
   /**
    * Executes the command.
    */
-  async execute(options?: ExecuteQueryOptions): Promise<T> {
+  async execute(options?: AbortableOperationOptions): Promise<T> {
     return await this.#cb(options)
   }
 }
@@ -1277,16 +1293,16 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   provideConnection<T>(
     consumer: (
       connection: DatabaseConnection,
-      options?: ExecuteQueryOptions,
+      options?: AbortableOperationOptions,
     ) => Promise<T>,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
     return this.#executor.provideConnection(consumer, options)
   }
 
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.executeQuery(compiledQuery, options)
@@ -1295,7 +1311,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.stream(compiledQuery, chunkSize, options)

@@ -15,7 +15,7 @@ import {
   Expression,
 } from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { ExecuteOptions } from '../util/executable.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * An instance of this class can be used to create raw SQL snippets or queries.
@@ -138,7 +138,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    */
   execute(
     executorProvider: QueryExecutorProvider,
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<O>>
 
   toOperationNode(): RawNode
@@ -191,7 +191,7 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
 
   async execute(
     executorProvider: QueryExecutorProvider,
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<O>> {
     const executor = this.#getExecutor(executorProvider)
 

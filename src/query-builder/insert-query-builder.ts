@@ -65,9 +65,9 @@ import {
 import { OrActionNode } from '../operation-node/or-action-node.js'
 import {
   Executable,
-  ExecuteOptions,
-  ExecuteOrThrowOptions,
+  ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1286,7 +1286,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1313,7 +1315,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   async executeTakeFirst(
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 
@@ -1322,8 +1324,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
 
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
-      | ExecuteOrThrowOptions
-      | ExecuteOrThrowOptions['errorConstructor'],
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
     if (typeof errorConstructorOrOptions === 'function') {
       errorConstructorOrOptions = {

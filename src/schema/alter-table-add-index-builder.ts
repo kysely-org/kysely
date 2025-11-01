@@ -9,10 +9,8 @@ import {
   parseOrderedColumnName,
 } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
@@ -216,7 +214,7 @@ export class AlterTableAddIndexBuilder
     )
   }
 
-  async execute(options?: ExecuteQueryOptions): Promise<void> {
+  async execute(options?: AbortableOperationOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }

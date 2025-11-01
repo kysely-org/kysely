@@ -7,7 +7,7 @@ import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { ExecuteQueryOptions } from '../../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../../util/abort.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -30,14 +30,14 @@ export class PostgresDriver implements Driver {
     this.#config = freeze({ ...config })
   }
 
-  async init(options?: ExecuteQueryOptions): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     this.#pool = isFunction(this.#config.pool)
       ? await this.#config.pool(options)
       : this.#config.pool
   }
 
   async acquireConnection(
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
@@ -68,7 +68,7 @@ export class PostgresDriver implements Driver {
   async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     let sql = 'begin'
 
@@ -89,14 +89,14 @@ export class PostgresDriver implements Driver {
 
   async commitTransaction(
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('commit'), options)
   }
 
   async rollbackTransaction(
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(CompiledQuery.raw('rollback'), options)
   }
@@ -105,7 +105,7 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
@@ -120,7 +120,7 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
@@ -135,7 +135,7 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
@@ -221,7 +221,7 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(
     compiledQuery: CompiledQuery,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<O>> {
     try {
       if (options?.signal) {
@@ -256,7 +256,7 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(

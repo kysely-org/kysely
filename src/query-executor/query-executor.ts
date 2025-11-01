@@ -5,6 +5,7 @@ import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This interface abstracts away the details of how to compile a query into SQL
@@ -46,7 +47,7 @@ export interface QueryExecutor extends ConnectionProvider {
    */
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>>
 
   /**
@@ -61,7 +62,7 @@ export interface QueryExecutor extends ConnectionProvider {
      * only by the postgres driver.
      */
     chunkSize: number,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**
@@ -91,18 +92,4 @@ export interface QueryExecutor extends ConnectionProvider {
    * Returns a copy of this executor without any plugins.
    */
   withoutPlugins(): QueryExecutor
-}
-
-// ATTENTION! if adding more props to this interface, mind that it's being used in many places.
-export interface ExecuteQueryOptions {
-  /**
-   * An optional signal that can be used to abort the execution of the query.
-   *
-   * This is useful for cancelling long-running queries, for example when
-   * the user navigates away from the page or closes the browser tab.
-   *
-   * Writes (insert, update, delete) are not cancellable in most database engines,
-   * so this signal is mostly useful for read queries.
-   */
-  signal?: AbortSignal
 }

@@ -9,9 +9,13 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
-import { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
+import { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
-import { assertNotAborted, throwReasonWithTiming } from '../util/abort.js'
+import {
+  AbortableOperationOptions,
+  assertNotAborted,
+  throwReasonWithTiming,
+} from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
 import { logOnce } from '../util/log-once.js'
 
@@ -61,14 +65,14 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   abstract provideConnection<T>(
     consumer: (
       connection: DatabaseConnection,
-      options?: ExecuteQueryOptions,
+      options?: AbortableOperationOptions,
     ) => Promise<T>,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<T>
 
   async executeQuery<R>(
     compiledQuery: CompiledQuery,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>> {
     const { signal } = options || {}
 
@@ -148,7 +152,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { signal } = options || {}
 
@@ -254,7 +258,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async #transformResult<T>(
     result: QueryResult<any>,
     queryId: QueryId,
-    options: ExecuteQueryOptions | undefined,
+    options: AbortableOperationOptions | undefined,
   ): Promise<QueryResult<T>> {
     for (const plugin of this.#plugins) {
       result = await plugin.transformResult({ ...options, result, queryId })

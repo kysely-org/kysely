@@ -82,9 +82,9 @@ import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
 import {
   Executable,
-  ExecuteOptions,
-  ExecuteOrThrowOptions,
+  ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -2120,12 +2120,18 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   compile(): CompiledQuery<Simplify<O>>
 
-  execute(options?: ExecuteOptions): Promise<NonNullable<SimplifyResult<O>>[]>
+  execute(
+    options?: AbortableOperationOptions,
+  ): Promise<NonNullable<SimplifyResult<O>>[]>
 
-  executeTakeFirst(options?: ExecuteOptions): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifySingleResult<O>>
 
   executeTakeFirstOrThrow(
-    options?: ExecuteOrThrowOptions | ExecuteOrThrowOptions['errorConstructor'],
+    options?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>>
 
   stream(
@@ -2635,7 +2641,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -2647,7 +2655,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   async executeTakeFirst(
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 
@@ -2656,8 +2664,8 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
 
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
-      | ExecuteOrThrowOptions
-      | ExecuteOrThrowOptions['errorConstructor'],
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
     if (typeof errorConstructorOrOptions === 'function') {
       errorConstructorOrOptions = {

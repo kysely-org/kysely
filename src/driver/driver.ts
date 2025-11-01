@@ -1,5 +1,5 @@
 import { QueryCompiler } from '../query-compiler/query-compiler.js'
-import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 import { ArrayItemType } from '../util/type-utils.js'
 import { DatabaseConnection } from './database-connection.js'
 
@@ -14,12 +14,14 @@ export interface Driver {
    * After calling this method the driver should be usable and `acquireConnection` etc.
    * methods should be callable.
    */
-  init(options?: ExecuteQueryOptions): Promise<void>
+  init(options?: AbortableOperationOptions): Promise<void>
 
   /**
    * Acquires a new connection from the pool.
    */
-  acquireConnection(options?: ExecuteQueryOptions): Promise<DatabaseConnection>
+  acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<DatabaseConnection>
 
   /**
    * Begins a transaction.
@@ -27,7 +29,7 @@ export interface Driver {
   beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -35,7 +37,7 @@ export interface Driver {
    */
   commitTransaction(
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -43,7 +45,7 @@ export interface Driver {
    */
   rollbackTransaction(
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -53,7 +55,7 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -63,7 +65,7 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -73,7 +75,7 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -81,13 +83,13 @@ export interface Driver {
    */
   releaseConnection(
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
    * Destroys the driver and releases all resources.
    */
-  destroy(options?: ExecuteQueryOptions): Promise<void>
+  destroy(options?: AbortableOperationOptions): Promise<void>
 }
 
 export interface TransactionSettings {

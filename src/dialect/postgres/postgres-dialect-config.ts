@@ -1,5 +1,5 @@
 import { DatabaseConnection } from '../../driver/database-connection.js'
-import { ExecuteQueryOptions } from '../../query-executor/query-executor.js'
+import { AbortableOperationOptions } from '../../util/abort.js'
 
 /**
  * Config for the PostgreSQL dialect.
@@ -37,7 +37,7 @@ export interface PostgresDialectConfig {
    */
   onCreateConnection?: (
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ) => Promise<void>
 
   /**
@@ -45,7 +45,7 @@ export interface PostgresDialectConfig {
    */
   onReserveConnection?: (
     connection: DatabaseConnection,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ) => Promise<void>
 
   /**
@@ -57,7 +57,7 @@ export interface PostgresDialectConfig {
    */
   pool:
     | PostgresPool
-    | ((options?: ExecuteQueryOptions) => Promise<PostgresPool>)
+    | ((options?: AbortableOperationOptions) => Promise<PostgresPool>)
 }
 
 /**

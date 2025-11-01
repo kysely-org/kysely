@@ -13,10 +13,7 @@ import {
   ColumnDefinitionBuilderCallback,
 } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
-import {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 import {
   DataTypeExpression,
@@ -62,6 +59,7 @@ import {
   ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -517,7 +515,7 @@ export class AlterTableColumnAlteringBuilder
     )
   }
 
-  async execute(options?: ExecuteQueryOptions): Promise<void> {
+  async execute(options?: AbortableOperationOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
