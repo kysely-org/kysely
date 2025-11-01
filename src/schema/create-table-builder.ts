@@ -6,10 +6,7 @@ import {
 import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
-import type {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze, isString, noop } from '../util/object-utils.js'
@@ -50,6 +47,7 @@ import {
   CreateTableAddIndexBuilder,
   type CreateTableAddIndexBuilderCallback,
 } from './create-table-add-index-builder.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -618,7 +616,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     )
   }
 
-  async execute(options?: ExecuteQueryOptions): Promise<void> {
+  async execute(options?: AbortableOperationOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }

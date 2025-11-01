@@ -1,10 +1,7 @@
 import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
-import type {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
@@ -12,6 +9,7 @@ import { parseColumnName } from '../parser/reference-parser.js'
 import { ImmediateValuePlugin } from '../plugin/immediate-value/immediate-value-plugin.js'
 import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class CreateViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateViewBuilderProps
@@ -119,7 +117,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(options?: ExecuteQueryOptions): Promise<void> {
+  async execute(options?: AbortableOperationOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }

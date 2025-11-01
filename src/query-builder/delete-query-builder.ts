@@ -83,9 +83,9 @@ import type { JoinType } from '../operation-node/join-node.js'
 import type { OrderByInterface } from './order-by-interface.js'
 import type {
   Executable,
-  ExecuteOptions,
-  ExecuteOrThrowOptions,
+  ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1057,7 +1057,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1079,7 +1081,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   async executeTakeFirst(
-    options?: ExecuteOptions,
+    options?: AbortableOperationOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 
@@ -1088,8 +1090,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
-      | ExecuteOrThrowOptions
-      | ExecuteOrThrowOptions['errorConstructor'],
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
     if (typeof errorConstructorOrOptions === 'function') {
       errorConstructorOrOptions = {

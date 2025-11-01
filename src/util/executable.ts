@@ -1,6 +1,6 @@
 import { QueryNode } from '../operation-node/query-node.js'
 import { NoResultErrorConstructor } from '../query-builder/no-result-error.js'
-import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from './abort.js'
 import { SimplifyResult, SimplifySingleResult } from './type-utils.js'
 
 export interface Executable<O> {
@@ -9,13 +9,15 @@ export interface Executable<O> {
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  execute(options?: ExecuteOptions): Promise<SimplifyResult<O>[]>
+  execute(options?: AbortableOperationOptions): Promise<SimplifyResult<O>[]>
 
   /**
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  executeTakeFirst(options?: ExecuteOptions): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifySingleResult<O>>
 
   /**
    * Executes the query and returns the first result or throws if
@@ -26,13 +28,14 @@ export interface Executable<O> {
    * error.
    */
   executeTakeFirstOrThrow(
-    options?: ExecuteOrThrowOptions | ExecuteOrThrowOptions['errorConstructor'],
+    options?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>>
 }
 
-export type ExecuteOptions = ExecuteQueryOptions
-
-export interface ExecuteOrThrowOptions extends ExecuteQueryOptions {
+export interface ExecuteTakeFirstOrThrowOptions
+  extends AbortableOperationOptions {
   /**
    * An optional error constructor that is used to create an error
    * when the query returns no results.

@@ -1,4 +1,4 @@
-import { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+import { AbortableOperationOptions } from './abort.js'
 
 export interface Streamable<O> {
   /**
@@ -32,7 +32,7 @@ export interface Streamable<O> {
   ): AsyncIterableIterator<O>
 }
 
-export interface StreamOptions extends ExecuteQueryOptions {
+export interface StreamOptions extends AbortableOperationOptions {
   /**
    * How many rows should be pulled from the database at once.
    *

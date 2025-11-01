@@ -1,5 +1,5 @@
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
-import type { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * A single connection to the database engine.
@@ -13,13 +13,13 @@ export interface DatabaseConnection {
 
   executeQuery<R>(
     compiledQuery: CompiledQuery,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>>
 
   streamQuery<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: ExecuteQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>>
 }
 

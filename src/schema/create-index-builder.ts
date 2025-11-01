@@ -12,10 +12,7 @@ import {
 import { parseTable } from '../parser/table-parser.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
-import type {
-  ExecuteQueryOptions,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze, isString } from '../util/object-utils.js'
 import type { Expression } from '../expression/expression.js'
@@ -27,6 +24,7 @@ import { QueryNode } from '../operation-node/query-node.js'
 import type { ExpressionBuilder } from '../expression/expression-builder.js'
 import type { ShallowRecord, SqlBool } from '../util/type-utils.js'
 import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
+import { AbortableOperationOptions } from '../util/abort.js'
 
 export class CreateIndexBuilder<C = never>
   implements OperationNodeSource, Compilable
@@ -342,7 +340,7 @@ export class CreateIndexBuilder<C = never>
     )
   }
 
-  async execute(options?: ExecuteQueryOptions): Promise<void> {
+  async execute(options?: AbortableOperationOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }

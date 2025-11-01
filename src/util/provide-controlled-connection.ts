@@ -1,6 +1,6 @@
 import type { ConnectionProvider } from '../driver/connection-provider.js'
 import type { DatabaseConnection } from '../driver/database-connection.js'
-import type { ExecuteQueryOptions } from '../query-executor/query-executor.js'
+import type { AbortableOperationOptions } from './abort.js'
 import { Deferred } from './deferred.js'
 import { freeze } from './object-utils.js'
 
@@ -11,7 +11,7 @@ export interface ControlledConnection {
 
 export async function provideControlledConnection(
   connectionProvider: ConnectionProvider,
-  options?: ExecuteQueryOptions,
+  options?: AbortableOperationOptions,
 ): Promise<ControlledConnection> {
   const connectionDefer = new Deferred<DatabaseConnection>()
   const connectionReleaseDefer = new Deferred<void>()
