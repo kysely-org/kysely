@@ -84,6 +84,10 @@ import { parseTop } from '../parser/top-parser.js'
 import { JoinType } from '../operation-node/join-node.js'
 import { OrderByInterface } from './order-by-interface.js'
 
+export interface MinimalSelectQueryBuilder<DB, TB extends keyof DB, O> {
+  "~kysely": { db: DB; tb: TB; o: O };
+}
+  
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
@@ -91,7 +95,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
     Explainable,
-    Streamable<O> {
+    Streamable<O>,
+    MinimalSelectQueryBuilder<DB, TB, O> {
   where<
     RE extends ReferenceExpression<DB, TB>,
     VE extends OperandValueExpressionOrList<DB, TB, RE>,
@@ -2154,6 +2159,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   implements SelectQueryBuilder<DB, TB, O>
 {
   readonly #props: SelectQueryBuilderProps
+  readonly "~kysely": { db: DB; tb: TB; o: O }
 
   constructor(props: SelectQueryBuilderProps) {
     this.#props = freeze(props)

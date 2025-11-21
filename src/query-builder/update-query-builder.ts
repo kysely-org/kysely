@@ -88,6 +88,10 @@ import {
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 
+export interface MinimalUpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O> {
+  "~kysely": { db: DB; ut: UT; tb: TB; o: O };
+}
+
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
@@ -97,9 +101,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     OperationNodeSource,
     Compilable<O>,
     Explainable,
-    Streamable<O>
+    Streamable<O>, 
+    MinimalUpdateQueryBuilder<DB, UT , TB , O>
 {
   readonly #props: UpdateQueryBuilderProps
+
+  readonly "~kysely": { db: DB; ut: UT; tb: TB; o: O }
 
   constructor(props: UpdateQueryBuilderProps) {
     this.#props = freeze(props)
