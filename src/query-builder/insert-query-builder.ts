@@ -68,6 +68,10 @@ import type {
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
 
+export interface MinimalInsertQueryBuilder<DB, TB extends keyof DB, O> {
+  "~kysely": { db: DB; tb: TB; o: O };
+}
+
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
@@ -75,9 +79,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     OperationNodeSource,
     Compilable<O>,
     Explainable,
-    Streamable<O>
+    Streamable<O>,
+    MinimalInsertQueryBuilder<DB, TB, O>
 {
   readonly #props: InsertQueryBuilderProps
+  readonly "~kysely": { db: DB; tb: TB; o: O }
 
   constructor(props: InsertQueryBuilderProps) {
     this.#props = freeze(props)

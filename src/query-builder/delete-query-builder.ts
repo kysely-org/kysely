@@ -82,6 +82,10 @@ import type {
 import type { JoinType } from '../operation-node/join-node.js'
 import type { OrderByInterface } from './order-by-interface.js'
 
+export interface MinimalDeleteQueryBuilder<DB, TB extends keyof DB, O> {
+  "~kysely": { db: DB; tb: TB; o: O };
+}
+
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
@@ -91,9 +95,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     OperationNodeSource,
     Compilable<O>,
     Explainable,
-    Streamable<O>
+    Streamable<O>,
+    MinimalDeleteQueryBuilder<DB, TB, O>
 {
   readonly #props: DeleteQueryBuilderProps
+  readonly "~kysely": { db: DB; tb: TB; o: O }
 
   constructor(props: DeleteQueryBuilderProps) {
     this.#props = freeze(props)
