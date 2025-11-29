@@ -18,5 +18,6 @@ onlyBuiltDependencies:
 
 overrides:
   chokidar: 4.0.1 # mocha dependency. versions 4.0.2 & 4.0.3 fail trust policy
+  detect-port: 1.6.0 # @docusaurus/core dependency. version 1.6.1 fails trust policy
 
 trustPolicy: no-downgrade # fail if there's a regression in attestation of packages.

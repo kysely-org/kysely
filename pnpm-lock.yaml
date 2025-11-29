@@ -6,6 +6,7 @@ settings:
 
 overrides:
   chokidar: 4.0.1
+  detect-port: 1.6.0
 
 importers:
 
@@ -2603,9 +2604,9 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  address@1.2.2:
-    resolution: {integrity: sha512-4B/qKCfeE/ODUaAUpSwfzazo5x29WD4r3vXiWsB7I2mSDAihwEqKO+g8GELZUQSSAo5e1XTYh3ZVfLyxBc12nA==}
-    engines: {node: '>= 10.0.0'}
+  address@2.0.3:
+    resolution: {integrity: sha512-XNAb/a6TCqou+TufU8/u11HCu9x1gYvOoxLwtlXgIqmkrYQADVv6ljyW2zwiPhHz9R1gItAWpuDrdJMmrOBFEA==}
+    engines: {node: '>= 16.0.0'}
 
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
@@ -3541,9 +3542,9 @@ packages:
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
 
-  detect-port@1.6.1:
-    resolution: {integrity: sha512-CmnVc+Hek2egPx1PeTFVta2W78xy2K/9Rkf6cC4T59S50tVnzKj+tnx5mmx5lwvCkujZ4uRrpRSuV+IVs3f90Q==}
-    engines: {node: '>= 4.0.0'}
+  detect-port@1.6.0:
+    resolution: {integrity: sha512-iKO0phS1ebSLst7ULM1hw4qjndYHqyKe76Pk0q+QDvoANFth/f9Pp6oSZzOIM367SeRi+ufseIGvIiThTPERSg==}
+    engines: {node: '>= 14.0.0'}
     hasBin: true
 
   devlop@1.1.0:
@@ -8596,7 +8597,7 @@ snapshots:
       combine-promises: 1.2.0
       commander: 5.1.0
       core-js: 3.45.1
-      detect-port: 1.6.1
+      detect-port: 1.6.0
       escape-html: 1.0.3
       eta: 2.2.0
       eval: 0.1.8
@@ -10433,7 +10434,7 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  address@1.2.2: {}
+  address@2.0.3: {}
 
   agent-base@7.1.4: {}
 
@@ -11431,12 +11432,9 @@ snapshots:
 
   detect-node@2.1.0: {}
 
-  detect-port@1.6.1:
+  detect-port@1.6.0:
     dependencies:
-      address: 1.2.2
-      debug: 4.4.1(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
+      address: 2.0.3
 
   devlop@1.1.0:
     dependencies:
