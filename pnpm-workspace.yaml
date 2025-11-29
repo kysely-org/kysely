@@ -20,4 +20,5 @@ trustPolicy: no-downgrade # fail if there's a regression in attestation of packa
 
 trustPolicyExclude:
   - langium@3.3.1 # mermaid@11.12.0 dependency - https://socket.dev/npm/package/langium/overview/3.3.1
+  - semver@5.7.2 # tsd@0.20.0 dependency - https://socket.dev/npm/package/semver/overview/5.7.2
   - semver@6.3.1 # @docusaurus/core@3.9.1 dependency - https://socket.dev/npm/package/semver/overview/6.3.1
