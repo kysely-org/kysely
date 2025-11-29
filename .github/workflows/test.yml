@@ -189,7 +189,7 @@ jobs:
         run: pnpm install
 
       - name: Install playwright
-        run: pnpx playwright install chromium
+        run: pnpm playwright install chromium
 
       - name: Run browser tests
         run: pnpm test:browser
