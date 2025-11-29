@@ -16,8 +16,7 @@ onlyBuiltDependencies:
   - esbuild@0.25.10
   - workerd@1.20251004.0 # wrangler dependency
 
-overrides:
-  chokidar: 4.0.1 # mocha dependency. versions 4.0.2 & 4.0.3 fail trust policy
-  detect-port: 1.6.0 # @docusaurus/core dependency. version 1.6.1 fails trust policy
-
 trustPolicy: no-downgrade # fail if there's a regression in attestation of packages.
+
+trustPolicyExclude:
+  - langium@3.3.1 # mermaid@11.12.0 dependency - https://socket.dev/npm/package/langium/overview/3.3.1
