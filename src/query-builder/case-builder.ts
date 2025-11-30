@@ -17,9 +17,12 @@ import {
 } from '../parser/value-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 
-export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
-  implements Whenable<DB, TB, W, O>
-{
+export class CaseBuilder<
+  DB,
+  TB extends keyof DB,
+  W = unknown,
+  O = never,
+> implements Whenable<DB, TB, W, O> {
   readonly #props: CaseBuilderProps
 
   constructor(props: CaseBuilderProps) {
@@ -165,9 +168,11 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
   }
 }
 
-export class CaseEndBuilder<DB, TB extends keyof DB, O>
-  implements Endable<DB, TB, O>
-{
+export class CaseEndBuilder<DB, TB extends keyof DB, O> implements Endable<
+  DB,
+  TB,
+  O
+> {
   readonly #props: CaseBuilderProps
 
   constructor(props: CaseBuilderProps) {

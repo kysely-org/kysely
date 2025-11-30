@@ -17,7 +17,7 @@ forEachFile(ESM_DIST_PATH, (filePath) => {
 
     fs.writeFileSync(
       filePath,
-      `/// <reference types="./${dTsFile}" />\n${content}`
+      `/// <reference types="./${dTsFile}" />\n${content}`,
     )
   }
 })

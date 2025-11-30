@@ -7,7 +7,7 @@ import {
 
 export async function findPasswordSignInMethod(
   db: Kysely<Database>,
-  userId: string
+  userId: string,
 ): Promise<PasswordSignInMethodRow | undefined> {
   const method = await db
     .selectFrom('sign_in_method as sim')
@@ -22,13 +22,13 @@ export async function findPasswordSignInMethod(
 
 export async function insertPasswordSignInMethod(
   db: Kysely<Database>,
-  method: InsertablePasswordSignInMethodRow
+  method: InsertablePasswordSignInMethodRow,
 ): Promise<PasswordSignInMethodRow> {
   await db
     .with('sim', (db) =>
       db
         .insertInto('sign_in_method')
-        .values({ user_id: method.user_id, type: 'password' })
+        .values({ user_id: method.user_id, type: 'password' }),
     )
     .insertInto('password_sign_in_method')
     .values(method)

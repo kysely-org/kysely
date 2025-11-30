@@ -2,7 +2,10 @@ import { freeze } from '../util/object-utils.js'
 import type { ColumnNode } from './column-node.js'
 import { IdentifierNode } from './identifier-node.js'
 import type { OperationNode } from './operation-node.js'
-import { type OnModifyForeignAction, ReferencesNode } from './references-node.js'
+import {
+  type OnModifyForeignAction,
+  ReferencesNode,
+} from './references-node.js'
 import type { TableNode } from './table-node.js'
 
 export type ForeignKeyConstraintNodeProps = Omit<

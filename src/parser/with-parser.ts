@@ -8,7 +8,10 @@ import type { ShallowRecord } from '../util/type-utils.js'
 import type { OperationNode } from '../operation-node/operation-node.js'
 import { createQueryCreator } from './parse-utils.js'
 import { isFunction } from '../util/object-utils.js'
-import { CTEBuilder, type CTEBuilderCallback } from '../query-builder/cte-builder.js'
+import {
+  CTEBuilder,
+  type CTEBuilderCallback,
+} from '../query-builder/cte-builder.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 
 export type CommonTableExpression<DB, CN extends string> = (

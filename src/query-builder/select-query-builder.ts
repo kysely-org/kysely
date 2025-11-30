@@ -85,7 +85,8 @@ import type { JoinType } from '../operation-node/join-node.js'
 import type { OrderByInterface } from './order-by-interface.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends WhereInterface<DB, TB>,
+  extends
+    WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
@@ -2150,9 +2151,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
-  implements SelectQueryBuilder<DB, TB, O>
-{
+class SelectQueryBuilderImpl<
+  DB,
+  TB extends keyof DB,
+  O,
+> implements SelectQueryBuilder<DB, TB, O> {
   readonly #props: SelectQueryBuilderProps
 
   constructor(props: SelectQueryBuilderProps) {
@@ -2732,8 +2735,7 @@ class AliasedSelectQueryBuilderImpl<
   TB extends keyof DB,
   O = undefined,
   A extends string = never,
-> implements AliasedSelectQueryBuilder<O, A>
-{
+> implements AliasedSelectQueryBuilder<O, A> {
   readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
   readonly #alias: A
 

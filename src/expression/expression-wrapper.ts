@@ -20,9 +20,11 @@ import type {
   Expression,
 } from './expression.js'
 
-export class ExpressionWrapper<DB, TB extends keyof DB, T>
-  implements AliasableExpression<T>
-{
+export class ExpressionWrapper<
+  DB,
+  TB extends keyof DB,
+  T,
+> implements AliasableExpression<T> {
   readonly #node: OperationNode
 
   constructor(node: OperationNode) {
@@ -267,9 +269,10 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
   }
 }
 
-export class AliasedExpressionWrapper<T, A extends string>
-  implements AliasedExpression<T, A>
-{
+export class AliasedExpressionWrapper<
+  T,
+  A extends string,
+> implements AliasedExpression<T, A> {
   readonly #expr: Expression<T>
   readonly #alias: A | Expression<unknown>
 
@@ -298,9 +301,11 @@ export class AliasedExpressionWrapper<T, A extends string>
   }
 }
 
-export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements AliasableExpression<T>
-{
+export class OrWrapper<
+  DB,
+  TB extends keyof DB,
+  T extends SqlBool,
+> implements AliasableExpression<T> {
   readonly #node: OrNode
 
   constructor(node: OrNode) {
@@ -380,9 +385,11 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
   }
 }
 
-export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements AliasableExpression<T>
-{
+export class AndWrapper<
+  DB,
+  TB extends keyof DB,
+  T extends SqlBool,
+> implements AliasableExpression<T> {
   readonly #node: AndNode
 
   constructor(node: AndNode) {

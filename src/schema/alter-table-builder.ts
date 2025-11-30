@@ -508,5 +508,4 @@ export class AlterTableColumnAlteringBuilder
   }
 }
 
-export interface AlterTableColumnAlteringBuilderProps
-  extends AlterTableBuilderProps {}
+export interface AlterTableColumnAlteringBuilderProps extends AlterTableBuilderProps {}

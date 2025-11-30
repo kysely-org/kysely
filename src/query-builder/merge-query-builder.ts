@@ -317,11 +317,11 @@ export interface MergeQueryBuilderProps {
 }
 
 export class WheneableMergeQueryBuilder<
-    DB,
-    TT extends keyof DB,
-    ST extends keyof DB,
-    O,
-  >
+  DB,
+  TT extends keyof DB,
+  ST extends keyof DB,
+  O,
+>
   implements
     Compilable<O>,
     MultiTableReturningInterface<DB, TT | ST, O>,

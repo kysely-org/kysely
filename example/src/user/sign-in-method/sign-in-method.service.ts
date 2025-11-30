@@ -21,7 +21,7 @@ export class PasswordTooLongError extends Error {}
 export async function addPasswordSignInMethod(
   trx: Transaction<Database>,
   userId: string,
-  method: PasswordSignInMethod
+  method: PasswordSignInMethod,
 ): Promise<void> {
   const user = await userService.lockUserById(trx, userId)
 
@@ -76,14 +76,14 @@ async function scrypt(secret: string, salt: string): Promise<string> {
         }
 
         resolve(secretHash.toString('hex'))
-      }
+      },
     )
   })
 }
 
 export async function singInUsingPassword(
   trx: Transaction<Database>,
-  method: PasswordSignInMethod
+  method: PasswordSignInMethod,
 ): Promise<SignedInUser> {
   const user = await userService.lockUserByEmail(trx, method.email)
 
@@ -93,7 +93,7 @@ export async function singInUsingPassword(
 
   const signInMethod = await signInMethodRepository.findPasswordSignInMethod(
     trx,
-    user.id
+    user.id,
   )
 
   if (!signInMethod) {
@@ -116,7 +116,7 @@ export async function singInUsingPassword(
 
 async function verifyPassword(
   password: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> {
   return verifySecret(password, hash)
 }

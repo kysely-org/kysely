@@ -2,7 +2,11 @@ import type { DeleteResult } from '../query-builder/delete-result.js'
 import type { InsertResult } from '../query-builder/insert-result.js'
 import type { MergeResult } from '../query-builder/merge-result.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
-import type { Selection, AllSelection, CallbackSelection } from './select-parser.js'
+import type {
+  Selection,
+  AllSelection,
+  CallbackSelection,
+} from './select-parser.js'
 
 export type ReturningRow<DB, TB extends keyof DB, O, SE> = O extends
   | InsertResult

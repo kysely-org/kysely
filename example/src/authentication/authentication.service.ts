@@ -8,7 +8,7 @@ import { ControllerError } from '../util/errors'
 
 export async function authenticateUser(
   ctx: Context,
-  next: Next
+  next: Next,
 ): Promise<void> {
   const { userId } = ctx.params
 
@@ -16,7 +16,7 @@ export async function authenticateUser(
     throw new ControllerError(
       400,
       'NoUserIdParameter',
-      'no user id parameter found in the route'
+      'no user id parameter found in the route',
     )
   }
 
@@ -26,7 +26,7 @@ export async function authenticateUser(
     throw new ControllerError(
       400,
       'InvalidAuthorizationHeader',
-      'missing or invalid Authorization header'
+      'missing or invalid Authorization header',
     )
   }
 
@@ -40,7 +40,7 @@ export async function authenticateUser(
       throw new ControllerError(
         401,
         'ExpiredAuthToken',
-        'the auth token has expired'
+        'the auth token has expired',
       )
     }
 
@@ -54,14 +54,14 @@ export async function authenticateUser(
   const refreshToken = await refreshTokenRepository.findRefreshToken(
     ctx.db,
     authTokenPayload.userId,
-    authTokenPayload.refreshTokenId
+    authTokenPayload.refreshTokenId,
   )
 
   if (!refreshToken) {
     throw new ControllerError(
       404,
       'UserOrRefreshTokenNotFound',
-      'either the user or the refresh token has been deleted'
+      'either the user or the refresh token has been deleted',
     )
   }
 

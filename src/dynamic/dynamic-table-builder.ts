@@ -23,9 +23,10 @@ export class DynamicTableBuilder<T extends string> {
   }
 }
 
-export class AliasedDynamicTableBuilder<T extends string, A extends string>
-  implements OperationNodeSource
-{
+export class AliasedDynamicTableBuilder<
+  T extends string,
+  A extends string,
+> implements OperationNodeSource {
   readonly #table: T
   readonly #alias: A
 

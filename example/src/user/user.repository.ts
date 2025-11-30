@@ -4,7 +4,7 @@ import { InsertableUserRow, UserRow } from './user.table'
 
 export async function insertUser(
   db: Kysely<Database>,
-  user: InsertableUserRow
+  user: InsertableUserRow,
 ): Promise<UserRow> {
   const insertedUser = await db
     .insertInto('user')
@@ -17,7 +17,7 @@ export async function insertUser(
 
 export async function findUserById(
   db: Kysely<Database>,
-  id: string
+  id: string,
 ): Promise<UserRow | undefined> {
   const user = await db
     .selectFrom('user')
@@ -30,14 +30,14 @@ export async function findUserById(
 
 export async function lockUserById(
   trx: Transaction<Database>,
-  id: string
+  id: string,
 ): Promise<UserRow | undefined> {
   return lockUser(trx, 'user_id', id)
 }
 
 export async function lockUserByEmail(
   trx: Transaction<Database>,
-  email: string
+  email: string,
 ): Promise<UserRow | undefined> {
   return lockUser(trx, 'email', email)
 }
@@ -45,7 +45,7 @@ export async function lockUserByEmail(
 async function lockUser(
   trx: Transaction<Database>,
   column: 'user_id' | 'email',
-  value: string
+  value: string,
 ): Promise<UserRow | undefined> {
   const user = await trx
     .selectFrom('user')
@@ -60,7 +60,7 @@ async function lockUser(
 export async function setUserEmail(
   db: Kysely<Database>,
   id: string,
-  email: string
+  email: string,
 ): Promise<void> {
   await db
     .updateTable('user')

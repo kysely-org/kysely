@@ -262,9 +262,10 @@ export class TraversedJSONPathBuilder<S, O>
   }
 }
 
-export class AliasedJSONPathBuilder<O, A extends string>
-  implements AliasedExpression<O, A>
-{
+export class AliasedJSONPathBuilder<
+  O,
+  A extends string,
+> implements AliasedExpression<O, A> {
   readonly #jsonPath: TraversedJSONPathBuilder<any, O>
   readonly #alias: A | Expression<unknown>
 
