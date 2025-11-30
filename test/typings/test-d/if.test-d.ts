@@ -1,5 +1,5 @@
-import { Kysely, InsertResult, UpdateResult, DeleteResult } from '..'
-import { Database } from '../shared'
+import type { Kysely, InsertResult, UpdateResult, DeleteResult } from '..'
+import type { Database } from '../shared'
 import { expectType } from 'tsd'
 
 async function testIfInSelect(db: Kysely<Database>) {

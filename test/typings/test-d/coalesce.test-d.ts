@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { Kysely, RawBuilder, sql } from '..'
-import { Database } from '../shared'
+import { type Kysely, type RawBuilder, sql } from '..'
+import type { Database } from '../shared'
 
 async function testCoalesceSingle(db: Kysely<Database>) {
   const { coalesce } = db.fn

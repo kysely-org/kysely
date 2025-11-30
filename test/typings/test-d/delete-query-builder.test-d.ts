@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { Kysely, DeleteResult, Selectable, sql } from '..'
-import { Database, Person, Pet } from '../shared'
+import { type Kysely, type DeleteResult, type Selectable, sql } from '..'
+import type { Database, Person, Pet } from '../shared'
 
 async function testDelete(db: Kysely<Database>) {
   const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()

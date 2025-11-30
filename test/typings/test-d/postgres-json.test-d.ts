@@ -1,13 +1,13 @@
 import {
   jsonBuildObject,
-  Kysely,
+  type Kysely,
   jsonArrayFrom,
   jsonObjectFrom,
   sql,
-  ExpressionBuilder,
-  NumericString,
+  type ExpressionBuilder,
+  type NumericString,
 } from '..'
-import { Database } from '../shared'
+import type { Database } from '../shared'
 import { expectType } from 'tsd'
 
 async function testPostgresJsonSelects(db: Kysely<Database>) {

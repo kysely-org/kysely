@@ -1,5 +1,5 @@
-import { Kysely, Selectable } from '..'
-import { Database, Pet } from '../shared'
+import type { Kysely, Selectable } from '..'
+import type { Database, Pet } from '../shared'
 import { expectType, expectError } from 'tsd'
 
 async function testJoin(db: Kysely<Database>) {

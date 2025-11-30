@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { CreateTableBuilder, Kysely } from '..'
-import { Database } from '../shared'
+import type { CreateTableBuilder, Kysely } from '..'
+import type { Database } from '../shared'
 
 async function testCreateTableWithSeveralColumns(db: Kysely<Database>) {
   expectType<CreateTableBuilder<'person'>>(db.schema.createTable('person'))
