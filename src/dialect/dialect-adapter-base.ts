@@ -1,5 +1,5 @@
-import { Kysely } from '../kysely.js'
-import { DialectAdapter, MigrationLockOptions } from './dialect-adapter.js'
+import type { Kysely } from '../kysely.js'
+import type { DialectAdapter, MigrationLockOptions } from './dialect-adapter.js'
 
 /**
  * A basic implementation of `DialectAdapter` with sensible default values.

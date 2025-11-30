@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 
 export interface TableNode extends OperationNode {

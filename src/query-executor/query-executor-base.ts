@@ -1,15 +1,15 @@
-import { ConnectionProvider } from '../driver/connection-provider.js'
-import {
+import type { ConnectionProvider } from '../driver/connection-provider.js'
+import type {
   DatabaseConnection,
   QueryResult,
 } from '../driver/database-connection.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { RootOperationNode } from '../query-compiler/query-compiler.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { RootOperationNode } from '../query-compiler/query-compiler.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
-import { QueryId } from '../util/query-id.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
-import { QueryExecutor } from './query-executor.js'
+import type { QueryId } from '../util/query-id.js'
+import type { DialectAdapter } from '../dialect/dialect-adapter.js'
+import type { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
 

@@ -2,7 +2,7 @@ import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import {
   isOperationNodeSource,
-  OperationNodeSource,
+  type OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
 import { parseTable } from '../parser/table-parser.js'
 import { isObject, isString } from '../util/object-utils.js'

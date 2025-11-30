@@ -1,10 +1,10 @@
 import { freeze } from '../util/object-utils.js'
-import { CheckConstraintNode } from './check-constraint-node.js'
+import type { CheckConstraintNode } from './check-constraint-node.js'
 import { ColumnNode } from './column-node.js'
-import { DefaultValueNode } from './default-value-node.js'
-import { GeneratedNode } from './generated-node.js'
-import { OperationNode } from './operation-node.js'
-import { ReferencesNode } from './references-node.js'
+import type { DefaultValueNode } from './default-value-node.js'
+import type { GeneratedNode } from './generated-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { ReferencesNode } from './references-node.js'
 
 export type ColumnDefinitionNodeProps = Omit<
   Partial<ColumnDefinitionNode>,

@@ -86,6 +86,7 @@
     "test:exports": "attw --pack . && node scripts/check-exports.js",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
+    "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
     "build": "pnpm clean && (pnpm build:esm & pnpm build:cjs) && pnpm script:module-fixup && pnpm script:copy-interface-doc",
     "build:esm": "tsc -p tsconfig.json && pnpm script:add-deno-type-references",

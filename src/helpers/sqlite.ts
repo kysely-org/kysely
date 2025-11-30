@@ -1,10 +1,10 @@
-import { Expression } from '../expression/expression.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
+import type { Expression } from '../expression/expression.js'
+import type { SelectQueryNode } from '../operation-node/select-query-node.js'
+import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
 import { getJsonObjectArgs } from '../util/json-object-args.js'
-import {
+import type {
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   Simplify,

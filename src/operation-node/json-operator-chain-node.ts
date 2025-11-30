@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { OperatorNode } from './operator-node.js'
-import { ValueNode } from './value-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { OperatorNode } from './operator-node.js'
+import type { ValueNode } from './value-node.js'
 
 export interface JSONOperatorChainNode extends OperationNode {
   readonly kind: 'JSONOperatorChainNode'

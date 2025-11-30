@@ -1,5 +1,5 @@
 import {
-  OnCommitAction,
+  type OnCommitAction,
   ON_COMMIT_ACTIONS,
 } from '../operation-node/create-table-node.js'
 

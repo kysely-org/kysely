@@ -1,10 +1,10 @@
-import { AddColumnNode } from '../../operation-node/add-column-node.js'
-import { AlterTableColumnAlterationNode } from '../../operation-node/alter-table-node.js'
-import { DropColumnNode } from '../../operation-node/drop-column-node.js'
-import { OffsetNode } from '../../operation-node/offset-node.js'
-import { MergeQueryNode } from '../../operation-node/merge-query-node.js'
+import type { AddColumnNode } from '../../operation-node/add-column-node.js'
+import type { AlterTableColumnAlterationNode } from '../../operation-node/alter-table-node.js'
+import type { DropColumnNode } from '../../operation-node/drop-column-node.js'
+import type { OffsetNode } from '../../operation-node/offset-node.js'
+import type { MergeQueryNode } from '../../operation-node/merge-query-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
-import { CollateNode } from '../../operation-node/collate-node.js'
+import type { CollateNode } from '../../operation-node/collate-node.js'
 
 const COLLATION_CHAR_REGEX = /^[a-z0-9_]$/i
 

@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnNode } from './column-node.js'
-import { ColumnUpdateNode } from './column-update-node.js'
-import { IdentifierNode } from './identifier-node.js'
-import { OperationNode } from './operation-node.js'
+import type { ColumnNode } from './column-node.js'
+import type { ColumnUpdateNode } from './column-update-node.js'
+import type { IdentifierNode } from './identifier-node.js'
+import type { OperationNode } from './operation-node.js'
 import { WhereNode } from './where-node.js'
 
 export type OnConflictNodeProps = Omit<

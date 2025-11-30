@@ -1,6 +1,6 @@
-import { QueryCompiler } from '../query-compiler/query-compiler.js'
-import { ArrayItemType } from '../util/type-utils.js'
-import { DatabaseConnection } from './database-connection.js'
+import type { QueryCompiler } from '../query-compiler/query-compiler.js'
+import type { ArrayItemType } from '../util/type-utils.js'
+import type { DatabaseConnection } from './database-connection.js'
 
 /**
  * A Driver creates and releases {@link DatabaseConnection | database connections}

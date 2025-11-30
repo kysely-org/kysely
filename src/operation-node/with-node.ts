@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { CommonTableExpressionNode } from './common-table-expression-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { CommonTableExpressionNode } from './common-table-expression-node.js'
 
 export type WithNodeParams = Omit<WithNode, 'kind' | 'expressions'>
 

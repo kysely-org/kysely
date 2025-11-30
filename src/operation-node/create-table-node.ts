@@ -1,9 +1,9 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { TableNode } from './table-node.js'
-import { ConstraintNode } from './constraint-node.js'
-import { ColumnDefinitionNode } from './column-definition-node.js'
-import { ArrayItemType } from '../util/type-utils.js'
+import type { OperationNode } from './operation-node.js'
+import type { TableNode } from './table-node.js'
+import type { ConstraintNode } from './constraint-node.js'
+import type { ColumnDefinitionNode } from './column-definition-node.js'
+import type { ArrayItemType } from '../util/type-utils.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>

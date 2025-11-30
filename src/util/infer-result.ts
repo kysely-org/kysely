@@ -1,10 +1,10 @@
-import { DeleteResult } from '../query-builder/delete-result.js'
-import { InsertResult } from '../query-builder/insert-result.js'
-import { MergeResult } from '../query-builder/merge-result.js'
-import { UpdateResult } from '../query-builder/update-result.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { Compilable } from './compilable.js'
-import { Simplify } from './type-utils.js'
+import type { DeleteResult } from '../query-builder/delete-result.js'
+import type { InsertResult } from '../query-builder/insert-result.js'
+import type { MergeResult } from '../query-builder/merge-result.js'
+import type { UpdateResult } from '../query-builder/update-result.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { Compilable } from './compilable.js'
+import type { Simplify } from './type-utils.js'
 
 /**
  * A helper type that allows inferring a select/insert/update/delete query's result

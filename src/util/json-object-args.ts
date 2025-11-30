@@ -1,10 +1,10 @@
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
+import type { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 

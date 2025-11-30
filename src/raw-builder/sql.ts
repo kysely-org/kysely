@@ -1,13 +1,13 @@
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
 import { createQueryId } from '../util/query-id.js'
-import { RawBuilder, createRawBuilder } from './raw-builder.js'
+import { type RawBuilder, createRawBuilder } from './raw-builder.js'
 
 export interface Sql {
   /**

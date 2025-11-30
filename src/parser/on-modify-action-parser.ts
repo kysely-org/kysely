@@ -1,5 +1,5 @@
 import {
-  OnModifyForeignAction,
+  type OnModifyForeignAction,
   ON_MODIFY_FOREIGN_ACTIONS,
 } from '../operation-node/references-node.js'
 

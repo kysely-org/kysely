@@ -1,4 +1,4 @@
-import {
+import type {
   Kysely,
   ExpressionBuilder,
   SelectQueryBuilder,
@@ -9,7 +9,7 @@ import {
 } from '..'
 
 import { expectAssignable, expectType } from 'tsd'
-import { Database, Movie, Person } from '../shared'
+import type { Database, Movie, Person } from '../shared'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
 function testSelectQueryBuilderExtends() {

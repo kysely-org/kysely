@@ -7,9 +7,9 @@ import {
   isReadonlyArray,
   isUndefined,
 } from '../util/object-utils.js'
-import { parseValueExpression, ValueExpression } from './value-parser.js'
+import { parseValueExpression, type ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
-import {
+import type {
   NonNullableInsertKeys,
   NullableInsertKeys,
   InsertType,
@@ -18,7 +18,7 @@ import { isExpressionOrFactory } from './expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
 import {
   expressionBuilder,
-  ExpressionBuilder,
+  type ExpressionBuilder,
 } from '../expression/expression-builder.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {

@@ -1,12 +1,12 @@
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import {
   expressionBuilder,
-  ExpressionBuilder,
+  type ExpressionBuilder,
 } from '../expression/expression-builder.js'
 import { isFunction } from '../util/object-utils.js'
 import {
   parseReferenceExpressionOrList,
-  ReferenceExpression,
+  type ReferenceExpression,
 } from './reference-parser.js'
 
 export type GroupByExpression<DB, TB extends keyof DB, O> =

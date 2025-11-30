@@ -88,7 +88,7 @@ jobs:
       fail-fast: false
       matrix:
         # https://endoflife.date/deno
-        deno-version: [2.2.x, 2.4.x]
+        deno-version: [2.5.x]
 
     steps:
       - name: Harden Runner
@@ -123,6 +123,9 @@ jobs:
 
       - name: Run deno tests
         run: pnpm test:deno
+
+      - name: Lint for Deno/JSR
+        run: pnpm lint:deno
 
   bun:
     name: Bun

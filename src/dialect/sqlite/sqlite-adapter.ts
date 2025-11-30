@@ -1,6 +1,6 @@
-import { Kysely } from '../../kysely.js'
+import type { Kysely } from '../../kysely.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
-import { MigrationLockOptions } from '../dialect-adapter.js'
+import type { MigrationLockOptions } from '../dialect-adapter.js'
 
 export class SqliteAdapter extends DialectAdapterBase {
   override get supportsTransactionalDdl(): boolean {

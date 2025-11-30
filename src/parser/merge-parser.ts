@@ -1,10 +1,10 @@
-import { InsertQueryNode } from '../operation-node/insert-query-node.js'
+import type { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import {
-  OperationNodeSource,
+  type OperationNodeSource,
   isOperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import { isString } from '../util/object-utils.js'

@@ -1,8 +1,8 @@
-import { BinaryOperationNode } from '../../operation-node/binary-operation-node.js'
+import type { BinaryOperationNode } from '../../operation-node/binary-operation-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
 import { OperatorNode } from '../../operation-node/operator-node.js'
-import {
+import type {
   EmptyInListNode,
   EmptyInListsStrategy,
 } from './handle-empty-in-lists.js'

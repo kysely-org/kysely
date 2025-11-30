@@ -7,9 +7,9 @@
  * happy, but we can catch it here.
  */
 
-import { Kysely, Transaction, InsertResult, Selectable } from '..'
+import type { Kysely, Transaction, InsertResult, Selectable } from '..'
 
-import { Database, Person } from '../shared'
+import type { Database, Person } from '../shared'
 import { expectType, expectError } from 'tsd'
 
 async function testOrderBy(db: Kysely<Database>) {

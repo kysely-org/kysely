@@ -1,7 +1,7 @@
-import { QueryResult } from '../driver/database-connection.js'
-import { RootOperationNode } from '../query-compiler/query-compiler.js'
-import { QueryId } from '../util/query-id.js'
-import { UnknownRow } from '../util/type-utils.js'
+import type { QueryResult } from '../driver/database-connection.js'
+import type { RootOperationNode } from '../query-compiler/query-compiler.js'
+import type { QueryId } from '../util/query-id.js'
+import type { UnknownRow } from '../util/type-utils.js'
 
 export interface KyselyPlugin {
   /**

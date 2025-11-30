@@ -1,4 +1,4 @@
-import { KyselyTypeError } from '../../util/type-error.js'
+import type { KyselyTypeError } from '../../util/type-error.js'
 
 export interface MssqlDialectConfig {
   /**

@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { ExpressionBuilder, ExpressionWrapper, sql } from '..'
-import { Database } from '../shared'
+import { type ExpressionBuilder, type ExpressionWrapper, sql } from '..'
+import type { Database } from '../shared'
 
 async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   // case...when...then...when...then...end

@@ -1,32 +1,32 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  JoinCallbackExpression,
-  JoinReferenceExpression,
+  type JoinCallbackExpression,
+  type JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
-  From,
-  FromTables,
+  type From,
+  type FromTables,
   parseTableExpressionOrList,
-  TableExpression,
-  TableExpressionOrList,
+  type TableExpression,
+  type TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
-  SelectExpression,
-  SelectArg,
-  SelectCallback,
+  type SelectExpression,
+  type SelectArg,
+  type SelectCallback,
 } from '../parser/select-parser.js'
-import {
+import type {
   ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
+import type {
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
@@ -35,52 +35,52 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
+import type { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
-import { MultiTableReturningInterface } from './returning-interface.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { WhereInterface } from './where-interface.js'
+import type { MultiTableReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
-  NoResultErrorConstructor,
+  type NoResultErrorConstructor,
 } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import {
-  OrderByExpression,
+  type OrderByExpression,
   parseOrderBy,
-  OrderByModifiers,
-  DirectedOrderByStringReference,
+  type OrderByModifiers,
+  type DirectedOrderByStringReference,
 } from '../parser/order-by-parser.js'
-import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import type { Explainable, ExplainFormat } from '../util/explainable.js'
+import type { AliasedExpression, Expression } from '../expression/expression.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { Streamable } from '../util/streamable.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import type { KyselyTypeError } from '../util/type-error.js'
+import type { Streamable } from '../util/streamable.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
-  ValueExpression,
+  type ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
 import { parseTop } from '../parser/top-parser.js'
-import {
+import type {
   OutputCallback,
   OutputExpression,
   OutputInterface,
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
-import { JoinType } from '../operation-node/join-node.js'
-import { OrderByInterface } from './order-by-interface.js'
+import type { JoinType } from '../operation-node/join-node.js'
+import type { OrderByInterface } from './order-by-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements

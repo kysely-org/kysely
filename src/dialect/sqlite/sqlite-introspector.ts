@@ -1,17 +1,17 @@
-import {
+import type {
   DatabaseIntrospector,
   DatabaseMetadata,
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
-import { Kysely } from '../../kysely.js'
+import type { Kysely } from '../../kysely.js'
 import {
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { sql } from '../../raw-builder/sql.js'
-import { QueryCreator } from '../../query-creator.js'
+import type { QueryCreator } from '../../query-creator.js'
 
 interface SqliteSystemDatabase {
   // https://www.sqlite.org/schematab.html#alternative_names

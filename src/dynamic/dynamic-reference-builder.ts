@@ -1,8 +1,8 @@
 import {
   isOperationNodeSource,
-  OperationNodeSource,
+  type OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import type { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 import { parseSimpleReferenceExpression } from '../parser/reference-parser.js'
 import { isObject, isString } from '../util/object-utils.js'
 

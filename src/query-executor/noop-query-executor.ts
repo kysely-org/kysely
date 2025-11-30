@@ -1,6 +1,6 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutorBase } from './query-executor-base.js'
 
 /**

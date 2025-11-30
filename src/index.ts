@@ -3,7 +3,7 @@ export * from './query-creator.js'
 
 export * from './expression/expression.js'
 export {
-  ExpressionBuilder,
+  type ExpressionBuilder,
   expressionBuilder,
 } from './expression/expression-builder.js'
 export * from './expression/expression-wrapper.js'
@@ -227,7 +227,7 @@ export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/streamable.js'
 export * from './util/log.js'
-export {
+export type {
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
   AnyColumn,
@@ -246,16 +246,16 @@ export {
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
-export { createQueryId, QueryId } from './util/query-id.js'
+export { createQueryId, type QueryId } from './util/query-id.js'
 
-export {
+export type {
   SelectExpression,
   SelectCallback,
   SelectArg,
   Selection,
   CallbackSelection,
 } from './parser/select-parser.js'
-export {
+export type {
   ReferenceExpression,
   ReferenceExpressionOrList,
   SimpleReferenceExpression,
@@ -263,37 +263,37 @@ export {
   ExtractTypeFromStringReference,
   ExtractTypeFromReferenceExpression,
 } from './parser/reference-parser.js'
-export {
+export type {
   ValueExpression,
   ValueExpressionOrList,
 } from './parser/value-parser.js'
-export {
+export type {
   SimpleTableReference,
   TableExpression,
   TableExpressionOrList,
 } from './parser/table-parser.js'
-export {
+export type {
   JoinReferenceExpression,
   JoinCallbackExpression,
 } from './parser/join-parser.js'
-export { InsertObject } from './parser/insert-values-parser.js'
-export { UpdateObject } from './parser/update-set-parser.js'
-export {
+export type { InsertObject } from './parser/insert-values-parser.js'
+export type { UpdateObject } from './parser/update-set-parser.js'
+export type {
   OrderByExpression,
   OrderByDirectionExpression,
   OrderByModifiers,
   OrderByDirection,
   OrderByModifiersCallbackExpression,
 } from './parser/order-by-parser.js'
-export {
+export type {
   ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
   FilterObject,
 } from './parser/binary-operation-parser.js'
-export { ExistsExpression } from './parser/unary-operation-parser.js'
-export {
+export type { ExistsExpression } from './parser/unary-operation-parser.js'
+export type {
   OperandExpression,
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
-export { Collation } from './parser/collate-parser.js'
+export type { Collation } from './parser/collate-parser.js'

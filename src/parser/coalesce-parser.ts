@@ -1,4 +1,4 @@
-import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
+import type { ExtractTypeFromReferenceExpression } from './reference-parser.js'
 
 export type ExtractTypeFromCoalesce1<
   DB,

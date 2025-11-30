@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { IdentifierNode } from './identifier-node.js'
-import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { RawNode } from './raw-node.js'
 
 export type AddIndexNodeProps = Omit<AddIndexNode, 'kind' | 'name'>
 

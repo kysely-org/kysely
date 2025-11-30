@@ -1,10 +1,10 @@
-import { ConnectionProvider } from '../driver/connection-provider.js'
-import { QueryResult } from '../driver/database-connection.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { RootOperationNode } from '../query-compiler/query-compiler.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { QueryId } from '../util/query-id.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import type { ConnectionProvider } from '../driver/connection-provider.js'
+import type { QueryResult } from '../driver/database-connection.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { RootOperationNode } from '../query-compiler/query-compiler.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { QueryId } from '../util/query-id.js'
+import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 /**
  * This interface abstracts away the details of how to compile a query into SQL

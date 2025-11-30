@@ -1,6 +1,6 @@
-import { DrainOuterGeneric } from '../util/type-utils.js'
-import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
-import { ExtractTypeFromValueExpression } from './value-parser.js'
+import type { DrainOuterGeneric } from '../util/type-utils.js'
+import type { ExtractTypeFromReferenceExpression } from './reference-parser.js'
+import type { ExtractTypeFromValueExpression } from './value-parser.js'
 
 export type RefTuple2<DB, TB extends keyof DB, R1, R2> = DrainOuterGeneric<
   [

@@ -1,14 +1,14 @@
-import { Driver } from '../../driver/driver.js'
-import { Kysely } from '../../kysely.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { Dialect } from '../dialect.js'
+import type { Driver } from '../../driver/driver.js'
+import type { Kysely } from '../../kysely.js'
+import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { Dialect } from '../dialect.js'
 import { PostgresDriver } from './postgres-driver.js'
-import { DatabaseIntrospector } from '../database-introspector.js'
+import type { DatabaseIntrospector } from '../database-introspector.js'
 import { PostgresIntrospector } from './postgres-introspector.js'
 import { PostgresQueryCompiler } from './postgres-query-compiler.js'
-import { DialectAdapter } from '../dialect-adapter.js'
+import type { DialectAdapter } from '../dialect-adapter.js'
 import { PostgresAdapter } from './postgres-adapter.js'
-import { PostgresDialectConfig } from './postgres-dialect-config.js'
+import type { PostgresDialectConfig } from './postgres-dialect-config.js'
 
 /**
  * PostgreSQL dialect that uses the [pg](https://node-postgres.com/) library.
