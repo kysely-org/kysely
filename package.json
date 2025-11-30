@@ -109,7 +109,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@ark/attest": "^0.49.0",
+    "@ark/attest": "^0.55.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.2",
