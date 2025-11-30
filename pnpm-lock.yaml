@@ -166,8 +166,8 @@ importers:
   test/cloudflare-workers:
     dependencies:
       hono:
-        specifier: ^4.9.10
-        version: 4.9.10
+        specifier: ^4.10.7
+        version: 4.10.7
     devDependencies:
       wrangler:
         specifier: ^4.51.0
@@ -4160,8 +4160,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.9.10:
-    resolution: {integrity: sha512-AlI15ijFyKTXR7eHo7QK7OR4RoKIedZvBuRjO8iy4zrxvlY5oFCdiRG/V/lFJHCNXJ0k72ATgnyzx8Yqa5arug==}
+  hono@4.10.7:
+    resolution: {integrity: sha512-icXIITfw/07Q88nLSkB9aiUrd8rYzSweK681Kjo/TSggaGbOX4RRyxxm71v+3PC8C/j+4rlxGeoTRxQDkaJkUw==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
@@ -12289,7 +12289,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.9.10: {}
+  hono@4.10.7: {}
 
   hosted-git-info@2.8.9: {}
 
