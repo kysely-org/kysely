@@ -45,11 +45,11 @@ importers:
         specifier: ^12.5.0
         version: 12.5.0
       chai:
-        specifier: ^6.2.0
-        version: 6.2.0
+        specifier: ^6.2.1
+        version: 6.2.1
       chai-as-promised:
         specifier: ^8.0.2
-        version: 8.0.2(chai@6.2.0)
+        version: 8.0.2(chai@6.2.1)
       esbuild:
         specifier: ^0.27.0
         version: 0.27.0
@@ -2909,8 +2909,8 @@ packages:
     peerDependencies:
       chai: '>= 2.1.2 < 7'
 
-  chai@6.2.0:
-    resolution: {integrity: sha512-aUTnJc/JipRzJrNADXVvpVqi6CO0dn3nx4EVPxijri+fj3LUUDyZQOgVeW54Ob3Y1Xh9Iz8f+CgaCl8v0mn9bA==}
+  chai@6.2.1:
+    resolution: {integrity: sha512-p4Z49OGG5W/WBCPSS/dH3jQ73kD6tiMmUM+bckNK6Jr5JHMG3k9bg/BvKR8lKmtVBKmOiuVaV2ws8s9oSbwysg==}
     engines: {node: '>=18'}
 
   chalk@4.1.2:
@@ -10807,12 +10807,12 @@ snapshots:
 
   ccount@2.0.1: {}
 
-  chai-as-promised@8.0.2(chai@6.2.0):
+  chai-as-promised@8.0.2(chai@6.2.1):
     dependencies:
-      chai: 6.2.0
+      chai: 6.2.1
       check-error: 2.1.1
 
-  chai@6.2.0: {}
+  chai@6.2.1: {}
 
   chalk@4.1.2:
     dependencies:
