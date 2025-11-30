@@ -43,7 +43,7 @@ if (DIALECTS.includes(dialect)) {
       await sql`select 1`.execute(db)
       expect(connectionFactoryTimesCalled).to.equal(1)
 
-      connection.socketError(new Error('moshe'))
+      connection._onSocketError(new Error('moshe'))
 
       await sql`select 1`.execute(db)
       expect(connectionFactoryTimesCalled).to.equal(2)
