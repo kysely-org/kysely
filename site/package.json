@@ -32,7 +32,7 @@
     "@docusaurus/tsconfig": "^3.9.1",
     "@docusaurus/types": "^3.9.1",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
-    "@types/react": "^19.2.2",
+    "@types/react": "^19.2.7",
     "mermaid": "^11.12.1",
     "typescript": "^5.9.3"
   },
