@@ -115,7 +115,7 @@
     "@types/chai-as-promised": "^8.0.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.1",
-    "@types/pg": "^8.15.5",
+    "@types/pg": "^8.15.6",
     "@types/pg-cursor": "^2.7.2",
     "@types/semver": "^7.7.1",
     "@types/sinon": "^17.0.4",
