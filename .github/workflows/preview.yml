@@ -23,7 +23,9 @@ on:
       - '!.prettierrc.json'
       - '!*.md'
       - '!deno.check*'
+      - '!deno.lint.json'
       - '!docker-compose.yml'
+      - '!jsr.json'
       - '!LICENSE'
 
 jobs:
@@ -55,4 +57,4 @@ jobs:
         run: pnpm build
 
       - name: Release preview version
-        run: pnpx pkg-pr-new@0.0.50 publish --template './example'
+        run: pnpx pkg-pr-new@0.0.61 publish --template './example'
