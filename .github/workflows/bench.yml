@@ -21,6 +21,7 @@ on:
       - '.prettierrc.json'
       - '*.md'
       - 'deno*'
+      - 'jsr*'
       - 'LICENSE'
       - 'outdated-typescript.d.ts'
   pull_request:
@@ -38,6 +39,7 @@ on:
       - '.prettierrc.json'
       - '*.md'
       - 'deno*'
+      - 'jsr*'
       - 'LICENSE'
       - 'outdated-typescript.d.ts'
   workflow_dispatch:
