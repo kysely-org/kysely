@@ -34,7 +34,7 @@ export class ControllerError extends Error {
     status: ErrorStatus,
     code: ErrorCode,
     message: string,
-    data?: any
+    data?: any,
   ) {
     super(message)
     this.status = status

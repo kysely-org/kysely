@@ -6,9 +6,9 @@ import type { SimpleReferenceExpressionNode } from '../operation-node/simple-ref
 import { parseSimpleReferenceExpression } from '../parser/reference-parser.js'
 import { isObject, isString } from '../util/object-utils.js'
 
-export class DynamicReferenceBuilder<R extends string = never>
-  implements OperationNodeSource
-{
+export class DynamicReferenceBuilder<
+  R extends string = never,
+> implements OperationNodeSource {
   readonly #dynamicReference: string
 
   get dynamicReference(): string {

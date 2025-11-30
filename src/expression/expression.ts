@@ -188,8 +188,10 @@ export interface AliasableExpression<T> extends Expression<T> {
  * }
  * ```
  */
-export interface AliasedExpression<T, A extends string>
-  extends OperationNodeSource {
+export interface AliasedExpression<
+  T,
+  A extends string,
+> extends OperationNodeSource {
   /**
    * Returns the aliased expression.
    */

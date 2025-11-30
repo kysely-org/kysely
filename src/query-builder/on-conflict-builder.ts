@@ -20,9 +20,10 @@ import { freeze } from '../util/object-utils.js'
 import type { AnyColumn, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
 
-export class OnConflictBuilder<DB, TB extends keyof DB>
-  implements WhereInterface<DB, TB>
-{
+export class OnConflictBuilder<
+  DB,
+  TB extends keyof DB,
+> implements WhereInterface<DB, TB> {
   readonly #props: OnConflictBuilderProps
 
   constructor(props: OnConflictBuilderProps) {
@@ -281,9 +282,10 @@ export type OnConflictDatabase<DB, TB extends keyof DB> = {
 
 export type OnConflictTables<TB> = TB | 'excluded'
 
-export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
-{
+export class OnConflictDoNothingBuilder<
+  DB,
+  TB extends keyof DB,
+> implements OperationNodeSource {
   readonly #props: OnConflictBuilderProps
 
   constructor(props: OnConflictBuilderProps) {

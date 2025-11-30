@@ -81,8 +81,8 @@ importers:
         specifier: ^1.56.0
         version: 1.56.0
       prettier:
-        specifier: ^3.5.3
-        version: 3.6.2
+        specifier: ^3.7.2
+        version: 3.7.2
       semver:
         specifier: ^7.7.3
         version: 7.7.3
@@ -5898,6 +5898,11 @@ packages:
 
   prettier@3.6.2:
     resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prettier@3.7.2:
+    resolution: {integrity: sha512-n3HV2J6QhItCXndGa3oMWvWFAgN1ibnS7R9mt6iokScBOC0Ul9/iZORmU2IWUMcyAQaMPjTlY3uT34TqocUxMA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -14353,6 +14358,8 @@ snapshots:
       tunnel-agent: 0.6.0
 
   prettier@3.6.2: {}
+
+  prettier@3.7.2: {}
 
   pretty-error@4.0.0:
     dependencies:

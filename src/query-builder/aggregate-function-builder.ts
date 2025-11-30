@@ -460,8 +460,7 @@ export class AliasedAggregateFunctionBuilder<
   TB extends keyof DB,
   O = unknown,
   A extends string = never,
-> implements AliasedExpression<O, A>
-{
+> implements AliasedExpression<O, A> {
   readonly #aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>
   readonly #alias: A
 

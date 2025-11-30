@@ -9,7 +9,7 @@ import { UserRow } from './user.table'
 
 export async function createAnonymousUser(
   db: Kysely<Database>,
-  request: CreateAnonymousUserRequest
+  request: CreateAnonymousUserRequest,
 ): Promise<SignedInUser> {
   const user = await userRepository.insertUser(db, {
     first_name: request.firstName,
@@ -18,7 +18,7 @@ export async function createAnonymousUser(
 
   const refreshToken = await authTokenService.createRefreshToken(
     db,
-    user.user_id
+    user.user_id,
   )
 
   const authToken = await authTokenService.createAuthToken(db, refreshToken)
@@ -32,7 +32,7 @@ export async function createAnonymousUser(
 
 export async function findUserById(
   db: Kysely<Database>,
-  userId: string
+  userId: string,
 ): Promise<User | undefined> {
   const userRow = await userRepository.findUserById(db, userId)
 
@@ -43,7 +43,7 @@ export async function findUserById(
 
 export async function lockUserById(
   trx: Transaction<Database>,
-  id: string
+  id: string,
 ): Promise<User | undefined> {
   const userRow = await userRepository.lockUserById(trx, id)
 
@@ -54,7 +54,7 @@ export async function lockUserById(
 
 export async function lockUserByEmail(
   trx: Transaction<Database>,
-  email: string
+  email: string,
 ): Promise<User | undefined> {
   const userRow = await userRepository.lockUserByEmail(trx, email)
 
@@ -66,7 +66,7 @@ export async function lockUserByEmail(
 export async function setUserEmail(
   db: Kysely<Database>,
   userId: string,
-  email: string
+  email: string,
 ): Promise<void> {
   await userRepository.setUserEmail(db, userId, email)
 }

@@ -24,11 +24,11 @@ interface RefreshTokenPayload {
 
 export async function createRefreshToken(
   db: Kysely<Database>,
-  userId: string
+  userId: string,
 ): Promise<RefreshToken> {
   const { refresh_token_id } = await refreshTokenRepository.insertRefreshToken(
     db,
-    userId
+    userId,
   )
 
   return signRefreshToken({
@@ -45,7 +45,7 @@ function signRefreshToken(tokenPayload: RefreshTokenPayload): RefreshToken {
 
 export async function createAuthToken(
   db: Kysely<Database>,
-  refreshToken: RefreshToken
+  refreshToken: RefreshToken,
 ): Promise<AuthToken> {
   const { userId, refreshTokenId } = verifyRefreshToken(refreshToken)
 
@@ -117,7 +117,7 @@ function verifyToken(token: string): string | jwt.JwtPayload {
 export async function deleteRefreshToken(
   db: Kysely<Database>,
   userId: string,
-  refreshToken: RefreshToken
+  refreshToken: RefreshToken,
 ): Promise<void> {
   const payload = verifyRefreshToken(refreshToken)
 

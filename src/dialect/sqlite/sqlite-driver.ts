@@ -9,7 +9,10 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
-import type { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
+import type {
+  SqliteDatabase,
+  SqliteDialectConfig,
+} from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig

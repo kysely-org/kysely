@@ -37,12 +37,12 @@ export function userController(router: Router): void {
         throw new ControllerError(
           404,
           'UserNotFound',
-          `user with id ${userId} was not found`
+          `user with id ${userId} was not found`,
         )
       }
 
       ctx.body = { user }
-    }
+    },
   )
 
   signInMethodController(router)

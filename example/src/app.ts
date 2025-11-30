@@ -70,7 +70,7 @@ export class App {
 
   private readonly errorHandler = async (
     ctx: Context,
-    next: Koa.Next
+    next: Koa.Next,
   ): Promise<void> => {
     try {
       await next()
@@ -85,7 +85,7 @@ export class App {
 
   private readonly decorateContext = async (
     ctx: Context,
-    next: Koa.Next
+    next: Koa.Next,
   ): Promise<void> => {
     ctx.db = this.#db!
     await next()
@@ -101,6 +101,6 @@ function createUnknownError(error: unknown): ControllerError {
   return new ControllerError(
     500,
     'UnknownError',
-    (isObject(error) ? error.message : undefined) ?? 'unknown error'
+    (isObject(error) ? error.message : undefined) ?? 'unknown error',
   )
 }

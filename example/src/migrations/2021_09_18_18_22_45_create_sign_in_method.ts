@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('sign_in_method')
     .addColumn('user_id', 'uuid', (col) =>
-      col.references('user.user_id').notNull().onDelete('cascade')
+      col.references('user.user_id').notNull().onDelete('cascade'),
     )
     .addColumn('type', 'text', (col) => col.notNull())
     .addPrimaryKeyConstraint('sign_in_method_primary_key', ['user_id', 'type'])
@@ -13,7 +13,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('password_sign_in_method')
     .addColumn('user_id', 'uuid', (col) =>
-      col.references('user.user_id').notNull().primaryKey().onDelete('cascade')
+      col.references('user.user_id').notNull().primaryKey().onDelete('cascade'),
     )
     .addColumn('password_hash', 'text', (col) => col.notNull())
     .execute()

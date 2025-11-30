@@ -12,9 +12,10 @@ import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import type { SqlBool } from '../util/type-utils.js'
 
-export class JoinBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
-{
+export class JoinBuilder<
+  DB,
+  TB extends keyof DB,
+> implements OperationNodeSource {
   readonly #props: JoinBuilderProps
 
   constructor(props: JoinBuilderProps) {

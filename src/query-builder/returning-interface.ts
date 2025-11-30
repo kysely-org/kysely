@@ -3,7 +3,10 @@ import type {
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import type { SelectCallback, SelectExpression } from '../parser/select-parser.js'
+import type {
+  SelectCallback,
+  SelectExpression,
+} from '../parser/select-parser.js'
 import type { Selectable } from '../util/column-type.js'
 
 export interface ReturningInterface<DB, TB extends keyof DB, O> {
@@ -87,8 +90,11 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
   returningAll(): ReturningInterface<DB, TB, Selectable<DB[TB]>>
 }
 
-export interface MultiTableReturningInterface<DB, TB extends keyof DB, O>
-  extends ReturningInterface<DB, TB, O> {
+export interface MultiTableReturningInterface<
+  DB,
+  TB extends keyof DB,
+  O,
+> extends ReturningInterface<DB, TB, O> {
   /**
    * Adds a `returning *` or `returning table.*` to an insert/update/delete/merge
    * query on databases that support `returning` such as PostgreSQL.

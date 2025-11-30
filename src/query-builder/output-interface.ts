@@ -1,6 +1,9 @@
 import type { ExpressionBuilder } from '../expression/expression-builder.js'
 import type { AliasedExpressionOrFactory } from '../parser/expression-parser.js'
-import type { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
+import type {
+  ReturningAllRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import type {
   AnyAliasedColumnWithTable,
   AnyColumnWithTable,
