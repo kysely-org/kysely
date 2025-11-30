@@ -14,7 +14,7 @@ minimumReleaseAge: 1440 # install package versions that are at least 1 day old (
 onlyBuiltDependencies:
   - better-sqlite3@12.5.0
   - esbuild@0.27.0
-  - workerd@1.20251004.0 # wrangler dependency
+  - workerd@1.20251125.0 # wrangler@4.51.0 dependency
 
 trustPolicy: no-downgrade # fail if there's a regression in attestation of packages.
 
