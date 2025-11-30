@@ -1,15 +1,15 @@
-import {
+import type {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-import { Driver, TransactionSettings } from '../../driver/driver.js'
+import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
-import {
+import type {
   PostgresCursorConstructor,
   PostgresDialectConfig,
   PostgresPool,

@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
-import { OperationNode } from './operation-node.js'
+import type { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
+import type { OperationNode } from './operation-node.js'
 
 type CommonTableExpressionNodeProps = Pick<
   CommonTableExpressionNode,

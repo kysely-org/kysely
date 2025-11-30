@@ -1,5 +1,5 @@
 import { isFunction, isObject } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export interface OperationNodeSource {
   toOperationNode(): OperationNode

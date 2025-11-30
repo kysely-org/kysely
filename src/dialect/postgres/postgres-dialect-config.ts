@@ -1,4 +1,4 @@
-import { DatabaseConnection } from '../../driver/database-connection.js'
+import type { DatabaseConnection } from '../../driver/database-connection.js'
 
 /**
  * Config for the PostgreSQL dialect.

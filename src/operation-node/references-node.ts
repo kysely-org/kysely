@@ -1,8 +1,8 @@
-import { OperationNode } from './operation-node.js'
-import { ColumnNode } from './column-node.js'
-import { TableNode } from './table-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { ColumnNode } from './column-node.js'
+import type { TableNode } from './table-node.js'
 import { freeze } from '../util/object-utils.js'
-import { ArrayItemType } from '../util/type-utils.js'
+import type { ArrayItemType } from '../util/type-utils.js'
 
 export const ON_MODIFY_FOREIGN_ACTIONS = [
   'no action',

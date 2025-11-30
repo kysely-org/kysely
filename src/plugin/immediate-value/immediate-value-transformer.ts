@@ -1,5 +1,5 @@
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
-import { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
+import type { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../../operation-node/value-list-node.js'
 import { ValueNode } from '../../operation-node/value-node.js'
 

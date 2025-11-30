@@ -1,4 +1,4 @@
-import { QueryExecutor } from './query-executor.js'
+import type { QueryExecutor } from './query-executor.js'
 
 /**
  * @internal

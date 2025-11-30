@@ -1,24 +1,24 @@
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
+import type { ReferenceExpression } from '../parser/reference-parser.js'
 import {
-  UpdateObjectExpression,
+  type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import { Updateable } from '../util/column-type.js'
+import type { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
-import { AnyColumn, SqlBool } from '../util/type-utils.js'
-import { WhereInterface } from './where-interface.js'
+import type { AnyColumn, SqlBool } from '../util/type-utils.js'
+import type { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
   implements WhereInterface<DB, TB>

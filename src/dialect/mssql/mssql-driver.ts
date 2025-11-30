@@ -1,8 +1,8 @@
-import {
+import type {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-import {
+import type {
   Driver,
   IsolationLevel,
   TransactionSettings,
@@ -18,7 +18,7 @@ import {
   isString,
   isUndefined,
 } from '../../util/object-utils.js'
-import {
+import type {
   MssqlDialectConfig,
   TarnPool,
   Tedious,

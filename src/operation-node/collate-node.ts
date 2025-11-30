@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { IdentifierNode } from './identifier-node.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export interface CollateNode extends OperationNode {
   readonly kind: 'CollateNode'

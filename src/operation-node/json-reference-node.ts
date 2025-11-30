@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
-import { JSONOperatorChainNode } from './json-operator-chain-node.js'
-import { JSONPathNode } from './json-path-node.js'
-import { OperationNode } from './operation-node.js'
-import { ReferenceNode } from './reference-node.js'
+import type { JSONOperatorChainNode } from './json-operator-chain-node.js'
+import type { JSONPathNode } from './json-path-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { ReferenceNode } from './reference-node.js'
 
 export interface JSONReferenceNode extends OperationNode {
   readonly kind: 'JSONReferenceNode'

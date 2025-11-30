@@ -1,4 +1,4 @@
-import {
+import type {
   AliasableExpression,
   AliasedExpression,
   Expression,
@@ -8,12 +8,12 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import {
   JSONPathLegNode,
-  JSONPathLegType,
+  type JSONPathLegType,
 } from '../operation-node/json-path-leg-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 
 export class JSONPathBuilder<S, O = S> {

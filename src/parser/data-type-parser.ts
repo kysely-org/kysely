@@ -1,11 +1,11 @@
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import {
-  ColumnDataType,
+  type ColumnDataType,
   DataTypeNode,
   isColumnDataType,
 } from '../operation-node/data-type-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 
 export type DataTypeExpression = ColumnDataType | Expression<any>
 

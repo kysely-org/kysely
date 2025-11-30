@@ -9,12 +9,12 @@ import {
 } from '../util/object-utils.js'
 import {
   parseExpression,
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   isExpressionOrFactory,
 } from './expression-parser.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import { Expression } from '../expression/expression.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
+import type { Expression } from '../expression/expression.js'
+import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V

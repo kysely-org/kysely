@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { SchemableIdentifierNode } from './schemable-identifier-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { ValueNode } from './value-node.js'
 

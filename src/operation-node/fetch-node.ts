@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 import { ValueNode } from './value-node.js'
 
 export type FetchModifier = 'only' | 'with ties'

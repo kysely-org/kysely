@@ -1,11 +1,11 @@
 import { AlterColumnNode } from '../operation-node/alter-column-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
-  DataTypeExpression,
+  type DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import {
-  DefaultValueExpression,
+  type DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
 

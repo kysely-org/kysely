@@ -1,21 +1,21 @@
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { freeze } from '../util/object-utils.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import {
-  ExtractTypeFromValueExpression,
+  type ExtractTypeFromValueExpression,
   isSafeImmediateValue,
   parseSafeImmediateValue,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 
 export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
   implements Whenable<DB, TB, W, O>

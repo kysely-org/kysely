@@ -1,10 +1,10 @@
-import {
+import type {
   ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import { SelectCallback, SelectExpression } from '../parser/select-parser.js'
-import { Selectable } from '../util/column-type.js'
+import type { SelectCallback, SelectExpression } from '../parser/select-parser.js'
+import type { Selectable } from '../util/column-type.js'
 
 export interface ReturningInterface<DB, TB extends keyof DB, O> {
   /**

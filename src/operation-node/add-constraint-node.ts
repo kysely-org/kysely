@@ -1,6 +1,6 @@
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { ConstraintNode } from './constraint-node.js'
+import type { ConstraintNode } from './constraint-node.js'
 
 export interface AddConstraintNode extends OperationNode {
   readonly kind: 'AddConstraintNode'

@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { CollateNode } from './collate-node.js'
-import { OperationNode } from './operation-node.js'
+import type { CollateNode } from './collate-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export type OrderByItemNodeProps = Omit<OrderByItemNode, 'kind' | 'orderBy'>
 

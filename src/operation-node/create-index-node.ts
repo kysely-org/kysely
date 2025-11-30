@@ -1,9 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { IdentifierNode } from './identifier-node.js'
-import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
-import { TableNode } from './table-node.js'
-import { WhereNode } from './where-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { RawNode } from './raw-node.js'
+import type { TableNode } from './table-node.js'
+import type { WhereNode } from './where-node.js'
 
 export type CreateIndexNodeProps = Omit<CreateIndexNode, 'kind' | 'name'>
 export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'

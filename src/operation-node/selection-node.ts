@@ -1,10 +1,10 @@
 import { freeze } from '../util/object-utils.js'
-import { AliasNode } from './alias-node.js'
-import { OperationNode } from './operation-node.js'
+import type { AliasNode } from './alias-node.js'
+import type { OperationNode } from './operation-node.js'
 import { ReferenceNode } from './reference-node.js'
 import { SelectAllNode } from './select-all-node.js'
-import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
-import { TableNode } from './table-node.js'
+import type { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
+import type { TableNode } from './table-node.js'
 
 type SelectionNodeChild =
   | SimpleReferenceExpressionNode

@@ -1,5 +1,5 @@
-import { Expression } from '../expression/expression.js'
-import {
+import type { Expression } from '../expression/expression.js'
+import type {
   OrderByExpression,
   DirectedOrderByStringReference,
   OrderByModifiers,

@@ -1,52 +1,52 @@
 import {
-  SelectQueryBuilder,
+  type SelectQueryBuilder,
   createSelectQueryBuilder,
 } from '../query-builder/select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
-  TableExpressionOrList,
+  type TableExpressionOrList,
   parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
 import {
   createFunctionModule,
-  FunctionModule,
+  type FunctionModule,
 } from '../query-builder/function-module.js'
 import {
-  ExtractTypeFromReferenceExpression,
+  type ExtractTypeFromReferenceExpression,
   parseJSONReference,
   parseReferenceExpression,
   parseStringReference,
-  ReferenceExpression,
-  SimpleReferenceExpression,
-  StringReference,
+  type ReferenceExpression,
+  type SimpleReferenceExpression,
+  type StringReference,
 } from '../parser/reference-parser.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import {
-  BinaryOperatorExpression,
-  FilterObject,
-  OperandValueExpression,
-  OperandValueExpressionOrList,
+  type BinaryOperatorExpression,
+  type FilterObject,
+  type OperandValueExpression,
+  type OperandValueExpressionOrList,
   parseFilterList,
   parseFilterObject,
   parseValueBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import { Expression } from './expression.js'
+import type { Expression } from './expression.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
-  ComparisonOperator,
-  JSONOperatorWith$,
+  type ComparisonOperator,
+  type JSONOperatorWith$,
   OperatorNode,
-  UnaryOperator,
+  type UnaryOperator,
 } from '../operation-node/operator-node.js'
-import { IsNever, SqlBool } from '../util/type-utils.js'
+import type { IsNever, SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
-  ExtractTypeFromValueExpression,
+  type ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
 } from '../parser/value-parser.js'
@@ -55,10 +55,10 @@ import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
 import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
-import { OperandExpression } from '../parser/expression-parser.js'
+import type { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
-import {
+import type {
   RefTuple2,
   RefTuple3,
   RefTuple4,
@@ -69,15 +69,15 @@ import {
   ValTuple5,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
-import { Selectable } from '../util/column-type.js'
+import type { Selectable } from '../util/column-type.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
-import { KyselyTypeError } from '../util/type-error.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 import {
-  DataTypeExpression,
+  type DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
-import { SelectFrom } from '../parser/select-from-parser.js'
+import type { SelectFrom } from '../parser/select-from-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**

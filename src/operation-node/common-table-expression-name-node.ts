@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 
 export interface CommonTableExpressionNameNode extends OperationNode {

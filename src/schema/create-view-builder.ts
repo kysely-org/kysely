@@ -1,14 +1,14 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { parseColumnName } from '../parser/reference-parser.js'
 import { ImmediateValuePlugin } from '../plugin/immediate-value/immediate-value-plugin.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import type { RawBuilder } from '../raw-builder/raw-builder.js'
+import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 
 export class CreateViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateViewBuilderProps

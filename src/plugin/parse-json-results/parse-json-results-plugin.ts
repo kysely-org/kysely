@@ -1,8 +1,8 @@
-import { QueryResult } from '../../driver/database-connection.js'
-import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import type { QueryResult } from '../../driver/database-connection.js'
+import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { isPlainObject, isString } from '../../util/object-utils.js'
-import { UnknownRow } from '../../util/type-utils.js'
-import {
+import type { UnknownRow } from '../../util/type-utils.js'
+import type {
   KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,

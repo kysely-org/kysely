@@ -1,20 +1,20 @@
-import { Expression } from '../expression/expression.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { Expression } from '../expression/expression.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OverNode } from '../operation-node/over-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  DirectedOrderByStringReference,
-  OrderByExpression,
-  OrderByModifiers,
+  type DirectedOrderByStringReference,
+  type OrderByExpression,
+  type OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import {
   parsePartitionBy,
-  PartitionByExpression,
-  PartitionByExpressionOrList,
+  type PartitionByExpression,
+  type PartitionByExpressionOrList,
 } from '../parser/partition-by-parser.js'
 import { freeze } from '../util/object-utils.js'
-import { OrderByInterface } from './order-by-interface.js'
+import type { OrderByInterface } from './order-by-interface.js'
 
 export class OverBuilder<DB, TB extends keyof DB>
   implements OrderByInterface<DB, TB, {}>, OperationNodeSource

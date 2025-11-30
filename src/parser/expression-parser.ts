@@ -1,17 +1,17 @@
 import {
-  AliasedExpression,
-  Expression,
+  type AliasedExpression,
+  type Expression,
   isAliasedExpression,
   isExpression,
 } from '../expression/expression.js'
-import { AliasNode } from '../operation-node/alias-node.js'
+import type { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import {
   expressionBuilder,
-  ExpressionBuilder,
+  type ExpressionBuilder,
 } from '../expression/expression-builder.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
 
 /**

@@ -2,19 +2,19 @@ import { AliasNode } from '../operation-node/alias-node.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { OrNode } from '../operation-node/or-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import { OperandExpression } from '../parser/expression-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { SqlBool } from '../util/type-utils.js'
-import {
+import type { OperandExpression } from '../parser/expression-parser.js'
+import type { ReferenceExpression } from '../parser/reference-parser.js'
+import type { KyselyTypeError } from '../util/type-error.js'
+import type { SqlBool } from '../util/type-utils.js'
+import type {
   AliasableExpression,
   AliasedExpression,
   Expression,

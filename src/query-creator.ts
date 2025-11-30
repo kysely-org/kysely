@@ -1,5 +1,5 @@
 import {
-  SelectQueryBuilder,
+  type SelectQueryBuilder,
   createSelectQueryBuilder,
 } from './query-builder/select-query-builder.js'
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
@@ -12,41 +12,41 @@ import { UpdateQueryNode } from './operation-node/update-query-node.js'
 import {
   parseTable,
   parseTableExpressionOrList,
-  TableExpressionOrList,
-  SimpleTableReference,
+  type TableExpressionOrList,
+  type SimpleTableReference,
   parseAliasedTable,
 } from './parser/table-parser.js'
-import { QueryExecutor } from './query-executor/query-executor.js'
+import type { QueryExecutor } from './query-executor/query-executor.js'
 import {
-  CommonTableExpression,
-  QueryCreatorWithCommonTableExpression,
-  RecursiveCommonTableExpression,
+  type CommonTableExpression,
+  type QueryCreatorWithCommonTableExpression,
+  type RecursiveCommonTableExpression,
   parseCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { freeze } from './util/object-utils.js'
-import { InsertResult } from './query-builder/insert-result.js'
-import { DeleteResult } from './query-builder/delete-result.js'
-import { UpdateResult } from './query-builder/update-result.js'
-import { KyselyPlugin } from './plugin/kysely-plugin.js'
-import { CTEBuilderCallback } from './query-builder/cte-builder.js'
+import type { InsertResult } from './query-builder/insert-result.js'
+import type { DeleteResult } from './query-builder/delete-result.js'
+import type { UpdateResult } from './query-builder/update-result.js'
+import type { KyselyPlugin } from './plugin/kysely-plugin.js'
+import type { CTEBuilderCallback } from './query-builder/cte-builder.js'
 import {
-  CallbackSelection,
-  SelectArg,
-  SelectCallback,
-  SelectExpression,
-  Selection,
+  type CallbackSelection,
+  type SelectArg,
+  type SelectCallback,
+  type SelectExpression,
+  type Selection,
   parseSelectArg,
 } from './parser/select-parser.js'
 import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
 import { MergeQueryNode } from './operation-node/merge-query-node.js'
-import { MergeResult } from './query-builder/merge-result.js'
-import { SelectFrom } from './parser/select-from-parser.js'
-import { DeleteFrom } from './parser/delete-from-parser.js'
-import { UpdateTable } from './parser/update-parser.js'
-import { MergeInto } from './parser/merge-into-parser.js'
+import type { MergeResult } from './query-builder/merge-result.js'
+import type { SelectFrom } from './parser/select-from-parser.js'
+import type { DeleteFrom } from './parser/delete-from-parser.js'
+import type { UpdateTable } from './parser/update-parser.js'
+import type { MergeInto } from './parser/merge-into-parser.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps

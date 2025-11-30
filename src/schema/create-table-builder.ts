@@ -1,23 +1,23 @@
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import {
   CreateTableNode,
-  OnCommitAction,
+  type OnCommitAction,
 } from '../operation-node/create-table-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
-import { QueryId } from '../util/query-id.js'
+import type { QueryId } from '../util/query-id.js'
 import { freeze, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import {
   ForeignKeyConstraintBuilder,
-  ForeignKeyConstraintBuilderCallback,
+  type ForeignKeyConstraintBuilderCallback,
 } from './foreign-key-constraint-builder.js'
 import {
-  DataTypeExpression,
+  type DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
@@ -25,19 +25,19 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import {
   UniqueConstraintNodeBuilder,
-  UniqueConstraintNodeBuilderCallback,
+  type UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
 import { parseExpression } from '../parser/expression-parser.js'
 import {
   PrimaryKeyConstraintBuilder,
-  PrimaryKeyConstraintBuilderCallback,
+  type PrimaryKeyConstraintBuilderCallback,
 } from './primary-key-constraint-builder.js'
 import {
   CheckConstraintBuilder,
-  CheckConstraintBuilderCallback,
+  type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 
 /**

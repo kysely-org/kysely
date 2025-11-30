@@ -1,4 +1,4 @@
-import { Kysely } from '../../kysely.js'
+import type { Kysely } from '../../kysely.js'
 import { DEFAULT_MIGRATION_TABLE } from '../../migration/migrator.js'
 import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'

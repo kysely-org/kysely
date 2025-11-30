@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { PrimitiveValueListNode } from './primitive-value-list-node.js'
-import { ValueListNode } from './value-list-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { PrimitiveValueListNode } from './primitive-value-list-node.js'
+import type { ValueListNode } from './value-list-node.js'
 
 export type ValuesItemNode = ValueListNode | PrimitiveValueListNode
 

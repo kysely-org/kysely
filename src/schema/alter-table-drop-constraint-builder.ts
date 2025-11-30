@@ -1,11 +1,11 @@
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { Compilable } from '../util/compilable.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { QueryId } from '../util/query-id.js'
+import type { QueryId } from '../util/query-id.js'
 
 export class AlterTableDropConstraintBuilder
   implements OperationNodeSource, Compilable

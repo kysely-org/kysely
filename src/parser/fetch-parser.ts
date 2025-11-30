@@ -1,4 +1,4 @@
-import { FetchModifier, FetchNode } from '../operation-node/fetch-node.js'
+import { type FetchModifier, FetchNode } from '../operation-node/fetch-node.js'
 import { isBigInt, isNumber } from '../util/object-utils.js'
 
 export function parseFetch(

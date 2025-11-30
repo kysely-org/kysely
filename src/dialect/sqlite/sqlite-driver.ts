@@ -1,15 +1,15 @@
-import {
+import type {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-import { Driver } from '../../driver/driver.js'
+import type { Driver } from '../../driver/driver.js'
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
-import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
+import type { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig

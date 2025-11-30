@@ -1,9 +1,9 @@
-import { OperatorNode, UnaryOperator } from '../operation-node/operator-node.js'
+import { OperatorNode, type UnaryOperator } from '../operation-node/operator-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
-import { ExpressionOrFactory } from './expression-parser.js'
+import type { ExpressionOrFactory } from './expression-parser.js'
 import {
   parseReferenceExpression,
-  ReferenceExpression,
+  type ReferenceExpression,
 } from './reference-parser.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
