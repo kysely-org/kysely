@@ -1,12 +1,17 @@
 import { Expression } from '../expression/expression.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { freeze } from '../util/object-utils.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ExtractTypeFromReferenceExpression,
+  parseReferenceExpression,
+  ReferenceExpression,
+} from '../parser/reference-parser.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
+  parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import {
@@ -54,6 +59,22 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
       ),
     })
   }
+
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
+      ),
+    })
+  }
 }
 
 interface CaseBuilderProps {
@@ -70,7 +91,10 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
   /**
    * Adds a `then` clause to the `case` statement.
    *
-   * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
+   * See {@link thenRef} for reference-first variant.
+   *
+   * A `then` call can be followed by {@link Whenable.when}, {@link Whenable.whenRef},
+   * {@link CaseWhenBuilder.else}, {@link CaseWhenBuilder.elseRef},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
   then<E extends Expression<unknown>>(
@@ -87,6 +111,32 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
         isSafeImmediateValue(valueExpression)
           ? parseSafeImmediateValue(valueExpression)
           : parseValueExpression(valueExpression),
+      ),
+    })
+  }
+
+  /**
+   * Adds a `then` clause to the `case` statement where the value is a reference to a column.
+   *
+   * See {@link then} for value-first variant.
+   *
+   * A `thenRef` call can be followed by {@link Whenable.when}, {@link Whenable.whenRef},
+   * {@link CaseWhenBuilder.else}, {@link CaseWhenBuilder.elseRef},
+   * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   */
+  thenRef<RE extends ReferenceExpression<DB, TB>>(
+    expression: RE,
+  ): CaseWhenBuilder<
+    DB,
+    TB,
+    W,
+    O | ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new CaseWhenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithThen(
+        this.#props.node,
+        parseReferenceExpression(expression),
       ),
     })
   }
@@ -130,8 +180,26 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
+  ): CaseThenBuilder<DB, TB, W, O> {
+    return new CaseThenBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWithWhen(
+        this.#props.node,
+        WhenNode.create(parseReferentialBinaryOperation(lhs as RE, op, rhs)),
+      ),
+    })
+  }
+
   /**
    * Adds an `else` clause to the `case` statement.
+   *
+   * See {@link elseRef} for reference-first variant.
    *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
@@ -148,6 +216,28 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
         else: isSafeImmediateValue(valueExpression)
           ? parseSafeImmediateValue(valueExpression)
           : parseValueExpression(valueExpression),
+      }),
+    })
+  }
+
+  /**
+   * Adds an `else` clause to the `case` statement where the value is a reference to a column.
+   *
+   * See {@link else} for value-first variant.
+   * 
+   * An `elseRef` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
+   */
+  elseRef<RE extends ReferenceExpression<DB, TB>>(
+    expression: RE,
+  ): CaseEndBuilder<
+    DB,
+    TB,
+    O | ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new CaseEndBuilder({
+      ...this.#props,
+      node: CaseNode.cloneWith(this.#props.node, {
+        else: parseReferenceExpression(expression),
       }),
     })
   }
@@ -191,7 +281,9 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   /**
    * Adds a `when` clause to the case statement.
    *
-   * A `when` call must be followed by a {@link CaseThenBuilder.then} call.
+   * See {@link Whenable.whenRef} for reference-first variant.
+   *
+   * A `when` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
    */
   when<
     RE extends ReferenceExpression<DB, TB>,
@@ -210,6 +302,22 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
     value: unknown extends W
       ? KyselyTypeError<'when(value) is only supported when using case(value)'>
       : W,
+  ): CaseThenBuilder<DB, TB, W, O>
+
+  /**
+   * Adds a `when` clause to the case statement, where both sides of the
+   * operator are references to columns.
+   *
+   * See {@link Whenable.when} for value-first variant.
+   *
+   * A `whenRef` call must be followed by either a {@link CaseThenBuilder.then} or {@link CaseThenBuilder.thenRef} call.
+   */
+  whenRef<RE extends ReferenceExpression<DB, TB>>(
+    lhs: unknown extends W
+      ? RE
+      : KyselyTypeError<'whenRef(lhs, op, rhs) is not supported when using case(value)'>,
+    op: ComparisonOperatorExpression,
+    rhs: RE,
   ): CaseThenBuilder<DB, TB, W, O>
 }
 

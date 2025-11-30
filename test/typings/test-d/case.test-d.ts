@@ -69,13 +69,25 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .end(),
   )
 
-  // references
+  // eb.refs
   expectType<ExpressionWrapper<Database, 'person', string | number>>(
     eb
       .case()
-      .when('gender', '=', 'male')
+      .when('first_name', '=', eb.ref('last_name'))
       .then(eb.ref('first_name'))
       .else(eb.ref('age'))
+      .end(),
+  )
+
+  // refs
+  expectType<ExpressionWrapper<Database, 'person', string | number>>(
+    eb
+      .case()
+      .whenRef('first_name', '=', 'last_name')
+      .thenRef('first_name')
+      .when('deleted_at', 'is not', null)
+      .thenRef('age')
+      .elseRef('age')
       .end(),
   )
 
@@ -109,6 +121,24 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(eb.case().when('gender', '??', 'male').then('Mr.').end())
   expectError(eb.case().when('gender', '=', 42).then('Mr.').end())
   expectError(eb.case().when('male').then('Mr.').end())
+
+  expectError(
+    eb.case().whenRef('no_such_column', '=', 'last_name').then('Mr.').end(),
+  )
+  expectError(
+    eb
+      .case()
+      .whenRef('first_name', 'no_such_operator', 'last_name')
+      .then('Mr.')
+      .end(),
+  )
+  expectError(
+    eb.case().whenRef('first_name', '=', 'no_such_column').then('Mr.').end(),
+  )
+
+  expectError(
+    eb.case().when('first_name', '=', 'Joe').then('Mr.').elseRef('no_such_column'),
+  )
 }
 
 function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
@@ -154,4 +184,8 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(eb.case('no_such_column').when('male').then('Mr.').end())
   expectError(eb.case('gender').when('robot').then('Mr.').end())
   expectError(eb.case('gender').when('gender', '=', 'male').then('Mr.').end())
+
+  expectError(
+    eb.case('gender').whenRef('first_name', '=', 'last_name').then('Mr.').end(),
+  )
 }

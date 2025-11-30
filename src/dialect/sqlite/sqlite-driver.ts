@@ -13,7 +13,6 @@ import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
-  readonly #connectionMutex = new ConnectionMutex()
 
   #db?: SqliteDatabase
   #connection?: DatabaseConnection
@@ -35,9 +34,6 @@ export class SqliteDriver implements Driver {
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    // SQLite only has one single connection. We use a mutex here to wait
-    // until the single connection has been released.
-    await this.#connectionMutex.lock()
     return this.#connection!
   }
 
@@ -93,7 +89,7 @@ export class SqliteDriver implements Driver {
   }
 
   async releaseConnection(): Promise<void> {
-    this.#connectionMutex.unlock()
+    // noop
   }
 
   async destroy(): Promise<void> {
@@ -147,29 +143,5 @@ class SqliteConnection implements DatabaseConnection {
     } else {
       throw new Error('Sqlite driver only supports streaming of select queries')
     }
-  }
-}
-
-class ConnectionMutex {
-  #promise?: Promise<void>
-  #resolve?: () => void
-
-  async lock(): Promise<void> {
-    while (this.#promise) {
-      await this.#promise
-    }
-
-    this.#promise = new Promise((resolve) => {
-      this.#resolve = resolve
-    })
-  }
-
-  unlock(): void {
-    const resolve = this.#resolve
-
-    this.#promise = undefined
-    this.#resolve = undefined
-
-    resolve?.()
   }
 }
