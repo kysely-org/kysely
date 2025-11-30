@@ -4,6 +4,7 @@
     "target": "ESNext",
     "declaration": true,
     "strict": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "verbatimModuleSyntax": true
   }
 }
