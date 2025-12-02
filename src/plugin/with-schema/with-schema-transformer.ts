@@ -9,6 +9,7 @@ import type { OperationNode } from '../../operation-node/operation-node.js'
 import type { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
+import { UsingNode } from '../../operation-node/using-node.js'
 import type { WithNode } from '../../operation-node/with-node.js'
 import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { freeze } from '../../util/object-utils.js'
@@ -226,13 +227,25 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     schemableIds: Set<string>,
   ): void {
     if (TableNode.is(node)) {
-      this.#collectSchemableId(node.table, schemableIds)
-    } else if (AliasNode.is(node) && TableNode.is(node.node)) {
-      this.#collectSchemableId(node.node.table, schemableIds)
-    } else if (ListNode.is(node)) {
+      return this.#collectSchemableId(node.table, schemableIds)
+    }
+
+    if (AliasNode.is(node) && TableNode.is(node.node)) {
+      return this.#collectSchemableId(node.node.table, schemableIds)
+    }
+
+    if (ListNode.is(node)) {
       for (const table of node.items) {
         this.#collectSchemableIdsFromTableExpr(table, schemableIds)
       }
+      return
+    }
+
+    if (UsingNode.is(node)) {
+      for (const table of node.tables) {
+        this.#collectSchemableIdsFromTableExpr(table, schemableIds)
+      }
+      return
     }
   }
 
