@@ -244,6 +244,7 @@ export type {
   ShallowDehydrateValue,
   StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
+export type { KyselyTypeError } from './util/type-error.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
