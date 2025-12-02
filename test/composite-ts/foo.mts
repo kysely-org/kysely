@@ -8,5 +8,5 @@ export function foo<T extends 'myColumn'>(
   }>,
   field: T,
 ) {
-  return db.selectFrom('MyTable').select(field)
+  return db.selectFrom('MyTable').select(field).$narrowType<{}>()
 }
