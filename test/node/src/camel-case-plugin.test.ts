@@ -3,10 +3,23 @@ import {
   CamelCasePluginOptions,
   createQueryId,
   CreateTableNode,
+  DummyDriver,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
 } from '../../..'
 import { expect } from './test-setup'
 
 describe('CamelCasePlugin', () => {
+  const db = new Kysely({
+    dialect: {
+      createAdapter: () => new PostgresAdapter(),
+      createDriver: () => new DummyDriver(),
+      createIntrospector: (db) => new PostgresIntrospector(db),
+      createQueryCompiler: () => new PostgresQueryCompiler(),
+    },
+  })
   type TestCaseWithOptions = {
     name: string
     options?: CamelCasePluginOptions
@@ -88,17 +101,7 @@ describe('CamelCasePlugin', () => {
         it(`should convert schema "${source}"`, () => {
           const result = plugin.transformQuery({
             queryId: createQueryId(),
-            node: {
-              kind: 'CreateTableNode',
-              table: {
-                kind: 'TableNode',
-                table: {
-                  kind: 'SchemableIdentifierNode',
-                  identifier: { kind: 'IdentifierNode', name: source },
-                },
-              },
-              columns: [],
-            },
+            node: db.schema.createTable(source).toOperationNode(),
           }) as CreateTableNode
           expect(result.table.table.identifier.name).to.equal(expected)
         })
