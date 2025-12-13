@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: with`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: with`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -120,7 +122,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('recursive common table expressions can refer to themselves', async () => {
         await ctx.db.transaction().execute(async (trx) => {
           // Create a temporary table that gets dropped when the transaction ends.
@@ -246,7 +248,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
       it('should create an insert query with common table expressions', async () => {
         const query = ctx.db
           .with('jennifer', (db) =>
@@ -282,7 +284,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
@@ -340,7 +342,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a merge query with common table expressions that include writes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>

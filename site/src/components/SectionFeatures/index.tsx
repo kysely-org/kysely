@@ -58,8 +58,8 @@ const FeatureList: FeatureItem[] = [
       <>
         Kysely's community-driven dialect system makes it easy to implement
         support for any SQL database without waiting for the core team. It ships
-        with official dialects for PostgreSQL, MySQL, MS SQL Server, and SQLite
-        right out of the box.
+        with official dialects for PostgreSQL, MySQL, MS SQL Server, SQLite, and
+        PGlite right out of the box.
       </>
     ),
   },

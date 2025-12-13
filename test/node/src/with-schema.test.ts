@@ -14,10 +14,14 @@ import {
   type Pet,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS.filter(
-  (dialect) => dialect === 'postgres' || dialect === 'mssql',
-)) {
-  describe(`${dialect}: with schema`, () => {
+for (const dialect of DIALECTS) {
+  const { sqlSpec, variant } = dialect
+
+  if (sqlSpec !== 'postgres' && sqlSpec !== 'mssql') {
+    continue
+  }
+
+  describe(`${variant}: with schema`, () => {
     let ctx: Omit<TestContext, 'db'> & {
       db: Kysely<
         Database & {
@@ -197,7 +201,7 @@ for (const dialect of DIALECTS.filter(
             'pet.name',
             (qb) =>
               qb
-                .withSchema(dialect === 'postgres' ? 'public' : 'dbo')
+                .withSchema(sqlSpec === 'postgres' ? 'public' : 'dbo')
                 .selectFrom('person')
                 .select('first_name')
                 .whereRef('pet.owner_id', '=', 'person.id')
@@ -228,7 +232,7 @@ for (const dialect of DIALECTS.filter(
         await query.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should not add schema for json_agg parameters', async () => {
           const query = ctx.db
             .withSchema('mammals')
@@ -320,7 +324,7 @@ for (const dialect of DIALECTS.filter(
             species: 'dog',
             owner_id: anyPerson.id,
           })
-          .$call((qb) => (dialect === 'postgres' ? qb.returning('pet.id') : qb))
+          .$call((qb) => (sqlSpec === 'postgres' ? qb.returning('pet.id') : qb))
 
         testSql(query, dialect, {
           postgres: {
@@ -362,7 +366,7 @@ for (const dialect of DIALECTS.filter(
         await query.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should also add schema to using clause', async () => {
           const query = ctx.db
             .withSchema('mammals')
@@ -558,7 +562,7 @@ for (const dialect of DIALECTS.filter(
       })
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       describe('drop index', () => {
         beforeEach(async () => {
           await ctx.db.schema
@@ -653,7 +657,7 @@ for (const dialect of DIALECTS.filter(
     async function createTables(): Promise<void> {
       await ctx.db.schema
         .createSchema('mammals')
-        .$call((qb) => (dialect === 'postgres' ? qb.ifNotExists() : qb))
+        .$call((qb) => (sqlSpec === 'postgres' ? qb.ifNotExists() : qb))
         .execute()
 
       await Promise.all(
@@ -669,7 +673,7 @@ for (const dialect of DIALECTS.filter(
             .addColumn('owner_id', 'integer', (col) =>
               col
                 .references(
-                  dialect === 'postgres' ? 'public.person.id' : 'dbo.person.id',
+                  sqlSpec === 'postgres' ? 'public.person.id' : 'dbo.person.id',
                 )
                 .onDelete('cascade'),
             )
