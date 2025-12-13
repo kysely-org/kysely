@@ -8,6 +8,7 @@ import { OperationNodeTransformer } from '../../operation-node/operation-node-tr
 import type { OperationNode } from '../../operation-node/operation-node.js'
 import type { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
+import type { SelectModifierNode } from '../../operation-node/select-modifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
 import { UsingNode } from '../../operation-node/using-node.js'
 import type { WithNode } from '../../operation-node/with-node.js'
@@ -148,6 +149,23 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
         node,
         queryId,
         'arguments',
+      ),
+    }
+  }
+
+  protected override transformSelectModifier(
+    node: SelectModifierNode,
+    queryId: QueryId,
+  ): SelectModifierNode {
+    return {
+      ...super.transformSelectModifier({ ...node, of: undefined }, queryId),
+      of: node.of?.map((item) =>
+        TableNode.is(item) && !item.table.schema
+          ? {
+              ...item,
+              table: this.transformIdentifier(item.table.identifier, queryId),
+            }
+          : this.transformNode(item, queryId),
       ),
     }
   }

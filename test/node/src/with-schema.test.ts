@@ -273,6 +273,34 @@ for (const dialect of DIALECTS.filter(
 
           await query.execute()
         })
+
+        for (const [selectModifierFn, clause] of [
+          ['forUpdate', 'for update'],
+          ['forShare', 'for share'],
+          ['forKeyShare', 'for key share'],
+          ['forNoKeyUpdate', 'for no key update'],
+        ] as const) {
+          it(`should not add schema to ${clause} tables`, async () => {
+            const query = ctx.db
+              .withSchema('mammals')
+              .selectFrom('pet')
+              .selectAll()
+              [selectModifierFn]('pet')
+              .skipLocked()
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: `select * from "mammals"."pet" ${clause} of "pet" skip locked`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+        }
       }
     })
 
