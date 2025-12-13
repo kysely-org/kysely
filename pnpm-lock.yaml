@@ -14,6 +14,9 @@ importers:
       '@ark/attest':
         specifier: ^0.56.0
         version: 0.56.0(typescript@5.9.3)
+      '@electric-sql/pglite':
+        specifier: ^0.3.14
+        version: 0.3.14
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
