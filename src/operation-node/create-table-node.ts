@@ -4,6 +4,7 @@ import type { TableNode } from './table-node.js'
 import type { ConstraintNode } from './constraint-node.js'
 import type { ColumnDefinitionNode } from './column-definition-node.js'
 import type { ArrayItemType } from '../util/type-utils.js'
+import type { AddIndexNode } from './add-index-node.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
