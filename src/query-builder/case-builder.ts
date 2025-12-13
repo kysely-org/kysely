@@ -1,12 +1,17 @@
 import type { Expression } from '../expression/expression.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { freeze } from '../util/object-utils.js'
-import type { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  parseReferenceExpression,
+  type ExtractTypeFromReferenceExpression,
+  type ReferenceExpression,
+} from '../parser/reference-parser.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import {
   type ComparisonOperatorExpression,
   type OperandValueExpressionOrList,
+  parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import {
@@ -222,7 +227,7 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
    * Adds an `else` clause to the `case` statement where the value is a reference to a column.
    *
    * See {@link else} for value-first variant.
-   * 
+   *
    * An `elseRef` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
   elseRef<RE extends ReferenceExpression<DB, TB>>(
