@@ -153,7 +153,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  protected transformSelectModifier(
+  protected override transformSelectModifier(
     node: SelectModifierNode,
     queryId: QueryId,
   ): SelectModifierNode {
