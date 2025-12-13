@@ -301,6 +301,17 @@ export function testSql(
   chai.expect(expected.parameters).to.eql(sql.parameters)
 }
 
+testSql.skip = function (
+  _query: Compilable,
+  _dialect: BuiltInDialect,
+  _expectedPerDialect: PerDialect<{
+    sql: string | string[]
+    parameters: any[]
+  }>,
+) {
+  // noop
+}
+
 async function createDatabase(
   db: Kysely<Database>,
   dialect: BuiltInDialect,
