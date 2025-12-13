@@ -7,7 +7,7 @@ import type { OperationNodeSource } from '../operation-node/operation-node-sourc
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import {
   ColumnDefinitionBuilder,
   type ColumnDefinitionBuilderCallback,
@@ -56,7 +56,7 @@ import {
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 import {
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
 
