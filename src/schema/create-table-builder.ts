@@ -9,7 +9,7 @@ import type { Compilable } from '../util/compilable.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import type { QueryId } from '../util/query-id.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import {
@@ -31,7 +31,7 @@ import {
   type UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
 import {
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
 import {
@@ -45,7 +45,7 @@ import {
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import {
   CreateTableAddIndexBuilder,
-  CreateTableAddIndexBuilderCallback,
+  type CreateTableAddIndexBuilderCallback,
 } from './create-table-add-index-builder.js'
 
 /**
