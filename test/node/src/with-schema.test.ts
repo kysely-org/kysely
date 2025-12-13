@@ -337,9 +337,8 @@ for (const dialect of DIALECTS) {
 
         await query.execute()
       })
-    })
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         it('should also add schema to using clause', async () => {
           const query = ctx.db
             .withSchema('mammals')
@@ -363,12 +362,13 @@ for (const dialect of DIALECTS) {
       }
     })
 
-      describe('delete from', () => {
-        it('should add schema', async () => {
-          const query = ctx.db
-            .withSchema('mammals')
-            .deleteFrom('pet')
-            .where('pet.name', '=', 'Doggo')
+    describe('update', () => {
+      it('should add schema', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .updateTable('pet')
+          .where('pet.name', '=', 'Doggo')
+          .set({ species: 'cat' })
 
         testSql(query, dialect, {
           postgres: {
