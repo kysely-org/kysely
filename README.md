@@ -6,7 +6,9 @@
 [![Issues](https://img.shields.io/github/issues-closed/kysely-org/kysely?logo=github)](https://github.com/kysely-org/kysely/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
 [![Pull Requests](https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat)](https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
 ![GitHub contributors](https://img.shields.io/github/contributors/kysely-org/kysely)
-[![Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
+[![NPM Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
+[![JSR Downloads](https://jsr.io/badges/@kysely/kysely/weekly-downloads)](https://jsr.io/@kysely/kysely)
+[![JSR Score](https://jsr.io/badges/@kysely/kysely/score)](https://jsr.io/@kysely/kysely)
 
 ###### Join the discussion ⠀⠀⠀⠀⠀⠀⠀ 
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=flat&logo=discord&logoColor=white)](https://discord.gg/xyBJ3GwvAm)
