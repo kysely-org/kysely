@@ -1,7 +1,9 @@
+import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { Log } from '../util/log.js'
 import { performanceNow } from '../util/performance-now.js'
+import { ConnectionMutex } from './connection-mutex.js'
 import type { DatabaseConnection, QueryResult } from './database-connection.js'
 import type { Driver, TransactionSettings } from './driver.js'
 
