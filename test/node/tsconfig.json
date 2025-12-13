@@ -6,6 +6,7 @@
     "lib": ["ESNext"],
     "module": "CommonJS",
     "outDir": "dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   }
 }
