@@ -342,11 +342,17 @@ export function testSql(
 
 testSql.skip = function (
   _query: Compilable,
-  _dialect: BuiltInDialect,
-  _expectedPerDialect: PerDialect<{
+  _dialect: DialectDescriptor,
+  _expectedPerDialect: PerSQLDialect<{
     sql: string | string[]
     parameters: any[]
-  }>,
+  }> &
+    Partial<
+      Omit<
+        PerDialectVariant<{ sql: string | string[]; parameters: any[] }>,
+        keyof PerSQLDialect<any>
+      >
+    >,
 ) {
   // noop
 }
