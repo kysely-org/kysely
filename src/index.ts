@@ -245,6 +245,7 @@ export type {
   StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
+export * from './util/sync-not-supported-error.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
 

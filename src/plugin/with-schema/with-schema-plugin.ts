@@ -24,4 +24,8 @@ export class WithSchemaPlugin implements KyselyPlugin {
   ): Promise<QueryResult<UnknownRow>> {
     return args.result
   }
+
+  transformResultSync(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
+    return args.result
+  }
 }

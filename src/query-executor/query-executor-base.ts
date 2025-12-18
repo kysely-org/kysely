@@ -12,6 +12,10 @@ import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
+import {
+  PluginSyncNotSupportedError,
+  SyncNotSupportedError,
+} from '../util/sync-not-supported-error.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -60,6 +64,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
+  abstract provideConnectionSync<T>(
+    consumer: (connection: DatabaseConnection) => T,
+  ): T
+
   async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
@@ -71,6 +79,28 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       }
 
       return await this.#transformResult(result, compiledQuery.queryId)
+    })
+  }
+
+  executeQuerySync<R>(compiledQuery: CompiledQuery): QueryResult<R> {
+    if (!this.adapter.supportsSyncExecution) {
+      throw new SyncNotSupportedError()
+    }
+
+    return this.provideConnectionSync((connection) => {
+      if (!connection.executeQuerySync) {
+        throw new SyncNotSupportedError()
+      }
+
+      const result = connection.executeQuerySync(compiledQuery)
+
+      if ('numUpdatedOrDeletedRows' in result) {
+        logOnce(
+          'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
+        )
+      }
+
+      return this.#transformResultSync(result, compiledQuery.queryId)
     })
   }
 
@@ -107,6 +137,21 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<T>> {
     for (const plugin of this.#plugins) {
       result = await plugin.transformResult({ result, queryId })
+    }
+
+    return result
+  }
+
+  #transformResultSync<T>(
+    result: QueryResult<any>,
+    queryId: QueryId,
+  ): QueryResult<T> {
+    for (const plugin of this.#plugins) {
+      if (!plugin.transformResultSync) {
+        throw new PluginSyncNotSupportedError(plugin.constructor.name)
+      }
+
+      result = plugin.transformResultSync({ result, queryId })
     }
 
     return result

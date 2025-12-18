@@ -561,6 +561,17 @@ export class Kysely<DB>
     return this.getExecutor().executeQuery<R>(compiledQuery)
   }
 
+  /**
+   * Executes a given compiled query or query builder synchronously.
+   *
+   * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   */
+  executeQuerySync<R>(query: CompiledQuery<R> | Compilable<R>): QueryResult<R> {
+    const compiledQuery = isCompilable(query) ? query.compile() : query
+
+    return this.getExecutor().executeQuerySync<R>(compiledQuery)
+  }
+
   async [Symbol.asyncDispose]() {
     await this.destroy()
   }
@@ -1191,9 +1202,24 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     return this.#executor.provideConnection(consumer)
   }
 
+  provideConnectionSync<T>(consumer: (connection: DatabaseConnection) => T): T {
+    if (!this.#executor.provideConnectionSync) {
+      throw new Error(
+        'The current dialect does not support synchronous execution.',
+      )
+    }
+
+    return this.#executor.provideConnectionSync(consumer)
+  }
+
   executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.executeQuery(compiledQuery)
+  }
+
+  executeQuerySync<R>(compiledQuery: CompiledQuery<R>): QueryResult<R> {
+    assertNotCommittedOrRolledBack(this.#state)
+    return this.#executor.executeQuerySync(compiledQuery)
   }
 
   stream<R>(

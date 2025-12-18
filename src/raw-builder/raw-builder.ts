@@ -137,6 +137,19 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    */
   execute(executorProvider: QueryExecutorProvider): Promise<QueryResult<O>>
 
+  /**
+   * Executes the raw query synchronously.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const result = sql`select * from ${sql.table('person')}`.executeSync(db)
+   * ```
+   */
+  executeSync(executorProvider: QueryExecutorProvider): QueryResult<O>
+
   toOperationNode(): RawNode
 }
 
@@ -191,6 +204,12 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
     const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(this.#compile(executor))
+  }
+
+  executeSync(executorProvider: QueryExecutorProvider): QueryResult<O> {
+    const executor = this.#getExecutor(executorProvider)
+
+    return executor.executeQuerySync<O>(this.#compile(executor))
   }
 
   #getExecutor(executorProvider?: QueryExecutorProvider): QueryExecutor {

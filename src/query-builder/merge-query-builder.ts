@@ -932,6 +932,64 @@ export class WheneableMergeQueryBuilder<
 
     return result as SimplifyResult<O>
   }
+
+  /**
+   * Executes the query synchronously and returns an array of rows.
+   *
+   * Also see the {@link executeTakeFirstSync} and {@link executeTakeFirstOrThrowSync} methods.
+   */
+  executeSync(): SimplifyResult<O>[] {
+    const compiledQuery = this.compile()
+
+    const result = this.#props.executor.executeQuerySync<O>(compiledQuery)
+
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as MergeQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
+      return result.rows as any
+    }
+
+    return [new MergeResult(result.numAffectedRows) as any]
+  }
+
+  /**
+   * Executes the query synchronously and returns the first result or undefined if
+   * the query returned no result.
+   */
+  executeTakeFirstSync(): SimplifySingleResult<O> {
+    const [result] = this.executeSync()
+    return result as SimplifySingleResult<O>
+  }
+
+  /**
+   * Executes the query synchronously and returns the first result or throws if
+   * the query returned no result.
+   *
+   * By default an instance of {@link NoResultError} is thrown, but you can
+   * provide a custom error class, or callback as the only argument to throw a different
+   * error.
+   */
+  executeTakeFirstOrThrowSync(
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError,
+  ): SimplifyResult<O> {
+    const result = this.executeTakeFirstSync()
+
+    if (result === undefined) {
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
+    }
+
+    return result as SimplifyResult<O>
+  }
 }
 
 export class MatchedThenableMergeQueryBuilder<

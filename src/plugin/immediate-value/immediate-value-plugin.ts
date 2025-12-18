@@ -28,4 +28,8 @@ export class ImmediateValuePlugin implements KyselyPlugin {
   ): Promise<QueryResult<UnknownRow>> {
     return Promise.resolve(args.result)
   }
+
+  transformResultSync(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
+    return args.result
+  }
 }
