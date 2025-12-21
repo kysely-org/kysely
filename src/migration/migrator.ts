@@ -328,7 +328,7 @@ export class Migrator {
       await this.#ensureMigrationLockTableExists()
       await this.#ensureLockRowExists()
 
-      return await this.#runMigrations(getMigrationDirectionAndStep)
+      return await this.#runMigrations(getMigrationDirectionAndStep, options)
     } catch (error) {
       if (error instanceof MigrationResultSetError) {
         return error.resultSet
