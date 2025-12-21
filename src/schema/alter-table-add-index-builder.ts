@@ -11,7 +11,7 @@ import {
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { Compilable } from '../util/compilable.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isString } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 
 export class AlterTableAddIndexBuilder
@@ -63,10 +63,13 @@ export class AlterTableAddIndexBuilder
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
    *   .alterTable('person')
    *   .addIndex('person_first_name_and_age_index')
    *   .column('first_name')
+   *   .column(sql`(left(lower(last_name), 1))`)
    *   .column('age desc')
    *   .execute()
    * ```
@@ -74,17 +77,26 @@ export class AlterTableAddIndexBuilder
    * The generated SQL (MySQL):
    *
    * ```sql
-   * alter table `person` add index `person_first_name_and_age_index` (`first_name`, `age` desc)
+   * alter table `person`
+   * add index `person_first_name_and_age_index` (
+   *   `first_name`,
+   *   (left(lower(last_name), 1)),
+   *   `age` desc
+   * )
    * ```
    */
   column<CL extends string>(
     column: OrderedColumnName<CL>,
-  ): AlterTableAddIndexBuilder {
+  ): AlterTableAddIndexBuilder
+
+  column(expression: Expression<any>): AlterTableAddIndexBuilder
+
+  column(arg: any): any {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addIndex: AddIndexNode.cloneWithColumns(this.#props.node.addIndex!, [
-          parseOrderedColumnName(column),
+          isString(arg) ? parseOrderedColumnName(arg) : arg.toOperationNode(),
         ]),
       }),
     })
@@ -99,28 +111,39 @@ export class AlterTableAddIndexBuilder
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
    *   .alterTable('person')
    *   .addIndex('person_first_name_and_age_index')
-   *   .columns(['first_name', 'age desc'])
+   *   .columns(['first_name', sql`(left(lower(last_name), 1))`, 'age desc'])
    *   .execute()
    * ```
    *
    * The generated SQL (MySQL):
    *
    * ```sql
-   * alter table `person` add index `person_first_name_and_age_index` (`first_name`, `age` desc)
+   * alter table `person`
+   * add index `person_first_name_and_age_index` (
+   *   `first_name`,
+   *   (left(lower(last_name), 1)),
+   *   `age` desc
+   * )
    * ```
    */
   columns<CL extends string>(
-    columns: OrderedColumnName<CL>[],
+    columns: (OrderedColumnName<CL> | Expression<any>)[],
   ): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addIndex: AddIndexNode.cloneWithColumns(
           this.#props.node.addIndex!,
-          columns.map(parseOrderedColumnName),
+          columns.map((item) =>
+            isString(item)
+              ? parseOrderedColumnName(item)
+              : item.toOperationNode(),
+          ),
         ),
       }),
     })
@@ -146,7 +169,10 @@ export class AlterTableAddIndexBuilder
    * ```sql
    * alter table `person` add index `person_first_name_index` ((first_name < 'Sami'))
    * ```
+   *
+   * @deprecated Use {@link column} or {@link columns} with an {@link Expression} instead.
    */
+  // TODO: remove in v0.30
   expression(expression: Expression<any>): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
