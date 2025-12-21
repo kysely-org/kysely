@@ -16,7 +16,7 @@ importers:
         version: 0.56.0(typescript@5.9.3)
       '@electric-sql/pglite':
         specifier: ^0.3.14
-        version: 0.3.14
+        version: 0.3.15
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -89,6 +89,9 @@ importers:
       prettier:
         specifier: ^3.8.0
         version: 3.8.0
+      prototype-pollution-vulnerable-lodash.merge-dont-upgrade:
+        specifier: npm:lodash.merge@4.6.1
+        version: lodash.merge@4.6.1
       semver:
         specifier: ^7.7.3
         version: 7.7.3
@@ -1476,6 +1479,9 @@ packages:
   '@docusaurus/utils@3.9.2':
     resolution: {integrity: sha512-lBSBiRruFurFKXr5Hbsl2thmGweAPmddhF3jb99U4EMDA5L+e5Y1rAkOS07Nvrup7HUMBDrCV45meaxZnt28nQ==}
     engines: {node: '>=20.0'}
+
+  '@electric-sql/pglite@0.3.15':
+    resolution: {integrity: sha512-Cj++n1Mekf9ETfdc16TlDi+cDDQF0W7EcbyRHYOAeZdsAe8M/FJg18itDTSwyHfar2WIezawM9o0EKaRGVKygQ==}
 
   '@emnapi/runtime@1.8.1':
     resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
@@ -9385,6 +9391,8 @@ snapshots:
       - supports-color
       - uglify-js
       - webpack-cli
+
+  '@electric-sql/pglite@0.3.15': {}
 
   '@emnapi/runtime@1.8.1':
     dependencies:

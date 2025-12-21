@@ -1,5 +1,6 @@
 import * as path from 'node:path'
 import { promises as fs } from 'node:fs'
+import { setTimeout } from 'node:timers/promises'
 
 import {
   FileMigrationProvider,
@@ -1078,7 +1079,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       describe('custom migration tables in a custom schema', () => {
         it('should create custom migration tables in custom schema', async () => {
           const [migrator, executedUpMethods] = createMigrations(
@@ -1172,7 +1173,7 @@ for (const dialect of DIALECTS) {
             ...migrations,
             [config.name]: {
               async up(_db): Promise<void> {
-                await sleep(20)
+                await setTimeout(20)
 
                 if (config.error) {
                   throw new Error(config.error)
@@ -1182,7 +1183,7 @@ for (const dialect of DIALECTS) {
               },
 
               async down(_db): Promise<void> {
-                await sleep(20)
+                await setTimeout(20)
 
                 if (config.error) {
                   throw new Error(config.error)
@@ -1217,10 +1218,6 @@ for (const dialect of DIALECTS) {
       return !!tables.find(
         (it) => it.name === tableName && (!schema || it.schema === schema),
       )
-    }
-
-    function sleep(millis: number): Promise<void> {
-      return new Promise((resolve) => setTimeout(resolve, millis))
     }
   })
 }
