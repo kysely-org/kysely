@@ -14,7 +14,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isString } from '../util/object-utils.js'
 import type { Expression } from '../expression/expression.js'
 import {
   type ComparisonOperatorExpression,
@@ -106,73 +106,88 @@ export class CreateIndexBuilder<C = never>
   /**
    * Adds a column to the index.
    *
-   * Also see {@link columns} for adding multiple columns at once or {@link expression}
-   * for specifying an arbitrary expression.
+   * Also see {@link columns} for adding multiple columns at once.
    *
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
-   *         .createIndex('person_first_name_and_age_index')
-   *         .on('person')
-   *         .column('first_name')
-   *         .column('age desc')
-   *         .execute()
+   *   .createIndex('person_first_name_and_age_index')
+   *   .on('person')
+   *   .column('first_name')
+   *   .column<'last_name'>(sql`left(lower("last_name"), 1)`)
+   *   .column('age desc')
+   *   .where('last_name', 'is not', null)
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create index "person_first_name_and_age_index" on "person" ("first_name", "age" desc)
+   * create index "person_first_name_and_age_index"
+   * on "person" ("first_name", left(lower("last_name"), 1), "age" desc)
+   * where "last_name" is not null
    * ```
    */
   column<CL extends string>(
     column: OrderedColumnName<CL>,
-  ): CreateIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>> {
+  ): CreateIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>>
+  column<CL extends string = never>(
+    expression: Expression<any>,
+  ): CreateIndexBuilder<C | CL>
+  column(arg: any): any {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWithColumns(this.#props.node, [
-        parseOrderedColumnName(column),
+        isString(arg) ? parseOrderedColumnName(arg) : arg.toOperationNode(),
       ]),
     })
   }
 
   /**
-   * Specifies a list of columns for the index.
+   * Adds a list of columns to the index.
    *
-   * Also see {@link column} for adding a single column or {@link expression} for
-   * specifying an arbitrary expression.
+   * Also see {@link column} for adding a single column.
    *
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
-   *         .createIndex('person_first_name_and_age_index')
-   *         .on('person')
-   *         .columns(['first_name', 'age desc'])
-   *         .execute()
+   *   .createIndex('person_first_name_and_age_index')
+   *   .on('person')
+   *   .columns(['first_name', sql`left(lower("last_name"), 1)`, 'age desc'])
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create index "person_first_name_and_age_index" on "person" ("first_name", "age" desc)
+   * create index "person_first_name_and_age_index"
+   * on "person" ("first_name", left(lower("last_name"), 1), "age" desc)
    * ```
    */
   columns<CL extends string>(
-    columns: OrderedColumnName<CL>[],
+    columns: (OrderedColumnName<CL> | Expression<any>)[],
   ): CreateIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWithColumns(
         this.#props.node,
-        columns.map(parseOrderedColumnName),
+        columns.map((item) =>
+          isString(item)
+            ? parseOrderedColumnName(item)
+            : item.toOperationNode(),
+        ),
       ),
     })
   }
 
   /**
-   * Specifies an arbitrary expression for the index.
+   * Adds an arbitrary expression as a column to the index.
    *
    * ### Examples
    *
@@ -183,15 +198,20 @@ export class CreateIndexBuilder<C = never>
    *   .createIndex('person_first_name_index')
    *   .on('person')
    *   .expression(sql`first_name COLLATE "fi_FI"`)
+   *   .column('gender')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create index "person_first_name_index" on "person" (first_name COLLATE "fi_FI")
+   * create index "person_first_name_index"
+   * on "person" (first_name COLLATE "fi_FI", "gender")
    * ```
+   *
+   * @deprecated Use {@link column} or {@link columns} with an {@link Expression} instead.
    */
+  // TODO: remove in v0.30
   expression(expression: Expression<any>): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
@@ -203,6 +223,23 @@ export class CreateIndexBuilder<C = never>
 
   /**
    * Specifies the index type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createIndex('person_first_name_index')
+   *   .on('person')
+   *   .column('first_name')
+   *   .using('hash')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create index `person_first_name_index` on `person` (`first_name`) using hash
+   * ```
    */
   using(indexType: IndexType): CreateIndexBuilder<C>
   using(indexType: string): CreateIndexBuilder<C>
@@ -217,6 +254,8 @@ export class CreateIndexBuilder<C = never>
 
   /**
    * Adds a where clause to the query. This Effectively turns the index partial.
+   *
+   * This is only supported by some dialects like PostgreSQL and MS SQL Server.
    *
    * ### Examples
    *
