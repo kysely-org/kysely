@@ -546,14 +546,30 @@ export class Migrator {
       }
     }
 
-    const disableTransaction =
+    const disableTransactions =
       options?.disableTransactions ?? this.#props.disableTransactions
 
-    if (!adapter.supportsTransactionalDdl || disableTransaction) {
-      return this.#props.db.connection().execute(run)
+    if (this.#props.db.isTransaction) {
+      if (!adapter.supportsTransactionalDdl) {
+        throw new Error(
+          'Transactional DDL is not supported in this dialect. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+        )
+      }
+
+      if (disableTransactions) {
+        throw new Error(
+          '`disableTransactions` is true but the migrator was given a transaction. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+        )
+      }
+
+      return run(this.#props.db)
     }
 
-    return this.#props.db.transaction().execute(run)
+    if (adapter.supportsTransactionalDdl && !disableTransactions) {
+      return this.#props.db.transaction().execute(run)
+    }
+
+    return this.#props.db.connection().execute(run)
   }
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
