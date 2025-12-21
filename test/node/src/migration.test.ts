@@ -1,15 +1,16 @@
-import * as path from 'path'
-import { promises as fs } from 'fs'
+import * as path from 'node:path'
+import { promises as fs } from 'node:fs'
 
 import {
   FileMigrationProvider,
-  Migration,
-  MigrationResultSet,
+  type Migration,
+  type MigrationResultSet,
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
+  type MigrationProvider,
   Migrator,
   NO_MIGRATIONS,
-  MigratorProps,
+  type MigratorProps,
   type Kysely,
 } from '../../../'
 
@@ -845,7 +846,6 @@ for (const dialect of DIALECTS) {
         }
       })
 
-
       it('should execute in transaction if disableTransactions is false when calling `migrateUp` and transactionDdl supported', async () => {
         const [migrator, executedUpMethods] = createMigrations(['migration1'], {
           disableTransactions: true,
@@ -866,6 +866,36 @@ for (const dialect of DIALECTS) {
         } else {
           expect(transactionSpy.called).to.be.false
         }
+      })
+
+      it('should run migrations using a provided transaction', async () => {
+        const migrationName = 'trx_connection_method_fail_case'
+
+        const trx = await ctx.db.startTransaction().execute()
+
+        const provider: MigrationProvider = {
+          getMigrations: async () => ({
+            [migrationName]: {
+              async up(db: Kysely<any>): Promise<void> {
+                expect(db).to.equal(trx)
+              },
+            },
+          }),
+        }
+
+        const migrator = new Migrator({ db: trx, provider })
+
+        const { results, error } = await migrator.migrateUp()
+
+        expect(trx.isCommitted).to.be.false
+        expect(trx.isRolledBack).to.be.false
+
+        await trx.rollback().execute()
+
+        expect(error).to.be.undefined
+        expect(results).to.eql([
+          { migrationName, direction: 'Up', status: 'Success' },
+        ])
       })
     })
 
