@@ -32,7 +32,7 @@ const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
 for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
 
-  describe.only(`${variant}: migration`, () => {
+  describe(`${variant}: migration`, () => {
     let ctx: TestContext
 
     before(async function () {
