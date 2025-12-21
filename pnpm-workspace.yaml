@@ -2,22 +2,33 @@ packages:
   - './site'
   - './test/cloudflare-workers'
 
-# `postinstall` ignore list
-ignoredBuiltDependencies:
-  - core-js # site dependency
-  - core-js-pure # site dependency
-  - sharp # wrangler dependency
+# Allow (true) or disallow (false) script execution.
+# https://pnpm.io/settings#allowbuilds
+allowBuilds:
+  better-sqlite3@12.5.0: true
+  core-js: false # site dependency, useless scripts
+  core-js-pure: false # site dependency, useless scripts
+  esbuild@0.27.0: true
+  sharp: false # wrangler dependency, useless scripts
+  workerd@1.20251125.0: true # wrangler@4.51.0 dependency
 
-minimumReleaseAge: 1440 # install package versions that are at least 1 day old (in minutes).
+# All transitive dependencies must be resolved from a trusted source.
+# Packages from trusted sources are considered safer, as they are typically subject
+# to more reliable verification and scanning for malware and vulnerabilities.
+# https://pnpm.io/settings#blockexoticsubdeps
+blockExoticSubdeps: true
 
-# `postinstall` allow list
-onlyBuiltDependencies:
-  - better-sqlite3@12.5.0
-  - esbuild@0.27.0
-  - workerd@1.20251125.0 # wrangler@4.51.0 dependency
+# The minimum number of minutes that must pass after a version is published before
+# pnpm will install it.
+# https://pnpm.io/settings#minimumreleaseage
+minimumReleaseAge: 1440 # 1 day old in minutes.
 
-trustPolicy: no-downgrade # fail if there's a regression in attestation of packages.
+# Fail if a package's trust level has decreased compared to previous releases.
+# https://pnpm.io/settings#trustpolicy
+trustPolicy: no-downgrade
 
+# A list of package selectors that should be excluded from the trust policy check.
+# https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
   - langium@3.3.1 # mermaid@11.12.1 dependency - https://socket.dev/npm/package/langium/overview/3.3.1
   - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.9.2 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
