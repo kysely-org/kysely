@@ -1,15 +1,16 @@
-import * as path from 'path'
-import { promises as fs } from 'fs'
+import * as path from 'node:path'
+import { promises as fs } from 'node:fs'
 
 import {
   FileMigrationProvider,
-  Migration,
-  MigrationResultSet,
+  type Migration,
+  type MigrationResultSet,
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
+  type MigrationProvider,
   Migrator,
   NO_MIGRATIONS,
-  MigratorProps,
+  type MigratorProps,
   type Kysely,
 } from '../../../'
 
@@ -18,7 +19,7 @@ import {
   destroyTest,
   expect,
   initTest,
-  TestContext,
+  type TestContext,
   DIALECTS,
   type Database,
 } from './test-setup.js'
@@ -866,6 +867,72 @@ for (const dialect of DIALECTS) {
           expect(transactionSpy.called).to.be.false
         }
       })
+
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
+        it('should run migrations using a provided transaction', async () => {
+          const migrationName = 'trx_connection_method_fail_case'
+
+          const trx = await ctx.db.startTransaction().execute()
+
+          try {
+            const provider: MigrationProvider = {
+              getMigrations: async () => ({
+                [migrationName]: {
+                  async up(db: Kysely<any>): Promise<void> {
+                    expect(db).to.equal(trx)
+                  },
+                },
+              }),
+            }
+
+            const migrator = new Migrator({ db: trx, provider })
+
+            const { results, error } = await migrator.migrateUp()
+
+            expect(trx.isCommitted).to.be.false
+            expect(trx.isRolledBack).to.be.false
+
+            expect(error).to.be.undefined
+            expect(results).to.eql([
+              { migrationName, direction: 'Up', status: 'Success' },
+            ])
+          } finally {
+            await trx.rollback().execute()
+          }
+        })
+      }
+
+      if (sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
+        it('should refuse to run migrations using a provided transaction due to lack of support for transactional DDL', async () => {
+          const trx = await ctx.db.startTransaction().execute()
+          try {
+            const provider: MigrationProvider = {
+              getMigrations: async () => ({
+                some_migration: {
+                  async up(db: Kysely<any>): Promise<void> {
+                    expect(db).to.equal(trx)
+                  },
+                },
+              }),
+            }
+
+            const migrator = new Migrator({ db: trx, provider })
+
+            const { results, error } = await migrator.migrateUp()
+
+            expect(error).to.be.an.instanceOf(Error)
+            expect(getMessage(error)).to.eql(
+              'Transactional DDL is not supported in this dialect. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+            )
+            expect(results).to.be.undefined
+
+            expect(trx.isCommitted).to.be.false
+            expect(trx.isRolledBack).to.be.false
+          } finally {
+            await trx.rollback().execute()
+          }
+        })
+      }
     })
 
     describe('migrateDown', () => {
