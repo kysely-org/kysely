@@ -437,7 +437,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'sqlite') {
+    if (sqlSpec === 'sqlite') {
       it('should order and limit the amount of updated rows and return', async () => {
         const query = ctx.db
           .updateTable('person')
