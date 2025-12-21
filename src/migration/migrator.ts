@@ -534,9 +534,7 @@ export class Migrator {
     }
 
     const disableTransactions =
-      options?.disableTransactions ||
-      (options?.disableTransactions !== false &&
-        this.#props.disableTransactions)
+      options?.disableTransactions ?? this.#props.disableTransactions
 
     if (this.#props.db.isTransaction) {
       if (!adapter.supportsTransactionalDdl) {
