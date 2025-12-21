@@ -503,19 +503,21 @@ for (const dialect of DIALECTS) {
 
       expect(typeof result.bigNumber).to.equal(
         {
+          pglite: 'number',
           postgres: 'string',
           mysql: 'string',
           mssql: 'number',
           sqlite: 'number',
-        }[dialect],
+        }[variant],
       )
       expect(typeof result.number).to.equal(
         {
+          pglite: 'number',
           postgres: 'number',
           mysql: 'string',
           mssql: 'number',
           sqlite: 'number',
-        }[dialect],
+        }[variant],
       )
       expect(typeof result.dehydrated.bigNumber).to.equal('number')
       expect(typeof result.dehydrated.number).to.equal('number')
@@ -544,9 +546,9 @@ for (const dialect of DIALECTS) {
           mysql: 'object',
           mssql: 'object',
           sqlite: 'string',
-        }[dialect],
+        }[sqlSpec],
       )
-      if (dialect !== 'sqlite') {
+      if (sqlSpec !== 'sqlite') {
         expect(result.date instanceof Date).to.equal(true)
       }
       expect(typeof result.dehydrated.date).to.equal('string')
@@ -556,19 +558,24 @@ for (const dialect of DIALECTS) {
     })
 
     it('should dehydrate Buffer to string in jsonArrayFrom', async () => {
-      const buffer = {
-        postgres: sql<Buffer>`'\\xDEADBEEF'::bytea`,
-        mysql: sql<Buffer>`UNHEX('DEADBEEF')`,
-        mssql: sql<Buffer>`CAST('DEADBEEF' AS VARBINARY)`,
-        sqlite: sql<Buffer>`X'DEADBEEF'`,
-      }[dialect].as('buffer')
+      const buffer = (
+        {
+          pglite: sql<Uint8Array>`'\\xDEADBEEF'::bytea`,
+          postgres: sql<Buffer>`'\\xDEADBEEF'::bytea`,
+          mysql: sql<Buffer>`UNHEX('DEADBEEF')`,
+          mssql: sql<Buffer>`CAST('DEADBEEF' AS VARBINARY)`,
+          sqlite: sql<Buffer>`X'DEADBEEF'`,
+        }[variant] satisfies RawBuilder<Buffer | Uint8Array> as RawBuilder<
+          Buffer | Uint8Array
+        >
+      ).as('buffer')
 
       const result = await db
         .selectNoFrom([
           buffer,
           jsonObjectFrom(
             db.selectNoFrom([
-              dialect === 'sqlite'
+              sqlSpec === 'sqlite'
                 ? expressionBuilder()
                     .cast<string>(buffer.expression, 'text')
                     .as('buffer')
@@ -581,10 +588,14 @@ for (const dialect of DIALECTS) {
         .executeTakeFirstOrThrow()
 
       expect(typeof result.buffer).to.equal('object')
-      expect(Buffer.isBuffer(result.buffer)).to.equal(true)
+      expect(
+        variant === 'pglite'
+          ? ArrayBuffer.isView(result.buffer)
+          : Buffer.isBuffer(result.buffer),
+      ).to.equal(true)
       expect(typeof result.dehydrated.buffer).to.equal('string')
 
-      const expectedType0: Buffer = result.buffer
+      const expectedType0: Buffer | Uint8Array = result.buffer
       const expectedType1: string = result.dehydrated.buffer
     })
   })
