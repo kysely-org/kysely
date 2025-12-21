@@ -1855,7 +1855,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
             .on('test')
-            .expression(sql`(first_name < 'Sami')`)
+            .column(sql`(first_name < 'Sami')`)
 
           testSql(builder, dialect, {
             postgres: {
@@ -4093,7 +4093,7 @@ for (const dialect of DIALECTS) {
             const query = ctx.db.schema
               .alterTable('test')
               .addIndex('test_varchar_col_index')
-              .expression(sql`(varchar_col < 'Sami')`)
+              .column(sql`(varchar_col < 'Sami')`)
 
             testSql(query, dialect, {
               mysql: {
