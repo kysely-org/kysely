@@ -134,11 +134,9 @@ export class CreateIndexBuilder<C = never>
   column<CL extends string>(
     column: OrderedColumnName<CL>,
   ): CreateIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>>
-
   column<CL extends string = never>(
     expression: Expression<any>,
   ): CreateIndexBuilder<C | CL>
-
   column(arg: any): any {
     return new CreateIndexBuilder({
       ...this.#props,
