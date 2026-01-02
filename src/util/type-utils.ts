@@ -78,9 +78,9 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: `${T & string}.${keyof DB[T] & string}`
-}[TB]
+export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends any
+  ? `${TB & string}.${keyof DB[TB] & string}`
+  : never
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
