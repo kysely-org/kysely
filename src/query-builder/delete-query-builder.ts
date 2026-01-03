@@ -27,6 +27,7 @@ import type {
 import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import type {
+  BivariantCallback,
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
@@ -857,7 +858,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 

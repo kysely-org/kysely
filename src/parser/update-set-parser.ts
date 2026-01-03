@@ -12,7 +12,11 @@ import {
   parseReferenceExpression,
   type ReferenceExpression,
 } from './reference-parser.js'
-import type { AnyColumn, DrainOuterGeneric } from '../util/type-utils.js'
+import type {
+  AnyColumn,
+  BivariantCallback,
+  DrainOuterGeneric,
+} from '../util/type-utils.js'
 
 export type UpdateObject<
   DB,
@@ -30,7 +34,10 @@ export type UpdateObjectFactory<
   DB,
   TB extends keyof DB,
   UT extends keyof DB,
-> = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
+> = BivariantCallback<
+  ExpressionBuilder<DB, TB>,
+  UpdateObject<DB, TB, UT>
+>
 
 export type UpdateObjectExpression<
   DB,

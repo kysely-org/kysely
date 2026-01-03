@@ -8,7 +8,6 @@ import {
   NOT_SUPPORTED,
   createTableWithId,
   DIALECTS,
-  insert,
   limit,
   type Database,
   type Pet,
@@ -33,14 +32,24 @@ for (const dialect of DIALECTS.filter(
     })
 
     beforeEach(async () => {
-      const personId = await insert(
-        ctx as never,
-        ctx.db.insertInto('person').values({
-          first_name: 'Foo',
-          last_name: 'Bar',
-          gender: 'other',
-        }),
-      )
+      const insertPersonQuery = ctx.db.insertInto('person').values({
+        first_name: 'Foo',
+        last_name: 'Bar',
+        gender: 'other',
+      })
+
+      const personId =
+        dialect === 'postgres'
+          ? (
+              await insertPersonQuery
+                .returning('id')
+                .executeTakeFirstOrThrow()
+            ).id
+          : (
+              await insertPersonQuery
+                .output('inserted.id')
+                .executeTakeFirstOrThrow()
+            ).id
 
       await ctx.db
         .withSchema('mammals')

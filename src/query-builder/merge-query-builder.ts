@@ -48,6 +48,7 @@ import type { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type {
+  BivariantCallback,
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
@@ -802,7 +803,7 @@ export class WheneableMergeQueryBuilder<
    *   .execute()
    * ```
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 

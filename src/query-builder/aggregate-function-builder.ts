@@ -2,7 +2,7 @@ import { freeze } from '../util/object-utils.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import type { OverBuilder } from './over-builder.js'
+import type { OverBuilderCallbackBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import type {
   AliasableExpression,
@@ -16,7 +16,10 @@ import {
   parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import type { SqlBool } from '../util/type-utils.js'
+import type {
+  BivariantCallback,
+  SqlBool,
+} from '../util/type-utils.js'
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   type DirectedOrderByStringReference,
@@ -402,8 +405,8 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  over(
-    over?: OverBuilderCallback<DB, TB>,
+  over<DB2 extends DB, TB2 extends keyof DB2 & TB>(
+    over?: OverBuilderCallback<DB2, TB2>,
   ): AggregateFunctionBuilder<DB, TB, O> {
     const builder = createOverBuilder()
 
@@ -420,7 +423,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 
@@ -494,6 +497,7 @@ export interface AggregateFunctionBuilderProps {
   aggregateFunctionNode: AggregateFunctionNode
 }
 
-export type OverBuilderCallback<DB, TB extends keyof DB> = (
-  builder: OverBuilder<DB, TB>,
-) => OverBuilder<any, any>
+export type OverBuilderCallback<DB, TB extends keyof DB> = BivariantCallback<
+  OverBuilderCallbackBuilder<DB, TB>,
+  OverBuilderCallbackBuilder<any, any>
+>

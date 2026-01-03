@@ -4,6 +4,7 @@ import {
   type ExpressionBuilder,
 } from '../expression/expression-builder.js'
 import { isFunction } from '../util/object-utils.js'
+import type { BivariantCallback } from '../util/type-utils.js'
 import {
   parseReferenceExpressionOrList,
   type ReferenceExpression,
@@ -16,9 +17,10 @@ export type GroupByExpression<DB, TB extends keyof DB, O> =
 export type GroupByArg<DB, TB extends keyof DB, O> =
   | GroupByExpression<DB, TB, O>
   | ReadonlyArray<GroupByExpression<DB, TB, O>>
-  | ((
-      eb: ExpressionBuilder<DB, TB>,
-    ) => ReadonlyArray<GroupByExpression<DB, TB, O>>)
+  | BivariantCallback<
+      ExpressionBuilder<DB, TB>,
+      ReadonlyArray<GroupByExpression<DB, TB, O>>
+    >
 
 export function parseGroupBy(
   groupBy: GroupByArg<any, any, any>,

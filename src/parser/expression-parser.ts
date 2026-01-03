@@ -11,6 +11,7 @@ import {
   expressionBuilder,
   type ExpressionBuilder,
 } from '../expression/expression-builder.js'
+import type { BivariantCallback } from '../util/type-utils.js'
 import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
 
@@ -34,17 +35,20 @@ export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
   | AliasedExpression<any, any>
   | AliasedExpressionFactory<DB, TB>
 
-export type ExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>,
-) => Expression<V>
+export type ExpressionFactory<DB, TB extends keyof DB, V> = BivariantCallback<
+  ExpressionBuilder<DB, TB>,
+  Expression<V>
+>
 
-type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>,
-) => OperandExpression<V>
+type OperandExpressionFactory<DB, TB extends keyof DB, V> = BivariantCallback<
+  ExpressionBuilder<DB, TB>,
+  OperandExpression<V>
+>
 
-type AliasedExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>,
-) => AliasedExpression<any, any>
+type AliasedExpressionFactory<DB, TB extends keyof DB> = BivariantCallback<
+  ExpressionBuilder<DB, TB>,
+  AliasedExpression<any, any>
+>
 
 export function parseExpression(
   exp: ExpressionOrFactory<any, any, any>,

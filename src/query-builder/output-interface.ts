@@ -7,6 +7,7 @@ import type {
 import type {
   AnyAliasedColumnWithTable,
   AnyColumnWithTable,
+  BivariantCallback,
 } from '../util/type-utils.js'
 
 export interface OutputInterface<
@@ -190,9 +191,10 @@ export type OutputCallback<
   DB,
   TB extends keyof DB,
   OP extends OutputPrefix = OutputPrefix,
-> = (
-  eb: ExpressionBuilder<OutputDatabase<DB, TB, OP>, OP>,
-) => ReadonlyArray<OutputExpression<DB, TB, OP>>
+> = BivariantCallback<
+  ExpressionBuilder<OutputDatabase<DB, TB, OP>, OP>,
+  ReadonlyArray<OutputExpression<DB, TB, OP>>
+>
 
 export type SelectExpressionFromOutputExpression<OE> =
   OE extends `${OutputPrefix}.${infer C}` ? C : OE

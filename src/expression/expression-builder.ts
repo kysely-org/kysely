@@ -79,7 +79,30 @@ import {
 import { CastNode } from '../operation-node/cast-node.js'
 import type { SelectFrom } from '../parser/select-from-parser.js'
 
-export interface ExpressionBuilder<DB, TB extends keyof DB> {
+type ExpressionBuilderCall<DB, TB extends keyof DB> = {
+  bivarianceHack<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: VE,
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    OP extends ComparisonOperator
+      ? SqlBool
+      : OP extends Expression<infer T>
+        ? unknown extends T
+          ? SqlBool
+          : T
+        : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
+}['bivarianceHack']
+
+export interface ExpressionBuilder<DB, TB extends keyof DB>
+  extends ExpressionBuilderCall<DB, TB> {
   /**
    * Creates a binary expression.
    *
@@ -170,26 +193,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  <
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
-  >(
-    lhs: RE,
-    op: OP,
-    rhs: VE,
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : OP extends Expression<infer T>
-        ? unknown extends T
-          ? SqlBool
-          : T
-        : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  >
-
   /**
    * Returns a copy of `this` expression builder, for destructuring purposes.
    *

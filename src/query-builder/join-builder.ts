@@ -10,7 +10,7 @@ import {
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
-import type { SqlBool } from '../util/type-utils.js'
+import type { BivariantCallback, SqlBool } from '../util/type-utils.js'
 
 export class JoinBuilder<
   DB,
@@ -83,7 +83,7 @@ export class JoinBuilder<
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 

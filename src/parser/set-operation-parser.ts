@@ -8,14 +8,16 @@ import {
   SetOperationNode,
 } from '../operation-node/set-operation-node.js'
 import { isFunction, isReadonlyArray } from '../util/object-utils.js'
+import type { BivariantCallback } from '../util/type-utils.js'
 import { parseExpression } from './expression-parser.js'
 
 export type SetOperandExpression<DB, O> =
   | Expression<O>
   | ReadonlyArray<Expression<O>>
-  | ((
-      eb: ExpressionBuilder<DB, never>,
-    ) => Expression<O> | ReadonlyArray<Expression<O>>)
+  | BivariantCallback<
+      ExpressionBuilder<DB, never>,
+      Expression<O> | ReadonlyArray<Expression<O>>
+    >
 
 export function parseSetOperations(
   operator: SetOperator,

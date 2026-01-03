@@ -3,6 +3,7 @@ import type { JoinBuilder } from '../query-builder/join-builder.js'
 import type {
   AnyColumn,
   AnyColumnWithTable,
+  BivariantCallback,
   DrainOuterGeneric,
 } from '../util/type-utils.js'
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
@@ -22,9 +23,11 @@ export type JoinReferenceExpression<
   AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
 >
 
-export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
-  join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
-) => JoinBuilder<any, any>
+export type JoinCallbackExpression<DB, TB extends keyof DB, TE> =
+  BivariantCallback<
+    JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
+    JoinBuilder<any, any>
+  >
 
 type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
   From<DB, TE>,

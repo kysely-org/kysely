@@ -6,6 +6,7 @@ import type {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
+  BivariantCallback,
   DrainOuterGeneric,
   ExtractColumnType,
 } from '../util/type-utils.js'
@@ -34,9 +35,10 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | DynamicReferenceBuilder<any>
   | AliasedExpressionOrFactory<DB, TB>
 
-export type SelectCallback<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>,
-) => ReadonlyArray<SelectExpression<DB, TB>>
+export type SelectCallback<DB, TB extends keyof DB> = BivariantCallback<
+  ExpressionBuilder<DB, TB>,
+  ReadonlyArray<SelectExpression<DB, TB>>
+>
 
 /**
  * Turns a SelectExpression or a union of them into a selection object.
@@ -71,7 +73,7 @@ export type SelectArg<
 > =
   | SE
   | ReadonlyArray<SE>
-  | ((eb: ExpressionBuilder<DB, TB>) => ReadonlyArray<SE>)
+  | BivariantCallback<ExpressionBuilder<DB, TB>, ReadonlyArray<SE>>
 
 type FlattenSelectExpression<SE> =
   SE extends DynamicReferenceBuilder<infer RA>

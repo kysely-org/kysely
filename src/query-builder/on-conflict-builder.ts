@@ -17,7 +17,7 @@ import {
 } from '../parser/update-set-parser.js'
 import type { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
-import type { AnyColumn, SqlBool } from '../util/type-utils.js'
+import type { AnyColumn, BivariantCallback, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<
@@ -267,7 +267,7 @@ export class OnConflictBuilder<
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 }
@@ -369,7 +369,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 

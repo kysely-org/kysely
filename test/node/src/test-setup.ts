@@ -238,13 +238,31 @@ export async function insertPersons(
   ctx: TestContext,
   insertPersons: PersonInsertParams[],
 ): Promise<void> {
+  const { dialect } = ctx
+
   for (const insertPerson of insertPersons) {
     const { pets, ...person } = insertPerson
 
-    const personId = await insert(
-      ctx,
-      ctx.db.insertInto('person').values({ ...person }),
-    )
+    const insertPersonQuery = ctx.db
+      .insertInto('person')
+      .values({ ...person })
+
+    let personId: number
+
+    if (dialect === 'postgres' || dialect === 'sqlite') {
+      const result = await insertPersonQuery
+        .returning('id')
+        .executeTakeFirstOrThrow()
+      personId = result.id
+    } else if (dialect === 'mssql') {
+      const result = await insertPersonQuery
+        .output('inserted.id')
+        .executeTakeFirstOrThrow()
+      personId = result.id
+    } else {
+      const insertResult = await insert(insertPersonQuery)
+      personId = insertIdToNumber(insertResult.insertId)
+    }
 
     for (const insertPet of pets ?? []) {
       await insertPetForPerson(ctx, personId, insertPet)
@@ -442,12 +460,29 @@ async function insertPetForPerson(
   personId: number,
   insertPet: PetInsertParams,
 ): Promise<void> {
+  const { dialect } = ctx
   const { toys, ...pet } = insertPet
 
-  const petId = await insert(
-    ctx,
-    ctx.db.insertInto('pet').values({ ...pet, owner_id: personId }),
-  )
+  const insertPetQuery = ctx.db
+    .insertInto('pet')
+    .values({ ...pet, owner_id: personId })
+
+  let petId: number
+
+  if (dialect === 'postgres' || dialect === 'sqlite') {
+    const result = await insertPetQuery
+      .returning('id')
+      .executeTakeFirstOrThrow()
+    petId = result.id
+  } else if (dialect === 'mssql') {
+    const result = await insertPetQuery
+      .output('inserted.id')
+      .executeTakeFirstOrThrow()
+    petId = result.id
+  } else {
+    const insertResult = await insert(insertPetQuery)
+    petId = insertIdToNumber(insertResult.insertId)
+  }
 
   for (const toy of toys ?? []) {
     await insertToysForPet(ctx, petId, toy)
@@ -465,28 +500,16 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-export async function insert<TB extends keyof Database>(
-  ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, InsertResult>,
-): Promise<number> {
-  const { dialect } = ctx
+export async function insert<DB extends Database, TB extends keyof DB>(
+  qb: InsertQueryBuilder<DB, TB, InsertResult>,
+): Promise<InsertResult> {
+  return qb.executeTakeFirstOrThrow()
+}
 
-  if (dialect === 'postgres' || dialect === 'sqlite') {
-    const { id } = await qb.returning('id').executeTakeFirstOrThrow()
-
-    return id
+function insertIdToNumber(insertId: bigint | undefined): number {
+  if (insertId === undefined) {
+    throw new Error('insertId was undefined for insert query')
   }
-
-  if (dialect === 'mssql') {
-    const { id } = await qb
-      .output('inserted.id' as any)
-      .$castTo<{ id: number }>()
-      .executeTakeFirstOrThrow()
-
-    return id
-  }
-
-  const { insertId } = await qb.executeTakeFirstOrThrow()
 
   return Number(insertId)
 }

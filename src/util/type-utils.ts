@@ -36,7 +36,7 @@ import type { MergeResult } from '../query-builder/merge-result.js'
  * ```
  */
 export type AnyColumn<DB, TB extends keyof DB> = {
-  [T in TB]: keyof DB[T]
+  [T in TB]: keyof NonNullable<DB[T]>
 }[TB] &
   string
 
@@ -44,7 +44,9 @@ export type AnyColumn<DB, TB extends keyof DB> = {
  * Extracts a column type.
  */
 export type ExtractColumnType<DB, TB extends keyof DB, C> = {
-  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+  [T in TB]: C extends keyof NonNullable<DB[T]>
+    ? NonNullable<DB[T]>[C]
+    : never
 }[TB]
 
 /**
@@ -78,8 +80,8 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends keyof DB
-  ? `${TB & string}.${keyof DB[TB] & string}`
+export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends any
+  ? `${TB & string}.${AnyColumn<DB, TB>}`
   : never
 
 /**
@@ -214,6 +216,10 @@ export type SqlBool = boolean | 0 | 1
  * ```
  */
 export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
+
+export type BivariantCallback<Arg, Return> = {
+  bivarianceHack(arg: Arg): Return
+}['bivarianceHack']
 
 export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T

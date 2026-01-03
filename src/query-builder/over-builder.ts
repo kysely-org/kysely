@@ -1,7 +1,9 @@
 import type { Expression } from '../expression/expression.js'
+import type { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OverNode } from '../operation-node/over-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   type DirectedOrderByStringReference,
   type OrderByExpression,
@@ -13,7 +15,9 @@ import {
   type PartitionByExpression,
   type PartitionByExpressionOrList,
 } from '../parser/partition-by-parser.js'
+import type { StringReference } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
+import type { BivariantCallback } from '../util/type-utils.js'
 import type { OrderByInterface } from './order-by-interface.js'
 
 export class OverBuilder<DB, TB extends keyof DB>
@@ -115,14 +119,18 @@ export class OverBuilder<DB, TB extends keyof DB>
    * ```
    */
   partitionBy(
-    partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>,
+    partitionBy: ReadonlyArray<
+      PartitionByExpression<DB, TB>
+    >,
   ): OverBuilder<DB, TB>
 
   partitionBy<PE extends PartitionByExpression<DB, TB>>(
     partitionBy: PE,
   ): OverBuilder<DB, TB>
 
-  partitionBy(partitionBy: PartitionByExpressionOrList<DB, TB>): any {
+  partitionBy(
+    partitionBy: PartitionByExpressionOrList<DB, TB>,
+  ): any {
     return new OverBuilder({
       overNode: OverNode.cloneWithPartitionByItems(
         this.#props.overNode,
@@ -135,7 +143,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
-  $call<T>(func: (qb: this) => T): T {
+  $call<T>(func: BivariantCallback<this, T>): T {
     return func(this)
   }
 
@@ -144,6 +152,61 @@ export class OverBuilder<DB, TB extends keyof DB>
   }
 }
 
+export interface OverBuilderCallbackBuilder<DB, TB extends keyof DB> {
+  orderBy<OE extends OverBuilderOrderByExpression<DB, TB>>(
+    expr: OE,
+    modifiers?: OrderByModifiers,
+  ): OverBuilderCallbackBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
+   */
+  orderBy<
+    OE extends
+      | OverBuilderOrderByExpression<DB, TB>
+      | DirectedOrderByStringReference<DB, TB, {}>,
+  >(exprs: ReadonlyArray<OE>): OverBuilderCallbackBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
+   */
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
+    expr: OE,
+  ): OverBuilderCallbackBuilder<DB, TB>
+
+  // TODO: remove in v0.29
+  /**
+   * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
+   */
+  orderBy<OE extends OverBuilderOrderByExpression<DB, TB>>(
+    expr: OE,
+    modifiers: Expression<any>,
+  ): OverBuilderCallbackBuilder<DB, TB>
+
+  clearOrderBy(): OverBuilderCallbackBuilder<DB, TB>
+
+  partitionBy(
+    partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>,
+  ): OverBuilderCallbackBuilder<DB, TB>
+
+  partitionBy<PE extends PartitionByExpression<DB, TB>>(
+    partitionBy: PE,
+  ): OverBuilderCallbackBuilder<DB, TB>
+
+  $call<T>(
+    func: BivariantCallback<OverBuilderCallbackBuilder<any, any>, T>,
+  ): T
+
+  toOperationNode(): OverNode
+}
+
 export interface OverBuilderProps {
   readonly overNode: OverNode
 }
+
+type OverBuilderOrderByExpression<DB, TB extends keyof DB> =
+  | StringReference<DB, TB>
+  | DynamicReferenceBuilder<any>
+  | ExpressionOrFactory<any, any, any>

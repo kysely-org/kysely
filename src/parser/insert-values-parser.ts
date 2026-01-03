@@ -14,6 +14,7 @@ import type {
   NullableInsertKeys,
   InsertType,
 } from '../util/column-type.js'
+import type { BivariantCallback } from '../util/type-utils.js'
 import { isExpressionOrFactory } from './expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
 import {
@@ -41,7 +42,10 @@ export type InsertObjectOrListFactory<
   DB,
   TB extends keyof DB,
   UT extends keyof DB = never,
-> = (eb: ExpressionBuilder<DB, TB | UT>) => InsertObjectOrList<DB, TB>
+> = BivariantCallback<
+  ExpressionBuilder<DB, TB | UT>,
+  InsertObjectOrList<DB, TB>
+>
 
 export type InsertExpression<
   DB,
