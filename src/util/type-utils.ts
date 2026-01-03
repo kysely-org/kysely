@@ -78,7 +78,7 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends any
+export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends keyof DB
   ? `${TB & string}.${keyof DB[TB] & string}`
   : never
 
