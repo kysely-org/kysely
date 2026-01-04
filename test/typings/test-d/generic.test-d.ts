@@ -1,14 +1,18 @@
 import type {
+  AnyColumnWithTable,
   Kysely,
+  ExtractTypeFromReferenceExpression,
   ExpressionBuilder,
+  ReferenceExpression,
   SelectQueryBuilder,
+  StringReference,
   Generated,
   Nullable,
   Selectable,
   SelectType,
 } from '..'
 
-import { expectAssignable, expectType } from 'tsd'
+import { expectAssignable, expectError, expectType } from 'tsd'
 import type { Database, Movie, Person } from '../shared'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
@@ -54,6 +58,47 @@ function testExpressionBuilderExtendsFuncArg() {
 
   const t2 = {} as T2
   test(t2)
+}
+
+function testGenericDbHelper() {
+  interface TestDB {
+    person: { id: number; name: string }
+    pet: { id: number; owner_id: number }
+  }
+
+  function wherePersonHasName<
+    DBT extends TestDB,
+    TB extends Exclude<keyof DBT, 'person'>,
+    O,
+  >(
+    qb: SelectQueryBuilder<DBT, 'person' | TB, O>,
+    name: ExtractTypeFromReferenceExpression<DBT, TB | 'person', 'person.name'>,
+  ): SelectQueryBuilder<DBT, 'person' | TB, O> {
+    const tableQualifiedRef = 'person.name' as const
+
+    expectAssignable<AnyColumnWithTable<DBT, TB | 'person'>>(tableQualifiedRef)
+    expectAssignable<StringReference<DBT, TB | 'person'>>(tableQualifiedRef)
+    expectAssignable<ReferenceExpression<DBT, TB | 'person'>>(tableQualifiedRef)
+
+    expectError(qb.where(tableQualifiedRef, '=', 123))
+
+    return qb.where(tableQualifiedRef, '=', name)
+  }
+
+  const personPetQuery = null as unknown as SelectQueryBuilder<
+    TestDB,
+    'person' | 'pet',
+    { id: number }
+  >
+
+  wherePersonHasName(personPetQuery, 'alice')
+
+  const petOnlyQuery = null as unknown as SelectQueryBuilder<
+    TestDB,
+    'pet',
+    { id: number }
+  >
+  expectError(wherePersonHasName(petOnlyQuery, 'alice'))
 }
 
 // TODO: type-checking this is crazy slow. Figure out the cause.

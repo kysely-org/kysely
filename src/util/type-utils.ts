@@ -35,17 +35,18 @@ import type { MergeResult } from '../query-builder/merge-result.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = {
-  [T in TB]: keyof DB[T]
-}[TB] &
-  string
+export type AnyColumn<DB, TB extends keyof DB> = TB extends any
+  ? keyof NonNullable<DB[TB]> & string
+  : never
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = {
-  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-}[TB]
+export type ExtractColumnType<DB, TB extends keyof DB, C> = TB extends any
+  ? C extends keyof NonNullable<DB[TB]>
+    ? NonNullable<DB[TB]>[C]
+    : never
+  : never
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -78,9 +79,9 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: `${T & string}.${keyof DB[T] & string}`
-}[TB]
+export type AnyColumnWithTable<DB, TB extends keyof DB> = TB extends any
+  ? `${TB & string}.${AnyColumn<DB, TB>}`
+  : never
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.

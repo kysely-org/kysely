@@ -8,7 +8,7 @@ import {
   NOT_SUPPORTED,
   createTableWithId,
   DIALECTS,
-  insert,
+  insertAndReturnId,
   limit,
   type Database,
   type Pet,
@@ -33,8 +33,8 @@ for (const dialect of DIALECTS.filter(
     })
 
     beforeEach(async () => {
-      const personId = await insert(
-        ctx as never,
+      const personId = await insertAndReturnId(
+        dialect,
         ctx.db.insertInto('person').values({
           first_name: 'Foo',
           last_name: 'Bar',
