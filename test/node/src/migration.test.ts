@@ -978,6 +978,59 @@ for (const dialect of DIALECTS) {
         expect(transactionSpy.called).to.be.false
       })
 
+      it('should not use transaction when migration config.transaction is true but global disableTransactions is set to true', async () => {
+        const [migrator, executedUpMethods] = createMigrations(
+          [{ name: 'migration1', config: { transaction: true } }],
+          { disableTransactions: true },
+        )
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: true,
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should not use transaction when migration config.transaction is true but disableTransactions is set to true on migrate call', async () => {
+        const [migrator, executedUpMethods] = createMigrations([
+          { name: 'migration1', config: { transaction: true } },
+        ])
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: true,
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should throw an error when a migration config.transaction is true and a transaction is given to the migrator', async () => {
+        await ctx.db.transaction().execute(async (trx) => {
+          const [migrator] = createMigrations(
+            [{ name: 'migration1', config: { transaction: true } }],
+            { db: trx },
+          )
+
+          const { error } = await migrator.migrateUp()
+          if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+            expect(error).to.match(/These configurations are incompatible/)
+          } else {
+            expect(error).to.match(
+              /Transactional DDL is not supported in this dialect/,
+            )
+          }
+        })
+      })
+
       it('should use transaction when migration config.transaction is true (if supported)', async () => {
         const [migrator, executedUpMethods] = createMigrations([
           { name: 'migration1', config: { transaction: true } },
@@ -991,28 +1044,6 @@ for (const dialect of DIALECTS) {
 
         expect(executedUpMethods).to.eql(['migration1'])
 
-        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
-          expect(transactionSpy.called).to.be.true
-        } else {
-          expect(transactionSpy.called).to.be.false
-        }
-      })
-
-      it('should use transaction when migration config.transaction is true, even if global disableTransactions is true', async () => {
-        const [migrator, executedUpMethods] = createMigrations(
-          [{ name: 'migration1', config: { transaction: true } }],
-          { disableTransactions: true },
-        )
-
-        const { results } = await migrator.migrateUp()
-
-        expect(results).to.eql([
-          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
-        ])
-
-        expect(executedUpMethods).to.eql(['migration1'])
-
-        // Per-migration opt-in overrides global disableTransactions
         if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
           expect(transactionSpy.called).to.be.true
         } else {
@@ -1117,44 +1148,6 @@ for (const dialect of DIALECTS) {
         // migration2 explicitly disables transaction
         if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
           expect(transactionSpy.callCount).to.equal(1) // Only migration1
-        } else {
-          expect(transactionSpy.called).to.be.false
-        }
-      })
-
-      it('should run each transaction:true migration in its own transaction when globally disabled', async () => {
-        // When transactions are globally disabled, each migration with
-        // config.transaction: true gets its own transaction
-        const [migrator, executedUpMethods] = createMigrations(
-          [
-            'migration1', // No transaction (global disabled)
-            { name: 'migration2', config: { transaction: true } }, // Own transaction
-            { name: 'migration3', config: { transaction: true } }, // Own transaction
-            'migration4', // No transaction (global disabled)
-          ],
-          { disableTransactions: true },
-        )
-
-        const { results } = await migrator.migrateToLatest()
-
-        expect(results).to.eql([
-          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
-          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
-          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
-          { migrationName: 'migration4', direction: 'Up', status: 'Success' },
-        ])
-
-        expect(executedUpMethods).to.eql([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
-
-        // When globally disabled, consecutive transaction:true migrations
-        // each get their own transaction (not batched together)
-        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
-          expect(transactionSpy.callCount).to.equal(2) // migration2 and migration3
         } else {
           expect(transactionSpy.called).to.be.false
         }

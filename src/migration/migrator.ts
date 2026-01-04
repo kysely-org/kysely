@@ -552,53 +552,64 @@ export class Migrator {
       lockTableSchema: this.#props.migrationTableSchema,
     })
 
-    // Check if any of the migrations to be run have per-migration transaction config
-    const state = await this.#getState(this.#props.db)
-    const { direction, step } = getMigrationDirectionAndStep(state)
-    let hasPerMigrationConfig: boolean
-    if (direction === 'Up') {
-      hasPerMigrationConfig = state.pendingMigrations
-        .slice(0, step)
-        .some((m) => m.config?.transaction !== undefined)
-    } else {
-      hasPerMigrationConfig = state.executedMigrations
-        .toReversed()
-        .slice(0, step)
-        .map((name) => {
-          return state.migrations.find((it) => it.name === name)!
-        })
-        .some((m) => m.config?.transaction !== undefined)
-    }
+    const disableTransactions =
+      options?.disableTransactions ?? this.#props.disableTransactions
 
-    if (hasPerMigrationConfig) {
-      // Run migrations based on their transaction config.
-      // Use a connection for the lock and state management.
-      return this.#props.db.connection().execute(async (db) => {
-        try {
-          await adapter.acquireMigrationLock(db, lockOptions)
-          const state = await this.#getState(db)
+    if (!disableTransactions && adapter.supportsTransactionalDdl) {
+      // Check if any of the migrations to be run have per-migration transaction config
+      const state = await this.#getState(this.#props.db)
+      const { direction, step } = getMigrationDirectionAndStep(state)
+      let hasPerMigrationTransactionConfig: boolean
+      if (direction === 'Up') {
+        hasPerMigrationTransactionConfig = state.pendingMigrations
+          .slice(0, step)
+          .some((m) => m.config?.transaction !== undefined)
+      } else {
+        hasPerMigrationTransactionConfig = state.executedMigrations
+          .toReversed()
+          .slice(0, step)
+          .map((name) => {
+            return state.migrations.find((it) => it.name === name)!
+          })
+          .some((m) => m.config?.transaction !== undefined)
+      }
 
-          if (state.migrations.length === 0) {
-            return { results: [] }
-          }
-
-          const { direction, step } = getMigrationDirectionAndStep(state)
-
-          if (step <= 0) {
-            return { results: [] }
-          }
-
-          if (direction === 'Down') {
-            return await this.#migrateDownWithConfig(db, state, step, adapter)
-          } else if (direction === 'Up') {
-            return await this.#migrateUpWithConfig(db, state, step, adapter)
-          }
-
-          return { results: [] }
-        } finally {
-          await adapter.releaseMigrationLock(db, lockOptions)
+      if (hasPerMigrationTransactionConfig) {
+        if (this.#props.db.isTransaction) {
+          throw new Error(
+            'The migrator was given a transaction but there are pending migrations with their own transaction configuration. These configurations are incompatible. Either omit passing a transaction or remove the per-migration transaction configuration.',
+          )
         }
-      })
+
+        // Run migrations based on their transaction config.
+        // Use a connection for the lock and state management.
+        return this.#props.db.connection().execute(async (db) => {
+          try {
+            await adapter.acquireMigrationLock(db, lockOptions)
+            const state = await this.#getState(db)
+
+            if (state.migrations.length === 0) {
+              return { results: [] }
+            }
+
+            const { direction, step } = getMigrationDirectionAndStep(state)
+
+            if (step <= 0) {
+              return { results: [] }
+            }
+
+            if (direction === 'Down') {
+              return await this.#migrateDownWithConfig(db, state, step, adapter)
+            } else if (direction === 'Up') {
+              return await this.#migrateUpWithConfig(db, state, step, adapter)
+            }
+
+            return { results: [] }
+          } finally {
+            await adapter.releaseMigrationLock(db, lockOptions)
+          }
+        })
+      }
     }
 
     // Otherwise, run all migrations based on the global config
@@ -628,9 +639,6 @@ export class Migrator {
         await adapter.releaseMigrationLock(db, lockOptions)
       }
     }
-
-    const disableTransactions =
-      options?.disableTransactions ?? this.#props.disableTransactions
 
     if (this.#props.db.isTransaction) {
       if (!adapter.supportsTransactionalDdl) {
@@ -1090,13 +1098,13 @@ export class Migrator {
       useTransaction: boolean
       migrations: NamedMigration[]
     } = {
-      useTransaction: this.#shouldUseTransaction(migrations[0], adapter),
+      useTransaction: migrations[0].config?.transaction !== false,
       migrations: [migrations[0]],
     }
 
     for (let i = 1; i < migrations.length; i++) {
       const migration = migrations[i]
-      const shouldUseTx = this.#shouldUseTransaction(migration, adapter)
+      const shouldUseTx = migration.config?.transaction !== false
 
       if (shouldUseTx === currentBatch.useTransaction) {
         // Same transaction behavior, add to current batch
@@ -1127,7 +1135,7 @@ export class Migrator {
     let currentNonTxBatch: NamedMigration[] = []
 
     for (const migration of migrations) {
-      const shouldUseTx = this.#shouldUseTransaction(migration, adapter)
+      const shouldUseTx = migration.config?.transaction !== false
 
       if (shouldUseTx) {
         // This migration wants a transaction - flush any pending non-tx batch
@@ -1159,30 +1167,6 @@ export class Migrator {
     }
 
     await qb.execute()
-  }
-
-  #shouldUseTransaction(
-    migration: NamedMigration,
-    adapter: DialectAdapter,
-  ): boolean {
-    // If adapter doesn't support transactional DDL, never use transactions
-    if (!adapter.supportsTransactionalDdl) {
-      return false
-    }
-
-    // Check per-migration config first - it can override global settings
-    if (migration.config?.transaction !== undefined) {
-      return migration.config.transaction
-    }
-
-    // If global disableTransactions is true and no per-migration config,
-    // don't use transactions
-    if (this.#props.disableTransactions) {
-      return false
-    }
-
-    // Default: use transactions (since adapter supports it and not globally disabled)
-    return true
   }
 }
 
