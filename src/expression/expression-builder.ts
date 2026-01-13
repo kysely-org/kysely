@@ -46,11 +46,11 @@ import {
 import type { IsNever, SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
+  type ExtractTypeFromValueExpression,
   isSafeImmediateValue,
   parseSafeImmediateValue,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import type { ExtractTypeFromValueExpression } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
