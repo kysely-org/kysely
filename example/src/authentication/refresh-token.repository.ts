@@ -7,7 +7,7 @@ import {
 
 export async function insertRefreshToken(
   db: Kysely<Database>,
-  userId: string
+  userId: string,
 ): Promise<RefreshTokenRow> {
   const [refreshToken] = await db
     .insertInto('refresh_token')
@@ -24,7 +24,7 @@ export async function insertRefreshToken(
 export async function findRefreshToken(
   db: Kysely<Database>,
   userId: string,
-  refreshTokenId: string
+  refreshTokenId: string,
 ): Promise<RefreshTokenRow | undefined> {
   const token = await db
     .selectFrom('refresh_token as rt')
@@ -40,7 +40,7 @@ export async function findRefreshToken(
 export async function updateRefreshToken(
   db: Kysely<Database>,
   refreshTokenId: string,
-  patch: Pick<UpdateableRefreshTokenRow, 'last_refreshed_at'>
+  patch: Pick<UpdateableRefreshTokenRow, 'last_refreshed_at'>,
 ): Promise<void> {
   await db
     .updateTable('refresh_token')

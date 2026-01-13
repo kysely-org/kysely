@@ -1,4 +1,4 @@
-import { DatabaseConnection } from './database-connection.js'
+import type { DatabaseConnection } from './database-connection.js'
 
 export interface ConnectionProvider {
   /**

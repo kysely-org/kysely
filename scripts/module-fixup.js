@@ -20,7 +20,7 @@ for (const [folder, type] of [
 ]) {
   fs.writeFileSync(
     path.join(DIST_PATH, folder, 'package.json'),
-    JSON.stringify({ type, sideEffects: false })
+    JSON.stringify({ type, sideEffects: false }),
   )
 }
 
@@ -36,7 +36,7 @@ for (const ex of Object.keys(package.exports)) {
   const targetFileName = targetFolders.pop()
   const target = path.posix.relative(
     path.posix.join(ROOT_PATH, ...folders),
-    path.posix.join(ROOT_PATH, ...targetFolders, targetFileName)
+    path.posix.join(ROOT_PATH, ...targetFolders, targetFileName),
   )
 
   fs.mkdirSync(path.join(ROOT_PATH, ...folders), {
@@ -45,11 +45,11 @@ for (const ex of Object.keys(package.exports)) {
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.js'),
-    `module.exports = require('${target}')`
+    `module.exports = require('${target}')`,
   )
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.d.ts'),
-    `export * from '${target}'`
+    `export * from '${target}'`,
   )
 }

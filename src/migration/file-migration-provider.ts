@@ -1,5 +1,5 @@
 import { isFunction, isObject } from '../util/object-utils.js'
-import { Migration, MigrationProvider } from './migrator.js'
+import type { Migration, MigrationProvider } from './migrator.js'
 
 /**
  * Reads all migrations from a folder in node.js.

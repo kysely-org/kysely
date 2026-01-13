@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 import { IdentifierNode } from './identifier-node.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export interface UniqueConstraintNode extends OperationNode {
   readonly kind: 'UniqueConstraintNode'

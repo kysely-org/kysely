@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { InsertResult, Kysely, sql } from '..'
-import { Database } from '../shared'
+import { type InsertResult, type Kysely, sql } from '..'
+import type { Database } from '../shared'
 
 async function testInsert(db: Kysely<Database>) {
   const person = {

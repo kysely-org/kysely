@@ -21,6 +21,7 @@ on:
       - '.prettierrc.json'
       - '*.md'
       - 'deno*'
+      - 'jsr*'
       - 'LICENSE'
       - 'outdated-typescript.d.ts'
   pull_request:
@@ -38,6 +39,7 @@ on:
       - '.prettierrc.json'
       - '*.md'
       - 'deno*'
+      - 'jsr*'
       - 'LICENSE'
       - 'outdated-typescript.d.ts'
   workflow_dispatch:
@@ -51,17 +53,17 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       - name: Use Node.js
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           cache: 'pnpm'
           node-version: lts/*

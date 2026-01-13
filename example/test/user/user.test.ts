@@ -29,7 +29,7 @@ describe('user tests', () => {
     // The returned auth token should be usable.
     const getRes = await ctx.request.get<{ user: User }>(
       `/api/v1/user/${res.data.user.id}`,
-      createAuthHeaders(res.data.authToken)
+      createAuthHeaders(res.data.authToken),
     )
 
     expect(getRes.status).to.equal(200)
@@ -41,7 +41,7 @@ describe('user tests', () => {
 
     const res = await ctx.request.get<{ user: User }>(
       `/api/v1/user/${user.id}`,
-      createAuthHeaders(authToken)
+      createAuthHeaders(authToken),
     )
 
     expect(res.status).to.equal(200)
@@ -70,7 +70,7 @@ describe('user tests', () => {
     // The returned auth token should be usable.
     const getRes = await ctx.request.get<{ user: User }>(
       `/api/v1/user/${res.data.user.id}`,
-      createAuthHeaders(authToken)
+      createAuthHeaders(authToken),
     )
 
     expect(getRes.status).to.equal(200)
@@ -99,7 +99,7 @@ describe('user tests', () => {
       await ctx.db
         .selectFrom('refresh_token')
         .select('refresh_token.user_id')
-        .execute()
+        .execute(),
     ).to.have.length(1)
   })
 
@@ -109,7 +109,7 @@ describe('user tests', () => {
     const res = await ctx.request.post(
       `/api/v1/user/${user.id}/sign-out`,
       { refreshToken },
-      createAuthHeaders(authToken)
+      createAuthHeaders(authToken),
     )
 
     expect(res.status).to.equal(200)
@@ -117,7 +117,7 @@ describe('user tests', () => {
     // The auth token should no longer be usable.
     const getRes = await ctx.request.get(
       `/api/v1/user/${user.id}`,
-      createAuthHeaders(authToken)
+      createAuthHeaders(authToken),
     )
 
     expect(getRes.status).to.equal(404)
@@ -134,12 +134,12 @@ describe('user tests', () => {
 
   async function createPasswordSignInMethod(
     userId: string,
-    authToken: string
+    authToken: string,
   ): Promise<AxiosResponse<{ success: true }>> {
     return await ctx.request.post<{ success: true }>(
       `/api/v1/user/${userId}/sign-in-methods`,
       { email: EMAIL, password: PASSWORD },
-      createAuthHeaders(authToken)
+      createAuthHeaders(authToken),
     )
   }
 })

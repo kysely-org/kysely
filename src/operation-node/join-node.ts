@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export type JoinType =
   | 'InnerJoin'

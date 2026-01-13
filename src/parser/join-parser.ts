@@ -1,6 +1,6 @@
-import { JoinNode, JoinType } from '../operation-node/join-node.js'
-import { JoinBuilder } from '../query-builder/join-builder.js'
-import {
+import { JoinNode, type JoinType } from '../operation-node/join-node.js'
+import type { JoinBuilder } from '../query-builder/join-builder.js'
+import type {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
@@ -8,9 +8,9 @@ import {
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { createJoinBuilder } from './parse-utils.js'
 import {
-  From,
-  FromTables,
-  TableExpression,
+  type From,
+  type FromTables,
+  type TableExpression,
   parseTableExpression,
 } from './table-parser.js'
 

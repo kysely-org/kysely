@@ -1,9 +1,9 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryCompiler } from '../query-compiler/query-compiler.js'
-import { Log } from '../util/log.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { QueryCompiler } from '../query-compiler/query-compiler.js'
+import type { Log } from '../util/log.js'
 import { performanceNow } from '../util/performance-now.js'
-import { DatabaseConnection, QueryResult } from './database-connection.js'
-import { Driver, TransactionSettings } from './driver.js'
+import type { DatabaseConnection, QueryResult } from './database-connection.js'
+import type { Driver, TransactionSettings } from './driver.js'
 
 /**
  * A small wrapper around {@link Driver} that makes sure the driver is

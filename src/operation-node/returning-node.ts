@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { SelectionNode } from './selection-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { SelectionNode } from './selection-node.js'
 
 export interface ReturningNode extends OperationNode {
   readonly kind: 'ReturningNode'

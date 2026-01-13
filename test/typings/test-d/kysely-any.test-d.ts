@@ -1,4 +1,4 @@
-import { DeleteResult, InsertResult, Kysely, UpdateResult } from '..'
+import type { DeleteResult, InsertResult, Kysely, UpdateResult } from '..'
 import { expectType } from 'tsd'
 
 async function testKyselyAnySelects(db: Kysely<any>) {

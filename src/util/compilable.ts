@@ -1,4 +1,4 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { isFunction, isObject } from './object-utils.js'
 
 export interface Compilable<O = unknown> {

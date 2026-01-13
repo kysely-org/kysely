@@ -1,4 +1,4 @@
-import { CreateIndexNode } from '../../operation-node/create-index-node.js'
+import type { CreateIndexNode } from '../../operation-node/create-index-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /`/g

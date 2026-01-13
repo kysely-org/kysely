@@ -1,18 +1,18 @@
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
-import { IndexType } from '../operation-node/create-index-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { IndexType } from '../operation-node/create-index-node.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
-  OrderedColumnName,
+  type OrderedColumnName,
   parseOrderedColumnName,
 } from '../parser/reference-parser.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { Compilable } from '../util/compilable.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { QueryId } from '../util/query-id.js'
+import type { QueryId } from '../util/query-id.js'
 
 export class AlterTableAddIndexBuilder
   implements OperationNodeSource, Compilable

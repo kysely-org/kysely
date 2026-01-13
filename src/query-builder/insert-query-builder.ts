@@ -1,35 +1,35 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   parseSelectArg,
   parseSelectAll,
-  SelectExpression,
-  SelectArg,
-  SelectCallback,
+  type SelectExpression,
+  type SelectArg,
+  type SelectCallback,
 } from '../parser/select-parser.js'
 import {
-  InsertExpression,
+  type InsertExpression,
   parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
+import type {
   NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
 } from '../util/type-utils.js'
 import {
-  UpdateObjectExpression,
+  type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
+import type { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import {
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type {
   ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
@@ -37,29 +37,29 @@ import {
 import {
   isNoResultErrorConstructor,
   NoResultError,
-  NoResultErrorConstructor,
+  type NoResultErrorConstructor,
 } from './no-result-error.js'
 import {
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { ReturningInterface } from './returning-interface.js'
+import type { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
-  OnConflictDatabase,
-  OnConflictDoNothingBuilder,
-  OnConflictTables,
-  OnConflictUpdateBuilder,
+  type OnConflictDatabase,
+  type OnConflictDoNothingBuilder,
+  type OnConflictTables,
+  type OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
-import { Selectable } from '../util/column-type.js'
-import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { Expression } from '../expression/expression.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { Streamable } from '../util/streamable.js'
+import type { Selectable } from '../util/column-type.js'
+import type { Explainable, ExplainFormat } from '../util/explainable.js'
+import type { Expression } from '../expression/expression.js'
+import type { KyselyTypeError } from '../util/type-error.js'
+import type { Streamable } from '../util/streamable.js'
 import { parseTop } from '../parser/top-parser.js'
-import {
+import type {
   OutputCallback,
   OutputExpression,
   OutputInterface,

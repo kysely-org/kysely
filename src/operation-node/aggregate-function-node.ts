@@ -1,9 +1,9 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { OverNode } from './over-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { OverNode } from './over-node.js'
 import { WhereNode } from './where-node.js'
 import { OrderByNode } from './order-by-node.js'
-import { OrderByItemNode } from './order-by-item-node.js'
+import type { OrderByItemNode } from './order-by-item-node.js'
 
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'

@@ -1,20 +1,21 @@
 import { JoinNode } from '../operation-node/join-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
+import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
-import { SqlBool } from '../util/type-utils.js'
+import type { SqlBool } from '../util/type-utils.js'
 
-export class JoinBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
-{
+export class JoinBuilder<
+  DB,
+  TB extends keyof DB,
+> implements OperationNodeSource {
   readonly #props: JoinBuilderProps
 
   constructor(props: JoinBuilderProps) {

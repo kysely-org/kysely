@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
-import { JSONPathLegNode } from './json-path-leg-node.js'
-import { OperationNode } from './operation-node.js'
-import { OperatorNode } from './operator-node.js'
+import type { JSONPathLegNode } from './json-path-leg-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { OperatorNode } from './operator-node.js'
 
 export interface JSONPathNode extends OperationNode {
   readonly kind: 'JSONPathNode'

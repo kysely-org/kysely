@@ -1,10 +1,10 @@
 import {
-  ExpressionBuilder,
+  type ExpressionBuilder,
   createExpressionBuilder,
 } from '../expression/expression-builder.js'
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import {
-  SetOperator,
+  type SetOperator,
   SetOperationNode,
 } from '../operation-node/set-operation-node.js'
 import { isFunction, isReadonlyArray } from '../util/object-utils.js'

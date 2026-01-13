@@ -1,18 +1,20 @@
-import { AggregateFunctionNode } from '../../operation-node/aggregate-function-node.js'
+import type { AggregateFunctionNode } from '../../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../../operation-node/alias-node.js'
-import { FunctionNode } from '../../operation-node/function-node.js'
+import type { FunctionNode } from '../../operation-node/function-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { JoinNode } from '../../operation-node/join-node.js'
 import { ListNode } from '../../operation-node/list-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
-import { OperationNode } from '../../operation-node/operation-node.js'
-import { ReferencesNode } from '../../operation-node/references-node.js'
+import type { OperationNode } from '../../operation-node/operation-node.js'
+import type { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
+import type { SelectModifierNode } from '../../operation-node/select-modifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
-import { WithNode } from '../../operation-node/with-node.js'
-import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import { UsingNode } from '../../operation-node/using-node.js'
+import type { WithNode } from '../../operation-node/with-node.js'
+import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { freeze } from '../../util/object-utils.js'
-import { QueryId } from '../../util/query-id.js'
+import type { QueryId } from '../../util/query-id.js'
 
 // This object exist only so that we get a type error when a new RootOperationNode
 // is added. If you get a type error here, make sure to add the new root node and
@@ -151,6 +153,23 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
+  protected override transformSelectModifier(
+    node: SelectModifierNode,
+    queryId: QueryId,
+  ): SelectModifierNode {
+    return {
+      ...super.transformSelectModifier({ ...node, of: undefined }, queryId),
+      of: node.of?.map((item) =>
+        TableNode.is(item) && !item.table.schema
+          ? {
+              ...item,
+              table: this.transformIdentifier(item.table.identifier, queryId),
+            }
+          : this.transformNode(item, queryId),
+      ),
+    }
+  }
+
   #transformTableArgsWithoutSchemas<
     A extends string,
     N extends { func: string } & {
@@ -226,13 +245,25 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     schemableIds: Set<string>,
   ): void {
     if (TableNode.is(node)) {
-      this.#collectSchemableId(node.table, schemableIds)
-    } else if (AliasNode.is(node) && TableNode.is(node.node)) {
-      this.#collectSchemableId(node.node.table, schemableIds)
-    } else if (ListNode.is(node)) {
+      return this.#collectSchemableId(node.table, schemableIds)
+    }
+
+    if (AliasNode.is(node) && TableNode.is(node.node)) {
+      return this.#collectSchemableId(node.node.table, schemableIds)
+    }
+
+    if (ListNode.is(node)) {
       for (const table of node.items) {
         this.#collectSchemableIdsFromTableExpr(table, schemableIds)
       }
+      return
+    }
+
+    if (UsingNode.is(node)) {
+      for (const table of node.tables) {
+        this.#collectSchemableIdsFromTableExpr(table, schemableIds)
+      }
+      return
     }
   }
 

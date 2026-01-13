@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnDefinitionNode } from './column-definition-node.js'
-import { OperationNode } from './operation-node.js'
+import type { ColumnDefinitionNode } from './column-definition-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export interface AddColumnNode extends OperationNode {
   readonly kind: 'AddColumnNode'

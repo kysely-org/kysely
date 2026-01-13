@@ -1,7 +1,7 @@
-import { Kysely } from '../../kysely.js'
+import type { Kysely } from '../../kysely.js'
 import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
-import { MigrationLockOptions } from '../dialect-adapter.js'
+import type { MigrationLockOptions } from '../dialect-adapter.js'
 
 const LOCK_ID = 'ea586330-2c93-47c8-908d-981d9d270f9d'
 const LOCK_TIMEOUT_SECONDS = 60 * 60

@@ -273,6 +273,34 @@ for (const dialect of DIALECTS.filter(
 
           await query.execute()
         })
+
+        for (const [selectModifierFn, clause] of [
+          ['forUpdate', 'for update'],
+          ['forShare', 'for share'],
+          ['forKeyShare', 'for key share'],
+          ['forNoKeyUpdate', 'for no key update'],
+        ] as const) {
+          it(`should not add schema to ${clause} tables`, async () => {
+            const query = ctx.db
+              .withSchema('mammals')
+              .selectFrom('pet')
+              .selectAll()
+              [selectModifierFn]('pet')
+              .skipLocked()
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: `select * from "mammals"."pet" ${clause} of "pet" skip locked`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+        }
       }
     })
 
@@ -333,6 +361,29 @@ for (const dialect of DIALECTS.filter(
 
         await query.execute()
       })
+
+      if (dialect === 'postgres') {
+        it('should also add schema to using clause', async () => {
+          const query = ctx.db
+            .withSchema('mammals')
+            .deleteFrom('pet')
+            .using('pet_staging')
+            .whereRef('pet.id', '=', 'pet_staging.id')
+            .where('pet.name', '=', 'Doggo')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'delete from "mammals"."pet" using "mammals"."pet_staging" where "mammals"."pet"."id" = "mammals"."pet_staging"."id" and "mammals"."pet"."name" = $1',
+              parameters: ['Doggo'],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
     })
 
     describe('update', () => {

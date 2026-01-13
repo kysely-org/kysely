@@ -1,5 +1,5 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 
 export class CheckConstraintBuilder implements OperationNodeSource {
   readonly #node: CheckConstraintNode

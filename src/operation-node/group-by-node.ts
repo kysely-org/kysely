@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { GroupByItemNode } from './group-by-item-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { GroupByItemNode } from './group-by-item-node.js'
 
 export interface GroupByNode extends OperationNode {
   readonly kind: 'GroupByNode'

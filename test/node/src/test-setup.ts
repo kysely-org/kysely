@@ -1,9 +1,9 @@
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import * as Cursor from 'pg-cursor'
+import Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
-import * as Database from 'better-sqlite3'
+import Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
 import { PoolOptions } from 'mysql2'
@@ -299,6 +299,17 @@ export function testSql(
 
   chai.expect(expectedSql).to.equal(sql.sql)
   chai.expect(expected.parameters).to.eql(sql.parameters)
+}
+
+testSql.skip = function (
+  _query: Compilable,
+  _dialect: BuiltInDialect,
+  _expectedPerDialect: PerDialect<{
+    sql: string | string[]
+    parameters: any[]
+  }>,
+) {
+  // noop
 }
 
 async function createDatabase(

@@ -1,4 +1,4 @@
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 
 export type ExplainFormat =
   | 'text'

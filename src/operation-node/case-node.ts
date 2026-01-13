@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 import { WhenNode } from './when-node.js'
 
 export interface CaseNode extends OperationNode {

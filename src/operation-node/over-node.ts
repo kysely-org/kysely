@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { OrderByItemNode } from './order-by-item-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { OrderByItemNode } from './order-by-item-node.js'
 import { OrderByNode } from './order-by-node.js'
-import { PartitionByItemNode } from './partition-by-item-node.js'
+import type { PartitionByItemNode } from './partition-by-item-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 
 export interface OverNode extends OperationNode {

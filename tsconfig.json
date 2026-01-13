@@ -3,6 +3,7 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "module": "ESNext",
-    "outDir": "dist/esm"
+    "outDir": "dist/esm",
+    "verbatimModuleSyntax": true
   }
 }

@@ -3,30 +3,30 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
-import {
+import type {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
 } from '../util/type-utils.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
   parseExpression,
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   isExpressionOrFactory,
 } from './expression-parser.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { SelectType, UpdateType } from '../util/column-type.js'
+import type { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import type { SelectType, UpdateType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import { Expression } from '../expression/expression.js'
-import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
+import type { Expression } from '../expression/expression.js'
+import type { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 import {
-  OrderByDirection,
+  type OrderByDirection,
   isOrderByDirection,
   parseOrderBy,
 } from './order-by-parser.js'
 import {
-  JSONOperatorWith$,
+  type JSONOperatorWith$,
   OperatorNode,
   isJSONOperator,
 } from '../operation-node/operator-node.js'

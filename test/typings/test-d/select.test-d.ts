@@ -1,14 +1,14 @@
 import {
-  Expression,
-  ExpressionWrapper,
-  Kysely,
-  NotNull,
-  RawBuilder,
-  Selectable,
-  Simplify,
+  type Expression,
+  type ExpressionWrapper,
+  type Kysely,
+  type NotNull,
+  type RawBuilder,
+  type Selectable,
+  type Simplify,
   sql,
 } from '..'
-import { Database, Person } from '../shared'
+import type { Database, Person } from '../shared'
 import { expectType, expectError } from 'tsd'
 
 async function testSelectSingle(db: Kysely<Database>) {

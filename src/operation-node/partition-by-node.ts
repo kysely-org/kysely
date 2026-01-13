@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { PartitionByItemNode } from './partition-by-item-node.js'
-import { OperationNode } from './operation-node.js'
+import type { PartitionByItemNode } from './partition-by-item-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export interface PartitionByNode extends OperationNode {
   readonly kind: 'PartitionByNode'

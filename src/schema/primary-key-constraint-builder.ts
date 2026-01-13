@@ -1,4 +1,4 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { PrimaryKeyConstraintNode } from '../operation-node/primary-key-constraint-node.js'
 
 export class PrimaryKeyConstraintBuilder implements OperationNodeSource {

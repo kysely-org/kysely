@@ -1,28 +1,28 @@
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import type { AliasedExpression, Expression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import {
+import type {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
-  InsertExpression,
-  InsertObjectOrList,
-  InsertObjectOrListFactory,
+  type InsertExpression,
+  type InsertObjectOrList,
+  type InsertObjectOrListFactory,
   parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import {
-  JoinCallbackExpression,
-  JoinReferenceExpression,
+  type JoinCallbackExpression,
+  type JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
-import {
+import type { ReferenceExpression } from '../parser/reference-parser.js'
+import type {
   ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
@@ -30,24 +30,24 @@ import {
 import {
   parseSelectAll,
   parseSelectArg,
-  SelectCallback,
-  SelectExpression,
+  type SelectCallback,
+  type SelectExpression,
 } from '../parser/select-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
+import type { TableExpression } from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
-import {
+import type {
   ExtractUpdateTypeFromReferenceExpression,
   UpdateObject,
   UpdateObjectFactory,
 } from '../parser/update-set-parser.js'
-import { ValueExpression } from '../parser/value-parser.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { ValueExpression } from '../parser/value-parser.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { QueryId } from '../util/query-id.js'
-import {
+import type { QueryId } from '../util/query-id.js'
+import type {
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
@@ -56,10 +56,10 @@ import {
 import { MergeResult } from './merge-result.js'
 import {
   NoResultError,
-  NoResultErrorConstructor,
+  type NoResultErrorConstructor,
   isNoResultErrorConstructor,
 } from './no-result-error.js'
-import {
+import type {
   OutputCallback,
   OutputExpression,
   OutputInterface,
@@ -67,7 +67,7 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
-import { MultiTableReturningInterface } from './returning-interface.js'
+import type { MultiTableReturningInterface } from './returning-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
@@ -317,11 +317,11 @@ export interface MergeQueryBuilderProps {
 }
 
 export class WheneableMergeQueryBuilder<
-    DB,
-    TT extends keyof DB,
-    ST extends keyof DB,
-    O,
-  >
+  DB,
+  TT extends keyof DB,
+  ST extends keyof DB,
+  O,
+>
   implements
     Compilable<O>,
     MultiTableReturningInterface<DB, TT | ST, O>,

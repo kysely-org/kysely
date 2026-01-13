@@ -1,20 +1,20 @@
 import { expectError, expectType } from 'tsd'
 import {
-  ExpressionBuilder,
-  JoinBuilder,
-  Kysely,
-  MatchedThenableMergeQueryBuilder,
-  MergeQueryBuilder,
-  MergeResult,
-  NotMatchedThenableMergeQueryBuilder,
-  SelectType,
-  Selectable,
-  UpdateQueryBuilder,
-  WheneableMergeQueryBuilder,
+  type ExpressionBuilder,
+  type JoinBuilder,
+  type Kysely,
+  type MatchedThenableMergeQueryBuilder,
+  type MergeQueryBuilder,
+  type MergeResult,
+  type NotMatchedThenableMergeQueryBuilder,
+  type SelectType,
+  type Selectable,
+  type UpdateQueryBuilder,
+  type WheneableMergeQueryBuilder,
   mergeAction,
   sql,
 } from '..'
-import { Database, Person, Pet } from '../shared'
+import type { Database, Person, Pet } from '../shared'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')

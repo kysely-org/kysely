@@ -1,4 +1,4 @@
-import { TopModifier, TopNode } from '../operation-node/top-node.js'
+import { type TopModifier, TopNode } from '../operation-node/top-node.js'
 import { isBigInt, isNumber, isUndefined } from '../util/object-utils.js'
 
 export function parseTop(

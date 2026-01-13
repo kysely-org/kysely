@@ -1,9 +1,9 @@
-import { AliasNode } from '../operation-node/alias-node.js'
+import type { AliasNode } from '../operation-node/alias-node.js'
 import {
   isOperationNodeSource,
-  OperationNodeSource,
+  type OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { isObject, isString } from '../util/object-utils.js'
 
 /**
@@ -188,8 +188,10 @@ export interface AliasableExpression<T> extends Expression<T> {
  * }
  * ```
  */
-export interface AliasedExpression<T, A extends string>
-  extends OperationNodeSource {
+export interface AliasedExpression<
+  T,
+  A extends string,
+> extends OperationNodeSource {
   /**
    * Returns the aliased expression.
    */

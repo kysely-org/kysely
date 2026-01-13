@@ -1,6 +1,6 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { freeze, isFunction } from './object-utils.js'
-import { ArrayItemType } from './type-utils.js'
+import type { ArrayItemType } from './type-utils.js'
 
 const logLevels = ['query', 'error'] as const
 export const LOG_LEVELS: Readonly<typeof logLevels> = freeze(logLevels)

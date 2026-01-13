@@ -1,8 +1,8 @@
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
-import {
+import type {
   ExtractTypeFromCoalesce1,
   ExtractTypeFromCoalesce3,
   ExtractTypeFromCoalesce2,
@@ -10,25 +10,25 @@ import {
   ExtractTypeFromCoalesce5,
 } from '../parser/coalesce-parser.js'
 import {
-  ExtractTypeFromReferenceExpression,
-  ReferenceExpression,
-  StringReference,
+  type ExtractTypeFromReferenceExpression,
+  type ReferenceExpression,
+  type StringReference,
   parseReferenceExpressionOrList,
-  ExtractTypeFromStringReference,
+  type ExtractTypeFromStringReference,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import {
+import type { KyselyTypeError } from '../util/type-error.js'
+import type {
   IsNever,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   Simplify,
 } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
-import { Selectable, SelectType } from '../util/column-type.js'
+import type { Selectable, SelectType } from '../util/column-type.js'
 
 /**
  * Helpers for type safe SQL function calls.

@@ -1,7 +1,7 @@
 import { expectError, expectType } from 'tsd'
-import { AlterTableBuilder, Kysely } from '..'
-import { Database } from '../shared'
-import { AlterTableExecutor } from '../../../dist/cjs/schema/alter-table-executor'
+import type { AlterTableBuilder, Kysely } from '..'
+import type { Database } from '../shared'
+import type { AlterTableExecutor } from '../../../dist/cjs/schema/alter-table-executor'
 
 async function testAlterTableWithAddUniqueConstraint(db: Kysely<Database>) {
   expectType<AlterTableBuilder>(db.schema.alterTable('test'))

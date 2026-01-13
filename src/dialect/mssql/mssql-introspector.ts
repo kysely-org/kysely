@@ -1,5 +1,5 @@
-import { Kysely } from '../../kysely.js'
-import {
+import type { Kysely } from '../../kysely.js'
+import type {
   DatabaseIntrospector,
   DatabaseMetadata,
   DatabaseMetadataOptions,

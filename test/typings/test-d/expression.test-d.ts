@@ -5,17 +5,17 @@ import {
   expectType,
 } from 'tsd'
 import {
-  ColumnType,
-  Expression,
-  ExpressionBuilder,
-  Generated,
-  Kysely,
-  SqlBool,
+  type ColumnType,
+  type Expression,
+  type ExpressionBuilder,
+  type Generated,
+  type Kysely,
+  type SqlBool,
   expressionBuilder,
   sql,
 } from '..'
-import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
-import { Database } from '../shared'
+import type { KyselyTypeError } from '../../../dist/cjs/util/type-error'
+import type { Database } from '../shared'
 
 function testExpression(db: Kysely<Database>) {
   const e1: Expression<number> = undefined!

@@ -6,38 +6,38 @@ import {
   isUndefined,
 } from '../util/object-utils.js'
 import {
-  OperationNodeSource,
+  type OperationNodeSource,
   isOperationNodeSource,
 } from '../operation-node/operation-node-source.js'
 import {
   OperatorNode,
-  ComparisonOperator,
-  BinaryOperator,
-  Operator,
+  type ComparisonOperator,
+  type BinaryOperator,
+  type Operator,
   OPERATORS,
 } from '../operation-node/operator-node.js'
 import {
-  ExtractTypeFromReferenceExpression,
-  ExtractTypeFromStringReference,
+  type ExtractTypeFromReferenceExpression,
+  type ExtractTypeFromStringReference,
   parseReferenceExpression,
-  ReferenceExpression,
-  StringReference,
+  type ReferenceExpression,
+  type StringReference,
 } from './reference-parser.js'
 import {
   parseValueExpression,
   parseValueExpressionOrList,
-  ValueExpression,
-  ValueExpressionOrList,
+  type ValueExpression,
+  type ValueExpressionOrList,
 } from './value-parser.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import { Expression } from '../expression/expression.js'
-import { SelectType } from '../util/column-type.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
+import type { Expression } from '../expression/expression.js'
+import type { SelectType } from '../util/column-type.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
-import { WhenNode } from '../operation-node/when-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
+import type { WhenNode } from '../operation-node/when-node.js'
+import type { RawNode } from '../operation-node/raw-node.js'
 
 export type OperandValueExpression<
   DB,

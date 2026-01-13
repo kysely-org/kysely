@@ -1,21 +1,21 @@
 import {
-  DynamicReferenceBuilder,
+  type DynamicReferenceBuilder,
   isDynamicReferenceBuilder,
 } from '../dynamic/dynamic-reference-builder.js'
-import { Expression, isExpression } from '../expression/expression.js'
-import { OperationNode } from '../operation-node/operation-node.js'
+import { type Expression, isExpression } from '../expression/expression.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { OrderByItemBuilder } from '../query-builder/order-by-item-builder.js'
 import { logOnce } from '../util/log-once.js'
 import {
-  ExpressionOrFactory,
+  type ExpressionOrFactory,
   isExpressionOrFactory,
   parseExpression,
 } from './expression-parser.js'
 import {
-  ReferenceExpression,
-  StringReference,
+  type ReferenceExpression,
+  type StringReference,
   parseStringReference,
 } from './reference-parser.js'
 

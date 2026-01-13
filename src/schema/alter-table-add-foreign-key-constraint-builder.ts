@@ -1,13 +1,13 @@
 import { AddConstraintNode } from '../operation-node/add-constraint-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OnModifyForeignAction } from '../operation-node/references-node.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { Compilable } from '../util/compilable.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OnModifyForeignAction } from '../operation-node/references-node.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { QueryId } from '../util/query-id.js'
-import {
+import type { QueryId } from '../util/query-id.js'
+import type {
   ForeignKeyConstraintBuilder,
   ForeignKeyConstraintBuilderInterface,
 } from './foreign-key-constraint-builder.js'

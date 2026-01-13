@@ -1,5 +1,5 @@
-import { Kysely, SqlBool, sql } from '..'
-import { Database } from '../shared'
+import { type Kysely, type SqlBool, sql } from '..'
+import type { Database } from '../shared'
 import { expectType } from 'tsd'
 
 async function testSelectNoFrom(db: Kysely<Database>) {

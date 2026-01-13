@@ -1,7 +1,7 @@
-import { Expression } from '../expression/expression.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
+import type { Expression } from '../expression/expression.js'
+import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
-import {
+import type {
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   Simplify,

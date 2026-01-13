@@ -1,5 +1,5 @@
-import { DatabaseConnection } from './database-connection.js'
-import { ConnectionProvider } from './connection-provider.js'
+import type { DatabaseConnection } from './database-connection.js'
+import type { ConnectionProvider } from './connection-provider.js'
 
 const ignoreError = () => {}
 

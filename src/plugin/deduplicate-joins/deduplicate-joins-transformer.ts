@@ -1,10 +1,10 @@
-import { DeleteQueryNode } from '../../operation-node/delete-query-node.js'
-import { JoinNode } from '../../operation-node/join-node.js'
+import type { DeleteQueryNode } from '../../operation-node/delete-query-node.js'
+import type { JoinNode } from '../../operation-node/join-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
-import { SelectQueryNode } from '../../operation-node/select-query-node.js'
-import { UpdateQueryNode } from '../../operation-node/update-query-node.js'
+import type { SelectQueryNode } from '../../operation-node/select-query-node.js'
+import type { UpdateQueryNode } from '../../operation-node/update-query-node.js'
 import { compare, freeze } from '../../util/object-utils.js'
-import { QueryId } from '../../util/query-id.js'
+import type { QueryId } from '../../util/query-id.js'
 
 export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
   protected transformSelectQuery(

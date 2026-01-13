@@ -1,30 +1,30 @@
 import { AliasNode } from '../operation-node/alias-node.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
-  JoinCallbackExpression,
-  JoinReferenceExpression,
+  type JoinCallbackExpression,
+  type JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression, parseTable } from '../parser/table-parser.js'
+import { type TableExpression, parseTable } from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
-  SelectExpression,
-  Selection,
-  SelectArg,
-  AllSelection,
-  SelectCallback,
-  CallbackSelection,
+  type SelectExpression,
+  type Selection,
+  type SelectArg,
+  type AllSelection,
+  type SelectCallback,
+  type CallbackSelection,
 } from '../parser/select-parser.js'
 import {
   parseReferenceExpressionOrList,
-  ReferenceExpression,
-  ReferenceExpressionOrList,
+  type ReferenceExpression,
+  type ReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
+import type {
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
@@ -34,58 +34,59 @@ import {
   SqlBool,
 } from '../util/type-utils.js'
 import {
-  DirectedOrderByStringReference,
-  OrderByExpression,
-  OrderByModifiers,
+  type DirectedOrderByStringReference,
+  type OrderByExpression,
+  type OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
+import type { Compilable } from '../util/compilable.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryId } from '../util/query-id.js'
 import { asArray, freeze } from '../util/object-utils.js'
-import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
+import { type GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { WhereInterface } from './where-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
-  NoResultErrorConstructor,
+  type NoResultErrorConstructor,
 } from './no-result-error.js'
-import { HavingInterface } from './having-interface.js'
+import type { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { Explainable, ExplainFormat } from '../util/explainable.js'
+import type { Explainable, ExplainFormat } from '../util/explainable.js'
 import {
-  SetOperandExpression,
+  type SetOperandExpression,
   parseSetOperations,
 } from '../parser/set-operation-parser.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import type { AliasedExpression, Expression } from '../expression/expression.js'
 import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
+  type ComparisonOperatorExpression,
+  type OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { Selectable } from '../util/column-type.js'
-import { Streamable } from '../util/streamable.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import type { KyselyTypeError } from '../util/type-error.js'
+import type { Selectable } from '../util/column-type.js'
+import type { Streamable } from '../util/streamable.js'
+import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import type { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
 import {
-  ValueExpression,
+  type ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import { FetchModifier } from '../operation-node/fetch-node.js'
+import type { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
-import { TopModifier } from '../operation-node/top-node.js'
+import type { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
-import { JoinType } from '../operation-node/join-node.js'
-import { OrderByInterface } from './order-by-interface.js'
+import type { JoinType } from '../operation-node/join-node.js'
+import type { OrderByInterface } from './order-by-interface.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends WhereInterface<DB, TB>,
+  extends
+    WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
@@ -2150,9 +2151,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
-  implements SelectQueryBuilder<DB, TB, O>
-{
+class SelectQueryBuilderImpl<
+  DB,
+  TB extends keyof DB,
+  O,
+> implements SelectQueryBuilder<DB, TB, O> {
   readonly #props: SelectQueryBuilderProps
 
   constructor(props: SelectQueryBuilderProps) {
@@ -2732,8 +2735,7 @@ class AliasedSelectQueryBuilderImpl<
   TB extends keyof DB,
   O = undefined,
   A extends string = never,
-> implements AliasedSelectQueryBuilder<O, A>
-{
+> implements AliasedSelectQueryBuilder<O, A> {
   readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
   readonly #alias: A
 

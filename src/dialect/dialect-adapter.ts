@@ -1,4 +1,4 @@
-import { Kysely } from '../kysely.js'
+import type { Kysely } from '../kysely.js'
 
 /**
  * A `DialectAdapter` encapsulates all differences between dialects outside

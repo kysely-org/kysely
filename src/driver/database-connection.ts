@@ -1,4 +1,4 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 
 /**
  * A single connection to the database engine.

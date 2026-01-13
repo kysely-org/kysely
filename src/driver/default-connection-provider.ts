@@ -1,6 +1,6 @@
-import { DatabaseConnection } from './database-connection.js'
-import { ConnectionProvider } from './connection-provider.js'
-import { Driver } from './driver.js'
+import type { DatabaseConnection } from './database-connection.js'
+import type { ConnectionProvider } from './connection-provider.js'
+import type { Driver } from './driver.js'
 
 export class DefaultConnectionProvider implements ConnectionProvider {
   readonly #driver: Driver

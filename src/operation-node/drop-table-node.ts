@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
-import { TableNode } from './table-node.js'
+import type { OperationNode } from './operation-node.js'
+import type { TableNode } from './table-node.js'
 
 export type DropTablexNodeParams = Omit<
   Partial<DropTableNode>,

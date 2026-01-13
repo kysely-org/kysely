@@ -1,20 +1,20 @@
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
-  OnModifyForeignAction,
+  type OnModifyForeignAction,
   ReferencesNode,
 } from '../operation-node/references-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import {
-  DefaultValueExpression,
+  type DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
 import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
-import { Expression } from '../expression/expression.js'
+import type { Expression } from '../expression/expression.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode

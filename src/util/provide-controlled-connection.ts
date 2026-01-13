@@ -1,5 +1,5 @@
-import { ConnectionProvider } from '../driver/connection-provider.js'
-import { DatabaseConnection } from '../driver/database-connection.js'
+import type { ConnectionProvider } from '../driver/connection-provider.js'
+import type { DatabaseConnection } from '../driver/database-connection.js'
 import { Deferred } from './deferred.js'
 import { freeze } from './object-utils.js'
 

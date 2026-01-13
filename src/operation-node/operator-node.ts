@@ -1,5 +1,5 @@
 import { freeze, isString } from '../util/object-utils.js'
-import { OperationNode } from './operation-node.js'
+import type { OperationNode } from './operation-node.js'
 
 export const COMPARISON_OPERATORS = [
   '=',

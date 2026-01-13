@@ -26,7 +26,7 @@ export function signInMethodController(router: Router): void {
         throw new ControllerError(
           400,
           'InvalidSignInMethod',
-          'invalid sign in method'
+          'invalid sign in method',
         )
       }
 
@@ -35,7 +35,7 @@ export function signInMethodController(router: Router): void {
           await signInMethodService.addPasswordSignInMethod(
             trx,
             ctx.params.userId,
-            body
+            body,
           )
         })
 
@@ -48,25 +48,25 @@ export function signInMethodController(router: Router): void {
           throw new ControllerError(
             400,
             'PasswordTooWeak',
-            'password is too weak'
+            'password is too weak',
           )
         } else if (error instanceof PasswordTooLongError) {
           throw new ControllerError(
             400,
             'PasswordTooLong',
-            'password is too long'
+            'password is too long',
           )
         } else if (error instanceof UserAlreadyHasSignInMethodError) {
           throw new ControllerError(
             409,
             'UserAlreadyHasSignInMethod',
-            'the user already has a sign in method'
+            'the user already has a sign in method',
           )
         }
 
         throw error
       }
-    }
+    },
   )
 
   router.post('/api/v1/user/sign-in', async (ctx) => {
@@ -76,7 +76,7 @@ export function signInMethodController(router: Router): void {
       throw new ControllerError(
         400,
         'InvalidSignInMethod',
-        'invalid sign in method'
+        'invalid sign in method',
       )
     }
 
@@ -101,7 +101,7 @@ export function signInMethodController(router: Router): void {
         throw new ControllerError(
           401,
           'InvalidCredentials',
-          'wrong email or password'
+          'wrong email or password',
         )
       }
 
@@ -119,7 +119,7 @@ export function signInMethodController(router: Router): void {
         throw new ControllerError(
           400,
           'InvalidRefreshToken',
-          'the body must contain a valid refresh token'
+          'the body must contain a valid refresh token',
         )
       }
 
@@ -127,7 +127,7 @@ export function signInMethodController(router: Router): void {
         await authTokenService.deleteRefreshToken(
           ctx.db,
           ctx.params.userId,
-          body
+          body,
         )
 
         ctx.status = 200
@@ -137,12 +137,12 @@ export function signInMethodController(router: Router): void {
           throw new ControllerError(
             403,
             'RefreshTokenUserIdMismatch',
-            "cannot delete another user's refresh token"
+            "cannot delete another user's refresh token",
           )
         }
 
         throw error
       }
-    }
+    },
   )
 }

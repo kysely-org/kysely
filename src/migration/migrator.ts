@@ -1,10 +1,10 @@
-import { MigrationLockOptions } from '../dialect/dialect-adapter.js'
-import { Kysely } from '../kysely.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { MigrationLockOptions } from '../dialect/dialect-adapter.js'
+import type { Kysely } from '../kysely.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
-import { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
-import { CreateTableBuilder } from '../schema/create-table-builder.js'
+import type { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
+import type { CreateTableBuilder } from '../schema/create-table-builder.js'
 import { freeze, getLast, isObject } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
@@ -76,9 +76,9 @@ export class Migrator {
    * The returned array is sorted by migration name.
    */
   async getMigrations(): Promise<ReadonlyArray<MigrationInfo>> {
-    const executedMigrations = (await this.#doesTableExists(
-      this.#migrationTable,
-    ))
+    const tableExists = await this.#doesTableExist(this.#migrationTable)
+
+    const executedMigrations = tableExists
       ? await this.#props.db
           .withPlugin(this.#schemaPlugin)
           .selectFrom(this.#migrationTable)
@@ -317,7 +317,11 @@ export class Migrator {
     },
   ): Promise<MigrationResultSet> {
     try {
-      await this.#ensureMigrationTablesExists()
+      await this.#ensureMigrationTableSchemaExists()
+      await this.#ensureMigrationTableExists()
+      await this.#ensureMigrationLockTableExists()
+      await this.#ensureLockRowExists()
+
       return await this.#runMigrations(getMigrationDirectionAndStep)
     } catch (error) {
       if (error instanceof MigrationResultSetError) {
@@ -354,114 +358,123 @@ export class Migrator {
     return new NoopPlugin()
   }
 
-  async #ensureMigrationTablesExists(): Promise<void> {
-    await this.#ensureMigrationTableSchemaExists()
-    await this.#ensureMigrationTableExists()
-    await this.#ensureMigrationLockTableExists()
-    await this.#ensureLockRowExists()
-  }
-
   async #ensureMigrationTableSchemaExists(): Promise<void> {
     if (!this.#migrationTableSchema) {
       // Use default schema. Nothing to do.
       return
     }
 
-    if (!(await this.#doesSchemaExists())) {
-      try {
-        await this.#createIfNotExists(
-          this.#props.db.schema.createSchema(this.#migrationTableSchema),
-        )
-      } catch (error) {
-        // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
-        // query doesn't throw if the schema already exits. That's why we check if
-        // the schema exist here and ignore the error if it does.
-        if (!(await this.#doesSchemaExists())) {
-          throw error
-        }
+    const schemaExists = await this.#doesSchemaExist()
+
+    if (schemaExists) {
+      return
+    }
+
+    try {
+      await this.#createIfNotExists(
+        this.#props.db.schema.createSchema(this.#migrationTableSchema),
+      )
+    } catch (error) {
+      const schemaExists = await this.#doesSchemaExist()
+
+      // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
+      // query doesn't throw if the schema already exits. That's why we check if
+      // the schema exist here and ignore the error if it does.
+      if (!schemaExists) {
+        throw error
       }
     }
   }
 
   async #ensureMigrationTableExists(): Promise<void> {
-    if (!(await this.#doesTableExists(this.#migrationTable))) {
-      try {
-        if (this.#migrationTableSchema) {
-          await this.#createIfNotExists(
-            this.#props.db.schema.createSchema(this.#migrationTableSchema),
-          )
-        }
+    const tableExists = await this.#doesTableExist(this.#migrationTable)
 
-        await this.#createIfNotExists(
-          this.#props.db.schema
-            .withPlugin(this.#schemaPlugin)
-            .createTable(this.#migrationTable)
-            .addColumn('name', 'varchar(255)', (col) =>
-              col.notNull().primaryKey(),
-            )
-            // The migration run time as ISO string. This is not a real date type as we
-            // can't know which data type is supported by all future dialects.
-            .addColumn('timestamp', 'varchar(255)', (col) => col.notNull()),
-        )
-      } catch (error) {
-        // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
-        // query doesn't throw if the table already exits. That's why we check if
-        // the table exist here and ignore the error if it does.
-        if (!(await this.#doesTableExists(this.#migrationTable))) {
-          throw error
-        }
+    if (tableExists) {
+      return
+    }
+
+    try {
+      await this.#createIfNotExists(
+        this.#props.db.schema
+          .withPlugin(this.#schemaPlugin)
+          .createTable(this.#migrationTable)
+          .addColumn('name', 'varchar(255)', (col) =>
+            col.notNull().primaryKey(),
+          )
+          // The migration run time as ISO string. This is not a real date type as we
+          // can't know which data type is supported by all future dialects.
+          .addColumn('timestamp', 'varchar(255)', (col) => col.notNull()),
+      )
+    } catch (error) {
+      const tableExists = await this.#doesTableExist(this.#migrationTable)
+
+      // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
+      // query doesn't throw if the table already exits. That's why we check if
+      // the table exist here and ignore the error if it does.
+      if (!tableExists) {
+        throw error
       }
     }
   }
 
   async #ensureMigrationLockTableExists(): Promise<void> {
-    if (!(await this.#doesTableExists(this.#migrationLockTable))) {
-      try {
-        await this.#createIfNotExists(
-          this.#props.db.schema
-            .withPlugin(this.#schemaPlugin)
-            .createTable(this.#migrationLockTable)
-            .addColumn('id', 'varchar(255)', (col) =>
-              col.notNull().primaryKey(),
-            )
-            .addColumn('is_locked', 'integer', (col) =>
-              col.notNull().defaultTo(0),
-            ),
-        )
-      } catch (error) {
-        // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
-        // query doesn't throw if the table already exits. That's why we check if
-        // the table exist here and ignore the error if it does.
-        if (!(await this.#doesTableExists(this.#migrationLockTable))) {
-          throw error
-        }
+    const tableExists = await this.#doesTableExist(this.#migrationLockTable)
+
+    if (tableExists) {
+      return
+    }
+
+    try {
+      await this.#createIfNotExists(
+        this.#props.db.schema
+          .withPlugin(this.#schemaPlugin)
+          .createTable(this.#migrationLockTable)
+          .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
+          .addColumn('is_locked', 'integer', (col) =>
+            col.notNull().defaultTo(0),
+          ),
+      )
+    } catch (error) {
+      const tableExists = await this.#doesTableExist(this.#migrationLockTable)
+
+      // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
+      // query doesn't throw if the table already exits. That's why we check if
+      // the table exist here and ignore the error if it does.
+      if (!tableExists) {
+        throw error
       }
     }
   }
 
   async #ensureLockRowExists(): Promise<void> {
-    if (!(await this.#doesLockRowExists())) {
-      try {
-        await this.#props.db
-          .withPlugin(this.#schemaPlugin)
-          .insertInto(this.#migrationLockTable)
-          .values({ id: MIGRATION_LOCK_ID, is_locked: 0 })
-          .execute()
-      } catch (error) {
-        if (!(await this.#doesLockRowExists())) {
-          throw error
-        }
+    const lockRowExists = await this.#doesLockRowExists()
+
+    if (lockRowExists) {
+      return
+    }
+
+    try {
+      await this.#props.db
+        .withPlugin(this.#schemaPlugin)
+        .insertInto(this.#migrationLockTable)
+        .values({ id: MIGRATION_LOCK_ID, is_locked: 0 })
+        .execute()
+    } catch (error) {
+      const lockRowExists = await this.#doesLockRowExists()
+
+      if (!lockRowExists) {
+        throw error
       }
     }
   }
 
-  async #doesSchemaExists(): Promise<boolean> {
+  async #doesSchemaExist(): Promise<boolean> {
     const schemas = await this.#props.db.introspection.getSchemas()
 
     return schemas.some((it) => it.name === this.#migrationTableSchema)
   }
 
-  async #doesTableExists(tableName: string): Promise<boolean> {
+  async #doesTableExist(tableName: string): Promise<boolean> {
     const schema = this.#migrationTableSchema
 
     const tables = await this.#props.db.introspection.getTables({
@@ -799,7 +812,7 @@ export interface MigratorProps {
    * the project, to the end of time or prepare to manually migrate the migration
    * tables.
    *
-   * This only works on postgres.
+   * This only works on postgres and mssql.
    */
   readonly migrationTableSchema?: string
 

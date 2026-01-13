@@ -1,15 +1,15 @@
-import { QueryResult } from '../driver/database-connection.js'
+import type { QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
+import type { RawNode } from '../operation-node/raw-node.js'
+import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
 import { freeze } from '../util/object-utils.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
-import { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
-import { QueryId } from '../util/query-id.js'
+import type { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
+import type { QueryId } from '../util/query-id.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import {
+import type {
   AliasableExpression,
   AliasedExpression,
   Expression,
@@ -229,14 +229,17 @@ export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
 /**
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
-export interface AliasedRawBuilder<O = unknown, A extends string = never>
-  extends AliasedExpression<O, A> {
+export interface AliasedRawBuilder<
+  O = unknown,
+  A extends string = never,
+> extends AliasedExpression<O, A> {
   get rawBuilder(): RawBuilder<O>
 }
 
-class AliasedRawBuilderImpl<O = unknown, A extends string = never>
-  implements AliasedRawBuilder<O, A>
-{
+class AliasedRawBuilderImpl<
+  O = unknown,
+  A extends string = never,
+> implements AliasedRawBuilder<O, A> {
   readonly #rawBuilder: RawBuilder<O>
   readonly #alias: A | Expression<unknown>
 

@@ -1,14 +1,14 @@
-import { Driver } from '../../driver/driver.js'
-import { Kysely } from '../../kysely.js'
-import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { Dialect } from '../dialect.js'
-import { DatabaseIntrospector } from '../database-introspector.js'
+import type { Driver } from '../../driver/driver.js'
+import type { Kysely } from '../../kysely.js'
+import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { Dialect } from '../dialect.js'
+import type { DatabaseIntrospector } from '../database-introspector.js'
 import { MysqlDriver } from './mysql-driver.js'
 import { MysqlQueryCompiler } from './mysql-query-compiler.js'
 import { MysqlIntrospector } from './mysql-introspector.js'
-import { DialectAdapter } from '../dialect-adapter.js'
+import type { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
-import { MysqlDialectConfig } from './mysql-dialect-config.js'
+import type { MysqlDialectConfig } from './mysql-dialect-config.js'
 
 /**
  * MySQL dialect that uses the [mysql2](https://github.com/sidorares/node-mysql2#readme) library.
