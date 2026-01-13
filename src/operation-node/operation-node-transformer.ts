@@ -99,6 +99,7 @@ import { OrActionNode } from './or-action-node.js'
 import { CollateNode } from './collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from './rename-constraint-node.js'
+import { NullIfNode } from './null-if.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -242,6 +243,7 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    NullIfNode: this.transformNullIf.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -299,6 +301,7 @@ export class OperationNodeTransformer {
       setOperations: this.transformNodeList(node.setOperations, queryId),
       fetch: this.transformNode(node.fetch, queryId),
       top: this.transformNode(node.top, queryId),
+      nullIf: this.transformNode(node.nullIf, queryId),
     })
   }
 
@@ -1275,6 +1278,14 @@ export class OperationNodeTransformer {
       kind: 'TopNode',
       expression: node.expression,
       modifiers: node.modifiers,
+    })
+  }
+
+  protected transformNullIf(node: NullIfNode, _queryId?: QueryId): NullIfNode {
+    return requireAllProps<NullIfNode>({
+      kind: 'NullIfNode',
+      v1: node.v1,
+      v2: node.v2,
     })
   }
 

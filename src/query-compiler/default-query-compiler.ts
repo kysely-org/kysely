@@ -117,6 +117,7 @@ import { logOnce } from '../util/log-once.js'
 import { CollateNode } from '../operation-node/collate-node.js'
 import { QueryId } from '../util/query-id.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import { NullIfNode } from '../operation-node/null-if.js'
 
 const LIT_WRAP_REGEX = /'/g
 
@@ -938,6 +939,12 @@ export class DefaultQueryCompiler
   protected override visitOnDuplicateKey(node: OnDuplicateKeyNode): void {
     this.append('on duplicate key update ')
     this.compileList(node.updates)
+  }
+
+  protected override visitNullIf(node: NullIfNode): void {
+    this.append('nullif(')
+    this.compileList([node.v1, node.v2])
+    this.append(')')
   }
 
   protected override visitCreateIndex(node: CreateIndexNode): void {
