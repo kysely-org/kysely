@@ -8,5 +8,5 @@
     "strict": true
   },
   "exclude": ["node_modules"],
-  "include": ["foo.mts"]
+  "include": ["*.mts"]
 }
