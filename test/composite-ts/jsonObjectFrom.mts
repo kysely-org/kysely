@@ -18,7 +18,7 @@ export function foo(
       jsonObjectFrom(
         eb.selectFrom("questions")
         .selectAll('questions')
-        .whereRef('questions.id', '=', 'answers.id')
+        .whereRef('questions.id', '=', 'answers.questionId')
       ).as("answer"),
     )
 }
