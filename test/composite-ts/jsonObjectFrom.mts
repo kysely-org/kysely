@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely'
+import { jsonObjectFrom } from 'kysely/helpers/postgres'
 
 export function foo(
   db: Kysely<{
