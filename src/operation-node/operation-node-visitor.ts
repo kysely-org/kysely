@@ -100,7 +100,7 @@ import type { RefreshMaterializedViewNode } from './refresh-materialized-view-no
 import type { OrActionNode } from './or-action-node.js'
 import type { CollateNode } from './collate-node.js'
 import type { RenameConstraintNode } from './rename-constraint-node.js'
-import type { NullIfNode } from './null-if.js'
+import type { NullIfNode } from './null-if-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []

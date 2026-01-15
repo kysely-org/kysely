@@ -78,7 +78,7 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
-import { NullIfNode } from '../operation-node/null-if.js'
+import { NullIfNode } from '../operation-node/null-if-node.js'
 import type { SelectFrom } from '../parser/select-from-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
