@@ -7,5 +7,5 @@ interface DB {
 }
 
 export function foo<T extends 'myColumn'>(db: Kysely<DB>, field: T) {
-  return db.selectFrom('MyTable').select(field).execute()
+  return db.selectFrom('MyTable').select(field).$narrowType<{}>().execute()
 }
