@@ -233,7 +233,9 @@ export type {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
+  DrainOuterGeneric,
   Equals,
+  ExtractColumnType,
   UnknownRow,
   Simplify,
   SqlBool,
@@ -243,11 +245,13 @@ export type {
   NumericString,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
+  SimplifyResult,
   StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
+export type { KyselyTypeError } from './util/type-error.js'
 
 export type {
   SelectExpression,
