@@ -244,6 +244,7 @@ export type {
   NumericString,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
+  SimplifyResult,
   StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
