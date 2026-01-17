@@ -132,7 +132,7 @@
     "pg-cursor": "^2.16.1",
     "pkg-types": "^2.3.0",
     "playwright": "^1.57.0",
-    "prettier": "^3.7.3",
+    "prettier": "^3.8.0",
     "semver": "^7.7.3",
     "sinon": "^21.0.1",
     "std-env": "^3.10.0",
