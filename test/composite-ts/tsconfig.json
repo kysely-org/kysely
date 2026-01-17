@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "isolatedModules": true,
     "skipLibCheck": true,
     "strict": true
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "dist"],
   "include": ["*.mts"]
 }

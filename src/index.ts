@@ -232,7 +232,9 @@ export type {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
+  DrainOuterGeneric,
   Equals,
+  ExtractColumnType,
   UnknownRow,
   Simplify,
   SqlBool,
@@ -243,7 +245,6 @@ export type {
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   StringsWhenDataTypeNotAvailable,
-  ExtractColumnType,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
