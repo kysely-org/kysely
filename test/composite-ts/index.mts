@@ -1,4 +1,4 @@
-import type { Kysely, SelectExpression } from 'kysely'
+import type { Kysely } from 'kysely'
 
 interface DB {
   MyTable: {
@@ -12,7 +12,7 @@ export function foo<T extends 'myColumn'>(db: Kysely<DB>, field: T) {
     .selectFrom('MyTable')
     .select(field) // <------- was missing DrainOuterGeneric & ExtractColumnType
     .$narrowType<{}>() // <------- was missing KyselyTypeError
-    .execute()
+    .executeTakeFirst() // <------- was missing SimplifySingleResult
 }
 
 export function bar<T extends keyof DB['MyTable']>(

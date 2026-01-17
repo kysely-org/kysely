@@ -245,6 +245,7 @@ export type {
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   SimplifyResult,
+  SimplifySingleResult,
   StringsWhenDataTypeNotAvailable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
