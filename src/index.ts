@@ -303,3 +303,4 @@ export type {
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
 export type { Collation } from './parser/collate-parser.js'
+export type { QueryCreatorWithCommonTableExpression } from './parser/with-parser.js'

@@ -25,3 +25,11 @@ export function bar<T extends keyof DB['MyTable']>(
     .returning(columns) // <----- was missing SimplifyResult
     .execute()
 }
+
+export function fizz(db: Kysely<DB>) {
+  return db.with(
+    // <----- was missing QueryCreatorWithCommonTableExpression
+    'cte',
+    (db) => db.selectFrom('MyTable').selectAll(),
+  )
+}
