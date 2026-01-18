@@ -4,6 +4,8 @@ import {
   RawBuilder,
   sql,
   ParseJSONResultsPlugin,
+  NumericString,
+  expressionBuilder,
 } from '../../..'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
@@ -479,6 +481,109 @@ for (const dialect of DIALECTS) {
           },
         },
       ])
+    })
+
+    it('should dehydrate numeric strings to numbers', async () => {
+      const bigNumber = sql<NumericString | number>`9007199254740991`.as(
+        'bigNumber',
+      )
+      const number = sql<NumericString | number>`42`.as('number')
+
+      const result = await ctx.db
+        .selectNoFrom([
+          bigNumber,
+          number,
+          jsonObjectFrom(ctx.db.selectNoFrom([bigNumber, number]))
+            .$notNull()
+            .as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.bigNumber).to.equal(
+        {
+          postgres: 'string',
+          mysql: 'string',
+          mssql: 'number',
+          sqlite: 'number',
+        }[dialect],
+      )
+      expect(typeof result.number).to.equal(
+        {
+          postgres: 'number',
+          mysql: 'string',
+          mssql: 'number',
+          sqlite: 'number',
+        }[dialect],
+      )
+      expect(typeof result.dehydrated.bigNumber).to.equal('number')
+      expect(typeof result.dehydrated.number).to.equal('number')
+
+      result.bigNumber satisfies NumericString | number
+      result.number satisfies NumericString | number
+      result.dehydrated.bigNumber satisfies number
+      result.dehydrated.number satisfies number
+    })
+
+    it('should dehydrate Date to string', async () => {
+      const now = sql<Date | string>`current_timestamp`.as('date')
+
+      const result = await ctx.db
+        .selectNoFrom([
+          now,
+          jsonObjectFrom(ctx.db.selectNoFrom([now]))
+            .$notNull()
+            .as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.date).to.equal(
+        {
+          postgres: 'object',
+          mysql: 'object',
+          mssql: 'object',
+          sqlite: 'string',
+        }[dialect],
+      )
+      if (dialect !== 'sqlite') {
+        expect(result.date instanceof Date).to.equal(true)
+      }
+      expect(typeof result.dehydrated.date).to.equal('string')
+
+      result.date satisfies Date | string
+      result.dehydrated.date satisfies string
+    })
+
+    it('should dehydrate Buffer to string in jsonArrayFrom', async () => {
+      const buffer = {
+        postgres: sql<Buffer>`'\\xDEADBEEF'::bytea`,
+        mysql: sql<Buffer>`UNHEX('DEADBEEF')`,
+        mssql: sql<Buffer>`CAST('DEADBEEF' AS VARBINARY)`,
+        sqlite: sql<Buffer>`X'DEADBEEF'`,
+      }[dialect].as('buffer')
+
+      const result = await ctx.db
+        .selectNoFrom([
+          buffer,
+          jsonObjectFrom(
+            ctx.db.selectNoFrom([
+              dialect === 'sqlite'
+                ? expressionBuilder()
+                    .cast<string>(buffer.expression, 'text')
+                    .as('buffer')
+                : buffer,
+            ]),
+          )
+            .$notNull()
+            .as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.buffer).to.equal('object')
+      expect(Buffer.isBuffer(result.buffer)).to.equal(true)
+      expect(typeof result.dehydrated.buffer).to.equal('string')
+
+      result.buffer satisfies Buffer
+      result.dehydrated.buffer satisfies string
     })
   })
 
