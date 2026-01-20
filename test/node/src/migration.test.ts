@@ -5,6 +5,7 @@ import { setTimeout } from 'node:timers/promises'
 import {
   FileMigrationProvider,
   type Migration,
+  type MigrationConfig,
   type MigrationResultSet,
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
@@ -936,6 +937,223 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    describe('per-migration transaction config', () => {
+      const sandbox = createSandbox()
+      let transactionSpy: SinonSpy<
+        Parameters<Kysely<Database>['transaction']>,
+        ReturnType<Kysely<Database>['transaction']>
+      >
+
+      beforeEach(() => {
+        const _connection = ctx.db.connection.bind(ctx.db)
+        sandbox.stub(ctx.db, 'connection').callsFake(() => {
+          const db = _connection()
+          const _execute = db.execute.bind(db)
+          sandbox.stub(db, 'execute').callsFake((cb) => {
+            return _execute((db) => {
+              transactionSpy = sandbox.spy(db, 'transaction')
+              return cb(db)
+            })
+          })
+          return db
+        })
+      })
+
+      afterEach(() => {
+        sandbox.restore()
+      })
+
+      it('should not use transaction when migration config.transaction is false', async () => {
+        const [migrator, executedUpMethods] = createMigrations([
+          { name: 'migration1', config: { transaction: false } },
+        ])
+
+        const { results } = await migrator.migrateUp()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should not use transaction when migration config.transaction is true but global disableTransactions is set to true', async () => {
+        const [migrator, executedUpMethods] = createMigrations(
+          [{ name: 'migration1', config: { transaction: true } }],
+          { disableTransactions: true },
+        )
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: true,
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should not use transaction when migration config.transaction is true but disableTransactions is set to true on migrate call', async () => {
+        const [migrator, executedUpMethods] = createMigrations([
+          { name: 'migration1', config: { transaction: true } },
+        ])
+
+        const { results } = await migrator.migrateUp({
+          disableTransactions: true,
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should throw an error when a migration config.transaction is true and a transaction is given to the migrator', async () => {
+        await ctx.db.transaction().execute(async (trx) => {
+          const [migrator] = createMigrations(
+            [{ name: 'migration1', config: { transaction: true } }],
+            { db: trx },
+          )
+
+          const { error } = await migrator.migrateUp()
+          if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+            expect(error).to.match(/These configurations are incompatible/)
+          } else {
+            expect(error).to.match(
+              /Transactional DDL is not supported in this dialect/,
+            )
+          }
+        })
+      })
+
+      it('should use transaction when migration config.transaction is true (if supported)', async () => {
+        const [migrator, executedUpMethods] = createMigrations([
+          { name: 'migration1', config: { transaction: true } },
+        ])
+
+        const { results } = await migrator.migrateUp()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+          expect(transactionSpy.called).to.be.true
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
+      })
+
+      it('should batch consecutive migrations with the same transaction setting', async () => {
+        // migrations 1,2 should run in one transaction
+        // migration 3 should run without transaction
+        // migrations 4,5 should run in another transaction
+        const [migrator, executedUpMethods] = createMigrations([
+          'migration1', // Uses global default (transaction)
+          'migration2', // Uses global default (transaction)
+          { name: 'migration3', config: { transaction: false } },
+          'migration4', // Uses global default (transaction)
+          'migration5', // Uses global default (transaction)
+        ])
+
+        const { results } = await migrator.migrateToLatest()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration5', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+          'migration5',
+        ])
+
+        // Consecutive migrations with same transaction behavior are batched
+        // So transaction() should be called twice: once for 1,2 and once for 4,5
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+          expect(transactionSpy.callCount).to.equal(2)
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
+      })
+
+      it('should handle per-migration config when migrating down', async () => {
+        const [migrator, _, executedDownMethods] = createMigrations([
+          { name: 'migration1', config: { transaction: false } },
+          { name: 'migration2', config: { transaction: true } },
+        ])
+
+        await migrator.migrateToLatest()
+
+        // Reset the spy to only track down migrations
+        transactionSpy.resetHistory()
+
+        const { results } = await migrator.migrateDown()
+
+        expect(results).to.eql([
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedDownMethods).to.eql(['migration2'])
+
+        // migration2 has transaction: true, so should use transaction if supported
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+          expect(transactionSpy.called).to.be.true
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
+
+        // Reset and migrate down again
+        transactionSpy.resetHistory()
+
+        const { results: results2 } = await migrator.migrateDown()
+
+        expect(results2).to.eql([
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        // migration1 has transaction: false, so should NOT use transaction
+        expect(transactionSpy.called).to.be.false
+      })
+
+      it('should use global transaction setting when migration has no config', async () => {
+        const [migrator, executedUpMethods] = createMigrations([
+          'migration1', // No config - uses global default
+          { name: 'migration2', config: { transaction: false } }, // Has config
+        ])
+
+        const { results } = await migrator.migrateToLatest()
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+
+        // migration1 uses global default (transaction if supported)
+        // migration2 explicitly disables transaction
+        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
+          expect(transactionSpy.callCount).to.equal(1) // Only migration1
+        } else {
+          expect(transactionSpy.called).to.be.false
+        }
+      })
+    })
+
     describe('migrateDown', () => {
       it('should migrate down one step', async () => {
         const [migrator, executedUpMethods, executedDownMethods] =
@@ -1158,7 +1376,10 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (string | { name: string; error?: string })[],
+      migrationConfigs: (
+        | string
+        | { name: string; error?: string; config?: MigrationConfig }
+      )[],
       migratorConfig?: Partial<MigratorProps>,
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
@@ -1166,31 +1387,33 @@ for (const dialect of DIALECTS) {
 
       const migrations = migrationConfigs.reduce<Record<string, Migration>>(
         (migrations, rawConfig) => {
-          const config =
+          const migrationEntry =
             typeof rawConfig === 'string' ? { name: rawConfig } : rawConfig
 
           return {
             ...migrations,
-            [config.name]: {
+            [migrationEntry.name]: {
               async up(_db): Promise<void> {
                 await setTimeout(20)
 
-                if (config.error) {
-                  throw new Error(config.error)
+                if (migrationEntry.error) {
+                  throw new Error(migrationEntry.error)
                 }
 
-                executedUpMethods.push(config.name)
+                executedUpMethods.push(migrationEntry.name)
               },
 
               async down(_db): Promise<void> {
                 await setTimeout(20)
 
-                if (config.error) {
-                  throw new Error(config.error)
+                if (migrationEntry.error) {
+                  throw new Error(migrationEntry.error)
                 }
 
-                executedDownMethods.push(config.name)
+                executedDownMethods.push(migrationEntry.name)
               },
+
+              config: migrationEntry.config,
             },
           }
         },
