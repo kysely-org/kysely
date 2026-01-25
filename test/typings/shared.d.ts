@@ -80,6 +80,12 @@ export interface PersonMetadata {
     }
     tags: string[]
   }>
+  discriminatedUnionProfile: JSONColumnType<{
+    auth:
+      | { type: 'token'; token: string }
+      | { type: 'session'; session_id: string }
+    tags: string[]
+  }>
   experience: JSONColumnType<
     {
       establishment: string
