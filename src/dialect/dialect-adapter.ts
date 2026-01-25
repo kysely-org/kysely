@@ -38,6 +38,11 @@ export interface DialectAdapter {
   readonly supportsOutput?: boolean
 
   /**
+   * Whether or not this dialect supports synchronous query execution.
+   */
+  readonly supportsSyncExecution?: boolean
+
+  /**
    * This method is used to acquire a lock for the migrations so that
    * it's not possible for two migration operations to run in parallel.
    *

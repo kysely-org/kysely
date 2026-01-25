@@ -47,6 +47,12 @@ export interface QueryExecutor extends ConnectionProvider {
   executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>>
 
   /**
+   * Executes a compiled query synchronously and runs the result through all
+   * plugins' `transformResultSync` method.
+   */
+  executeQuerySync<R>(compiledQuery: CompiledQuery<R>): QueryResult<R>
+
+  /**
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method. Results are streamead instead of loaded
    * at once.

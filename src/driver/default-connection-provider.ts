@@ -20,4 +20,20 @@ export class DefaultConnectionProvider implements ConnectionProvider {
       await this.#driver.releaseConnection(connection)
     }
   }
+
+  provideConnectionSync<T>(consumer: (connection: DatabaseConnection) => T): T {
+    if (!this.#driver.acquireConnectionSync) {
+      throw new Error(
+        'The current dialect does not support synchronous execution.',
+      )
+    }
+
+    const connection = this.#driver.acquireConnectionSync()
+
+    try {
+      return consumer(connection)
+    } finally {
+      this.#driver.releaseConnectionSync?.(connection)
+    }
+  }
 }

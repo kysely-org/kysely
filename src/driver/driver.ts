@@ -74,6 +74,21 @@ export interface Driver {
    * Destroys the driver and releases all resources.
    */
   destroy(): Promise<void>
+
+  /**
+   * Initializes the driver synchronously.
+   */
+  initSync?(): void
+
+  /**
+   * Acquires a connection synchronously.
+   */
+  acquireConnectionSync?(): DatabaseConnection
+
+  /**
+   * Releases a connection synchronously.
+   */
+  releaseConnectionSync?(connection: DatabaseConnection): void
 }
 
 export interface TransactionSettings {

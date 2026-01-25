@@ -83,6 +83,14 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
   async transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
+    return this.#transformResult(args)
+  }
+
+  transformResultSync(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
+    return this.#transformResult(args)
+  }
+
+  #transformResult(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
     return {
       ...args.result,
       rows: parseArray(args.result.rows, this.#objectStrategy),

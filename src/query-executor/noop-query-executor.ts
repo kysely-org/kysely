@@ -21,6 +21,10 @@ export class NoopQueryExecutor extends QueryExecutorBase {
     throw new Error('this query cannot be executed')
   }
 
+  provideConnectionSync<T>(): T {
+    throw new Error('this query cannot be executed')
+  }
+
   withConnectionProvider(): NoopQueryExecutor {
     throw new Error('this query cannot have a connection provider')
   }

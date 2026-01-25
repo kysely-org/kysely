@@ -37,6 +37,29 @@ export class SqliteDriver implements Driver {
     }
   }
 
+  initSync(): void {
+    if (this.#db) {
+      return
+    }
+
+    if (isFunction(this.#config.database)) {
+      throw new Error(
+        'Cannot initialize synchronously when database is provided as a factory function. ' +
+          'Provide the database instance directly or call an async method first.',
+      )
+    }
+
+    if (this.#config.onCreateConnection) {
+      throw new Error(
+        'Cannot initialize synchronously when onCreateConnection hook is provided. ' +
+          'Remove the hook or call an async method first.',
+      )
+    }
+
+    this.#db = this.#config.database
+    this.#connection = new SqliteConnection(this.#db)
+  }
+
   async acquireConnection(): Promise<DatabaseConnection> {
     // SQLite only has one single connection. We use a mutex here to wait
     // until the single connection has been released.
@@ -99,6 +122,15 @@ export class SqliteDriver implements Driver {
     this.#connectionMutex.unlock()
   }
 
+  acquireConnectionSync(): DatabaseConnection {
+    this.#connectionMutex.lockSync()
+    return this.#connection!
+  }
+
+  releaseConnectionSync(_connection: DatabaseConnection): void {
+    this.#connectionMutex.unlock()
+  }
+
   async destroy(): Promise<void> {
     this.#db?.close()
   }
@@ -112,18 +144,22 @@ class SqliteConnection implements DatabaseConnection {
   }
 
   executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    return Promise.resolve(this.executeQuerySync<O>(compiledQuery))
+  }
+
+  executeQuerySync<O>(compiledQuery: CompiledQuery): QueryResult<O> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 
     if (stmt.reader) {
-      return Promise.resolve({
+      return {
         rows: stmt.all(parameters) as O[],
-      })
+      }
     }
 
     const { changes, lastInsertRowid } = stmt.run(parameters)
 
-    return Promise.resolve({
+    return {
       numAffectedRows:
         changes !== undefined && changes !== null ? BigInt(changes) : undefined,
       insertId:
@@ -131,7 +167,7 @@ class SqliteConnection implements DatabaseConnection {
           ? BigInt(lastInsertRowid)
           : undefined,
       rows: [],
-    })
+    }
   }
 
   async *streamQuery<R>(
@@ -160,6 +196,19 @@ class ConnectionMutex {
   async lock(): Promise<void> {
     while (this.#promise) {
       await this.#promise
+    }
+
+    this.#promise = new Promise((resolve) => {
+      this.#resolve = resolve
+    })
+  }
+
+  lockSync(): void {
+    if (this.#promise) {
+      throw new Error(
+        'Cannot acquire connection synchronously while another operation is in progress. ' +
+          'Sync execution requires exclusive access to the SQLite connection.',
+      )
     }
 
     this.#promise = new Promise((resolve) => {

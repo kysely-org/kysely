@@ -65,6 +65,11 @@ export interface KyselyPlugin {
   transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>>
+
+  /**
+   * Synchronous version of {@link transformResult}.
+   */
+  transformResultSync?(args: PluginTransformResultArgs): QueryResult<UnknownRow>
 }
 
 export interface PluginTransformQueryArgs {

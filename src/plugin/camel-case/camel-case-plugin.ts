@@ -139,6 +139,14 @@ export class CamelCasePlugin implements KyselyPlugin {
   async transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
+    return this.#transformResult(args)
+  }
+
+  transformResultSync(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
+    return this.#transformResult(args)
+  }
+
+  #transformResult(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
     if (args.result.rows && Array.isArray(args.result.rows)) {
       return {
         ...args.result,
