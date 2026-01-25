@@ -4,6 +4,7 @@ import {
   CompiledQuery,
   MssqlDriver,
   MysqlDriver,
+  PGliteDriver,
   PostgresDriver,
   SqliteDriver,
   Transaction,
@@ -24,7 +25,9 @@ import { DatabaseError as PostgresError } from 'pg'
 import { SqliteError } from 'better-sqlite3'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: transaction`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: transaction`, () => {
     let ctx: TestContext
     const executedQueries: CompiledQuery[] = []
     const sandbox = sinon.createSandbox()
@@ -69,13 +72,17 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+    if (
+      (sqlSpec === 'postgres' && variant !== 'pglite') ||
+      sqlSpec === 'mysql' ||
+      sqlSpec === 'mssql'
+    ) {
       for (const isolationLevel of [
         'read uncommitted',
         'read committed',
         'repeatable read',
         'serializable',
-        ...(dialect === 'mssql' ? (['snapshot'] as const) : []),
+        ...(sqlSpec === 'mssql' ? (['snapshot'] as const) : []),
       ] as const) {
         it(`should set the transaction isolation level as "${isolationLevel}"`, async () => {
           await ctx.db
@@ -92,7 +99,7 @@ for (const dialect of DIALECTS) {
                 .execute()
             })
 
-          if (dialect === 'mssql') {
+          if (sqlSpec === 'mssql') {
             expect(tediousBeginTransactionSpy.calledOnce).to.be.true
             expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.not.be
               .undefined
@@ -140,13 +147,16 @@ for (const dialect of DIALECTS) {
                   parameters: ['Foo', 'Barson', 'male'],
                 },
               ],
-            }[dialect],
+            }[sqlSpec],
           )
         })
       }
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (
+      (sqlSpec === 'postgres' && variant !== 'pglite') ||
+      sqlSpec === 'mysql'
+    ) {
       for (const accessMode of TRANSACTION_ACCESS_MODES) {
         it(`should set the transaction access mode as "${accessMode}"`, async () => {
           await ctx.db
@@ -174,13 +184,13 @@ for (const dialect of DIALECTS) {
                 { sql: 'select * from `person`', parameters: [] },
                 { sql: 'commit', parameters: [] },
               ],
-            }[dialect],
+            }[sqlSpec],
           )
         })
       }
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should be able to start a transaction with a single connection', async () => {
         const result = await ctx.db.connection().execute((db) => {
           return db.transaction().execute((trx) => {
@@ -247,9 +257,9 @@ for (const dialect of DIALECTS) {
 
         expect.fail('Expected transaction to fail')
       } catch (error) {
-        if (dialect === 'sqlite') {
+        if (sqlSpec === 'sqlite') {
           expect(error).to.be.instanceOf(SqliteError)
-        } else if (dialect === 'postgres') {
+        } else if (sqlSpec === 'postgres' && variant !== 'pglite') {
           expect(error).to.be.instanceOf(PostgresError)
         }
 
@@ -263,7 +273,8 @@ for (const dialect of DIALECTS) {
         mysql: MysqlDriver,
         mssql: MssqlDriver,
         sqlite: SqliteDriver,
-      }[dialect].prototype
+        pglite: PGliteDriver,
+      }[variant].prototype
       const beginStub = sandbox.stub(driverProto, 'beginTransaction').throws()
       const callbackSpy = sandbox.spy()
       const rollbackSpy = sandbox.spy(driverProto, 'rollbackTransaction')
@@ -307,7 +318,7 @@ for (const dialect of DIALECTS) {
         gender: 'other',
       })
 
-      if (dialect === 'mssql') {
+      if (sqlSpec === 'mssql') {
         const compiledQuery = query.compile()
 
         await trx.executeQuery(

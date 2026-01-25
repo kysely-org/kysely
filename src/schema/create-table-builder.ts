@@ -9,7 +9,7 @@ import type { Compilable } from '../util/compilable.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import type { QueryId } from '../util/query-id.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import {
@@ -30,7 +30,10 @@ import {
   UniqueConstraintNodeBuilder,
   type UniqueConstraintNodeBuilderCallback,
 } from './unique-constraint-builder.js'
-import { parseExpression } from '../parser/expression-parser.js'
+import {
+  type ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 import {
   PrimaryKeyConstraintBuilder,
   type PrimaryKeyConstraintBuilderCallback,
@@ -39,6 +42,11 @@ import {
   CheckConstraintBuilder,
   type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import {
+  CreateTableAddIndexBuilder,
+  type CreateTableAddIndexBuilderCallback,
+} from './create-table-add-index-builder.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -243,15 +251,39 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   )
    *   .execute()
    * ```
+   *
+   * In dialects such as MySQL you create unique constraints on expressions as follows:
+   *
+   * ```ts
+   *
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addUniqueConstraint(
+   *     'first_name_last_name_unique',
+   *     [sql`(lower('first_name'))`, 'last_name']
+   *   )
+   *   .execute()
+   * ```
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: C[],
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName),
+        UniqueConstraintNode.create(
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+          constraintName,
+        ),
       ),
     )
 
@@ -260,6 +292,60 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
         uniqueConstraintBuilder.toOperationNode(),
+      ),
+    })
+  }
+
+  /**
+   * Adds an index that includes one or more columns.
+   *
+   * This is only supported by some dialects like MySQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('first_name', 'varchar(64)')
+   *   .addColumn('last_name', 'varchar(64)')
+   *   .addIndex('last_name_key', ['last_name'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `first_name` varchar(64) not null,
+   *   `last_name` varchar(64) not null,
+   *   index `last_name_key` (`last_name`)
+   * )
+   * ```
+   */
+  addIndex(
+    indexName: string,
+    columns: (C | ExpressionOrFactory<any, any, any>)[],
+    build: CreateTableAddIndexBuilderCallback = noop,
+  ): CreateTableBuilder<TB, C> {
+    const addIndexBuilder = build(
+      new CreateTableAddIndexBuilder(
+        AddIndexNode.cloneWithColumns(
+          AddIndexNode.create(indexName),
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+        ),
+      ),
+    )
+
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWithIndex(
+        this.#props.node,
+        addIndexBuilder.toOperationNode(),
       ),
     })
   }

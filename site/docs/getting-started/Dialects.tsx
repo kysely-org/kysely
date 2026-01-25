@@ -49,6 +49,10 @@ const builtInDialects: BuiltInDialect[] = [
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
   },
+  {
+    value: 'pglite',
+    driverDocsURL: 'https://pglite.dev/docs',
+  },
 ]
 
 export function Dialects(props: DialectsProps) {
@@ -67,10 +71,10 @@ export function Dialects(props: DialectsProps) {
         it. This requires a <code>Dialect</code> implementation.
         <br />
         <br />
-        There are 4 built-in dialects for PostgreSQL, MySQL, Microsoft SQL
-        Server (MSSQL), and SQLite. Additionally, the community has implemented
-        several dialects to choose from. Find out more at{' '}
-        <Link to="/docs/dialects">"Dialects"</Link>.
+        There are {builtInDialects.length} built-in dialects for PostgreSQL,
+        MySQL, Microsoft SQL Server (MSSQL), SQLite, and PGlite. Additionally,
+        the community has implemented several dialects to choose from. Find out
+        more at <Link to="/docs/dialects">"Dialects"</Link>.
       </p>
       <Heading as="h3">Driver installation</Heading>
       <p>
@@ -82,7 +86,8 @@ export function Dialects(props: DialectsProps) {
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverDocsURL, poolDocsURL, value }) => {
           const driverNPMPackage = getDriverNPMPackageNames()[value]
-          const poolNPMPackage = POOL_NPM_PACKAGE_NAMES[value]
+          const poolNPMPackage =
+            POOL_NPM_PACKAGE_NAMES[value as keyof typeof POOL_NPM_PACKAGE_NAMES]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
           const installationCommand =
             packageManager === 'deno'

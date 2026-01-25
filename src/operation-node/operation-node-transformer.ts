@@ -480,6 +480,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       constraints: this.transformNodeList(node.constraints, queryId),
+      indexes: this.transformNodeList(node.indexes, queryId),
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
       onCommit: node.onCommit,
@@ -533,6 +534,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table, queryId),
       ifExists: node.ifExists,
       cascade: node.cascade,
+      temporary: node.temporary,
     })
   }
 
@@ -1032,6 +1034,8 @@ export class OperationNodeTransformer {
     return requireAllProps<DropTypeNode>({
       kind: 'DropTypeNode',
       name: this.transformNode(node.name, queryId),
+      additionalNames: this.transformNodeList(node.additionalNames, queryId),
+      cascade: node.cascade,
       ifExists: node.ifExists,
     })
   }

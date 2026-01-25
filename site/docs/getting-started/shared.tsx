@@ -2,7 +2,13 @@ import { useLocation } from '@docusaurus/router'
 import { useEffect, useState, type ReactNode } from 'react'
 import packageJson from '../../package.json'
 
-export const DIALECTS = ['postgresql', 'mysql', 'sqlite', 'mssql'] as const
+export const DIALECTS = [
+  'postgresql',
+  'mysql',
+  'sqlite',
+  'mssql',
+  'pglite',
+] as const
 
 export type Dialect = (typeof DIALECTS)[number]
 
@@ -47,6 +53,7 @@ export const DIALECT_CLASS_NAMES = {
   mysql: 'MysqlDialect',
   mssql: 'MssqlDialect',
   sqlite: 'SqliteDialect',
+  pglite: 'PGliteDialect',
 } as const satisfies Record<Dialect, string>
 
 export const getDriverNPMPackageNames = (
@@ -57,6 +64,7 @@ export const getDriverNPMPackageNames = (
     mysql: 'mysql2',
     mssql: 'tedious',
     sqlite: 'better-sqlite3',
+    pglite: '@electric-sql/pglite',
   }) as const satisfies Record<Dialect, string>
 
 export const POOL_NPM_PACKAGE_NAMES = {
@@ -68,6 +76,7 @@ export const PRETTY_DIALECT_NAMES = {
   mysql: 'MySQL',
   mssql: 'Microsoft SQL Server (MSSQL)',
   sqlite: 'SQLite',
+  pglite: 'PGlite',
 } as const satisfies Record<Dialect, string>
 
 export const PRETTY_PACKAGE_MANAGER_NAMES = {
@@ -114,7 +123,7 @@ export function getBashCommand(
 }
 
 export function getDenoCommand(
-  additionalImports?: Record<string, string>,
+  additionalImports?: Record<string, string | undefined>,
 ): Command {
   return {
     content: JSON.stringify(
@@ -142,7 +151,7 @@ export function getDenoCommand(
 }
 
 export interface UseSearchStateProps<Value extends string> {
-  defaultValue?: Value
+  defaultValue: Value
   searchParam?: string
   validator?: (searchValue: string | null) => boolean
   value?: Value

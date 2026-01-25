@@ -146,8 +146,8 @@ export class Migrator {
    * }
    * ```
    */
-  async migrateToLatest(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({ direction: 'Up', step: Infinity }))
+  async migrateToLatest(options?: MigrateOptions): Promise<MigrationResultSet> {
+    return this.#migrate(() => ({ direction: 'Up', step: Infinity }), options)
   }
 
   /**
@@ -203,6 +203,7 @@ export class Migrator {
    */
   async migrateTo(
     targetMigrationName: string | NoMigrations,
+    options?: MigrateOptions,
   ): Promise<MigrationResultSet> {
     return this.#migrate(
       ({
@@ -226,6 +227,7 @@ export class Migrator {
         const executedIndex = executedMigrations.indexOf(
           targetMigrationName as string,
         )
+
         const pendingIndex = pendingMigrations.findIndex(
           (m) => m.name === (targetMigrationName as string),
         )
@@ -235,14 +237,17 @@ export class Migrator {
             direction: 'Down',
             step: executedMigrations.length - executedIndex - 1,
           }
-        } else if (pendingIndex !== -1) {
-          return { direction: 'Up', step: pendingIndex + 1 }
-        } else {
-          throw new Error(
-            `migration "${targetMigrationName}" isn't executed or pending`,
-          )
         }
+
+        if (pendingIndex !== -1) {
+          return { direction: 'Up', step: pendingIndex + 1 }
+        }
+
+        throw new Error(
+          `migration "${targetMigrationName}" isn't executed or pending`,
+        )
       },
+      options,
     )
   }
 
@@ -274,8 +279,8 @@ export class Migrator {
    * await migrator.migrateUp()
    * ```
    */
-  async migrateUp(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({ direction: 'Up', step: 1 }))
+  async migrateUp(options?: MigrateOptions): Promise<MigrationResultSet> {
+    return this.#migrate(() => ({ direction: 'Up', step: 1 }), options)
   }
 
   /**
@@ -306,8 +311,8 @@ export class Migrator {
    * await migrator.migrateDown()
    * ```
    */
-  async migrateDown(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({ direction: 'Down', step: 1 }))
+  async migrateDown(options?: MigrateOptions): Promise<MigrationResultSet> {
+    return this.#migrate(() => ({ direction: 'Down', step: 1 }), options)
   }
 
   async #migrate(
@@ -315,6 +320,7 @@ export class Migrator {
       direction: MigrationDirection
       step: number
     },
+    options: MigrateOptions | undefined,
   ): Promise<MigrationResultSet> {
     try {
       await this.#ensureMigrationTableSchemaExists()
@@ -322,7 +328,7 @@ export class Migrator {
       await this.#ensureMigrationLockTableExists()
       await this.#ensureLockRowExists()
 
-      return await this.#runMigrations(getMigrationDirectionAndStep)
+      return await this.#runMigrations(getMigrationDirectionAndStep, options)
     } catch (error) {
       if (error instanceof MigrationResultSetError) {
         return error.resultSet
@@ -502,6 +508,7 @@ export class Migrator {
       direction: MigrationDirection
       step: number
     },
+    options: MigrateOptions | undefined,
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
@@ -539,11 +546,30 @@ export class Migrator {
       }
     }
 
-    if (adapter.supportsTransactionalDdl && !this.#props.disableTransactions) {
-      return this.#props.db.transaction().execute(run)
-    } else {
-      return this.#props.db.connection().execute(run)
+    const disableTransactions =
+      options?.disableTransactions ?? this.#props.disableTransactions
+
+    if (this.#props.db.isTransaction) {
+      if (!adapter.supportsTransactionalDdl) {
+        throw new Error(
+          'Transactional DDL is not supported in this dialect. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+        )
+      }
+
+      if (disableTransactions) {
+        throw new Error(
+          '`disableTransactions` is true but the migrator was given a transaction. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+        )
+      }
+
+      return run(this.#props.db)
     }
+
+    if (adapter.supportsTransactionalDdl && !disableTransactions) {
+      return this.#props.db.transaction().execute(run)
+    }
+
+    return this.#props.db.connection().execute(run)
   }
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
@@ -765,7 +791,18 @@ export class Migrator {
   }
 }
 
-export interface MigratorProps {
+export interface MigrateOptions {
+  /**
+   * When `true`, don't run migrations in transactions even if the dialect supports transactional DDL.
+   *
+   * Default is `false`.
+   *
+   * This is useful when some migrations include queries that would fail otherwise.
+   */
+  readonly disableTransactions?: boolean
+}
+
+export interface MigratorProps extends MigrateOptions {
   readonly db: Kysely<any>
   readonly provider: MigrationProvider
 
@@ -838,15 +875,6 @@ export interface MigratorProps {
    * Default is `name0.localeCompare(name1)`.
    */
   readonly nameComparator?: (name0: string, name1: string) => number
-
-  /**
-   * When `true`, don't run migrations in transactions even if the dialect supports transactional DDL.
-   *
-   * Default is `false`.
-   *
-   * This is useful when some migrations include queries that would fail otherwise.
-   */
-  readonly disableTransactions?: boolean
 }
 
 /**

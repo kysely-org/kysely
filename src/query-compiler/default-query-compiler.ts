@@ -637,7 +637,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.selectQuery)
     } else {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.indexes ?? []),
+      ])
       this.append(')')
 
       if (node.onCommit) {
@@ -745,7 +749,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDropTable(node: DropTableNode): void {
-    this.append('drop table ')
+    this.append('drop ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    this.append('table ')
 
     if (node.ifExists) {
       this.append('if exists ')
@@ -1438,6 +1448,15 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.additionalNames?.length) {
+      this.append(', ')
+      this.compileList(node.additionalNames)
+    }
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
@@ -1699,7 +1718,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')

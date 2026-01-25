@@ -9,7 +9,9 @@ import {
 } from './test-setup'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect} clear`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: clear`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -318,7 +320,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should clear limit', () => {
         const query = ctx.db
           .selectFrom('person')
