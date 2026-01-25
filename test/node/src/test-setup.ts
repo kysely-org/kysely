@@ -234,17 +234,66 @@ export async function destroyTest(ctx: TestContext): Promise<void> {
   await ctx.db.destroy()
 }
 
+type TablesWithId<DB> = {
+  [K in keyof DB]: 'id' extends keyof NonNullable<DB[K]> ? K : never
+}[keyof DB]
+
+// Helper for TS 4.7/4.8 to narrow the `id in row` check.
+function hasId(row: object): row is { id: unknown } {
+  return Object.prototype.hasOwnProperty.call(row, 'id')
+}
+
+// Runtime guard to enforce numeric ids in test helpers.
+function assertHasNumericId<Row extends object>(
+  row: Row,
+): asserts row is Row & { id: number } {
+  if (!hasId(row)) {
+    throw new Error('Expected insert result to include id')
+  }
+
+  if (typeof row.id !== 'number') {
+    throw new Error('Expected insert result id to be a number')
+  }
+}
+
+export async function insertAndReturnId<
+  DB extends Database,
+  TB extends TablesWithId<DB>,
+>(
+  dialect: BuiltInDialect,
+  query: InsertQueryBuilder<DB, TB, InsertResult>,
+): Promise<number> {
+  // Some dialects can return the inserted row; mysql only exposes insertId.
+  if (dialect === 'postgres' || dialect === 'sqlite') {
+    const result = await query.returningAll().executeTakeFirstOrThrow()
+    assertHasNumericId(result)
+    return result.id
+  }
+
+  if (dialect === 'mssql') {
+    const result = await query.outputAll('inserted').executeTakeFirstOrThrow()
+    assertHasNumericId(result)
+    return result.id
+  }
+
+  const insertResult = await insert(query)
+  return insertIdToNumber(insertResult.insertId)
+}
+
 export async function insertPersons(
   ctx: TestContext,
   insertPersons: PersonInsertParams[],
 ): Promise<void> {
+  const { dialect } = ctx
+
   for (const insertPerson of insertPersons) {
     const { pets, ...person } = insertPerson
 
-    const personId = await insert(
-      ctx,
-      ctx.db.insertInto('person').values({ ...person }),
-    )
+    const insertPersonQuery = ctx.db
+      .insertInto('person')
+      .values({ ...person })
+
+    const personId = await insertAndReturnId(dialect, insertPersonQuery)
 
     for (const insertPet of pets ?? []) {
       await insertPetForPerson(ctx, personId, insertPet)
@@ -442,12 +491,14 @@ async function insertPetForPerson(
   personId: number,
   insertPet: PetInsertParams,
 ): Promise<void> {
+  const { dialect } = ctx
   const { toys, ...pet } = insertPet
 
-  const petId = await insert(
-    ctx,
-    ctx.db.insertInto('pet').values({ ...pet, owner_id: personId }),
-  )
+  const insertPetQuery = ctx.db
+    .insertInto('pet')
+    .values({ ...pet, owner_id: personId })
+
+  const petId = await insertAndReturnId(dialect, insertPetQuery)
 
   for (const toy of toys ?? []) {
     await insertToysForPet(ctx, petId, toy)
@@ -465,28 +516,16 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-export async function insert<TB extends keyof Database>(
-  ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, InsertResult>,
-): Promise<number> {
-  const { dialect } = ctx
+async function insert<DB extends Database, TB extends keyof DB>(
+  qb: InsertQueryBuilder<DB, TB, InsertResult>,
+): Promise<InsertResult> {
+  return qb.executeTakeFirstOrThrow()
+}
 
-  if (dialect === 'postgres' || dialect === 'sqlite') {
-    const { id } = await qb.returning('id').executeTakeFirstOrThrow()
-
-    return id
+function insertIdToNumber(insertId: bigint | undefined): number {
+  if (insertId === undefined) {
+    throw new Error('insertId was undefined for insert query')
   }
-
-  if (dialect === 'mssql') {
-    const { id } = await qb
-      .output('inserted.id' as any)
-      .$castTo<{ id: number }>()
-      .executeTakeFirstOrThrow()
-
-    return id
-  }
-
-  const { insertId } = await qb.executeTakeFirstOrThrow()
 
   return Number(insertId)
 }
