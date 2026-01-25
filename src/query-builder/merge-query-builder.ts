@@ -70,10 +70,15 @@ import type {
 import type { MultiTableReturningInterface } from './returning-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
+export interface MinimalMergeQueryBuilder<DB, TT extends keyof DB, O> {
+  "~kysely": { db: DB; tt: TT; o: O };
+}
+
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
-  implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>
+  implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>, MinimalMergeQueryBuilder<DB, TT, O>
 {
   readonly #props: MergeQueryBuilderProps
+  readonly "~kysely": { db: DB; tt: TT; o: O }
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
