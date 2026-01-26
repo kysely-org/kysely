@@ -433,6 +433,28 @@ for (const dialect of DIALECTS) {
           { first_name: 'Sylvester', last_name: 'Barson' },
         ])
       })
+    }
+
+    if (dialect === 'sqlite') {
+      it('should order and limit the amount of updated rows and return', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .where('gender', '=', 'female')
+          .returning('id')
+          .orderBy('first_name')
+          .limit(1)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'update "person" set "last_name" = ? where "gender" = ? returning "id" order by "first_name" limit ?',
+            parameters: ['Barson', 'female', 1],
+          },
+        })
+      })
 
       it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {
         const condition = true
