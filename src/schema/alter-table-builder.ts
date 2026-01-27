@@ -55,6 +55,10 @@ import {
   type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import {
+  DropColumnBuilder,
+  type DropColumnBuilderCallback,
+} from './drop-column-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -99,12 +103,17 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
-  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+  dropColumn(
+    column: string,
+    build: DropColumnBuilderCallback = noop,
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(new DropColumnBuilder(DropColumnNode.create(column)))
+
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithColumnAlteration(
         this.#props.node,
-        DropColumnNode.create(column),
+        builder.toOperationNode(),
       ),
     })
   }
@@ -420,12 +429,17 @@ export class AlterTableColumnAlteringBuilder
     })
   }
 
-  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+  dropColumn(
+    column: string,
+    build: DropColumnBuilderCallback = noop,
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(new DropColumnBuilder(DropColumnNode.create(column)))
+
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithColumnAlteration(
         this.#props.node,
-        DropColumnNode.create(column),
+        builder.toOperationNode(),
       ),
     })
   }
