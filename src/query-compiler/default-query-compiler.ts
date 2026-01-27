@@ -1217,9 +1217,13 @@ export class DefaultQueryCompiler
 
   protected override visitDropColumn(node: DropColumnNode): void {
     this.append('drop column ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
     this.visitNode(node.column)
   }
-
   protected override visitAlterColumn(node: AlterColumnNode): void {
     this.append('alter column ')
     this.visitNode(node.column)

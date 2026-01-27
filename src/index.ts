@@ -58,6 +58,7 @@ export * from './schema/create-view-builder.js'
 export * from './schema/refresh-materialized-view-builder.js'
 export * from './schema/drop-view-builder.js'
 export * from './schema/alter-column-builder.js'
+export * from './schema/drop-column-builder.js'
 
 export * from './dynamic/dynamic.js'
 export * from './dynamic/dynamic-reference-builder.js'
