@@ -58,8 +58,9 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
 
     if (nodesByKind.DropColumnNode) {
       if (!first) this.append(', ')
-      this.append('drop column ')
+      this.append('drop ')
       this.compileList(nodesByKind.DropColumnNode)
+      first = false
     }
 
     // not really supported by mssql, but for the sake of WYSIWYG.
@@ -80,6 +81,10 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
   }
 
   protected override visitDropColumn(node: DropColumnNode): void {
+    this.append('column ')
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
     this.visitNode(node.column)
   }
 
