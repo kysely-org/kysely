@@ -72,8 +72,8 @@ importers:
         specifier: ^8.17.2
         version: 8.17.2
       pg-cursor:
-        specifier: ^2.16.1
-        version: 2.16.1(pg@8.17.2)
+        specifier: ^2.16.2
+        version: 2.16.2(pg@8.17.2)
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
@@ -5432,8 +5432,8 @@ packages:
   pg-connection-string@2.10.1:
     resolution: {integrity: sha512-iNzslsoeSH2/gmDDKiyMqF64DATUCWj3YJ0wP14kqcsf2TUklwimd+66yYojKwZCA7h2yRNLGug71hCBA2a4sw==}
 
-  pg-cursor@2.16.1:
-    resolution: {integrity: sha512-ixa4eoGi2nAc3ZHn0xknrN5M9W4LHmzx+h+6J35aaU/lFAtNNqeldCfWTlxJFo2AUVbw0Wtse9SGZZ2OUes0Bg==}
+  pg-cursor@2.16.2:
+    resolution: {integrity: sha512-OzGiSg/71d6h3ls//WRBLaCj3hMHBOuAqCNe8FvU4poZu36hR7y4ZKFVu+JfFIEAVr6CibHai5lg53QJlYZAJw==}
     peerDependencies:
       pg: ^8
 
@@ -13823,7 +13823,7 @@ snapshots:
 
   pg-connection-string@2.10.1: {}
 
-  pg-cursor@2.16.1(pg@8.17.2):
+  pg-cursor@2.16.2(pg@8.17.2):
     dependencies:
       pg: 8.17.2
 
