@@ -12,6 +12,20 @@ import { expectAssignable, expectType } from 'tsd'
 import type { Database, Movie, Person } from '../shared'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
+function testSelectQueryBuilderExtends() {
+  type A = { a: number }
+  type B = { b: string }
+
+  type T1 = SelectQueryBuilder<{ a: A }, 'a', unknown>
+
+  // This type extends T1 and should be assignable to it.
+  type T2 = SelectQueryBuilder<{ a: A; b: B }, 'a' | 'b', { a: number }>
+
+  const t2 = {} as T2
+  expectAssignable<T1>(t2)
+}
+
+// TODO: type-checking this is crazy slow. Figure out the cause.
 function testExpressionBuilderExtends() {
   type A = { a: number }
   type B = { b: string }
