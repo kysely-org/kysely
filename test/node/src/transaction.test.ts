@@ -282,6 +282,67 @@ for (const dialect of DIALECTS) {
       expect(rollbackSpy.notCalled, 'rollback not called').to.be.true
     })
 
+    it('should throw an error when trying to execute a query after the transaction has been committed', async () => {
+      let escapedTrx: Transaction<Database> | undefined
+
+      await ctx.db.transaction().execute(async (trx) => {
+        escapedTrx = trx
+
+        await trx
+          .insertInto('person')
+          .values({
+            first_name: 'Key',
+            last_name: 'Selly',
+            gender: 'other',
+          })
+          .execute()
+      })
+
+      await expect(
+        escapedTrx!
+          .insertInto('person')
+          .values({
+            first_name: 'Koi',
+            last_name: 'Slee',
+            gender: 'other',
+          })
+          .execute(),
+      ).to.be.rejectedWith('Transaction is already committed')
+    })
+
+    it('should throw an error when trying to execute a query after the transaction has been rolled back', async () => {
+      let escapedTrx: Transaction<Database> | undefined
+
+      await ctx.db
+        .transaction()
+        .execute(async (trx) => {
+          escapedTrx = trx
+
+          await trx
+            .insertInto('person')
+            .values({
+              first_name: 'Key',
+              last_name: 'Selly',
+              gender: 'other',
+            })
+            .execute()
+
+          throw new Error('rollback')
+        })
+        .catch(() => {})
+
+      await expect(
+        escapedTrx!
+          .insertInto('person')
+          .values({
+            first_name: 'Koi',
+            last_name: 'Slee',
+            gender: 'other',
+          })
+          .execute(),
+      ).to.be.rejectedWith('Transaction is already rolled back')
+    })
+
     async function insertPet(
       trx: Transaction<Database>,
       ownerId: number,
