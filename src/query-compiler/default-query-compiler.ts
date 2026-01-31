@@ -27,7 +27,6 @@ import type { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import type { OrderByNode } from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import type { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import type { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import type { ReferenceNode } from '../operation-node/reference-node.js'
 import type { ReferencesNode } from '../operation-node/references-node.js'
@@ -117,7 +116,6 @@ import { logOnce } from '../util/log-once.js'
 import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
-
 const LIT_WRAP_REGEX = /'/g
 
 export class DefaultQueryCompiler
@@ -938,6 +936,12 @@ export class DefaultQueryCompiler
   protected override visitOnDuplicateKey(node: OnDuplicateKeyNode): void {
     this.append('on duplicate key update ')
     this.compileList(node.updates)
+  }
+
+  protected override visitNullIf(node: FunctionNode): void {
+    this.append('nullif(')
+    this.compileList(node.arguments)
+    this.append(')')
   }
 
   protected override visitCreateIndex(node: CreateIndexNode): void {

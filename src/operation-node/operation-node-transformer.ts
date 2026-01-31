@@ -99,7 +99,6 @@ import type { OrActionNode } from './or-action-node.js'
 import type { CollateNode } from './collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from './rename-constraint-node.js'
-
 /**
  * Transforms an operation node tree into another one.
  *

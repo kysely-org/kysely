@@ -324,4 +324,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOutput(node: OutputNode): void
   protected abstract visitOrAction(node: OrActionNode): void
   protected abstract visitCollate(node: CollateNode): void
+  protected abstract visitNullIf(node: FunctionNode): void
 }
