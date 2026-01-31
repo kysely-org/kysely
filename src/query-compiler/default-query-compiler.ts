@@ -116,8 +116,6 @@ import { logOnce } from '../util/log-once.js'
 import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
-import type { NullIfNode } from '../operation-node/null-if-node.js'
-
 const LIT_WRAP_REGEX = /'/g
 
 export class DefaultQueryCompiler
@@ -940,9 +938,9 @@ export class DefaultQueryCompiler
     this.compileList(node.updates)
   }
 
-  protected override visitNullIf(node: NullIfNode): void {
+  protected override visitNullIf(node: FunctionNode): void {
     this.append('nullif(')
-    this.compileList([node.v1, node.v2])
+    this.compileList(node.arguments)
     this.append(')')
   }
 

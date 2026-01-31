@@ -100,7 +100,6 @@ import type { RefreshMaterializedViewNode } from './refresh-materialized-view-no
 import type { OrActionNode } from './or-action-node.js'
 import type { CollateNode } from './collate-node.js'
 import type { RenameConstraintNode } from './rename-constraint-node.js'
-import type { NullIfNode } from './null-if-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -208,7 +207,6 @@ export abstract class OperationNodeVisitor {
     OutputNode: this.visitOutput.bind(this),
     OrActionNode: this.visitOrAction.bind(this),
     CollateNode: this.visitCollate.bind(this),
-    NullIfNode: this.visitNullIf.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -326,5 +324,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOutput(node: OutputNode): void
   protected abstract visitOrAction(node: OrActionNode): void
   protected abstract visitCollate(node: CollateNode): void
-  protected abstract visitNullIf(node: NullIfNode): void
+  protected abstract visitNullIf(node: FunctionNode): void
 }

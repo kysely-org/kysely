@@ -24,7 +24,6 @@ export interface SelectQueryNode extends OperationNode {
   readonly from?: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOn?: ReadonlyArray<OperationNode>
-  readonly nullIf?: OperationNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode

@@ -78,8 +78,8 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
-import { NullIfNode } from '../operation-node/null-if-node.js'
 import type { SelectFrom } from '../parser/select-from-parser.js'
+import { FunctionNode } from '../operation-node/function-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -1403,7 +1403,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
             ? parseSafeImmediateValue(expr2)
             : parseReferenceExpression(expr2)
 
-      return new ExpressionWrapper(NullIfNode.create(v1, v2))
+      return new ExpressionWrapper(FunctionNode.create('nullif', [v1, v2]))
     },
 
     cast<T, RE extends ReferenceExpression<DB, TB>>(
