@@ -11,6 +11,7 @@ export interface DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize?: number,
   ): AsyncIterableIterator<QueryResult<R>>
+  executeQuerySync?<R>(compiledQuery: CompiledQuery): QueryResult<R>
 }
 
 export interface QueryResult<O> {

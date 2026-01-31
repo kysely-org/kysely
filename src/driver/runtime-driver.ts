@@ -45,6 +45,26 @@ export class RuntimeDriver implements Driver {
     await this.#initPromise
   }
 
+  initSync(): void {
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
+    if (this.#initDone) {
+      return
+    }
+
+    if (!this.#driver.initSync) {
+      throw new Error(
+        'The current dialect does not support synchronous initialization. ' +
+          'Call an async method first to initialize the driver.',
+      )
+    }
+
+    this.#driver.initSync()
+    this.#initDone = true
+  }
+
   async acquireConnection(): Promise<DatabaseConnection> {
     if (this.#destroyPromise) {
       throw new Error('driver has already been destroyed')
@@ -149,6 +169,38 @@ export class RuntimeDriver implements Driver {
     }
 
     await this.#destroyPromise
+  }
+
+  acquireConnectionSync(): DatabaseConnection {
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
+    if (!this.#initDone) {
+      this.initSync()
+    }
+
+    if (!this.#driver.acquireConnectionSync) {
+      throw new Error(
+        'The current dialect does not support synchronous execution.',
+      )
+    }
+
+    const connection = this.#driver.acquireConnectionSync()
+
+    if (!this.#connections.has(connection)) {
+      if (this.#needsLogging()) {
+        this.#addLogging(connection)
+      }
+
+      this.#connections.add(connection)
+    }
+
+    return connection
+  }
+
+  releaseConnectionSync(connection: DatabaseConnection): void {
+    this.#driver.releaseConnectionSync?.(connection)
   }
 
   #needsLogging(): boolean {

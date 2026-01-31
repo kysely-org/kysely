@@ -28,6 +28,17 @@ export class SingleConnectionProvider implements ConnectionProvider {
     return this.#runningPromise
   }
 
+  provideConnectionSync<T>(consumer: (connection: DatabaseConnection) => T): T {
+    if (this.#runningPromise) {
+      throw new Error(
+        'Cannot execute synchronously while an async operation is in progress. ' +
+          'Await all async operations before using sync methods.',
+      )
+    }
+
+    return consumer(this.#connection)
+  }
+
   // Run the runner in an async function to make sure it doesn't
   // throw synchronous errors.
   async #run<T>(

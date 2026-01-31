@@ -8,4 +8,10 @@ export interface ConnectionProvider {
   provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
+
+  /**
+   * Provides a connection synchronously for the callback and takes care of
+   * disposing the connection after the callback has been run.
+   */
+  provideConnectionSync?<T>(consumer: (connection: DatabaseConnection) => T): T
 }

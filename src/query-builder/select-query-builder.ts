@@ -2143,6 +2143,31 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
   ): Promise<Simplify<O>>
 
+  /**
+   * Executes the query synchronously and returns an array of rows.
+   *
+   * Also see the {@link executeTakeFirstSync} and {@link executeTakeFirstOrThrowSync} methods.
+   */
+  executeSync(): Simplify<O>[]
+
+  /**
+   * Executes the query synchronously and returns the first result or undefined if
+   * the query returned no result.
+   */
+  executeTakeFirstSync(): SimplifySingleResult<O>
+
+  /**
+   * Executes the query synchronously and returns the first result or throws if
+   * the query returned no result.
+   *
+   * By default an instance of {@link NoResultError} is thrown, but you can
+   * provide a custom error class, or callback to throw a different
+   * error.
+   */
+  executeTakeFirstOrThrowSync(
+    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
+  ): Simplify<O>
+
   stream(chunkSize?: number): AsyncIterableIterator<O>
 
   explain<ER extends Record<string, any> = Record<string, any>>(
@@ -2669,6 +2694,37 @@ class SelectQueryBuilderImpl<
       | ((node: QueryNode) => Error) = NoResultError,
   ): Promise<Simplify<O>> {
     const result = await this.executeTakeFirst()
+
+    if (result === undefined) {
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
+    }
+
+    return result as O
+  }
+
+  executeSync(): Simplify<O>[] {
+    const compiledQuery = this.compile()
+
+    const result = this.#props.executor.executeQuerySync<O>(compiledQuery)
+
+    return result.rows
+  }
+
+  executeTakeFirstSync(): SimplifySingleResult<O> {
+    const [result] = this.executeSync()
+    return result as SimplifySingleResult<O>
+  }
+
+  executeTakeFirstOrThrowSync(
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError,
+  ): Simplify<O> {
+    const result = this.executeTakeFirstSync()
 
     if (result === undefined) {
       const error = isNoResultErrorConstructor(errorConstructor)

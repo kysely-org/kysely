@@ -11,6 +11,10 @@ export class SqliteAdapter extends DialectAdapterBase {
     return true
   }
 
+  override get supportsSyncExecution(): boolean {
+    return true
+  }
+
   override async acquireMigrationLock(
     _db: Kysely<any>,
     _opt: MigrationLockOptions,

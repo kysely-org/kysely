@@ -42,6 +42,16 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
     return this.#connectionProvider.provideConnection(consumer)
   }
 
+  provideConnectionSync<T>(consumer: (connection: DatabaseConnection) => T): T {
+    if (!this.#connectionProvider.provideConnectionSync) {
+      throw new Error(
+        'The current dialect does not support synchronous execution.',
+      )
+    }
+
+    return this.#connectionProvider.provideConnectionSync(consumer)
+  }
+
   withPlugins(plugins: ReadonlyArray<KyselyPlugin>): DefaultQueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
