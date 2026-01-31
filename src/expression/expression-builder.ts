@@ -47,7 +47,6 @@ import type { IsNever, SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   type ExtractTypeFromValueExpression,
-  isSafeImmediateValue,
   parseSafeImmediateValue,
   parseValueExpression,
 } from '../parser/value-parser.js'
@@ -79,7 +78,6 @@ import {
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
 import type { SelectFrom } from '../parser/select-from-parser.js'
-import { FunctionNode } from '../operation-node/function-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -1118,33 +1116,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   parens<T>(expr: Expression<T>): ExpressionWrapper<DB, TB, T>
 
   /**
-   * Creates a `nullif` expression.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const result = await db.selectFrom('person')
-   *   .select((eb) => [
-   *      'first_name',
-   *      eb.nullif(1, 1).as('null_if_result'),
-   *   ])
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select first_name, nullif(1, 1) as null_if_result from "person"
-   * ```
-   */
-  nullif<
-    T extends ReferenceExpression<DB, TB> | number | boolean | string | null,
-  >(
-    expr1: T,
-    expr2: T,
-  ): ExpressionWrapper<DB, TB, SqlBool>
-
-  /**
    * Creates a `cast(expr as dataType)` expression.
    *
    * Since Kysely can't know the mapping between JavaScript and database types,
@@ -1385,25 +1356,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       } else {
         return new ExpressionWrapper(ParensNode.create(node))
       }
-    },
-
-    nullif<
-      T extends ReferenceExpression<DB, TB> | number | boolean | string | null,
-    >(expr1: T, expr2: T): ExpressionWrapper<DB, TB, SqlBool> {
-      var v1 =
-        typeof expr1 === 'string'
-          ? parseValueExpression(expr1)
-          : isSafeImmediateValue(expr1)
-            ? parseSafeImmediateValue(expr1)
-            : parseReferenceExpression(expr1)
-      var v2 =
-        typeof expr2 === 'string'
-          ? parseValueExpression(expr2)
-          : isSafeImmediateValue(expr2)
-            ? parseSafeImmediateValue(expr2)
-            : parseReferenceExpression(expr2)
-
-      return new ExpressionWrapper(FunctionNode.create('nullif', [v1, v2]))
     },
 
     cast<T, RE extends ReferenceExpression<DB, TB>>(

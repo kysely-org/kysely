@@ -15,6 +15,7 @@ import {
   type StringReference,
   parseReferenceExpressionOrList,
   type ExtractTypeFromStringReference,
+  parseReferenceExpression,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
@@ -29,6 +30,11 @@ import type { SelectQueryBuilderExpression } from '../query-builder/select-query
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import type { Selectable, SelectType } from '../util/column-type.js'
+import {
+  isSafeImmediateValue,
+  parseSafeImmediateValue,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -769,6 +775,31 @@ export interface FunctionModule<DB, TB extends keyof DB> {
         ? Simplify<ShallowDehydrateObject<O>>
         : never
   >
+
+  /**
+   * Creates a `nullif` expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.selectFrom('person')
+   *   .select(({fn}) => [
+   *      'first_name',
+   *      fn.nullif(sql.lit(1), 1).as('null_if_result'),
+   *   ])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select first_name, nullif(1, 1) as null_if_result from "person"
+   * ```
+   */
+  nullif<T extends ReferenceExpression<DB, TB>>(
+    expr1: T,
+    expr2: number | boolean | string | null,
+  ): ExpressionWrapper<DB, TB, T | null>
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -859,6 +890,26 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
           isString(table) ? parseTable(table) : table.toOperationNode(),
         ]),
       )
+    },
+
+    nullif<T extends ReferenceExpression<DB, TB>>(
+      expr1: T,
+      expr2: number | boolean | string | null,
+    ): ExpressionWrapper<DB, TB, T | null> {
+      var v1 =
+        typeof expr1 === 'string'
+          ? parseValueExpression(expr1)
+          : isSafeImmediateValue(expr1)
+            ? parseSafeImmediateValue(expr1)
+            : parseReferenceExpression(expr1)
+      var v2 =
+        typeof expr2 === 'string'
+          ? parseValueExpression(expr2)
+          : isSafeImmediateValue(expr2)
+            ? parseSafeImmediateValue(expr2)
+            : parseReferenceExpression(expr2)
+
+      return new ExpressionWrapper(FunctionNode.create('nullif', [v1, v2]))
     },
   })
 }
