@@ -1,6 +1,6 @@
 {
   "name": "kysely-site",
-  "version": "0.28.10",
+  "version": "0.28.11",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
