@@ -5,12 +5,12 @@ packages:
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
 allowBuilds:
-  better-sqlite3@12.6.0: true
+  better-sqlite3@12.6.2: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
   esbuild@0.27.2: true
   sharp: false # wrangler dependency, useless scripts
-  workerd@1.20260114.0: true # wrangler@4.51.0 dependency
+  workerd@1.20260124.0: true # wrangler@4.51.0 dependency
 
 # All transitive dependencies must be resolved from a trusted source.
 # Packages from trusted sources are considered safer, as they are typically subject

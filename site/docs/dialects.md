@@ -41,3 +41,4 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | PGLite                        | https://github.com/czeidler/kysely-pglite-dialect                           |
 | Oracle                        | https://github.com/griffiths-waite/kysely-oracledb                          |
 | Firebird                      | https://github.com/benkoppe/kysely-firebird                                 |
+| MariaDB                       | https://github.com/awaludinar/kysely-mariadb                                |

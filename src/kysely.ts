@@ -749,8 +749,13 @@ export class TransactionBuilder<DB> {
     validateTransactionSettings(settings)
 
     return this.#props.executor.provideConnection(async (connection) => {
-      const executor = this.#props.executor.withConnectionProvider(
-        new SingleConnectionProvider(connection),
+      const state = { isCommitted: false, isRolledBack: false }
+
+      const executor = new NotCommittedOrRolledBackAssertingExecutor(
+        this.#props.executor.withConnectionProvider(
+          new SingleConnectionProvider(connection),
+        ),
+        state,
       )
 
       const transaction = new Transaction<DB>({
@@ -766,11 +771,13 @@ export class TransactionBuilder<DB> {
         const result = await callback(transaction)
 
         await this.#props.driver.commitTransaction(connection)
+        state.isCommitted = true
 
         return result
       } catch (error) {
         if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
+          state.isRolledBack = true
         }
 
         throw error
