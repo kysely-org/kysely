@@ -18,19 +18,19 @@ async function getPerson(id: number, withLastName: boolean) {
 
   if (withLastName) {
     // ❌ The type of `query` doesn't change here
-    query = query.select('last_name')
+    query = query.select(['last_name', sql.val('person_with_last_name' as const).as('kind')])
   }
 
-  // ❌ Wrong return type { first_name: string }
-  return await query.executeTakeFirstOrThrow()
+  // ❌ Wrong return type { first_name: string, kind: 'person' }
+  return await query.select(sql.val('person' as const).as('kind')).executeTakeFirstOrThrow()
 }
 ```
 
-While that _would_ compile, the result type would be `{ first_name: string }`
-without the `last_name` column, which is wrong. What happens is that the type
-of `query` when created is something, let's say `A`. The type of the query
-with `last_name` selection is `B` which extends `A` but also contains information
-about the new selection. When you assign an object of type `B` to `query` inside
+While that _would_ compile, the result type would be `{ first_name: string, kind: 'person' }`
+without the `last_name` column and `kind` being "person_with_last_name", which is wrong. 
+What happens is that the type of `query` when created is something, let's say `A`. 
+The type of the query with `last_name` selection is `B` which extends `A` but also contains 
+information about the new selection. When you assign an object of type `B` to `query` inside
 the `if` statement, the type gets downcast to `A`.
 
 :::info
@@ -45,17 +45,24 @@ In this simple case you could implement the method like this:
 ```ts
 async function getPerson(id: number, withLastName: boolean) {
   const query = db
-    .selectFrom('person')
-    .select('first_name')
-    .where('id', '=', id)
+    .selectFrom("person")
+    .select("first_name")
+    .where("id", "=", id);
 
   if (withLastName) {
-    // ✅ The return type is { first_name: string, last_name: string }
-    return await query.select('last_name').executeTakeFirstOrThrow()
+    // ✅ The return type is { first_name: string, last_name: string, kind: 'person_with_last_name' }
+    return await query
+      .select([
+        "last_name",
+        sql.val("person_with_last_name").as("kind"),
+      ])
+      .executeTakeFirstOrThrow();
   }
 
-  // ✅ The return type is { first_name: string }
-  return await query.executeTakeFirstOrThrow()
+  // ✅ The return type is { first_name: string, kind: 'person' }
+  return await query
+    .select(sql.val("person").as("kind"))
+    .executeTakeFirstOrThrow();
 }
 ```
 
@@ -71,14 +78,17 @@ method can help you:
 async function getPerson(id: number, withLastName: boolean) {
   // ✅ The return type is { first_name: string, last_name?: string }
   return await db
-    .selectFrom('person')
-    .select('first_name')
-    .$if(withLastName, (qb) => qb.select('last_name'))
-    .where('id', '=', id)
-    .executeTakeFirstOrThrow()
+    .selectFrom("person")
+    .select("first_name")
+    .$if(withLastName, (qb) => qb.select("last_name"))
+    .where("id", "=", id)
+    .executeTakeFirstOrThrow();
 }
 ```
 
-Any selections added inside the `if` callback will be added as optional fields to the
+Any selections added inside the `$if` callback will be added as optional fields to the
 output type since we can't know if the selections were actually made before running
 the code.
+
+A downside of `$if` is that, unlike the imperative example, it cannot result in discriminated 
+union return types - `kind` would be a union of `'person' | 'person_with_last_name'`.
