@@ -94,13 +94,13 @@ jobs:
 
       - name: Analyze Results
         id: analyze
+        env:
+          FULL_SUMMARY: ${{ steps.bench.outputs.full_summary }}
         run: |
-          full_summary="${{ steps.bench.outputs.full_summary }}"
-
           # This powerful awk script performs two actions:
           # 1. It finds blocks missing a Delta line and calculates it.
           # 2. It filters for all blocks where the final delta is not zero.
-          changed_blocks=$(echo "$full_summary" | awk '
+          changed_blocks=$(echo "$FULL_SUMMARY" | awk '
           BEGIN { RS="" } # Process the input in blocks separated by blank lines
           {
             block_text = $0 # Store the original block text

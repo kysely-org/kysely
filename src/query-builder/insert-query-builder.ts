@@ -68,7 +68,7 @@ import type {
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
 
-export class InsertQueryBuilder<DB, TB extends keyof DB, O>
+export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
   implements
     ReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'inserted'>,
