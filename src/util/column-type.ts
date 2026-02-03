@@ -228,7 +228,7 @@ export type Updateable<R> = DrainOuterGeneric<{
  *   .withTables<{
  *     my_table: {
  *       a_column: '1' | '2' | '3',
- *       another_column: NonDehydrateable<'1' | '2' | '3'>
+ *       another_column: NonDehydrateable<'1' | '2' | '3'>,
  *       column_too: NonDehydrateable<ColumnType<'1' | '2' | '3'>>
  *     }
  *   }>()
@@ -257,14 +257,6 @@ export type NonDehydrateable<T> = [T] extends [
   ? ColumnType<S & { __dehydrate__?: false }, I, U>
   : T & { __dehydrate__?: false }
 
-/**
- * Evaluates to `true` if `T` is marked as non-dehydrateable via {@link NonDehydrateable}.
- */
-export type IsNonDehydrateable<T> =
-  // avoid false positives in TypeScript <5.0, e.g. for NonDehydrateable<NumericString>.
-  // TODO: remove this indirection once minimum TypeScript version is 5.0 or higher.
-  T extends object
-    ? T extends { __dehydrate__?: false }
-      ? true
-      : false
-    : false
+export type IsNonDehydrateable<T> = '__dehydrate__' extends keyof T
+  ? true
+  : false
