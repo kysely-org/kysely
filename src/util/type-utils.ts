@@ -3,6 +3,7 @@ import type { DeleteResult } from '../query-builder/delete-result.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
 import type { KyselyTypeError } from './type-error.js'
 import type { MergeResult } from '../query-builder/merge-result.js'
+import type { IsNonDehydrateable } from './column-type.js'
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -236,19 +237,21 @@ export type ShallowDehydrateObject<O> = {
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
-  : T extends (infer U)[] | null | undefined
-    ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
-    :
-        | Exclude<
-            T,
-            StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
-          >
-        | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
-            ? never
-            : number)
-        | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
-            ? never
-            : string)
+  : IsNonDehydrateable<NonNullable<T>> extends true
+    ? T
+    : T extends (infer U)[] | null | undefined
+      ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
+      :
+          | Exclude<
+              T,
+              StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
+            >
+          | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
+              ? never
+              : number)
+          | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+              ? never
+              : string)
 
 export type StringsWhenDataTypeNotAvailable =
   | Date
