@@ -414,14 +414,17 @@ for (const dialect of DIALECTS) {
         ).as('doggo'),
 
         // Nest an object that holds the person's formatted name
-        jsonBuildObject({
-          first: eb.ref('first_name'),
-          last: eb.ref('last_name'),
-          full:
-            dialect === 'sqlite'
-              ? sql<string>`first_name || ' ' || last_name`
-              : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
-        }).as('name'),
+        // Type assertion needed due to union of dialect helper types
+        (
+          jsonBuildObject({
+            first: eb.ref('first_name'),
+            last: eb.ref('last_name'),
+            full:
+              dialect === 'sqlite'
+                ? sql<string>`first_name || ' ' || last_name`
+                : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
+          }) as RawBuilder<{ first: string; last: string | null; full: string }>
+        ).as('name'),
 
         // Nest an empty list
         jsonArrayFrom(
@@ -564,14 +567,17 @@ for (const dialect of DIALECTS) {
       const result = await db
         .selectNoFrom([
           buffer,
-          jsonObjectFrom(
-            db.selectNoFrom([
-              dialect === 'sqlite'
-                ? expressionBuilder()
-                    .cast<string>(buffer.expression, 'text')
-                    .as('buffer')
-                : buffer,
-            ]),
+          // Type assertion needed due to union of dialect helper types
+          (
+            jsonObjectFrom(
+              db.selectNoFrom([
+                dialect === 'sqlite'
+                  ? expressionBuilder()
+                      .cast<string>(buffer.expression, 'text')
+                      .as('buffer')
+                  : buffer,
+              ]),
+            ) as RawBuilder<{ buffer: string } | null>
           )
             .$notNull()
             .as('dehydrated'),
