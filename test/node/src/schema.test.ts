@@ -2544,6 +2544,27 @@ for (const dialect of DIALECTS) {
           .execute()
       })
 
+      if (dialect === 'postgres') {
+        it('should alter table if exists', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .ifExists()
+            .addColumn('date_col', 'date')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table if exists "test" add column "date_col" date',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
       describe('add column', () => {
         it('should add a column', async () => {
           const builder = ctx.db.schema

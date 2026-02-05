@@ -3,6 +3,14 @@ import type { AlterTableBuilder, Kysely } from '..'
 import type { Database } from '../shared'
 import type { AlterTableExecutor } from '../../../dist/cjs/schema/alter-table-executor'
 
+async function testAlterTableIfExists(db: Kysely<Database>) {
+  expectType<AlterTableBuilder>(db.schema.alterTable('test').ifExists())
+
+  expectType<AlterTableExecutor>(
+    db.schema.alterTable('test').ifExists().renameTo('test2'),
+  )
+}
+
 async function testAlterTableWithAddUniqueConstraint(db: Kysely<Database>) {
   expectType<AlterTableBuilder>(db.schema.alterTable('test'))
 
