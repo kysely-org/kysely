@@ -639,16 +639,16 @@ export class DefaultQueryCompiler
       this.append(' (')
       this.compileList([...node.columns, ...(node.constraints ?? [])])
       this.append(')')
+    }
 
-      if (node.onCommit) {
-        this.append(' on commit ')
-        this.append(node.onCommit)
-      }
+    if (node.onCommit) {
+      this.append(' on commit ')
+      this.append(node.onCommit)
+    }
 
-      if (node.endModifiers && node.endModifiers.length > 0) {
-        this.append(' ')
-        this.compileList(node.endModifiers, ' ')
-      }
+    if (node.endModifiers && node.endModifiers.length > 0) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
