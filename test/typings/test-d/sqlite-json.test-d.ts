@@ -1,5 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import type { Kysely, RawBuilder } from '..'
+import type { Kysely } from '..'
+import type { Database as SharedDatabase } from '../shared'
 import {
   jsonArrayFrom,
   jsonBuildObject,
@@ -7,44 +8,39 @@ import {
 } from '../../../helpers/sqlite'
 import { sql } from '../../..'
 
-interface Database {
-  person: {
+interface Database extends SharedDatabase {
+  blob_test: {
     id: number
     name: string
     data: Buffer
     nullable_data: Buffer | null
   }
-  pet: {
-    id: number
-    name: string
-    owner_id: number
-  }
 }
 
 // jsonArrayFrom should error when selecting Buffer columns
-async function testJsonArrayFromWithBuffer(db: Kysely<Database>) {
+function testJsonArrayFromWithBuffer(db: Kysely<Database>) {
   expectError(
     db
-      .selectFrom('person')
+      .selectFrom('blob_test')
       .select((eb) => [
         'id',
-        jsonArrayFrom(eb.selectFrom('person').select(['id', 'data'])).as(
-          'people',
+        jsonArrayFrom(eb.selectFrom('blob_test').select(['id', 'data'])).as(
+          'rows',
         ),
       ]),
   )
 }
 
 // jsonArrayFrom should error when selecting Buffer | null columns
-async function testJsonArrayFromWithNullableBuffer(db: Kysely<Database>) {
+function testJsonArrayFromWithNullableBuffer(db: Kysely<Database>) {
   expectError(
     db
-      .selectFrom('person')
+      .selectFrom('blob_test')
       .select((eb) => [
         'id',
         jsonArrayFrom(
-          eb.selectFrom('person').select(['id', 'nullable_data']),
-        ).as('people'),
+          eb.selectFrom('blob_test').select(['id', 'nullable_data']),
+        ).as('rows'),
       ]),
   )
 }
@@ -52,45 +48,45 @@ async function testJsonArrayFromWithNullableBuffer(db: Kysely<Database>) {
 // jsonArrayFrom should succeed when no Buffer columns are used
 async function testJsonArrayFromWithoutBuffer(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonArrayFrom(
         eb
-          .selectFrom('pet')
-          .select(['pet.id', 'pet.name'])
-          .whereRef('pet.owner_id', '=', 'person.id'),
-      ).as('pets'),
+          .selectFrom('blob_test')
+          .select(['blob_test.id', 'blob_test.name'])
+          .where('blob_test.id', '>', 0),
+      ).as('rows'),
     ])
     .execute()
 
-  expectType<{ id: number; pets: { id: number; name: string }[] }[]>(result)
+  expectType<{ id: number; rows: { id: number; name: string }[] }[]>(result)
 }
 
 // jsonObjectFrom should error when selecting Buffer columns
-async function testJsonObjectFromWithBuffer(db: Kysely<Database>) {
+function testJsonObjectFromWithBuffer(db: Kysely<Database>) {
   expectError(
     db
-      .selectFrom('person')
+      .selectFrom('blob_test')
       .select((eb) => [
         'id',
         jsonObjectFrom(
-          eb.selectFrom('person').select(['id', 'data']).limit(1),
-        ).as('person_data'),
+          eb.selectFrom('blob_test').select(['id', 'data']).limit(1),
+        ).as('row'),
       ]),
   )
 }
 
 // jsonObjectFrom should error when selecting Buffer | null columns
-async function testJsonObjectFromWithNullableBuffer(db: Kysely<Database>) {
+function testJsonObjectFromWithNullableBuffer(db: Kysely<Database>) {
   expectError(
     db
-      .selectFrom('person')
+      .selectFrom('blob_test')
       .select((eb) => [
         'id',
         jsonObjectFrom(
-          eb.selectFrom('person').select(['id', 'nullable_data']).limit(1),
-        ).as('person_data'),
+          eb.selectFrom('blob_test').select(['id', 'nullable_data']).limit(1),
+        ).as('row'),
       ]),
   )
 }
@@ -98,26 +94,26 @@ async function testJsonObjectFromWithNullableBuffer(db: Kysely<Database>) {
 // jsonObjectFrom should succeed when no Buffer columns are used
 async function testJsonObjectFromWithoutBuffer(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonObjectFrom(
         eb
-          .selectFrom('pet')
-          .select(['pet.id', 'pet.name'])
-          .whereRef('pet.owner_id', '=', 'person.id')
+          .selectFrom('blob_test')
+          .select(['blob_test.id', 'blob_test.name'])
+          .where('blob_test.id', '>', 0)
           .limit(1),
-      ).as('pet'),
+      ).as('row'),
     ])
     .execute()
 
-  expectType<{ id: number; pet: { id: number; name: string } | null }[]>(result)
+  expectType<{ id: number; row: { id: number; name: string } | null }[]>(result)
 }
 
 // jsonBuildObject should error when passing Expression<Buffer>
-async function testJsonBuildObjectWithBuffer(db: Kysely<Database>) {
+function testJsonBuildObjectWithBuffer(db: Kysely<Database>) {
   expectError(
-    db.selectFrom('person').select((eb) => [
+    db.selectFrom('blob_test').select((eb) => [
       'id',
       jsonBuildObject({
         name: eb.ref('name'),
@@ -128,9 +124,9 @@ async function testJsonBuildObjectWithBuffer(db: Kysely<Database>) {
 }
 
 // jsonBuildObject should error when passing Expression<Buffer | null>
-async function testJsonBuildObjectWithNullableBuffer(db: Kysely<Database>) {
+function testJsonBuildObjectWithNullableBuffer(db: Kysely<Database>) {
   expectError(
-    db.selectFrom('person').select((eb) => [
+    db.selectFrom('blob_test').select((eb) => [
       'id',
       jsonBuildObject({
         name: eb.ref('name'),
@@ -143,7 +139,7 @@ async function testJsonBuildObjectWithNullableBuffer(db: Kysely<Database>) {
 // jsonBuildObject should succeed when no Buffer values are used
 async function testJsonBuildObjectWithoutBuffer(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonBuildObject({
@@ -159,37 +155,35 @@ async function testJsonBuildObjectWithoutBuffer(db: Kysely<Database>) {
 // jsonArrayFrom should succeed when Buffer is cast using sql`hex()` (workaround)
 async function testJsonArrayFromWithHexWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonArrayFrom(
         eb
-          .selectFrom('person')
+          .selectFrom('blob_test')
           .select(['id', sql<string>`hex(data)`.as('data_hex')]),
-      ).as('people'),
+      ).as('rows'),
     ])
     .execute()
 
-  expectType<{ id: number; people: { id: number; data_hex: string }[] }[]>(
-    result,
-  )
+  expectType<{ id: number; rows: { id: number; data_hex: string }[] }[]>(result)
 }
 
 // jsonArrayFrom should succeed when Buffer is cast using eb.cast<string>() (workaround)
 async function testJsonArrayFromWithCastWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonArrayFrom(
         eb
-          .selectFrom('person')
+          .selectFrom('blob_test')
           .select(['id', eb.cast<string>('data', 'text').as('data_text')]),
-      ).as('people'),
+      ).as('rows'),
     ])
     .execute()
 
-  expectType<{ id: number; people: { id: number; data_text: string }[] }[]>(
+  expectType<{ id: number; rows: { id: number; data_text: string }[] }[]>(
     result,
   )
 }
@@ -197,47 +191,47 @@ async function testJsonArrayFromWithCastWorkaround(db: Kysely<Database>) {
 // jsonObjectFrom should succeed when Buffer is cast using sql`hex()` (workaround)
 async function testJsonObjectFromWithHexWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonObjectFrom(
         eb
-          .selectFrom('person')
+          .selectFrom('blob_test')
           .select(['id', sql<string>`hex(data)`.as('data_hex')])
           .limit(1),
-      ).as('person_data'),
+      ).as('row'),
     ])
     .execute()
 
-  expectType<
-    { id: number; person_data: { id: number; data_hex: string } | null }[]
-  >(result)
+  expectType<{ id: number; row: { id: number; data_hex: string } | null }[]>(
+    result,
+  )
 }
 
 // jsonObjectFrom should succeed when Buffer is cast using eb.cast<string>() (workaround)
 async function testJsonObjectFromWithCastWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonObjectFrom(
         eb
-          .selectFrom('person')
+          .selectFrom('blob_test')
           .select(['id', eb.cast<string>('data', 'text').as('data_text')])
           .limit(1),
-      ).as('person_data'),
+      ).as('row'),
     ])
     .execute()
 
-  expectType<
-    { id: number; person_data: { id: number; data_text: string } | null }[]
-  >(result)
+  expectType<{ id: number; row: { id: number; data_text: string } | null }[]>(
+    result,
+  )
 }
 
 // jsonBuildObject should succeed when Buffer is cast using sql`hex()` (workaround)
 async function testJsonBuildObjectWithHexWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonBuildObject({
@@ -253,7 +247,7 @@ async function testJsonBuildObjectWithHexWorkaround(db: Kysely<Database>) {
 // jsonBuildObject should succeed when Buffer is cast using eb.cast<string>() (workaround)
 async function testJsonBuildObjectWithCastWorkaround(db: Kysely<Database>) {
   const result = await db
-    .selectFrom('person')
+    .selectFrom('blob_test')
     .select((eb) => [
       'id',
       jsonBuildObject({
