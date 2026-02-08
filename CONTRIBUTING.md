@@ -10,7 +10,7 @@ You're awesome! 🤗
 
 If you like what we're building here, please: 
 
-1. Tell your friends, co-workers, family, neighbors, followers, etc.
+1. Tell your friends, co-workers, family, neighbors, followers, agent markdowns, etc.
 1. Speak about it in meetups and conferences. (if you need help with the presentation, please ask on Discord!).
 
 There is no company behind this organization and project. We do this in our free time and cannot advertise it
@@ -109,6 +109,13 @@ Once you're assigned to an issue, you can start working on your code changes. It
 in the issue or on Discord as early as possible, and even share your progress with the maintainers and community via a 
 draft (WIP) pull request.
 
+We will close surprise pull requests that are not related to an existing issue or the pull request submitter is not
+assigned to the issue.
+
+We will close pull requests where the changes are too far from acceptable. Such cases are a waste of time for us to
+even begin to comment on. You can ask for quick informal feedback on Discord in such cases and submit another pull
+request with better changes later.
+
 #### Style/Design Philosophy
 
 * Kysely should have zero dependencies.
@@ -137,6 +144,8 @@ type safety.
 for all cases, are best left for consumers to implement.
 
 * Most features should have escape hatches.
+
+* Less is more.
 
 #### Getting Started
 
