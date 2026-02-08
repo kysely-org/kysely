@@ -254,9 +254,9 @@ export type Updateable<R> = DrainOuterGeneric<{
 export type NonDehydrateable<T> = [T] extends [
   ColumnType<infer S, infer I, infer U>,
 ]
-  ? ColumnType<S & { __dehydrate__?: false }, I, U>
-  : T & { __dehydrate__?: false }
+  ? ColumnType<S & { __kysely_dehydrate__?: false }, I, U>
+  : T & { __kysely_dehydrate__?: false }
 
-export type IsNonDehydrateable<T> = '__dehydrate__' extends keyof T
+export type IsNonDehydrateable<T> = '__kysely_dehydrate__' extends keyof T
   ? true
   : false
