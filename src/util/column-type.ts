@@ -256,7 +256,3 @@ export type NonDehydrateable<T> = [T] extends [
 ]
   ? ColumnType<S & { __kysely_dehydrate__?: false }, I, U>
   : T & { __kysely_dehydrate__?: false }
-
-export type IsNonDehydrateable<T> = '__kysely_dehydrate__' extends keyof T
-  ? true
-  : false
