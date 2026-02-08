@@ -236,7 +236,7 @@ export type ShallowDehydrateObject<O> = {
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
-  : NonNullable<T> extends { __kysely_dehydrate__?: false }
+  : '__kysely_dehydrate__' extends keyof NonNullable<T>
     ? T
     : T extends (infer U)[] | null | undefined
       ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
