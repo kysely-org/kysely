@@ -126,6 +126,84 @@ async function testWith(db: Kysely<Database>) {
     }[]
   >(r6)
 
+  const r7 = await db
+    .with(
+      'jennifers',
+      db.selectFrom('person').where('first_name', '=', 'Jennifer').selectAll(),
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'last_name'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      last_name: string | null
+    }[]
+  >(r7)
+
+  const r8 = await db
+    .with(
+      'jennifers(first_name, ln, gender)',
+      db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select(['first_name', 'last_name as ln', 'gender']),
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      ln: string | null
+    }[]
+  >(r8)
+
+  const r9 = await db
+    .with(
+      (cte) => cte('jennifers').materialized(),
+      db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select(['first_name', 'last_name as ln', 'gender']),
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      ln: string | null
+    }[]
+  >(r9)
+
+  const r10 = await db
+    .with(
+      'jennifers',
+      db.selectFrom('person').where('first_name', '=', 'Jennifer').selectAll(),
+    )
+    .with('female_jennifers', (db) =>
+      db
+        .selectFrom('jennifers')
+        .select('first_name')
+        .where('gender', '=', 'female')
+        .selectAll('jennifers')
+        .select(['first_name as fn', 'last_name as ln']),
+    )
+    .selectFrom('female_jennifers')
+    .select(['fn', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      fn: string
+      ln: string | null
+    }[]
+  >(r10)
+
   // Different columns in expression and CTE name.
   expectError(
     db
