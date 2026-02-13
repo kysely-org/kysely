@@ -105,10 +105,17 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
-    return columns.reduce<TableMetadata[]>((tables, it) => {
-      let table = tables.find(
-        (tbl) => tbl.name === it.table && tbl.schema === it.schema,
-      )
+    const tables: TableMetadata[] = []
+    const tablesBySchema = new Map<string, Map<string, TableMetadata>>()
+    for (const it of columns) {
+      let schemaTables = tablesBySchema.get(it.schema)
+
+      if (!schemaTables) {
+        schemaTables = new Map<string, TableMetadata>()
+        tablesBySchema.set(it.schema, schemaTables)
+      }
+
+      let table = schemaTables.get(it.table)
 
       if (!table) {
         table = freeze({
@@ -118,6 +125,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           columns: [],
         })
 
+        schemaTables.set(it.table, table)
         tables.push(table)
       }
 
@@ -132,9 +140,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           comment: it.column_description ?? undefined,
         }),
       )
+    }
 
-      return tables
-    }, [])
+    return tables
   }
 }
 
