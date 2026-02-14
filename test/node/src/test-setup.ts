@@ -24,7 +24,6 @@ import {
   OperationNodeTransformer,
   PostgresDialect,
   MysqlDialect,
-  SchemaModule,
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
@@ -40,6 +39,7 @@ import {
   OrderByDirection,
   OrderByExpression,
 } from '../../../dist/cjs/parser/order-by-parser'
+import type { SchemaModule } from '../../../dist/cjs/schema'
 import type { ConnectionConfiguration } from 'tedious'
 
 export type Gender = 'male' | 'female' | 'other'
