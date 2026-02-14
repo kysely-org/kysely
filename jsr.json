@@ -9,7 +9,8 @@
     "./helpers/mssql": "./src/helpers/mssql.ts",
     "./helpers/postgres": "./src/helpers/postgres.ts",
     "./helpers/sqlite": "./src/helpers/sqlite.ts",
-    "./migration": "./src/migration/index.ts"
+    "./migration": "./src/migration/index.ts",
+    "./schema": "./src/schema/index.ts"
   },
   "publish": {
     "include": [
