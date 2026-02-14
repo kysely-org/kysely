@@ -26,6 +26,15 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+
+  /**
+   * Limits the metadata to a list of schemas when provided.
+   */
+  schemas?: string[]
+  /**
+   * Limits the metadata to a list of tables/views when provided.
+   */
+  tables?: string[]
 }
 
 export interface SchemaMetadata {

@@ -52,7 +52,17 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.EXTRA',
         'columns.COLUMN_COMMENT',
       ])
-      .where('columns.TABLE_SCHEMA', '=', sql`database()`)
+    if (options.schemas) {
+      query = query.where('columns.TABLE_SCHEMA', 'in', options.schemas)
+    } else {
+      query = query.where('columns.TABLE_SCHEMA', '=', sql`database()`)
+    }
+
+    if (options.tables) {
+      query = query.where('columns.TABLE_NAME', 'in', options.tables)
+    }
+
+    query = query
       .orderBy('columns.TABLE_NAME')
       .orderBy('columns.ORDINAL_POSITION')
       .$castTo<RawColumnMetadata>()

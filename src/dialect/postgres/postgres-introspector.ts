@@ -85,6 +85,14 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .orderBy('a.attnum')
       .$castTo<RawColumnMetadata>()
 
+    if (options.schemas) {
+      query = query.where('ns.nspname', 'in', options.schemas)
+    }
+
+    if (options.tables) {
+      query = query.where('c.relname', 'in', options.tables)
+    }
+
     if (!options.withInternalKyselyTables) {
       query = query
         .where('c.relname', '!=', DEFAULT_MIGRATION_TABLE)

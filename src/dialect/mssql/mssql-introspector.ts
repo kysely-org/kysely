@@ -59,6 +59,12 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
           .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE),
       )
+      .$if(!!options.schemas, (qb) =>
+        qb.where('table_schemas.name', 'in', options.schemas!),
+      )
+      .$if(!!options.tables, (qb) =>
+        qb.where('tables.name', 'in', options.tables!),
+      )
       .select([
         'tables.name as table_name',
         (eb) =>
@@ -110,6 +116,12 @@ export class MssqlIntrospector implements DatabaseIntrospector {
               .onRef('comments.major_id', '=', 'views.object_id')
               .onRef('comments.minor_id', '=', 'columns.column_id')
               .on('comments.name', '=', 'MS_Description'),
+          )
+          .$if(!!options.schemas, (qb) =>
+            qb.where('view_schemas.name', 'in', options.schemas!),
+          )
+          .$if(!!options.tables, (qb) =>
+            qb.where('views.name', 'in', options.tables!),
           )
           .select([
             'views.name as table_name',

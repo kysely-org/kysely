@@ -479,11 +479,11 @@ export class Migrator {
 
     const tables = await this.#props.db.introspection.getTables({
       withInternalKyselyTables: true,
+      schemas: schema ? [schema] : undefined,
+      tables: [tableName],
     })
 
-    return tables.some(
-      (it) => it.name === tableName && (!schema || it.schema === schema),
-    )
+    return tables.length > 0
   }
 
   async #doesLockRowExists(): Promise<boolean> {

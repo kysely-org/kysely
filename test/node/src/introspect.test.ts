@@ -873,6 +873,71 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    describe('getTables (filters)', () => {
+      it('should filter by tables', async () => {
+        const tables = await ctx.db.introspection.getTables({
+          tables: ['person', 'pet'],
+          withInternalKyselyTables: false,
+        })
+
+        if (dialect === 'postgres' || dialect === 'mssql') {
+          expect(tables).to.have.length(3)
+          expect(tables.map((it) => it.name).sort()).to.eql([
+            'person',
+            'pet',
+            'pet',
+          ])
+        } else {
+          expect(tables).to.have.length(2)
+          expect(tables.map((it) => it.name).sort()).to.eql(['person', 'pet'])
+        }
+      })
+
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mssql' ||
+        dialect === 'mysql'
+      ) {
+        it('should filter by schema', async () => {
+          const schema =
+            dialect === 'postgres'
+              ? 'some_schema'
+              : dialect === 'mssql'
+                ? 'some_schema'
+                : 'kysely_test'
+
+          const tables = await ctx.db.introspection.getTables({
+            schemas: [schema],
+            withInternalKyselyTables: false,
+          })
+
+          expect(tables).to.not.be.empty
+          tables.forEach((table) => {
+            expect(table.schema).to.equal(schema)
+          })
+        })
+
+        it('should filter by schema and tables', async () => {
+          const schema =
+            dialect === 'postgres'
+              ? 'some_schema'
+              : dialect === 'mssql'
+                ? 'some_schema'
+                : 'kysely_test'
+
+          const tables = await ctx.db.introspection.getTables({
+            schemas: [schema],
+            tables: ['pet'],
+            withInternalKyselyTables: false,
+          })
+
+          expect(tables).to.have.length(1)
+          expect(tables[0].name).to.equal('pet')
+          expect(tables[0].schema).to.equal(schema)
+        })
+      }
+    })
+
     async function createView() {
       ctx.db.schema
         .createView('toy_names')

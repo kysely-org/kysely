@@ -74,6 +74,10 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .select(['name', 'sql', 'type'])
       .orderBy('name')
 
+    if (options.tables) {
+      tablesQuery = tablesQuery.where('name', 'in', options.tables)
+    }
+
     if (!options.withInternalKyselyTables) {
       tablesQuery = tablesQuery
         .where('name', '!=', DEFAULT_MIGRATION_TABLE)
