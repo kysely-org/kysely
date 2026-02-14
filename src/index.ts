@@ -1,3 +1,5 @@
+import type { KyselyTypeError } from './util/type-error.js'
+
 export * from './kysely.js'
 export * from './query-creator.js'
 
@@ -110,83 +112,6 @@ export * from './dialect/pglite/pglite-dialect-config.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
-
-export {
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  DEFAULT_ALLOW_UNORDERED_MIGRATIONS,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  DEFAULT_MIGRATION_LOCK_TABLE,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  DEFAULT_MIGRATION_TABLE,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MIGRATION_LOCK_ID,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigrateOptions,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  Migration,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigrationInfo,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigrationProvider,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigrationResult,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigrationResultSet,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  Migrator,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  MigratorProps,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  NO_MIGRATIONS,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  NoMigrations,
-} from './migration/migrator.js'
-export {
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  FileMigrationProvider,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  FileMigrationProviderFS,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  FileMigrationProviderPath,
-  /**
-   * @deprecated import from 'kysely/migration' instead.
-   */
-  FileMigrationProviderProps,
-} from './migration/file-migration-provider.js'
 
 export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
@@ -389,3 +314,89 @@ export type {
   RecursiveCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
 } from './parser/with-parser.js'
+
+// deprecated exports
+
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_ALLOW_UNORDERED_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_LOCK_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const MIGRATION_LOCK_ID: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrateOptions =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type Migration =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationInfo =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationProvider =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResult =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResultSet =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const Migrator: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigratorProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const NO_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type NoMigrations =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const FileMigrationProvider: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderFS =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderPath =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">
