@@ -44,23 +44,6 @@ export * from './query-executor/query-executor-provider.js'
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/compiled-query.js'
 
-export * from './schema/schema.js'
-export * from './schema/create-table-builder.js'
-export * from './schema/create-type-builder.js'
-export * from './schema/drop-table-builder.js'
-export * from './schema/drop-type-builder.js'
-export * from './schema/create-index-builder.js'
-export * from './schema/drop-index-builder.js'
-export * from './schema/create-schema-builder.js'
-export * from './schema/drop-schema-builder.js'
-export * from './schema/column-definition-builder.js'
-export * from './schema/foreign-key-constraint-builder.js'
-export * from './schema/alter-table-builder.js'
-export * from './schema/create-view-builder.js'
-export * from './schema/refresh-materialized-view-builder.js'
-export * from './schema/drop-view-builder.js'
-export * from './schema/alter-column-builder.js'
-
 export * from './dynamic/dynamic.js'
 export * from './dynamic/dynamic-reference-builder.js'
 export * from './dynamic/dynamic-table-builder.js'
@@ -400,3 +383,171 @@ export type FileMigrationProviderPath =
  */
 export type FileMigrationProviderProps =
   KyselyTypeError<"import from 'kysely/migration' instead">
+
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const AlterColumnBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const AlteredColumnBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type AlterColumnBuilderCallback =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const AlterTableBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type AlterTableBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type ColumnAlteringInterface =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const AlterTableColumnAlteringBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type AlterTableColumnAlteringBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const ColumnDefinitionBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type ColumnDefinitionBuilderCallback =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const CreateIndexBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type CreateIndexBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const CreateSchemaBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type CreateSchemaBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const CreateTableBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type CreateTableBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type ColumnBuilderCallback =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const CreateTypeBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type CreateTypeBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const CreateViewBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type CreateViewBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const DropIndexBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type DropIndexBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const DropSchemaBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type DropSchemaBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const DropTableBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type DropTableBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const DropTypeBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type DropTypeBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const DropViewBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type DropViewBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type ForeignKeyConstraintBuilderInterface =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const ForeignKeyConstraintBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type ForeignKeyConstraintBuilderCallback =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const RefreshMaterializedViewBuilder: KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export type RefreshMaterializedViewBuilderProps =
+  KyselyTypeError<"import from 'kysely/schema' instead">
+/**
+ * @deprecated import from 'kysely/schema' instead.
+ */
+export declare const SchemaModule: KyselyTypeError<"import from 'kysely/schema' instead">
