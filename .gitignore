@@ -1,7 +1,7 @@
 dist
 /helpers
-migration.*
-schema.*
+/migration.*
+/schema.*
 /test/browser/bundle.js
 node_modules
 .vscode
