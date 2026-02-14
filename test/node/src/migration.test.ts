@@ -2,6 +2,7 @@ import * as path from 'node:path'
 import { promises as fs } from 'node:fs'
 import { setTimeout } from 'node:timers/promises'
 
+import type { Kysely } from '../../../'
 import {
   FileMigrationProvider,
   type Migration,
@@ -12,8 +13,7 @@ import {
   Migrator,
   NO_MIGRATIONS,
   type MigratorProps,
-  type Kysely,
-} from '../../../'
+} from '../../../dist/cjs/migration'
 
 import {
   clearDatabase,
