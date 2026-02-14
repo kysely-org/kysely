@@ -1,2 +1,39 @@
-export * from '../../'
-export * from '../../helpers/postgres'
+export type {
+  AlterTableBuilder,
+  ColumnType,
+  DeleteResult,
+  Equals,
+  Expression,
+  ExpressionBuilder,
+  ExpressionWrapper,
+  Generated,
+  InferResult,
+  InsertResult,
+  JoinBuilder,
+  Kysely,
+  MatchedThenableMergeQueryBuilder,
+  MergeQueryBuilder,
+  MergeResult,
+  NotMatchedThenableMergeQueryBuilder,
+  NotNull,
+  Nullable,
+  NumericString,
+  RawBuilder,
+  Selectable,
+  SelectQueryBuilder,
+  SelectType,
+  Simplify,
+  SqlBool,
+  Transaction,
+  UpdateQueryBuilder,
+  UpdateResult,
+  WheneableMergeQueryBuilder,
+} from '../../'
+export { expressionBuilder, sql } from '../../'
+export {
+  jsonArrayFrom,
+  jsonBuildObject,
+  jsonObjectFrom,
+  mergeAction,
+} from '../../helpers/postgres'
+export type { CreateTableBuilder } from '../../schema'
