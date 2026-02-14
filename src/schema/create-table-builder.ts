@@ -578,7 +578,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * This is useful for creating reusable functions that can be called with a builder.
    *
    * ```ts
-   * import { type CreateTableBuilder, sql } from 'kysely'
+   * import { sql } from 'kysely'
+   * import type { CreateTableBuilder } from 'kysely/schema'
    *
    * const addDefaultColumns = (ctb: CreateTableBuilder<any, any>) => {
    *   return ctb
