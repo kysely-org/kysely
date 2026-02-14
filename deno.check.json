@@ -11,6 +11,7 @@
     "kysely/helpers/mysql": "./dist/esm/helpers/mysql.js",
     "kysely/helpers/postgres": "./dist/esm/helpers/postgres.js",
     "kysely/helpers/sqlite": "./dist/esm/helpers/sqlite.js",
+    "kysely/migration": "./dist/esm/migration",
     "lodash/snakeCase": "npm:lodash/snakeCase",
     "mysql2": "npm:mysql2",
     "pg": "npm:pg",
