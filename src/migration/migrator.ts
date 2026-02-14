@@ -39,12 +39,8 @@ export interface Migration {
  * import { promises as fs } from 'node:fs'
  * import path from 'node:path'
  * import * as Sqlite from 'better-sqlite3'
- * import {
- *   FileMigrationProvider,
- *   Kysely,
- *   Migrator,
- *   SqliteDialect
- * } from 'kysely'
+ * import { Kysely, SqliteDialect } from 'kysely'
+ * import { FileMigrationProvider, Migrator } from 'kysely/migration'
  *
  * const db = new Kysely<any>({
  *   dialect: new SqliteDialect({
@@ -119,7 +115,7 @@ export class Migrator {
    * import { promises as fs } from 'node:fs'
    * import path from 'node:path'
    * import * as Sqlite from 'better-sqlite3'
-   * import { FileMigrationProvider, Migrator } from 'kysely'
+   * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
    * const migrator = new Migrator({
    *   db,
@@ -163,7 +159,7 @@ export class Migrator {
    * ```ts
    * import { promises as fs } from 'node:fs'
    * import path from 'node:path'
-   * import { FileMigrationProvider, Migrator } from 'kysely'
+   * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
    * const migrator = new Migrator({
    *   db,
@@ -186,7 +182,7 @@ export class Migrator {
    * ```ts
    * import { promises as fs } from 'node:fs'
    * import path from 'node:path'
-   * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely'
+   * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely/migration'
    *
    * const migrator = new Migrator({
    *   db,
@@ -264,7 +260,7 @@ export class Migrator {
    * ```ts
    * import { promises as fs } from 'node:fs'
    * import path from 'node:path'
-   * import { FileMigrationProvider, Migrator } from 'kysely'
+   * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
    * const migrator = new Migrator({
    *   db,
@@ -296,7 +292,7 @@ export class Migrator {
    * ```ts
    * import { promises as fs } from 'node:fs'
    * import path from 'node:path'
-   * import { FileMigrationProvider, Migrator } from 'kysely'
+   * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
    * const migrator = new Migrator({
    *   db,
