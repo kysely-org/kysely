@@ -36,4 +36,4 @@ export {
   jsonObjectFrom,
   mergeAction,
 } from '../../helpers/postgres'
-export type { CreateTableBuilder } from '../../schema'
+export type { CreateTableBuilder } from '../../dist/cjs/schema'
