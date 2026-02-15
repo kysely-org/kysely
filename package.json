@@ -41,7 +41,9 @@
     "helpers",
     "migration.d.ts",
     "migration.js",
-    "outdated-typescript.d.ts"
+    "outdated-typescript.d.ts",
+    "schema.d.ts",
+    "schema.js"
   ],
   "exports": {
     ".": {
@@ -73,6 +75,11 @@
       "import": "./dist/esm/migration/index.js",
       "require": "./dist/cjs/migration/index.js",
       "default": "./dist/cjs/migration/index.js"
+    },
+    "./schema": {
+      "import": "./dist/esm/schema/index.js",
+      "require": "./dist/cjs/schema/index.js",
+      "default": "./dist/cjs/schema/index.js"
     }
   },
   "scripts": {
