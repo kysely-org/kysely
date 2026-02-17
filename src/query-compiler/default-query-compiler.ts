@@ -85,6 +85,7 @@ import type {
 } from '../operation-node/select-modifier-node.js'
 import type { CreateTypeNode } from '../operation-node/create-type-node.js'
 import type { DropTypeNode } from '../operation-node/drop-type-node.js'
+import type { AlterTypeNode } from '../operation-node/alter-type-node.js'
 import type { ExplainNode } from '../operation-node/explain-node.js'
 import type { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node.js'
 import type { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
@@ -1438,6 +1439,34 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+  }
+
+
+  protected override visitAlterType(node: AlterTypeNode): void {
+    this.append('alter type ')
+    this.visitNode(node.name)
+
+    if (node.renameTo) {
+      this.append(' rename to ')
+      this.visitNode(node.renameTo)
+    }
+
+    if (node.setSchema) {
+      this.append(' set schema ')
+      this.visitNode(node.setSchema)
+    }
+
+    if (node.addValue) {
+      this.append(' add value ')
+      this.visitNode(node.addValue)
+    }
+
+    if (node.renameValue) {
+      this.append(' rename value ')
+      this.visitNode(node.renameValue.oldName)
+      this.append(' to ')
+      this.visitNode(node.renameValue.newName)
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {

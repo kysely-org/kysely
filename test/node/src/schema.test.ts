@@ -2535,6 +2535,101 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    describe('alter type', () => {
+      if (dialect === 'postgres') {
+        beforeEach(cleanup)
+        afterEach(cleanup)
+
+        it('should add a value to an enum type', async () => {
+          await ctx.db.schema
+            .createType('species')
+            .asEnum(['cat', 'dog'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterType('species')
+            .addValue('frog')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" add value 'frog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should rename a type', async () => {
+          await ctx.db.schema.createType('species').asEnum(['cat']).execute()
+
+          const builder = ctx.db.schema
+            .alterType('species')
+            .renameTo('animal_type')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" rename to "animal_type"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+
+          await ctx.db.schema.dropType('animal_type').execute()
+        })
+
+        it('should rename a value in an enum type', async () => {
+          await ctx.db.schema
+            .createType('species')
+            .asEnum(['cat', 'dog'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterType('species')
+            .renameValue('cat', 'kitten')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" rename value 'cat' to 'kitten'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should set schema of a type', async () => {
+          const builder = ctx.db.schema
+            .alterType('species')
+            .setSchema('some_schema')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter type "species" set schema "some_schema"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+        })
+      }
+
+      async function cleanup() {
+        await ctx.db.schema.dropType('species').ifExists().execute()
+      }
+    })
+
     describe('alter table', () => {
       beforeEach(async () => {
         await ctx.db.schema

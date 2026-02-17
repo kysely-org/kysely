@@ -68,6 +68,7 @@ export type OperationNodeKind =
   | 'SelectModifierNode'
   | 'CreateTypeNode'
   | 'DropTypeNode'
+  | 'AlterTypeNode'
   | 'ExplainNode'
   | 'DefaultInsertValueNode'
   | 'AggregateFunctionNode'

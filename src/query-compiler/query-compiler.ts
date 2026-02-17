@@ -8,6 +8,7 @@ import type { DropIndexNode } from '../operation-node/drop-index-node.js'
 import type { DropSchemaNode } from '../operation-node/drop-schema-node.js'
 import type { DropTableNode } from '../operation-node/drop-table-node.js'
 import type { DropTypeNode } from '../operation-node/drop-type-node.js'
+import type { AlterTypeNode } from '../operation-node/alter-type-node.js'
 import type { DropViewNode } from '../operation-node/drop-view-node.js'
 import type { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import type { QueryNode } from '../operation-node/query-node.js'
@@ -31,6 +32,7 @@ export type RootOperationNode =
   | RawNode
   | CreateTypeNode
   | DropTypeNode
+  | AlterTypeNode
   | MergeQueryNode
 
 /**

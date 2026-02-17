@@ -70,6 +70,7 @@ import type { ValuesNode } from './values-node.js'
 import type { SelectModifierNode } from './select-modifier-node.js'
 import type { CreateTypeNode } from './create-type-node.js'
 import type { DropTypeNode } from './drop-type-node.js'
+import type { AlterTypeNode } from './alter-type-node.js'
 import type { ExplainNode } from './explain-node.js'
 import type { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import type { DefaultInsertValueNode } from './default-insert-value-node.js'
@@ -180,6 +181,7 @@ export abstract class OperationNodeVisitor {
     SelectModifierNode: this.visitSelectModifier.bind(this),
     CreateTypeNode: this.visitCreateType.bind(this),
     DropTypeNode: this.visitDropType.bind(this),
+    AlterTypeNode: this.visitAlterType.bind(this),
     ExplainNode: this.visitExplain.bind(this),
     DefaultInsertValueNode: this.visitDefaultInsertValue.bind(this),
     AggregateFunctionNode: this.visitAggregateFunction.bind(this),
@@ -297,6 +299,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitSelectModifier(node: SelectModifierNode): void
   protected abstract visitCreateType(node: CreateTypeNode): void
   protected abstract visitDropType(node: DropTypeNode): void
+  protected abstract visitAlterType(node: AlterTypeNode): void
   protected abstract visitExplain(node: ExplainNode): void
   protected abstract visitDefaultInsertValue(node: DefaultInsertValueNode): void
   protected abstract visitAggregateFunction(node: AggregateFunctionNode): void

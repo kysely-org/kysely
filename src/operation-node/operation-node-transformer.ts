@@ -68,6 +68,7 @@ import type { ValuesNode } from './values-node.js'
 import type { SelectModifierNode } from './select-modifier-node.js'
 import type { CreateTypeNode } from './create-type-node.js'
 import type { DropTypeNode } from './drop-type-node.js'
+import type { AlterTypeNode } from './alter-type-node.js'
 import type { ExplainNode } from './explain-node.js'
 import type { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import type { DefaultInsertValueNode } from './default-insert-value-node.js'
@@ -215,6 +216,7 @@ export class OperationNodeTransformer {
     SelectModifierNode: this.transformSelectModifier.bind(this),
     CreateTypeNode: this.transformCreateType.bind(this),
     DropTypeNode: this.transformDropType.bind(this),
+    AlterTypeNode: this.transformAlterType.bind(this),
     ExplainNode: this.transformExplain.bind(this),
     DefaultInsertValueNode: this.transformDefaultInsertValue.bind(this),
     AggregateFunctionNode: this.transformAggregateFunction.bind(this),
@@ -1033,6 +1035,25 @@ export class OperationNodeTransformer {
       kind: 'DropTypeNode',
       name: this.transformNode(node.name, queryId),
       ifExists: node.ifExists,
+    })
+  }
+
+  protected transformAlterType(
+    node: AlterTypeNode,
+    queryId?: QueryId,
+  ): AlterTypeNode {
+    return requireAllProps<AlterTypeNode>({
+      kind: 'AlterTypeNode',
+      name: this.transformNode(node.name, queryId),
+      renameTo: this.transformNode(node.renameTo, queryId),
+      setSchema: this.transformNode(node.setSchema, queryId),
+      addValue: this.transformNode(node.addValue, queryId),
+      renameValue: node.renameValue
+        ? {
+            oldName: this.transformNode(node.renameValue.oldName, queryId),
+            newName: this.transformNode(node.renameValue.newName, queryId),
+          }
+        : undefined,
     })
   }
 
