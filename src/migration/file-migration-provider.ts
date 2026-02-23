@@ -35,11 +35,14 @@ export class FileMigrationProvider implements MigrationProvider {
         fileName.endsWith('.mjs') ||
         (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
       ) {
+        const importPath = this.#props.path.join(
+          this.#props.migrationFolder,
+          fileName,
+        )
         const migration = await import(
-          /* webpackIgnore: true */ this.#props.path.join(
-            this.#props.migrationFolder,
-            fileName,
-          )
+          /* webpackIgnore: true */ importPath.startsWith('/')
+            ? `file://${importPath}`
+            : importPath
         )
         const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))
 
