@@ -11,20 +11,20 @@ export interface PostgresDialectConfig {
    *
    * https://node-postgres.com/apis/pool
    */
-  pool: PostgresPool | (() => Promise<PostgresPool>)
+  client: PostgresClient | (() => Promise<PostgresClient>)
 
   /**
    * https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor
    *
    * ```ts
    * import { PostgresDialect } from 'kysely'
-   * import { Pool } from 'pg'
+   * import { Client } from 'pg'
    * import Cursor from 'pg-cursor'
    * // or import * as Cursor from 'pg-cursor'
    *
    * new PostgresDialect({
    *  cursor: Cursor,
-   *  pool: new Pool('postgres://localhost:5432/mydb')
+   *  client: new Client('postgres://localhost:5432/mydb')
    * })
    * ```
    */
@@ -49,18 +49,15 @@ export interface PostgresDialectConfig {
  *
  * https://node-postgres.com/apis/pool
  */
-export interface PostgresPool {
-  connect(): Promise<PostgresPoolClient>
-  end(): Promise<void>
-}
-
-export interface PostgresPoolClient {
+export interface PostgresClient {
+  connect(): Promise<void>
   query<R>(
     sql: string,
     parameters: ReadonlyArray<unknown>,
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
+  end(): Promise<void>
 }
 
 export interface PostgresCursor<T> {

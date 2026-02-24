@@ -12,50 +12,46 @@ import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
   PostgresCursorConstructor,
   PostgresDialectConfig,
-  PostgresPool,
-  PostgresPoolClient,
+  PostgresClient,
 } from './postgres-dialect-config.js'
-
-const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
 
 export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig
-  readonly #connections = new WeakMap<PostgresPoolClient, DatabaseConnection>()
-  #pool?: PostgresPool
+  #client?: PostgresClient
+  #connection?: DatabaseConnection
 
   constructor(config: PostgresDialectConfig) {
     this.#config = freeze({ ...config })
   }
 
   async init(): Promise<void> {
-    this.#pool = isFunction(this.#config.pool)
-      ? await this.#config.pool()
-      : this.#config.pool
+    this.#client = isFunction(this.#config.client)
+      ? await this.#config.client()
+      : this.#config.client
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    const client = await this.#pool!.connect()
-    let connection = this.#connections.get(client)
+    if (!this.#connection) {
+      if (!this.#client) {
+        throw new Error('Driver not initialized')
+      }
 
-    if (!connection) {
-      connection = new PostgresConnection(client, {
+      await this.#client.connect()
+
+      this.#connection = new PostgresConnection(this.#client, {
         cursor: this.#config.cursor ?? null,
       })
-      this.#connections.set(client, connection)
 
-      // The driver must take care of calling `onCreateConnection` when a new
-      // connection is created. The `pg` module doesn't provide an async hook
-      // for the connection creation. We need to call the method explicitly.
       if (this.#config.onCreateConnection) {
-        await this.#config.onCreateConnection(connection)
+        await this.#config.onCreateConnection(this.#connection)
       }
     }
 
     if (this.#config.onReserveConnection) {
-      await this.#config.onReserveConnection(connection)
+      await this.#config.onReserveConnection(this.#connection)
     }
 
-    return connection
+    return this.#connection
   }
 
   async beginTransaction(
@@ -126,15 +122,16 @@ export class PostgresDriver implements Driver {
     )
   }
 
-  async releaseConnection(connection: PostgresConnection): Promise<void> {
-    connection[PRIVATE_RELEASE_METHOD]()
+  async releaseConnection(_connection: DatabaseConnection): Promise<void> {
+    // Single client connection is not released back to a pool.
   }
 
   async destroy(): Promise<void> {
-    if (this.#pool) {
-      const pool = this.#pool
-      this.#pool = undefined
-      await pool.end()
+    if (this.#client) {
+      const client = this.#client
+      this.#client = undefined
+      this.#connection = undefined
+      await client.end()
     }
   }
 }
@@ -144,10 +141,10 @@ interface PostgresConnectionOptions {
 }
 
 class PostgresConnection implements DatabaseConnection {
-  #client: PostgresPoolClient
+  #client: PostgresClient
   #options: PostgresConnectionOptions
 
-  constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
+  constructor(client: PostgresClient, options: PostgresConnectionOptions) {
     this.#client = client
     this.#options = options
   }
@@ -210,9 +207,5 @@ class PostgresConnection implements DatabaseConnection {
     } finally {
       await cursor.close()
     }
-  }
-
-  [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release()
   }
 }
