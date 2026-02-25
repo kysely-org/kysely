@@ -75,6 +75,18 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    *
    * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   *
+   * ### Immediate values
+   *
+   * Unlike most value-first methods in Kysely (which append values as query parameters),
+   * `then` injects `number`, `boolean`, and `null` values **directly into the SQL string**
+   * as immediate literals. This is intentional — `eb.lit()` is not allowed inside `then`,
+   * so safe primitive types are embedded inline instead.
+   *
+   * For example, `.then(1)` produces `then 1` in SQL, not `then $1`.
+   *
+   * Strings are always parameterized. To pass a string as an immediate value,
+   * wrap it with {@link ExpressionBuilder.val | eb.val()} or {@link sql}.
    */
   then<E extends Expression<unknown>>(
     expression: E,
@@ -137,6 +149,16 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
    * Adds an `else` clause to the `case` statement.
    *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
+   *
+   * ### Immediate values
+   *
+   * Like {@link CaseThenBuilder.then}, `else` injects `number`, `boolean`, and `null` values
+   * **directly into the SQL string** as immediate literals rather than query parameters.
+   *
+   * For example, `.else(0)` produces `else 0` in SQL, not `else $1`.
+   *
+   * Strings are always parameterized. To pass a string as an immediate value,
+   * wrap it with {@link ExpressionBuilder.val | eb.val()} or {@link sql}.
    */
   else<E extends Expression<unknown>>(
     expression: E,

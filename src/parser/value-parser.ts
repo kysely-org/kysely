@@ -56,12 +56,29 @@ export function parseValueExpression(
   return ValueNode.create(exp)
 }
 
+/**
+ * Returns true for primitive values that are safe to embed directly in the SQL
+ * string as immediate literals: numbers, booleans and null.
+ *
+ * Strings are intentionally excluded — they must always be parameterized to
+ * prevent SQL injection. Use `eb.lit()` or `sql` to embed strings inline.
+ *
+ * This is used by {@link CaseThenBuilder.then} and {@link CaseWhenBuilder.else}
+ * to decide whether a value should be an immediate literal or a query parameter.
+ */
 export function isSafeImmediateValue(
   value: unknown,
 ): value is number | boolean | null {
   return isNumber(value) || isBoolean(value) || isNull(value)
 }
 
+/**
+ * Creates an immediate {@link ValueNode} for a safe primitive value (number,
+ * boolean or null). The value is embedded directly in the SQL string rather
+ * than sent as a query parameter.
+ *
+ * Throws if the value is not a safe immediate value (e.g. a string).
+ */
 export function parseSafeImmediateValue(
   value: number | boolean | null,
 ): ValueNode {
