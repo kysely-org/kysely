@@ -1869,6 +1869,8 @@ for (const dialect of DIALECTS) {
           .createTable('test')
           .addColumn('id', 'bigint', (col) => col.primaryKey())
           .addColumn('first_name', 'varchar(255)')
+          .addColumn('last_name', 'varchar(255)')
+          .addColumn('age', 'integer')
           .execute()
 
         await ctx.db.schema
@@ -2543,6 +2545,31 @@ for (const dialect of DIALECTS) {
           .addColumn('integer_col', 'integer')
           .execute()
       })
+
+      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+        it('should alter table with if exists', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .ifExists()
+            .addColumn('date_col', 'date')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table if exists "test" add column "date_col" date',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'alter table if exists `test` add column `date_col` date',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'alter table if exists "test" add column "date_col" date',
+              parameters: [],
+            },
+          })
+        })
+      }
 
       describe('add column', () => {
         it('should add a column', async () => {
