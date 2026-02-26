@@ -414,17 +414,14 @@ for (const dialect of DIALECTS) {
         ).as('doggo'),
 
         // Nest an object that holds the person's formatted name
-        // Type assertion needed due to union of dialect helper types
-        (
-          jsonBuildObject({
-            first: eb.ref('first_name'),
-            last: eb.ref('last_name'),
-            full:
-              dialect === 'sqlite'
-                ? sql<string>`first_name || ' ' || last_name`
-                : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
-          }) as RawBuilder<{ first: string; last: string | null; full: string }>
-        ).as('name'),
+        jsonBuildObject({
+          first: eb.ref('first_name'),
+          last: eb.ref('last_name'),
+          full:
+            dialect === 'sqlite'
+              ? sql<string>`first_name || ' ' || last_name`
+              : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
+        }).as('name'),
 
         // Nest an empty list
         jsonArrayFrom(

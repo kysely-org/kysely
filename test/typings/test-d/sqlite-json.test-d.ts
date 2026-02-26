@@ -14,6 +14,9 @@ interface Database extends SharedDatabase {
     name: string
     data: Buffer
     nullable_data: Buffer | null
+    uint8_data: Uint8Array
+    any_data: any
+    mixed_data: Buffer | string
   }
 }
 
@@ -136,6 +139,74 @@ function testJsonBuildObjectWithNullableBuffer(db: Kysely<Database>) {
   )
 }
 
+// jsonArrayFrom should error when selecting Uint8Array columns
+function testJsonArrayFromWithUint8Array(db: Kysely<Database>) {
+  expectError(
+    db
+      .selectFrom('blob_test')
+      .select((eb) => [
+        'id',
+        jsonArrayFrom(eb.selectFrom('blob_test').select(['id', 'uint8_data'])).as(
+          'rows',
+        ),
+      ]),
+  )
+}
+
+// jsonObjectFrom should error when selecting Buffer | string columns
+function testJsonObjectFromWithMixedBufferString(db: Kysely<Database>) {
+  expectError(
+    db
+      .selectFrom('blob_test')
+      .select((eb) => [
+        'id',
+        jsonObjectFrom(
+          eb.selectFrom('blob_test').select(['id', 'mixed_data']).limit(1),
+        ).as('row'),
+      ]),
+  )
+}
+
+// jsonArrayFrom should error when selecting any-typed columns
+function testJsonArrayFromWithAny(db: Kysely<Database>) {
+  expectError(
+    db
+      .selectFrom('blob_test')
+      .select((eb) => [
+        'id',
+        jsonArrayFrom(eb.selectFrom('blob_test').select(['id', 'any_data'])).as(
+          'rows',
+        ),
+      ]),
+  )
+}
+
+// jsonObjectFrom should error when selecting any-typed columns
+function testJsonObjectFromWithAny(db: Kysely<Database>) {
+  expectError(
+    db
+      .selectFrom('blob_test')
+      .select((eb) => [
+        'id',
+        jsonObjectFrom(eb.selectFrom('blob_test').select(['id', 'any_data']))
+          .as('row'),
+      ]),
+  )
+}
+
+// jsonBuildObject should error when passing Expression<any>
+function testJsonBuildObjectWithAny(db: Kysely<Database>) {
+  expectError(
+    db.selectFrom('blob_test').select((eb) => [
+      'id',
+      jsonBuildObject({
+        name: eb.ref('name'),
+        data: eb.ref('any_data'),
+      }).as('obj'),
+    ]),
+  )
+}
+
 // jsonBuildObject should succeed when no Buffer values are used
 async function testJsonBuildObjectWithoutBuffer(db: Kysely<Database>) {
   const result = await db
@@ -150,6 +221,59 @@ async function testJsonBuildObjectWithoutBuffer(db: Kysely<Database>) {
     .execute()
 
   expectType<{ id: number; obj: { name: string; computed: string } }[]>(result)
+}
+
+// jsonBuildObject should succeed with untyped sql expressions (unknown)
+async function testJsonBuildObjectWithUntypedSql(db: Kysely<Database>) {
+  const result = await db
+    .selectFrom('blob_test')
+    .select((eb) => [
+      'id',
+      jsonBuildObject({
+        name: eb.ref('name'),
+        one: sql`1`,
+      }).as('obj'),
+    ])
+    .execute()
+
+  expectType<{ id: number; obj: { name: string; one: unknown } }[]>(result)
+}
+
+// jsonArrayFrom should succeed with untyped sql expressions (unknown)
+async function testJsonArrayFromWithUntypedSql(db: Kysely<Database>) {
+  const result = await db
+    .selectFrom('blob_test')
+    .select((eb) => [
+      'id',
+      jsonArrayFrom(
+        eb
+          .selectFrom('blob_test')
+          .select(['id', sql`1`.as('one')])
+          .where('blob_test.id', '>', 0),
+      ).as('rows'),
+    ])
+    .execute()
+
+  expectType<{ id: number; rows: { id: number; one: unknown }[] }[]>(result)
+}
+
+// jsonObjectFrom should succeed with untyped sql expressions (unknown)
+async function testJsonObjectFromWithUntypedSql(db: Kysely<Database>) {
+  const result = await db
+    .selectFrom('blob_test')
+    .select((eb) => [
+      'id',
+      jsonObjectFrom(
+        eb
+          .selectFrom('blob_test')
+          .select(['id', sql`1`.as('one')])
+          .where('blob_test.id', '>', 0)
+          .limit(1),
+      ).as('row'),
+    ])
+    .execute()
+
+  expectType<{ id: number; row: { id: number; one: unknown } | null }[]>(result)
 }
 
 // jsonArrayFrom should succeed when Buffer is cast using sql`hex()` (workaround)
