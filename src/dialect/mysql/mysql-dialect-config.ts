@@ -41,14 +41,31 @@ export interface MysqlPool {
   end(callback: (error: unknown) => void): void
 }
 
+/**
+ * Values that can be passed as query parameters to mysql2.
+ * Compatible with mysql2 v3.18.2+ QueryValues type.
+ */
+export type MysqlQueryValues =
+  | string
+  | number
+  | bigint
+  | boolean
+  | Date
+  | null
+  | undefined
+  | Uint8Array
+  | { toSqlString(): string }
+  | Array<{} | null | undefined>
+  | { [key: string]: MysqlQueryValues }
+
 export interface MysqlPoolConnection {
   query(
     sql: string,
-    parameters: ReadonlyArray<unknown>,
+    parameters: MysqlQueryValues | ReadonlyArray<unknown>,
   ): { stream: <T>(options: MysqlStreamOptions) => MysqlStream<T> }
   query(
     sql: string,
-    parameters: ReadonlyArray<unknown>,
+    parameters: MysqlQueryValues | ReadonlyArray<unknown>,
     callback: (error: unknown, result: MysqlQueryResult) => void,
   ): void
   release(): void
