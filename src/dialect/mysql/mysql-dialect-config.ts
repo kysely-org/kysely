@@ -44,11 +44,11 @@ export interface MysqlPool {
 export interface MysqlPoolConnection {
   query(
     sql: string,
-    parameters: ReadonlyArray<unknown>,
+    parameters: readonly any[],
   ): { stream: <T>(options: MysqlStreamOptions) => MysqlStream<T> }
   query(
     sql: string,
-    parameters: ReadonlyArray<unknown>,
+    parameters: readonly any[],
     callback: (error: unknown, result: MysqlQueryResult) => void,
   ): void
   release(): void
