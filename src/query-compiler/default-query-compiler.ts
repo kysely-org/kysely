@@ -1625,7 +1625,11 @@ export class DefaultQueryCompiler
 
     this.append(isArrayLocation ? '[' : '.')
 
-    this.append(String(node.value))
+    this.append(
+      typeof node.value === 'string'
+        ? this.sanitizeStringLiteral(node.value)
+        : String(node.value),
+    )
 
     if (isArrayLocation) {
       this.append(']')

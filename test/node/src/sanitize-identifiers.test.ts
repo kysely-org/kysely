@@ -6,7 +6,6 @@ import {
   TestContext,
   Person,
   testSql,
-  NOT_SUPPORTED,
   DIALECTS,
 } from './test-setup.js'
 

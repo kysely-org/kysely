@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { sql } from '../../../'
-import { destroyTest, DIALECTS, initTest, TestContext } from './test-setup'
+import { destroyTest, DIALECTS, initTest, type TestContext } from './test-setup'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: select`, () => {
@@ -56,6 +56,32 @@ for (const dialect of DIALECTS) {
       expect(results.rows).to.have.length(0)
       await assertDidNotDropTable(ctx, 'person')
     })
+
+    if (dialect === 'mysql') {
+      it('should not allow SQL injection in $.key JSON paths', async () => {
+        const injection =
+          `first' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ` as never
+
+        const query = ctx.db
+          .with('people', () =>
+            ctx.db
+              .selectFrom('person')
+              .select(
+                sql<{ first: string }>`json_object('first', first_name)`.as(
+                  'data',
+                ),
+              ),
+          )
+          .selectFrom('people')
+          .select((eb) => eb.ref('data', '->$').key(injection).as('first'))
+
+        expect(query.compile().sql).to.equal(
+          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$.first'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
+        )
+        await ctx.db.executeQuery(query)
+        await assertDidNotDropTable(ctx, 'person')
+      })
+    }
   })
 }
 
