@@ -633,6 +633,11 @@ export class DefaultQueryCompiler
     this.visitNode(node.table)
 
     if (node.selectQuery) {
+      if (node.onCommit) {
+        this.append(' on commit ')
+        this.append(node.onCommit)
+      }
+
       this.append(' as ')
       this.visitNode(node.selectQuery)
     } else {
