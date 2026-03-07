@@ -22,6 +22,7 @@ export type SimpleColumnDataType =
   | 'bytea'
   | 'date'
   | 'datetime'
+  | 'datetime2'
   | 'time'
   | 'timetz'
   | 'timestamp'
@@ -59,6 +60,7 @@ const SIMPLE_COLUMN_DATA_TYPES: Readonly<Record<SimpleColumnDataType, true>> =
     datemultirange: true,
     daterange: true,
     datetime: true,
+    datetime2: true,
     decimal: true,
     'double precision': true,
     float4: true,
@@ -101,6 +103,7 @@ const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = freeze([
   /^numeric\(\d+, \d+\)$/,
   /^binary\(\d+\)$/,
   /^datetime\(\d+\)$/,
+  /^datetime2\(\d+\)$/,
   /^time\(\d+\)$/,
   /^timetz\(\d+\)$/,
   /^timestamp\(\d+\)$/,
@@ -116,6 +119,7 @@ export type ColumnDataType =
   | `numeric(${number}, ${number})`
   | `binary(${number})`
   | `datetime(${number})`
+  | `datetime2(${number})`
   | `time(${number})`
   | `timetz(${number})`
   | `timestamp(${number})`
