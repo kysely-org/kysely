@@ -334,7 +334,7 @@ for (const dialect of DIALECTS) {
             .addColumn('r', 'double precision', (col) => col.notNull())
             .addColumn('s', 'time(6)')
             .addColumn('t', 'timestamp', (col) => col.notNull())
-            .addColumn('u', sql`datetime2`)
+            .addColumn('u', 'datetime2')
             .addColumn('v', 'char(4)')
             .addColumn('w', 'char')
             .addColumn('x', 'binary')

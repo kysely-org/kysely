@@ -22,6 +22,7 @@ const SIMPLE_COLUMN_DATA_TYPES = [
   'bytea',
   'date',
   'datetime',
+  'datetime2',
   'time',
   'timetz',
   'timestamp',
@@ -54,6 +55,7 @@ const COLUMN_DATA_TYPE_REGEX = [
   /^numeric\(\d+, \d+\)$/,
   /^binary\(\d+\)$/,
   /^datetime\(\d+\)$/,
+  /^datetime2\(\d+\)$/,
   /^time\(\d+\)$/,
   /^timetz\(\d+\)$/,
   /^timestamp\(\d+\)$/,
@@ -71,6 +73,8 @@ export type ColumnDataType =
   | `numeric(${number}, ${number})`
   | `binary(${number})`
   | `datetime(${number})`
+  | `datetime2`
+  | `datetime2(${number})`
   | `time(${number})`
   | `timetz(${number})`
   | `timestamp(${number})`
