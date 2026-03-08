@@ -129,7 +129,7 @@
     "mysql2": "^3.19.0",
     "pathe": "^2.0.3",
     "pg": "^8.20.0",
-    "pg-cursor": "^2.16.2",
+    "pg-cursor": "^2.19.0",
     "pkg-types": "^2.3.0",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
