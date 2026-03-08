@@ -96,8 +96,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       tedious:
-        specifier: ^19.2.0
-        version: 19.2.0
+        specifier: ^19.2.1
+        version: 19.2.1
       tsd:
         specifier: ^0.33.0
         version: 0.33.0
@@ -4304,10 +4304,6 @@ packages:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
 
-  iconv-lite@0.7.0:
-    resolution: {integrity: sha512-cf6L2Ds3h57VVmkZe+Pn+5APsT7FpqJtEhhieDCvrE2MK5Qk9MyffgQyuxQTm6BChfeZNtcOLHp9IcWRVcIcBQ==}
-    engines: {node: '>=0.10.0'}
-
   iconv-lite@0.7.2:
     resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
     engines: {node: '>=0.10.0'}
@@ -6618,8 +6614,8 @@ packages:
     resolution: {integrity: sha512-51LAVKUSZSVfI05vjPESNc5vwqqZpbXCsU+/+wxlOrUjk2SnFTt97v9ZgQrD4YmxYW1Px6w2KjaDitCfkvgxMQ==}
     engines: {node: '>=8.0.0'}
 
-  tedious@19.2.0:
-    resolution: {integrity: sha512-2dDjX0KP54riDvJPiiIozv0WRS/giJb3/JG2lWpa2dgM0Gha7mLAxbTR3ltPkGzfoS6M3oDnhYnWuzeaZibHuQ==}
+  tedious@19.2.1:
+    resolution: {integrity: sha512-pk1Q16Yl62iocuQB+RWbg6rFUFkIyzqOFQ6NfysCltRvQqKwfurgj8v/f2X+CKvDhSL4IJ0cCOfCHDg9PWEEYA==}
     engines: {node: '>=18.17'}
 
   terser-webpack-plugin@5.3.14:
@@ -12446,10 +12442,6 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  iconv-lite@0.7.0:
-    dependencies:
-      safer-buffer: 2.1.2
-
   iconv-lite@0.7.2:
     dependencies:
       safer-buffer: 2.1.2
@@ -15212,7 +15204,7 @@ snapshots:
 
   tarn@3.0.2: {}
 
-  tedious@19.2.0:
+  tedious@19.2.1:
     dependencies:
       '@azure/core-auth': 1.10.0
       '@azure/identity': 4.10.2
@@ -15220,7 +15212,7 @@ snapshots:
       '@js-joda/core': 5.6.5
       '@types/node': 24.10.1
       bl: 6.1.5
-      iconv-lite: 0.7.0
+      iconv-lite: 0.7.2
       js-md4: 0.3.2
       native-duplexpair: 1.0.0
       sprintf-js: 1.1.3
