@@ -1158,3 +1158,32 @@ async function testIssue764(db: Kysely<DB764>) {
     ])
     .execute()
 }
+
+async function testSelectWithOverAndPartitionByExpression(db: Kysely<Database>) {
+  const { avg } = db.fn
+
+  const result = await db
+    .selectFrom('person')
+    .select((eb) =>
+      avg('age')
+        .over((ob) => ob.partitionBy(eb.fn.coalesce('gender', 'first_name')))
+        .as('avg_age'),
+    )
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<string | number>(result.avg_age)
+
+  await db
+    .selectFrom('person')
+    .select((eb) =>
+      avg('age')
+        .over((ob) =>
+          ob.partitionBy([
+            eb.fn.coalesce('gender', 'first_name'),
+            sql`lower(${sql.ref('last_name')})`,
+          ]),
+        )
+        .as('avg_age'),
+    )
+    .execute()
+}

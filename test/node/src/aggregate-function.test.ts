@@ -412,6 +412,53 @@ for (const dialect of DIALECTS) {
           await query.execute()
         })
 
+        it(`should execute a query with ${funcName}(column) over(partition by expression) in select clause`, async () => {
+          const query = ctx.db.selectFrom('person').select((eb) =>
+            func('id')
+              .over((ob) =>
+                ob.partitionBy([eb.fn.coalesce('first_name', 'last_name')]),
+              )
+              .as(funcName),
+          )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(partition by coalesce("first_name", "last_name")) as "${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            mysql: {
+              sql: [
+                `select ${funcName}(\`id\`)`,
+                `over(partition by coalesce(\`first_name\`, \`last_name\`)) as \`${funcName}\``,
+                `from \`person\``,
+              ],
+              parameters: [],
+            },
+            mssql: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(partition by coalesce("first_name", "last_name")) as "${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            sqlite: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(partition by coalesce("first_name", "last_name")) as "${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+          })
+
+          await query.execute()
+        })
+
         it(`should execute a query with ${funcName}(column) in having clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
