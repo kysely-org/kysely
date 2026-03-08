@@ -67,6 +67,8 @@ import type {
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
+import { AliasNode } from '../operation-node/alias-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -81,6 +83,43 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
 
   constructor(props: InsertQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * Adds an alias for the inserted table.
+   *
+   * This is useful when using `ON CONFLICT DO UPDATE` to reference
+   * the row being inserted via its alias.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.insertInto('person')
+   *   .as('p')
+   *   .values({ first_name: 'Jennifer', last_name: 'Aniston', age: 40 })
+   *   .onConflict((oc) => oc
+   *     .column('first_name')
+   *     .doUpdateSet((eb) => ({ age: eb.ref('p.age') }))
+   *   )
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" as "p" ("first_name", "last_name", "age") values ($1, $2, $3) on conflict ("first_name") do update set "age" = "p"."age"
+   * ```
+   */
+  as(alias: string): InsertQueryBuilder<DB, TB, O> {
+    const { queryNode } = this.#props
+
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWithInto(
+        queryNode,
+        AliasNode.create(queryNode.into!, IdentifierNode.create(alias)),
+      ),
+    })
   }
 
   /**

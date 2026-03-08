@@ -668,6 +668,31 @@ for (const dialect of DIALECTS) {
           name: 'Catto',
         })
       })
+
+      it('should alias the inserted table using `as`', async () => {
+        const query = ctx.db
+          .insertInto('pet')
+          .as('p')
+          .values({
+            name: 'Hammy',
+            owner_id: 1,
+            species: 'hamster',
+          })
+          .onConflict((oc) => oc.column('name').doNothing())
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "pet" as "p" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") do nothing',
+            parameters: ['Hammy', 1, 'hamster'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "pet" as "p" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do nothing',
+            parameters: ['Hammy', 1, 'hamster'],
+          },
+        })
+      })
     }
 
     it('should insert multiple rows', async () => {
