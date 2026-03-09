@@ -154,8 +154,8 @@ export class CamelCasePlugin implements KyselyPlugin {
       let value = row[key]
 
       if (Array.isArray(value)) {
-        value = value.map((it) => (canMap(it, this.opt) ? this.mapRow(it) : it))
-      } else if (canMap(value, this.opt)) {
+        value = value.map((it) => (this.canMap(key, it, this.opt) ? this.mapRow(it) : it))
+      } else if (this.canMap(key, value, this.opt)) {
         value = this.mapRow(value)
       }
 
@@ -171,11 +171,10 @@ export class CamelCasePlugin implements KyselyPlugin {
   protected camelCase(str: string): string {
     return this.#camelCase(str)
   }
+
+  protected canMap(key: string, obj: unknown, opt: CamelCasePluginOptions): obj is Record<string, unknown> {
+    return isPlainObject(obj) && !opt?.maintainNestedObjectKeys
+  }
 }
 
-function canMap(
-  obj: unknown,
-  opt: CamelCasePluginOptions,
-): obj is Record<string, unknown> {
-  return isPlainObject(obj) && !opt?.maintainNestedObjectKeys
-}
+
