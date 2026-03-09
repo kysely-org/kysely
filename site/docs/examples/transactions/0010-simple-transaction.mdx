@@ -11,6 +11,27 @@ the callback passed to the `execute` method,
 3. the exception is thrown again.
 Otherwise the transaction is committed.
 
+:::warning[Parallel transactions not supported]
+Running multiple transactions in parallel (e.g. with `Promise.all`) is not
+supported. A transaction uses a single dedicated database connection and all
+operations within it must run sequentially on that connection. Attempting to
+run two transactions concurrently — or to run queries inside a transaction
+and in the main connection at the same time — will cause them to interleave
+on the connection, leading to undefined behavior or errors.
+
+```ts
+// ❌ Don't do this — transactions cannot be parallelized
+await Promise.all([
+  db.transaction().execute(async (trx) => { /* ... */ }),
+  db.transaction().execute(async (trx) => { /* ... */ }),
+])
+
+// ✅ Run transactions sequentially instead
+await db.transaction().execute(async (trx) => { /* ... */ })
+await db.transaction().execute(async (trx) => { /* ... */ })
+```
+:::
+
 import { Playground } from '../../../src/components/Playground'
 
 import {

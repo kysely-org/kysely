@@ -302,6 +302,26 @@ export class Kysely<DB>
    *   // ...
    * }
    * ```
+   *
+   * ### Parallel transactions
+   *
+   * Running multiple transactions in parallel (e.g. with `Promise.all`) is **not**
+   * supported. A transaction occupies a single dedicated database connection and all
+   * operations within it must run sequentially on that connection. Concurrent
+   * transactions would interleave on the same connection, causing undefined behavior.
+   *
+   * ```ts
+   * // ❌ Don't do this — transactions cannot be parallelized
+   * await Promise.all([
+   *   db.transaction().execute(async (trx) => { ... }),
+   *   db.transaction().execute(async (trx) => { ... }),
+   * ])
+   *
+   * // ✅ Run transactions sequentially instead
+   * for (const item of items) {
+   *   await db.transaction().execute(async (trx) => { ... })
+   * }
+   * ```
    */
   transaction(): TransactionBuilder<DB> {
     return new TransactionBuilder({ ...this.#props })
