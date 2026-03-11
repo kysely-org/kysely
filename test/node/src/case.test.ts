@@ -317,3 +317,95 @@ for (const dialect of DIALECTS) {
     })
   })
 }
+
+for (const dialect of DIALECTS) {
+  describe(`${dialect}: case whenRef`, () => {
+    let ctx: TestContext
+
+    before(async function () {
+      ctx = await initTest(this, dialect)
+    })
+
+    beforeEach(async () => {
+      await insertDefaultDataSet(ctx)
+    })
+
+    afterEach(async () => {
+      await clearDatabase(ctx)
+    })
+
+    after(async () => {
+      await destroyTest(ctx)
+    })
+
+    it('should execute a query with case...whenRef(lhs, op, ref)...then...end', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('same')
+            .else('different')
+            .end()
+            .as('name_match'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "first_name" = "last_name" then $1 else $2 end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+        mysql: {
+          sql: 'select case when `first_name` = `last_name` then ? else ? end as `name_match` from `person`',
+          parameters: ['same', 'different'],
+        },
+        mssql: {
+          sql: `select case when "first_name" = "last_name" then @1 else @2 end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+        sqlite: {
+          sql: `select case when "first_name" = "last_name" then ? else ? end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with case(value)...whenRef(ref)...then...end', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case('first_name')
+            .whenRef('last_name')
+            .then('same')
+            .else('different')
+            .end()
+            .as('name_match'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case "first_name" when "last_name" then $1 else $2 end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+        mysql: {
+          sql: 'select case `first_name` when `last_name` then ? else ? end as `name_match` from `person`',
+          parameters: ['same', 'different'],
+        },
+        mssql: {
+          sql: `select case "first_name" when "last_name" then @1 else @2 end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+        sqlite: {
+          sql: `select case "first_name" when "last_name" then ? else ? end as "name_match" from "person"`,
+          parameters: ['same', 'different'],
+        },
+      })
+
+      await query.execute()
+    })
+  })
+}

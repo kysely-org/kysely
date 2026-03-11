@@ -155,3 +155,35 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(eb.case('gender').when('robot').then('Mr.').end())
   expectError(eb.case('gender').when('gender', '=', 'male').then('Mr.').end())
 }
+
+function testCaseWhenRef(eb: ExpressionBuilder<Database, 'person'>) {
+  // case().whenRef(lhs, op, rhs)...end — both sides as column refs
+  expectType<ExpressionWrapper<Database, 'person', 'same' | null>>(
+    eb
+      .case()
+      .whenRef('first_name', '=', 'last_name')
+      .then('same' as const)
+      .end(),
+  )
+
+  // chained whenRef on CaseWhenBuilder
+  expectType<ExpressionWrapper<Database, 'person', 'same' | 'different' | null>>(
+    eb
+      .case()
+      .whenRef('first_name', '=', 'last_name')
+      .then('same' as const)
+      .whenRef('first_name', '!=', 'last_name')
+      .then('different' as const)
+      .end(),
+  )
+
+  // case(value).whenRef(ref) — compare case subject to a column ref
+  expectType<ExpressionWrapper<Database, 'person', 'same' | null>>(
+    eb.case('first_name').whenRef('last_name').then('same' as const).end(),
+  )
+
+  // errors
+  expectError(eb.case().whenRef('no_such_column', '=', 'first_name').then('x').end())
+  expectError(eb.case('gender').whenRef('first_name', '=', 'last_name').then('x').end())
+  expectError(eb.case().whenRef('first_name').then('x').end())
+}
