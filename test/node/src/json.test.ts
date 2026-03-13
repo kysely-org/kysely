@@ -377,6 +377,36 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'mysql') {
+      it('should aggregate a column using json_arrayagg', async () => {
+        const res = await db
+          .selectFrom('pet')
+          .leftJoin('person', 'person.id', 'pet.owner_id')
+          .select((eb) => [
+            eb.fn.jsonArrayAgg('pet.name').as('petName'),
+            'person.first_name',
+          ])
+          .groupBy('person.first_name')
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            petName: ['Catto'],
+          },
+          {
+            first_name: 'Arnold',
+            petName: ['Doggo'],
+          },
+          {
+            first_name: 'Sylvester',
+            petName: ['Hammo'],
+          },
+        ])
+      })
+    }
+
     it('should select subqueries as nested json objects', async () => {
       const query = db.selectFrom('person').select((eb) => [
         'person.first_name',

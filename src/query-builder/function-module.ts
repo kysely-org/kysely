@@ -739,6 +739,77 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >
 
   /**
+   * Creates a `json_arrayagg` function call.
+   *
+   * This is only supported by MySQL.
+   *
+   * ### Examples
+   *
+   * You can use it on table expressions:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.jsonArrayAgg('pet').as('pets')])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select `first_name`, json_arrayagg(`pet`) as `pets`
+   * from `person`
+   * inner join `pet` on `pet`.`owner_id` = `person`.`id`
+   * group by `person`.`first_name`
+   * ```
+   *
+   * or on columns:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => [
+   *     'first_name',
+   *     eb.fn.jsonArrayAgg('pet.name').as('pet_names'),
+   *   ])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select `first_name`, json_arrayagg(`pet`.`name`) AS `pet_names`
+   * from `person`
+   * inner join `pet` ON `pet`.`owner_id` = `person`.`id`
+   * group by `person`.`first_name`
+   * ```
+   */
+  jsonArrayAgg<T extends (TB & string) | Expression<unknown>>(
+    table: T,
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    T extends TB
+      ? Simplify<ShallowDehydrateObject<Selectable<DB[T]>>>[]
+      : T extends Expression<infer O>
+        ? Simplify<ShallowDehydrateObject<O>>[]
+        : never
+  >
+
+  jsonArrayAgg<RE extends StringReference<DB, TB>>(
+    column: RE,
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    | ShallowDehydrateValue<
+        SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
+      >[]
+    | null
+  >
+
+  /**
    * Creates a to_json function call.
    *
    * This function is only available on PostgreSQL.
@@ -850,6 +921,15 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
           isString(table) ? parseTable(table) : table.toOperationNode(),
         ]),
+      })
+    },
+
+    jsonArrayAgg(table: string | Expression<unknown>): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'json_arrayagg',
+          [isString(table) ? parseTable(table) : table.toOperationNode()],
+        ),
       })
     },
 
