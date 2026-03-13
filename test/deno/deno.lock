@@ -3,13 +3,13 @@
   "specifiers": {
     "npm:kysely@0.25": "0.25.0",
     "npm:kysely@~0.28.11": "0.28.11",
-    "npm:mysql2@^3.19.0": "3.19.0_@types+node@25.3.5",
+    "npm:mysql2@^3.19.1": "3.19.1_@types+node@25.5.0",
     "npm:pg-pool@^3.13.0": "3.13.0_pg@8.20.0",
     "npm:pg@^8.20.0": "8.20.0"
   },
   "npm": {
-    "@types/node@25.3.5": {
-      "integrity": "sha512-oX8xrhvpiyRCQkG1MFchB09f+cXftgIXb3a7UUa4Y3wpmZPw5tyZGTLWhlESOLq1Rq6oDlc8npVU2/9xiCuXMA==",
+    "@types/node@25.5.0": {
+      "integrity": "sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==",
       "dependencies": [
         "undici-types"
       ]
@@ -47,8 +47,8 @@
     "lru.min@1.1.4": {
       "integrity": "sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA=="
     },
-    "mysql2@3.19.0_@types+node@25.3.5": {
-      "integrity": "sha512-760Ay9HViAUT7V8QkYxrIx/LHJPGWtE+D/31VuiDm1eu2IFaUIqMcK7+hVHnmgnC7JnnwreFKsZoa8K6BnGl8Q==",
+    "mysql2@3.19.1_@types+node@25.5.0": {
+      "integrity": "sha512-yn4zh+Uxu5J3Zvi6Ao96lJ7BSBRkspHflWQAmOPND+htbpIKDQw99TTvPzgihKO/QyMickZopO4OsnixnpcUwA==",
       "dependencies": [
         "@types/node",
         "aws-ssl-profiles",
@@ -148,7 +148,7 @@
   "workspace": {
     "dependencies": [
       "npm:kysely@~0.28.11",
-      "npm:mysql2@^3.19.0",
+      "npm:mysql2@^3.19.1",
       "npm:pg-pool@^3.13.0",
       "npm:pg@^8.20.0"
     ]
