@@ -68,6 +68,7 @@
       "default": "./dist/cjs/helpers/sqlite.js"
     }
   },
+  "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
     "bench:ts": "pnpm build && cd ./test/ts-benchmarks && node --experimental-strip-types ./index.ts",
