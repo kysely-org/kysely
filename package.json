@@ -120,7 +120,7 @@
     "@types/pg-cursor": "^2.7.2",
     "@types/semver": "^7.7.1",
     "@types/sinon": "^21.0.0",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^12.8.0",
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "esbuild": "^0.27.4",
