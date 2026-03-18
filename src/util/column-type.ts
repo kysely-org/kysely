@@ -173,7 +173,7 @@ export type Selectable<R> = DrainOuterGeneric<{
  * ```
  */
 export type Insertable<R> = DrainOuterGeneric<
-  Record<string, unknown> & {
+  object & {
     [K in NonNullableInsertKeys<R>]: InsertType<R[K]>
   } & {
     [K in NullableInsertKeys<R>]?: InsertType<R[K]>

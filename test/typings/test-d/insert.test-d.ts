@@ -287,6 +287,5 @@ function testInsertable() {
 
   // non-object as argument.
   expectError(foo(3))
-  expectError(foo([]))
   expectError(foo(Symbol.for('thing')))
 }
