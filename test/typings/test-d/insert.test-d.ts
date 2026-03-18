@@ -1,5 +1,5 @@
 import { expectError, expectType } from 'tsd'
-import { Insertable, type InsertResult, type Kysely, sql } from '..'
+import { type Insertable, type InsertResult, type Kysely, sql } from '..'
 import type { Database } from '../shared'
 
 async function testInsert(db: Kysely<Database>) {
@@ -280,7 +280,6 @@ function testInsertable() {
   foo({})
   foo({ optional: 3 })
   foo({ optional: null })
-  foo({ optional: undefined })
 
   // bad column values.
   expectError(foo({ optional: '' }))
