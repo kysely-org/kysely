@@ -1,6 +1,6 @@
 {
   "imports": {
-    "kysely": "npm:kysely@^0.28.11",
+    "kysely": "npm:kysely@^0.28.12",
     "mysql2": "npm:mysql2@^3.19.1",
     "pg": "npm:pg@^8.20.0",
     "pg-pool": "npm:pg-pool@^3.13.0"
