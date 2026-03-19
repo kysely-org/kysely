@@ -345,6 +345,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * from "person"
    * where "id" = $7
    * ```
+   *
+   * **Note on immediate values in `then` and `else`:**
+   *
+   * Numbers, booleans, and `null` values passed to `then()` and `else()` are
+   * inlined directly into the SQL query string instead of being added as
+   * parameterized values. For example, `.then(1)` produces `then 1` in the SQL
+   * rather than `then $1`. This allows the database engine to correctly infer the
+   * data type of the `case` expression result. Without this, the result would be
+   * returned as a string. String values are always parameterized as usual.
    */
   case(): CaseBuilder<DB, TB>
 
