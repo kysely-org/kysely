@@ -2721,8 +2721,8 @@ export interface SelectQueryBuilderProps {
 }
 
 export interface AliasedSelectQueryBuilder<
-  O = undefined,
-  A extends string = never,
+  out O = undefined,
+  out A extends string = never,
 > extends AliasedExpression<O, A> {
   get isAliasedSelectQueryBuilder(): true
 }

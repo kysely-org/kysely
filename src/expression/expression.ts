@@ -23,7 +23,7 @@ import { isObject, isString } from '../util/object-utils.js'
  *
  * You can implement the `Expression` interface to create your own type-safe utilities for Kysely.
  */
-export interface Expression<T> extends OperationNodeSource {
+export interface Expression<out T> extends OperationNodeSource {
   /**
    * All expressions need to have this getter for complicated type-related reasons.
    * Simply add this getter for your expression and always return `undefined` from it:
@@ -78,7 +78,7 @@ export interface Expression<T> extends OperationNodeSource {
 /**
  * An expression with an `as` method.
  */
-export interface AliasableExpression<T> extends Expression<T> {
+export interface AliasableExpression<out T> extends Expression<T> {
   /**
    * Returns an aliased version of the expression.
    *
@@ -189,8 +189,8 @@ export interface AliasableExpression<T> extends Expression<T> {
  * ```
  */
 export interface AliasedExpression<
-  T,
-  A extends string,
+  out T,
+  out A extends string,
 > extends OperationNodeSource {
   /**
    * Returns the aliased expression.
