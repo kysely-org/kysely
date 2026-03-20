@@ -66,6 +66,20 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     this.#props = freeze(props)
   }
 
+  /**
+   * Adds the "if exists" modifier.
+   *
+   * If the table doesn't exist, no error is thrown if this method has been called.
+   */
+  ifExists(): AlterTableBuilder {
+    return new AlterTableBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        ifExists: true,
+      }),
+    })
+  }
+
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
