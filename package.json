@@ -31,7 +31,7 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "typesVersions": {
-    "<4.6": {
+    "<4.7": {
       "*": [
         "outdated-typescript.d.ts"
       ]
@@ -79,7 +79,7 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
-    "bench:ts": "pnpm build && cd ./test/ts-benchmarks && node --experimental-strip-types ./index.ts",
+    "bench:ts": "pnpm build && node --experimental-strip-types ./test/ts-benchmarks/index.ts",
     "test": "pnpm build && pnpm test:node:build && pnpm test:node:run && pnpm test:typings && pnpm test:esmimports && pnpm test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "pnpm build && pnpm test:node:build && pnpm test:node:run",
