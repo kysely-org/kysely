@@ -137,7 +137,11 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   expectError(
-    eb.case().when('first_name', '=', 'Joe').then('Mr.').elseRef('no_such_column'),
+    eb
+      .case()
+      .when('first_name', '=', 'Joe')
+      .then('Mr.')
+      .elseRef('no_such_column'),
   )
 }
 
