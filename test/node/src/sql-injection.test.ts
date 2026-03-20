@@ -76,7 +76,7 @@ for (const dialect of DIALECTS) {
       await assertDidNotDropTable(ctx, 'person')
     })
 
-    if (dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should not allow SQL injection in $.key JSON paths', async () => {
         const injection =
           `first' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ` as never
