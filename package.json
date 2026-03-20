@@ -30,7 +30,7 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "typesVersions": {
-    "<4.7": {
+    "<4.8": {
       "*": [
         "outdated-typescript.d.ts"
       ]
