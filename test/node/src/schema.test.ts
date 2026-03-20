@@ -2566,6 +2566,7 @@ for (const dialect of DIALECTS) {
           .createTable('test')
           .addColumn('varchar_col', 'varchar(255)')
           .addColumn('integer_col', 'integer')
+          .addColumn('different_col', 'text')
           .execute()
       })
 
@@ -3009,6 +3010,29 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
+        if (dialect === 'postgres' || dialect === 'mssql') {
+          it('should drop a column if it exists', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .dropColumn('varchar_col', (col) => col.ifExists())
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" drop column if exists "varchar_col"',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'alter table "test" drop column if exists "varchar_col"',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        }
+
         if (
           dialect === 'postgres' ||
           dialect === 'mysql' ||
@@ -3046,7 +3070,7 @@ for (const dialect of DIALECTS) {
                 sql: [
                   'alter table "test"',
                   'drop column "varchar_col",',
-                  '"text_col"',
+                  'column "text_col"',
                 ],
                 parameters: [],
               },
@@ -3064,6 +3088,41 @@ for (const dialect of DIALECTS) {
           })
         }
       })
+
+      if (dialect === 'postgres' || dialect === 'mssql') {
+        it('should drop multiple columns if it exists', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .dropColumn('varchar_col')
+            .dropColumn('not_exist_col', (col) => col.ifExists())
+            .dropColumn('different_col')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: [
+                'alter table "test"',
+                'drop column "varchar_col",',
+                'drop column if exists "not_exist_col",',
+                'drop column "different_col"',
+              ],
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                'alter table "test"',
+                'drop column "varchar_col",',
+                'column if exists "not_exist_col",',
+                'column "different_col"',
+              ],
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
 
       if (
         dialect === 'postgres' ||
