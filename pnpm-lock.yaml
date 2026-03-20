@@ -10461,13 +10461,10 @@ snapshots:
     dependencies:
       acorn: 8.16.0
 
-<<<<<<< HEAD
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
 
-=======
->>>>>>> 1402b971 (chore: fix `next` branch rebase issues. (#1584))
   acorn-walk@8.3.2: {}
 
   acorn@8.16.0: {}
