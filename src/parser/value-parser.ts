@@ -62,15 +62,6 @@ export function isSafeImmediateValue(
   return isNumber(value) || isBoolean(value) || isNull(value)
 }
 
-/**
- * Parses a safe immediate value into a {@link ValueNode} with `immediate: true`.
- *
- * The resulting node is inlined directly into the SQL query string rather than
- * being added to the parameters array. Only numbers, booleans, and nulls are
- * accepted. Throws an error if the value is not a safe immediate value.
- *
- * @see {@link isSafeImmediateValue} for details on why certain values are inlined.
- */
 export function parseSafeImmediateValue(
   value: number | boolean | null,
 ): ValueNode {
