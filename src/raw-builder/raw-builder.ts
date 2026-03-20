@@ -230,8 +230,8 @@ export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
 export interface AliasedRawBuilder<
-  O = unknown,
-  A extends string = never,
+  out O = unknown,
+  out A extends string = never,
 > extends AliasedExpression<O, A> {
   get rawBuilder(): RawBuilder<O>
 }
