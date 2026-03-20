@@ -1768,8 +1768,12 @@ export class DefaultQueryCompiler
   }
 
   protected appendValue(parameter: unknown): void {
-    this.addParameter(parameter)
-    this.append(this.getCurrentParameterPlaceholder())
+    let parameterPlaceholder = this.getExistingParameterPlaceholder(parameter)
+    if (parameterPlaceholder === undefined) {
+      this.addParameter(parameter)
+      parameterPlaceholder = this.getCurrentParameterPlaceholder()
+    }
+    this.append(parameterPlaceholder)
   }
 
   protected getLeftIdentifierWrapper(): string {
@@ -1778,6 +1782,24 @@ export class DefaultQueryCompiler
 
   protected getRightIdentifierWrapper(): string {
     return '"'
+  }
+
+  protected getExistingParameterIndex(parameter: unknown): number | undefined {
+    const parameterIndex = this.#parameters.indexOf(parameter)
+    if (parameterIndex < 0) {
+      return undefined
+    }
+    return parameterIndex
+  }
+
+  protected getExistingParameterPlaceholder(
+    parameter: unknown,
+  ): string | undefined {
+    const parameterIndex = this.getExistingParameterIndex(parameter)
+    if (parameterIndex === undefined) {
+      return undefined
+    }
+    return '$' + (parameterIndex + 1)
   }
 
   protected getCurrentParameterPlaceholder(): string {
