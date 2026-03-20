@@ -2,7 +2,7 @@
   "version": "5",
   "specifiers": {
     "npm:kysely@0.25": "0.25.0",
-    "npm:kysely@~0.28.12": "0.28.12",
+    "npm:kysely@~0.28.13": "0.28.13",
     "npm:mysql2@^3.20.0": "3.20.0_@types+node@25.5.0",
     "npm:pg-pool@^3.13.0": "3.13.0_pg@8.20.0",
     "npm:pg@^8.20.0": "8.20.0"
@@ -38,8 +38,8 @@
     "kysely@0.25.0": {
       "integrity": "sha512-srn0efIMu5IoEBk0tBmtGnoUss4uwvxtbFQWG/U2MosfqIace1l43IFP1PmEpHRDp+Z79xIcKEqmHH3dAvQdQA=="
     },
-    "kysely@0.28.12": {
-      "integrity": "sha512-kWiueDWXhbCchgiotwXkwdxZE/6h56IHAeFWg4euUfW0YsmO9sxbAxzx1KLLv2lox15EfuuxHQvgJ1qIfZuHGw=="
+    "kysely@0.28.13": {
+      "integrity": "sha512-jCkYDvlfzOyHaVsrvR4vnNZxG30oNv2jbbFBjTQAUG8n0h07HW0sZJHk4KAQIRyu9ay+Rg+L8qGa3lwt8Gve9w=="
     },
     "long@5.3.2": {
       "integrity": "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="
@@ -147,7 +147,7 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:kysely@~0.28.12",
+      "npm:kysely@~0.28.13",
       "npm:mysql2@^3.20.0",
       "npm:pg-pool@^3.13.0",
       "npm:pg@^8.20.0"
