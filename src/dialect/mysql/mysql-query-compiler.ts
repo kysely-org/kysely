@@ -1,6 +1,7 @@
 import type { CreateIndexNode } from '../../operation-node/create-index-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
+const LITERAL_ESCAPE_REGEX = /\\|'/g
 const ID_WRAP_REGEX = /`/g
 
 export class MysqlQueryCompiler extends DefaultQueryCompiler {
@@ -25,15 +26,28 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
   }
 
   protected override getLeftIdentifierWrapper(): string {
-    return '`'
+    return ID_WRAP_REGEX.source
   }
 
   protected override getRightIdentifierWrapper(): string {
-    return '`'
+    return ID_WRAP_REGEX.source
   }
 
   protected override sanitizeIdentifier(identifier: string): string {
     return identifier.replace(ID_WRAP_REGEX, '``')
+  }
+
+  /**
+   * MySQL requires escaping backslashes in string literals when using the
+   * default NO_BACKSLASH_ESCAPES=OFF mode. Without this, a backslash
+   * followed by a quote (\') can break out of the string literal.
+   *
+   * @see https://dev.mysql.com/doc/refman/9.6/en/string-literals.html
+   */
+  protected override sanitizeStringLiteral(value: string): string {
+    return value.replace(LITERAL_ESCAPE_REGEX, (char) =>
+      char === '\\' ? '\\\\' : "''",
+    )
   }
 
   protected override visitCreateIndex(node: CreateIndexNode): void {
