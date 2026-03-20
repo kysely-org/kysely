@@ -1,8 +1,8 @@
-import type { InsertResult } from '../query-builder/insert-result.js'
 import type { DeleteResult } from '../query-builder/delete-result.js'
+import type { InsertResult } from '../query-builder/insert-result.js'
+import type { MergeResult } from '../query-builder/merge-result.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
 import type { KyselyTypeError } from './type-error.js'
-import type { MergeResult } from '../query-builder/merge-result.js'
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -153,19 +153,25 @@ export type Equals<T, U> =
     ? true
     : false
 
-export type NarrowPartial<O, T> = DrainOuterGeneric<
-  T extends object
-    ? {
-        [K in keyof O & string]: K extends keyof T
-          ? T[K] extends NotNull
-            ? Exclude<O[K], null>
+export type NarrowPartial<O, T> = T extends object
+  ? DrainOuterGeneric<{
+      [K in keyof O & string]: K extends keyof T
+        ? T[K] extends NotNull
+          ? Exclude<O[K], null>
+          : T[K] extends object
+            ? SimplifyDeep<O[K] & NarrowPartial<O[K], T[K]>>
             : T[K] extends O[K]
               ? T[K]
               : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-          : O[K]
-      }
-    : never
->
+        : O[K]
+    }>
+  : never
+
+type SimplifyDeep<T> = T extends object
+  ? T extends Date | RegExp | Map<unknown, unknown> | Set<unknown>
+    ? T
+    : DrainOuterGeneric<{ [K in keyof T]: SimplifyDeep<T[K]> } & {}>
+  : T
 
 /**
  * A type constant for marking a column as not null. Can be used with `$narrowPartial`.
