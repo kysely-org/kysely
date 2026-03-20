@@ -34,7 +34,7 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
   }
 
   protected override sanitizeIdentifier(identifier: string): string {
-    return identifier.replaceAll(ID_WRAP_REGEX, '``')
+    return identifier.replace(ID_WRAP_REGEX, '``')
   }
 
   /**
