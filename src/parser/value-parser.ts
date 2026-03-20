@@ -56,24 +56,6 @@ export function parseValueExpression(
   return ValueNode.create(exp)
 }
 
-/**
- * Checks if a value is safe to inline directly into the SQL query string
- * without parameterization.
- *
- * Numbers, booleans, and nulls are considered safe immediate values. These
- * are inlined into the query string (e.g. `then 1`, `else true`, `else null`)
- * instead of being added as parameters (e.g. `then $1`).
- *
- * This is used in {@link CaseThenBuilder.then | case().when().then()} and
- * {@link CaseWhenBuilder.else | case().when().then().else()} to allow the
- * database engine to infer the correct data type of the `case` expression.
- * Without this, values would be parameterized as text, and the database
- * engine would return the result as a string instead of the expected type.
- *
- * String values are NOT considered safe immediate values and are always
- * parameterized to prevent SQL injection. Use `eb.lit('string')` to inline
- * string literals.
- */
 export function isSafeImmediateValue(
   value: unknown,
 ): value is number | boolean | null {
