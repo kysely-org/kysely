@@ -59,7 +59,7 @@ bench('kysely.selectFrom([table as alias, table as alias])', () => {
 
 bench('kysely.selectFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.selectFrom(kysely.selectFrom('my_table').as('t'))
-}).types([1230, 'instantiations'])
+}).types([1222, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.selectFrom(table)', () => {
   return kysely
