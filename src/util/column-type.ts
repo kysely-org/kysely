@@ -1,4 +1,4 @@
-import type { DrainOuterGeneric } from './type-utils.js'
+import type { DrainOuterGeneric, IsNever } from './type-utils.js'
 
 /**
  * This type can be used to specify a different type for
@@ -92,7 +92,7 @@ type IfNotNullable<T, K> = undefined extends T
 /**
  * Evaluates to `K` if `T` isn't `never`.
  */
-type IfNotNever<T, K> = T extends never ? never : K
+type IfNotNever<T, K> = IsNever<T> extends true ? never : K
 
 export type SelectType<T> = T extends ColumnType<infer S, any, any> ? S : T
 export type InsertType<T> = T extends ColumnType<any, infer I, any> ? I : T
