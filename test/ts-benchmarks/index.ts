@@ -237,7 +237,7 @@ function filterChangedBlocks(blocks: BenchmarkBlock[]): string[] {
     .filter((block) => {
       if (!block.hasGolfEmoji) return false
       if (!block.hasDelta || block.deltaValue === null) return false
-      return Math.abs(block.deltaValue) >= 0.005
+      return block.deltaValue !== 0
     })
     .map((block) => block.text)
 }
