@@ -81,14 +81,22 @@ jobs:
           # Extract summary (everything from "⏱️" to end of file)
           summary=$(grep -A999 "⏱️" /tmp/bench_output.txt || echo "✅ ⏱️  No benchmark changes detected.")
 
+          # Check if there are benchmark changes
+          if echo "$summary" | grep -q "No benchmark changes detected"; then
+            has_changes="false"
+          else
+            has_changes="true"
+          fi
+
           # Set outputs
           echo "benchmark_failed=$([ $exit_code -eq 0 ] && echo 'false' || echo 'true')" >> $GITHUB_OUTPUT
+          echo "has_changes=$has_changes" >> $GITHUB_OUTPUT
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo "$summary" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Post benchmark results
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+      - name: Post benchmark results (with changes)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && steps.bench.outputs.has_changes == 'true'
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
           comment-tag: typescript-benchmarks
@@ -100,6 +108,18 @@ jobs:
             ${{ steps.bench.outputs.summary }}
             ```
             </details>
+
+      - name: Post benchmark results (no changes)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && steps.bench.outputs.has_changes == 'false'
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        with:
+          comment-tag: typescript-benchmarks
+          message: |
+            ⏱️ **TypeScript Benchmark Results**
+
+            ```
+            ${{ steps.bench.outputs.summary }}
+            ```
 
       - name: Fail job if benchmark command failed
         if: steps.bench.outputs.benchmark_failed == 'true'
