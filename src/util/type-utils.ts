@@ -141,6 +141,11 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
 export type IsNever<T> = [T] extends [never] ? true : false
 
 /**
+ * Evaluates to `true` if `T` is nullable.
+ */
+export type IsNullable<T> = [T] extends [NonNullable<T>] ? false : true
+
+/**
  * Evaluates to `true` if `T` is `any`.
  */
 export type IsAny<T> = 0 extends T & 1 ? true : false

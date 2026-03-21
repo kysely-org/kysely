@@ -1,4 +1,4 @@
-import type { DrainOuterGeneric, IsNever } from './type-utils.js'
+import type { DrainOuterGeneric, IsNever, IsNullable } from './type-utils.js'
 
 /**
  * This type can be used to specify a different type for
@@ -76,18 +76,12 @@ export type JSONColumnType<
 /**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
  */
-type IfNullable<T, K> = undefined extends T ? K : null extends T ? K : never
+type IfNullable<T, K> = IsNullable<T> extends true ? K : never
 
 /**
  * Evaluates to `K` if `T` can't be `null` or `undefined`.
  */
-type IfNotNullable<T, K> = undefined extends T
-  ? never
-  : null extends T
-    ? never
-    : T extends never
-      ? never
-      : K
+type IfNotNullable<T, K> = IsNullable<T> extends true ? never : IfNotNever<T, K>
 
 /**
  * Evaluates to `K` if `T` isn't `never`.
