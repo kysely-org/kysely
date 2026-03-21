@@ -93,9 +93,13 @@ jobs:
         with:
           comment-tag: typescript-benchmarks
           message: |
-            ### TypeScript Benchmark Results
+            <details>
+            <summary>⏱️ <strong>TypeScript Benchmark Results</strong></summary>
 
+            ```
             ${{ steps.bench.outputs.summary }}
+            ```
+            </details>
 
       - name: Fail job if benchmark command failed
         if: steps.bench.outputs.benchmark_failed == 'true'
