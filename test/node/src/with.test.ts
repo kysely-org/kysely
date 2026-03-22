@@ -13,7 +13,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: with`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: with`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -87,6 +89,120 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it('should accept a query instead of a callback', async () => {
+      const query = ctx.db
+        .with(
+          'jennifer',
+          ctx.db
+            .selectFrom('person')
+            .where('first_name', '=', 'Jennifer')
+            .select(['id', 'first_name', 'gender']),
+        )
+        .selectFrom('jennifer')
+        .selectAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'with `jennifer` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ?) select * from `jennifer`',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = @1) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const result = await query.execute()
+
+      expect(result).to.have.length(1)
+      expect(result[0]).to.containSubset({
+        first_name: 'Jennifer',
+        gender: 'female',
+      })
+    })
+
+    it('should accept a query with CTE builder callback', async () => {
+      const query = ctx.db
+        .with(
+          (cte) => cte('jennifer'),
+          ctx.db
+            .selectFrom('person')
+            .where('first_name', '=', 'Jennifer')
+            .select(['id', 'first_name', 'gender']),
+        )
+        .selectFrom('jennifer')
+        .selectAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'with `jennifer` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ?) select * from `jennifer`',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = @1) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) select * from "jennifer"',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const result = await query.execute()
+
+      expect(result).to.have.length(1)
+      expect(result[0]).to.containSubset({
+        first_name: 'Jennifer',
+        gender: 'female',
+      })
+    })
+
+    it('should accept a query with column specification', async () => {
+      const query = ctx.db
+        .with(
+          'arnold(id, first_name)',
+          ctx.db
+            .selectFrom('person')
+            .where('first_name', '=', 'Arnold')
+            .select(['id', 'first_name']),
+        )
+        .selectFrom('arnold')
+        .selectAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = $1) select * from "arnold"',
+          parameters: ['Arnold'],
+        },
+        mysql: {
+          sql: 'with `arnold`(`id`, `first_name`) as (select `id`, `first_name` from `person` where `first_name` = ?) select * from `arnold`',
+          parameters: ['Arnold'],
+        },
+        mssql: {
+          sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = @1) select * from "arnold"',
+          parameters: ['Arnold'],
+        },
+        sqlite: {
+          sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = ?) select * from "arnold"',
+          parameters: ['Arnold'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('common table expression names can contain columns', async () => {
       const query = ctx.db
         .with('arnold(id, first_name)', (db) =>
@@ -120,7 +236,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('recursive common table expressions can refer to themselves', async () => {
         await ctx.db.transaction().execute(async (trx) => {
           // Create a temporary table that gets dropped when the transaction ends.
@@ -246,7 +362,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
       it('should create an insert query with common table expressions', async () => {
         const query = ctx.db
           .with('jennifer', (db) =>
@@ -282,7 +398,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
@@ -340,7 +456,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should create a merge query with common table expressions that include writes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>

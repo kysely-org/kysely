@@ -6,6 +6,7 @@ import {
   ParseJSONResultsPlugin,
   NumericString,
   expressionBuilder,
+  NonDehydrateable,
 } from '../../..'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
@@ -75,24 +76,26 @@ const jsonFunctions = {
 } as const
 
 for (const dialect of DIALECTS) {
-  const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
-    jsonFunctions[dialect]
+  const { sqlSpec, variant } = dialect
 
-  describe(`${dialect} json tests`, () => {
+  const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
+    jsonFunctions[sqlSpec]
+
+  describe(`${variant}: json helpers`, () => {
     let ctx: TestContext
     let db: Kysely<Database & { json_table: JsonTable }>
 
     before(async function () {
       ctx = await initTest(this, dialect)
 
-      if (dialect === 'postgres') {
+      if (sqlSpec === 'postgres') {
         await ctx.db.schema
           .createTable('json_table')
           .ifNotExists()
           .addColumn('id', 'serial', (col) => col.primaryKey())
           .addColumn('data', 'jsonb')
           .execute()
-      } else if (dialect === 'mssql') {
+      } else if (sqlSpec === 'mssql') {
         await sql`if object_id(N'json_table', N'U') is null begin create table json_table (id int primary key identity, data nvarchar(1024)); end;`.execute(
           ctx.db,
         )
@@ -107,7 +110,7 @@ for (const dialect of DIALECTS) {
 
       db = ctx.db.withTables<{ json_table: JsonTable }>()
 
-      if (dialect === 'mssql' || dialect === 'sqlite') {
+      if (sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
         db = db.withPlugin(new ParseJSONResultsPlugin())
       }
     })
@@ -160,7 +163,7 @@ for (const dialect of DIALECTS) {
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
     })
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should update json data of a row using the subscript syntax and a raw sql snippet', async () => {
         await db
           .insertInto('json_table')
@@ -187,7 +190,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should aggregate a joined table using json_agg', async () => {
         const res = await db
           .selectFrom('person')
@@ -418,7 +421,7 @@ for (const dialect of DIALECTS) {
           first: eb.ref('first_name'),
           last: eb.ref('last_name'),
           full:
-            dialect === 'sqlite'
+            sqlSpec === 'sqlite'
               ? sql<string>`first_name || ' ' || last_name`
               : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
         }).as('name'),
@@ -434,7 +437,7 @@ for (const dialect of DIALECTS) {
 
       const res = await query.execute()
 
-      if (dialect === 'mysql') {
+      if (sqlSpec === 'mysql') {
         // MySQL json_arrayagg produces an array with undefined order
         // https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_json-arrayagg
         res[1].pets[0].toys.sort((a, b) => a.name.localeCompare(b.name))
@@ -501,19 +504,21 @@ for (const dialect of DIALECTS) {
 
       expect(typeof result.bigNumber).to.equal(
         {
+          pglite: 'number',
           postgres: 'string',
           mysql: 'string',
           mssql: 'number',
           sqlite: 'number',
-        }[dialect],
+        }[variant],
       )
       expect(typeof result.number).to.equal(
         {
+          pglite: 'number',
           postgres: 'number',
           mysql: 'string',
           mssql: 'number',
           sqlite: 'number',
-        }[dialect],
+        }[variant],
       )
       expect(typeof result.dehydrated.bigNumber).to.equal('number')
       expect(typeof result.dehydrated.number).to.equal('number')
@@ -542,9 +547,9 @@ for (const dialect of DIALECTS) {
           mysql: 'object',
           mssql: 'object',
           sqlite: 'string',
-        }[dialect],
+        }[sqlSpec],
       )
-      if (dialect !== 'sqlite') {
+      if (sqlSpec !== 'sqlite') {
         expect(result.date instanceof Date).to.equal(true)
       }
       expect(typeof result.dehydrated.date).to.equal('string')
@@ -554,19 +559,24 @@ for (const dialect of DIALECTS) {
     })
 
     it('should dehydrate Buffer to string in jsonArrayFrom', async () => {
-      const buffer = {
-        postgres: sql<Buffer>`'\\xDEADBEEF'::bytea`,
-        mysql: sql<Buffer>`UNHEX('DEADBEEF')`,
-        mssql: sql<Buffer>`CAST('DEADBEEF' AS VARBINARY)`,
-        sqlite: sql<Buffer>`X'DEADBEEF'`,
-      }[dialect].as('buffer')
+      const buffer = (
+        {
+          pglite: sql<Uint8Array>`'\\xDEADBEEF'::bytea`,
+          postgres: sql<Buffer>`'\\xDEADBEEF'::bytea`,
+          mysql: sql<Buffer>`UNHEX('DEADBEEF')`,
+          mssql: sql<Buffer>`CAST('DEADBEEF' AS VARBINARY)`,
+          sqlite: sql<Buffer>`X'DEADBEEF'`,
+        }[variant] satisfies RawBuilder<Buffer | Uint8Array> as RawBuilder<
+          Buffer | Uint8Array
+        >
+      ).as('buffer')
 
       const result = await db
         .selectNoFrom([
           buffer,
           jsonObjectFrom(
             db.selectNoFrom([
-              dialect === 'sqlite'
+              sqlSpec === 'sqlite'
                 ? expressionBuilder()
                     .cast<string>(buffer.expression, 'text')
                     .as('buffer')
@@ -579,11 +589,32 @@ for (const dialect of DIALECTS) {
         .executeTakeFirstOrThrow()
 
       expect(typeof result.buffer).to.equal('object')
-      expect(Buffer.isBuffer(result.buffer)).to.equal(true)
+      expect(
+        variant === 'pglite'
+          ? ArrayBuffer.isView(result.buffer)
+          : Buffer.isBuffer(result.buffer),
+      ).to.equal(true)
       expect(typeof result.dehydrated.buffer).to.equal('string')
 
-      const expectedType0: Buffer = result.buffer
+      const expectedType0: Buffer | Uint8Array = result.buffer
       const expectedType1: string = result.dehydrated.buffer
+    })
+
+    it('should skip dehydration for NonDehydrateable types', async () => {
+      const mode = sql<NonDehydrateable<NumericString>>`'1'`.as('mode')
+
+      const result = await db
+        .selectNoFrom([
+          mode,
+          jsonObjectFrom(db.selectNoFrom(mode)).$notNull().as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.mode).to.equal('string')
+      expect(typeof result.dehydrated.mode).to.equal('string')
+
+      const expectedType0: NumericString = result.mode
+      const expectedType1: NumericString = result.dehydrated.mode
     })
   })
 

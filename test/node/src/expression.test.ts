@@ -9,7 +9,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: expressions`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: expressions`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -69,14 +71,14 @@ for (const dialect of DIALECTS) {
                 last_name: eb.ref('first_name'),
               }),
               // Boolean literal
-              ...(dialect === 'postgres' ||
-              dialect === 'mysql' ||
-              dialect === 'sqlite'
+              ...(sqlSpec === 'postgres' ||
+              sqlSpec === 'mysql' ||
+              sqlSpec === 'sqlite'
                 ? [eb.lit(true)]
                 : []),
               // Between expressions
               eb.between('id', 1000, 2000),
-              ...(dialect === 'postgres'
+              ...(sqlSpec === 'postgres'
                 ? [eb.betweenSymmetric('id', 3000, 4000)]
                 : []),
             ]),

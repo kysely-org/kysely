@@ -30,7 +30,7 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "typesVersions": {
-    "<4.6": {
+    "<4.7": {
       "*": [
         "outdated-typescript.d.ts"
       ]
@@ -39,6 +39,8 @@
   "files": [
     "dist",
     "helpers",
+    "migration.d.ts",
+    "migration.js",
     "outdated-typescript.d.ts"
   ],
   "exports": {
@@ -66,12 +68,17 @@
       "import": "./dist/esm/helpers/sqlite.js",
       "require": "./dist/cjs/helpers/sqlite.js",
       "default": "./dist/cjs/helpers/sqlite.js"
+    },
+    "./migration": {
+      "import": "./dist/esm/migration/index.js",
+      "require": "./dist/cjs/migration/index.js",
+      "default": "./dist/cjs/migration/index.js"
     }
   },
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
-    "bench:ts": "pnpm build && cd ./test/ts-benchmarks && node --experimental-strip-types ./index.ts",
+    "bench:ts": "pnpm build && node --experimental-strip-types ./test/ts-benchmarks/index.ts",
     "test": "pnpm build && pnpm test:node:build && pnpm test:node:run && pnpm test:typings && pnpm test:esmimports && pnpm test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "pnpm build && pnpm test:node:build && pnpm test:node:run",
@@ -111,9 +118,11 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@ark/attest": "^0.56.0",
+    "@electric-sql/pglite": "^0.3.14",
     "@types/better-sqlite3": "^7.6.13",
     "@types/chai": "^5.2.3",
     "@types/chai-as-promised": "^8.0.2",
+    "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
     "@types/pg": "^8.18.0",
@@ -129,6 +138,7 @@
     "mocha": "^11.7.5",
     "mysql2": "^3.20.0",
     "pathe": "^2.0.3",
+    "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
     "pg": "^8.20.0",
     "pg-cursor": "^2.19.0",
     "pkg-types": "^2.3.0",

@@ -236,19 +236,21 @@ export type ShallowDehydrateObject<O> = {
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
-  : T extends (infer U)[] | null | undefined
-    ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
-    :
-        | Exclude<
-            T,
-            StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
-          >
-        | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
-            ? never
-            : number)
-        | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
-            ? never
-            : string)
+  : '__kysely_dehydrate__' extends keyof NonNullable<T>
+    ? T
+    : T extends (infer U)[] | null | undefined
+      ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
+      :
+          | Exclude<
+              T,
+              StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
+            >
+          | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
+              ? never
+              : number)
+          | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+              ? never
+              : string)
 
 export type StringsWhenDataTypeNotAvailable =
   | Date
