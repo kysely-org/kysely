@@ -1,107 +1,25 @@
-/**
- * Parallel TypeScript Benchmark Runner
- *
- * Runs all .bench.ts files in parallel with isolated .attest caches.
- * Each benchmark runs in its own temporary directory to avoid race conditions.
- *
- * Environment variables:
- * - SEQUENTIAL=1: Run benchmarks sequentially (old behavior, for debugging)
- */
-
 import { spawn } from 'node:child_process'
-import { cpus, tmpdir } from 'node:os'
-import { mkdtemp, rm, symlink, copyFile, readdir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
+import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { randomBytes } from 'node:crypto'
+import { dirname } from 'pathe'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const projectRoot = join(__dirname, '../..')
-const benchDir = __dirname
 
-// Discover benchmark files
-const allFiles = await readdir(benchDir)
-const benchFiles = allFiles
-  .filter((f) => f.endsWith('.bench.ts') && f !== 'index.ts')
-  .sort() // Sort alphabetically for consistent output
+const ALL_FILES = await readdir(__dirname)
 
-// Sequential mode (fallback for debugging)
-if (process.env.SEQUENTIAL === '1') {
-  for (const file of benchFiles) {
-    await import('./' + file)
-  }
-  process.exit(0)
-}
+const BENCH_FILES = ALL_FILES.filter((filename) =>
+  filename.endsWith('.bench.ts'),
+)
 
-// Parallel mode
-const concurrency = benchFiles.length
-const tempDirs: string[] = []
-const startTime = Date.now()
-
-// Progress tracking
 let completed = 0
-const total = benchFiles.length
+const COUNT = BENCH_FILES.length
 
-console.error(`Running ${total} benchmarks...\n`)
-
-// Cleanup handler
-const cleanup = async () => {
-  await Promise.all(
-    tempDirs.map((dir) => rm(dir, { recursive: true, force: true })),
-  )
-}
-
-process.on('SIGINT', async () => {
-  console.error('\nCleaning up...')
-  await cleanup()
-  process.exit(130)
-})
-
-process.on('SIGTERM', async () => {
-  await cleanup()
-  process.exit(143)
-})
-
-// Setup isolated environment for benchmark
-async function setupEnvironment(tempDir: string, benchFile: string) {
-  try {
-    // Try symlinks first (fast)
-    await symlink(
-      join(projectRoot, 'node_modules'),
-      join(tempDir, 'node_modules'),
-      'dir',
-    )
-    await symlink(join(projectRoot, 'dist'), join(tempDir, 'dist'), 'dir')
-    await symlink(join(projectRoot, 'test'), join(tempDir, 'test'), 'dir')
-    await symlink(join(benchDir, benchFile), join(tempDir, benchFile), 'file')
-  } catch (err: any) {
-    // Fallback: If symlinks fail (Windows permissions), we'd need to copy
-    // For now, re-throw as this should work on all modern systems
-    throw new Error(
-      `Failed to create symlinks in ${tempDir}: ${err.message}. ` +
-        `Try running with elevated permissions or set SEQUENTIAL=1.`,
-    )
-  }
-
-  // Copy config files (small, always works)
-  await copyFile(
-    join(projectRoot, 'package.json'),
-    join(tempDir, 'package.json'),
-  )
-  await copyFile(
-    join(projectRoot, 'tsconfig-base.json'),
-    join(tempDir, 'tsconfig-base.json'),
-  )
-}
-
-// Spawn benchmark process
-async function spawnBenchmark(
-  tempDir: string,
+async function runInSubprocess(
   benchFile: string,
-): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+): Promise<{ exitCode: number; stderr: string; stdout: string }> {
   return new Promise((resolve) => {
     const proc = spawn('node', ['--experimental-strip-types', benchFile], {
-      cwd: tempDir,
+      cwd: __dirname,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
 
@@ -117,183 +35,120 @@ async function spawnBenchmark(
     })
 
     proc.on('close', (code) => {
-      resolve({
-        exitCode: code ?? 1,
-        stdout,
-        stderr,
-      })
+      resolve({ exitCode: code ?? 1, stderr, stdout })
     })
   })
 }
 
-// Run single benchmark
-async function runBenchmark(benchFile: string) {
-  const tempDir = await mkdtemp(
-    join(tmpdir(), `kysely-bench-${randomBytes(4).toString('hex')}-`),
+interface BenchResult {
+  exitCode: number
+  filename: string
+  stderr: string
+  stdout: string
+}
+
+async function bench(): Promise<BenchResult[]> {
+  return await Promise.all(
+    BENCH_FILES.map(async (filename) => {
+      try {
+        const startTime = Date.now()
+
+        const result = await runInSubprocess(filename)
+
+        console.error(
+          `[${++completed}/${COUNT}] ${filename} completed! ${(
+            (Date.now() - startTime) /
+            1_000
+          ).toFixed(1)}s`,
+        )
+
+        return { filename, ...result }
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+
+        console.error(
+          `[${++completed}/${COUNT}] ${filename} FAILED: ${errorMessage}`,
+        )
+
+        return { exitCode: 1, filename, stderr: errorMessage, stdout: '' }
+      }
+    }),
   )
-  tempDirs.push(tempDir)
-
-  try {
-    await setupEnvironment(tempDir, benchFile)
-    const result = await spawnBenchmark(tempDir, benchFile)
-
-    completed++
-    console.error(`[${completed}/${total}] ${benchFile} completed`)
-
-    return { file: benchFile, ...result }
-  } catch (err: any) {
-    completed++
-    console.error(`[${completed}/${total}] ${benchFile} FAILED: ${err.message}`)
-    return {
-      file: benchFile,
-      exitCode: 1,
-      stdout: '',
-      stderr: err.message,
-    }
-  }
 }
 
-// Concurrency pool
-async function runWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = []
-  const executing: Promise<any>[] = []
-
-  for (const item of items) {
-    const promise = fn(item).then((result) => {
-      executing.splice(executing.indexOf(promise), 1)
-      return result
-    })
-
-    results.push(promise as any)
-    executing.push(promise)
-
-    if (executing.length >= limit) {
-      await Promise.race(executing)
-    }
-  }
-
-  return Promise.all(results)
-}
-
-// Summary processing (from bench-summary.ts logic)
 interface BenchmarkBlock {
+  delta: number | null
   text: string
-  hasGolfEmoji: boolean
-  hasDelta: boolean
-  deltaValue: number | null
 }
+
+const EXTRACT_INSTANTIATIONS_BASELINE_REGEX = /🎯 Baseline: ([\d.]+)/
+const EXTRACT_INSTANTIATIONS_DELTA_REGEX = /📊 Delta: ([+\-]?[\d.]+)%/
+const EXTRACT_INSTANTIATIONS_RESULT = /⛳ Result: ([\d.]+)/
+const RESULT_BLOCK_DELIMITER_REGEX = /\n\s*\n/
 
 function parseBlocks(input: string): BenchmarkBlock[] {
-  const blockTexts = input
-    .split(/\n\s*\n/)
-    .filter((block) => block.trim() !== '')
+  return input
+    .split(RESULT_BLOCK_DELIMITER_REGEX)
+    .filter((block) => block.trim() !== '' && block.includes('🏌️'))
+    .map((text) => {
+      const [, deltaString] =
+        text.match(EXTRACT_INSTANTIATIONS_DELTA_REGEX) || []
 
-  return blockTexts.map((text) => {
-    const hasGolfEmoji = text.includes('🏌️')
-    let hasDelta = /📊 Delta:/.test(text)
-    let deltaValue: number | null = null
-    let processedText = text
+      if (deltaString != null) {
+        const delta = parseFloat(deltaString)
 
-    // Check if block has Baseline but no Delta - calculate it
-    if (/🎯 Baseline:/.test(text) && !hasDelta) {
-      const resultMatch = text.match(/⛳ Result: ([\d.]+)/)
-      const baselineMatch = text.match(/🎯 Baseline: ([\d.]+)/)
-
-      if (resultMatch && baselineMatch) {
-        const result = parseFloat(resultMatch[1])
-        const baseline = parseFloat(baselineMatch[1])
-
-        if (baseline > 0) {
-          deltaValue = (result / baseline - 1) * 100
-          processedText = `${text}\n📊 Delta: ${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(2)}%`
-          hasDelta = true
-        }
+        return { delta, text }
       }
-    }
 
-    // Extract delta value if present
-    if (hasDelta && deltaValue === null) {
-      const deltaMatch = processedText.match(/📊 Delta: ([+\-]?[\d.]+)%/)
-      if (deltaMatch) {
-        deltaValue = parseFloat(deltaMatch[1])
+      const [, baselineString] =
+        text.match(EXTRACT_INSTANTIATIONS_BASELINE_REGEX) || []
+      const [, resultString] = text.match(EXTRACT_INSTANTIATIONS_RESULT) || []
+
+      if (!baselineString && !resultString) {
+        return { delta: null, text }
       }
-    }
 
-    return {
-      text: processedText,
-      hasGolfEmoji,
-      hasDelta,
-      deltaValue,
-    }
-  })
-}
+      const baseline = parseFloat(baselineString)
+      const result = parseFloat(resultString)
 
-function filterChangedBlocks(blocks: BenchmarkBlock[]): string[] {
-  return blocks
-    .filter((block) => {
-      if (!block.hasGolfEmoji) return false
-      if (!block.hasDelta || block.deltaValue === null) return false
-      return block.deltaValue !== 0
+      const delta = baseline === 0 ? Infinity : (result / baseline - 1) * 100
+
+      return {
+        delta,
+        text: `${text}\n📊 Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(2)}%`,
+      }
     })
+}
+
+console.error(`Running ${COUNT} benchmarks...\n`)
+
+const startTime = Date.now()
+
+const results = await bench()
+
+console.error(
+  `\nAll benchmarks completed in ${((Date.now() - startTime) / 1000).toFixed(1)}s\n`,
+)
+
+printSummary(results)
+
+process.exitCode = Math.max(...results.map((result) => result.exitCode))
+
+function printSummary(results: BenchResult[]): void {
+  const output = results.map((result) => result.stdout).join('\n')
+
+  const blocks = parseBlocks(output)
+
+  const changedTextBlocks = blocks
+    .filter(({ delta }) => delta != null && delta !== 0)
     .map((block) => block.text)
-}
 
-function processSummary(rawOutput: string): string {
-  // Strip pnpm lines
-  const stripped = rawOutput
-    .split('\n')
-    .filter((line) => !line.startsWith('> '))
-    .join('\n')
-
-  // Remove leading blank lines
-  const lines = stripped.split('\n')
-  const firstNonBlank = lines.findIndex((line) => line.trim() !== '')
-  const cleaned =
-    firstNonBlank === -1 ? '' : lines.slice(firstNonBlank).join('\n')
-
-  const blocks = parseBlocks(cleaned)
-  const changedBlocks = filterChangedBlocks(blocks)
-
-  if (changedBlocks.length === 0) {
-    return '✅ ⏱️  No benchmark changes detected.'
-  } else {
-    return '⏱️  Benchmark changes detected:\n\n' + changedBlocks.join('\n\n')
+  if (changedTextBlocks.length === 0) {
+    return console.log('✅ ⏱️  No benchmark changes detected.')
   }
-}
 
-// Run all benchmarks
-try {
-  const results = await runWithConcurrency(
-    benchFiles,
-    concurrency,
-    runBenchmark,
+  console.log(
+    `⏱️  Benchmark changes detected:\n\n${changedTextBlocks.join('\n\n')}`,
   )
-
-  const totalTime = ((Date.now() - startTime) / 1000).toFixed(1)
-  console.error(`\nAll benchmarks completed in ${totalTime}s\n`)
-
-  // Combine all stdout in file order
-  const resultsByFile = new Map(results.map((r) => [r.file, r]))
-  const combinedOutput = benchFiles
-    .map((file) => resultsByFile.get(file)?.stdout || '')
-    .join('\n')
-
-  // Process and print summary
-  const summary = processSummary(combinedOutput)
-  console.log(summary)
-
-  // Cleanup
-  await cleanup()
-
-  // Exit with max exit code
-  const maxExitCode = Math.max(...results.map((r) => r.exitCode))
-  process.exit(maxExitCode)
-} catch (err: any) {
-  console.error('Fatal error:', err.message)
-  await cleanup()
-  process.exit(1)
 }
