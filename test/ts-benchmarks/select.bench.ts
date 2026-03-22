@@ -41,6 +41,21 @@ bench('kysely..select(column as alias)', () =>
   query.select('col_164b7896ec8e770207febe0812c5f052 as foo'),
 ).types([295, 'instantiations'])
 
+bench('kysely..selectAll()', () => query.selectAll()).types([
+  37,
+  'instantiations',
+])
+
+bench('kysely..selectAll(table)', () => query.selectAll('my_table')).types([
+  473,
+  'instantiations',
+])
+
+bench('kysely..selectAll(~table)', () =>
+  // @ts-expect-error
+  query.selectAll('NO_SUCH_TABLE'),
+).types([652, 'instantiations'])
+
 bench('kyselyAny..select(column)', () =>
   queryAny.select('col_164b7896ec8e770207febe0812c5f052'),
 ).types([229, 'instantiations'])
@@ -52,3 +67,17 @@ bench('kyselyAny..select(table.column)', () =>
 bench('kyselyAny..select(table.column as alias)', () =>
   queryAny.select('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
 ).types([229, 'instantiations'])
+
+bench('kyselyAny..selectAll()', () => queryAny.selectAll()).types([
+  37,
+  'instantiations',
+])
+
+bench('kyselyAny..selectAll(table)', () =>
+  queryAny.selectAll('my_table'),
+).types([68, 'instantiations'])
+
+bench('kyselyAny..selectAll(~table)', () =>
+  // @ts-expect-error
+  queryAny.selectAll('NO_SUCH_TABLE'),
+).types([170, 'instantiations'])

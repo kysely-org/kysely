@@ -141,6 +141,11 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
 export type IsNever<T> = [T] extends [never] ? true : false
 
 /**
+ * Evaluates to `true` if `T` is nullable.
+ */
+export type IsNullable<T> = [T] extends [NonNullable<T>] ? false : true
+
+/**
  * Evaluates to `true` if `T` is `any`.
  */
 export type IsAny<T> = 0 extends T & 1 ? true : false
@@ -236,19 +241,19 @@ export type ShallowDehydrateObject<O> = {
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
-  : '__kysely_dehydrate__' extends keyof NonNullable<T>
+  : '__kysely_dehydrate__' extends keyof T & {}
     ? T
-    : T extends (infer U)[] | null | undefined
+    : T & {} extends (infer U)[]
       ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
       :
           | Exclude<
               T,
               StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
             >
-          | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
+          | (IsNever<Extract<T, NumbersWhenDataTypeNotAvailable>> extends true
               ? never
               : number)
-          | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+          | (IsNever<Extract<T, StringsWhenDataTypeNotAvailable>> extends true
               ? never
               : string)
 
