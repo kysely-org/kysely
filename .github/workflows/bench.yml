@@ -74,95 +74,52 @@ jobs:
       - name: Run benchmarks
         id: bench
         run: |
-          # Run the benchmark command and capture its exit code
-          pnpm bench:ts > /tmp/benchmark_output.txt 2>&1
+          # Run benchmarks and capture output
+          pnpm bench:ts > /tmp/bench_output.txt 2>&1
           exit_code=$?
 
-          # Process the output
-          summary_output=$(cat /tmp/benchmark_output.txt | grep -v "> " | sed '/./,$!d')
+          # Extract summary (everything from "⏱️" to end of file)
+          summary=$(grep -A999 "⏱️" /tmp/bench_output.txt || echo "✅ ⏱️  No benchmark changes detected.")
 
-          # Set a boolean output indicating if it failed with exit code 1
-          if [ $exit_code -eq 1 ]; then
-            echo "benchmark_failed=true" >> $GITHUB_OUTPUT
+          # Check if there are benchmark changes
+          if echo "$summary" | grep -q "No benchmark changes detected"; then
+            has_changes="false"
           else
-            echo "benchmark_failed=false" >> $GITHUB_OUTPUT
+            has_changes="true"
           fi
 
-          echo "full_summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$summary_output" >> $GITHUB_OUTPUT
+          # Set outputs
+          echo "benchmark_failed=$([ $exit_code -eq 0 ] && echo 'false' || echo 'true')" >> $GITHUB_OUTPUT
+          echo "has_changes=$has_changes" >> $GITHUB_OUTPUT
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$summary" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Analyze Results
-        id: analyze
-        env:
-          FULL_SUMMARY: ${{ steps.bench.outputs.full_summary }}
-        run: |
-          # This powerful awk script performs two actions:
-          # 1. It finds blocks missing a Delta line and calculates it.
-          # 2. It filters for all blocks where the final delta is not zero.
-          changed_blocks=$(echo "$FULL_SUMMARY" | awk '
-          BEGIN { RS="" } # Process the input in blocks separated by blank lines
-          {
-            block_text = $0 # Store the original block text
-            is_changed = 0
-
-            # If a block is missing a Delta line, calculate it
-            if ($0 ~ /Baseline:/ && $0 !~ /Delta:/) {
-              # Extract numeric values for Result and Baseline
-              match($0, /Result: ([0-9.]+)/, r)
-              match($0, /Baseline: ([0-9.]+)/, b)
-              
-              result_val = r[1]
-              baseline_val = b[1]
-              
-              # Calculate the delta, avoiding division by zero
-              if (baseline_val > 0) {
-                delta = ((result_val / baseline_val) - 1) * 100
-                # Append the newly calculated, formatted Delta line to the block
-                block_text = sprintf("%s\n📊 Delta: %+.2f%%", block_text, delta)
-              }
-            }
-            
-            # Now, check the (potentially modified) block for a non-zero delta.
-            # This works for both pre-existing deltas and the ones we just calculated.
-            if (block_text ~ /Delta:/ && block_text !~ /Delta: (\+)?0\.00%/) {
-              # Filter out any summary lines that are not part of a benchmark block
-              if (block_text ~ /🏌️/) {
-                print block_text "\n" # Print the complete, changed block
-              }
-            }
-          }')
-
-          if [ -n "$changed_blocks" ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "changed_blocks<<EOF" >> $GITHUB_OUTPUT
-            echo "$changed_blocks" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: PR Comment on Changes
-        if: steps.analyze.outputs.has_changes == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+      - name: Post benchmark results (with changes)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && steps.bench.outputs.has_changes == 'true'
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
           comment-tag: typescript-benchmarks
           message: |
             <details>
-            <summary>⏱️ <strong>Benchmark changes detected</strong> following ${{ github.event.pull_request.head.sha }}</summary>
+            <summary>⏱️ <strong>TypeScript Benchmark Results</strong></summary>
 
-            The following benchmarks have changed from the baseline:
             ```
-            ${{ steps.analyze.outputs.changed_blocks }}
+            ${{ steps.bench.outputs.summary }}
             ```
             </details>
 
-      - name: PR Comment on No Changes
-        if: steps.analyze.outputs.has_changes == 'false' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
+      - name: Post benchmark results (no changes)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && steps.bench.outputs.has_changes == 'false'
         uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
         with:
           comment-tag: typescript-benchmarks
-          message: ✅ ⏱️ **No benchmark changes detected** following ${{ github.event.pull_request.head.sha }}.
+          message: |
+            ⏱️ **TypeScript Benchmark Results**
+
+            ```
+            ${{ steps.bench.outputs.summary }}
+            ```
 
       - name: Fail job if benchmark command failed
         if: steps.bench.outputs.benchmark_failed == 'true'
