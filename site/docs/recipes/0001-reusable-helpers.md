@@ -189,6 +189,23 @@ const persons = await db
   .execute()
 ```
 
+## Complex function helpers using `ExpressionBuilder`
+
+Sometimes you need to refer to columns inside a function call. Below follows an example of a function that can be used to convert any timestamp column (MySQL `UNIX_TIMESTAMP`) to UNIX epoch milliseconds for ease of use in JavaScript. This is useful for having consistent timestamps with or without `jsonObjectFrom`/`jsonArrayFrom` - otherwise timestamps will be returned both as a `Date` and a string with format `YYYY-MM-DD hh:mm:ss.ffffff`.
+
+```ts
+// This helper converts a timestamp column to unix timestamp and then multiplies by 1000.
+export const timestampToUnix = <DB, TB extends keyof DB>(
+  eb: ExpressionBuilder<DB, TB>,
+  expr: ExpressionWrapper<DB, TB, Date>,
+) => eb(eb.fn<number>('UNIX_TIMESTAMP', [expr]), '*', eb.val(1000));
+```
+
+Here's how to use it:
+```ts
+await kysely.selectFrom('table').select((eb) => timestampToUnix(eb, eb.ref('created_at')).as('created_at'))
+```
+
 ## Dealing with nullable expressions
 
 If you want your helpers to work with nullable expressions (nullable columns etc.), you can do something like this:
