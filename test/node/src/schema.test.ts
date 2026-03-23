@@ -1,5 +1,5 @@
-import { fail } from 'assert'
-import { ColumnMetadata, sql } from '../../../dist/cjs/index.js'
+import { fail } from 'node:assert'
+import { type ColumnMetadata, sql } from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,
