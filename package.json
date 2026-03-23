@@ -46,7 +46,6 @@
   "exports": {
     ".": {
       "types@<4.9": "./outdated-typescript.d.ts",
-      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
