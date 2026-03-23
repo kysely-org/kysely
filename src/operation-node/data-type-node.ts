@@ -1,53 +1,53 @@
 import { freeze } from '../util/object-utils.js'
 import type { OperationNode } from './operation-node.js'
 
-const SIMPLE_COLUMN_DATA_TYPES = [
-  'varchar',
-  'char',
-  'text',
-  'integer',
-  'int2',
-  'int4',
-  'int8',
-  'smallint',
-  'bigint',
-  'boolean',
-  'real',
-  'double precision',
-  'float4',
-  'float8',
-  'decimal',
-  'numeric',
-  'binary',
-  'bytea',
-  'date',
-  'datetime',
-  'time',
-  'timetz',
-  'timestamp',
-  'timestamptz',
-  'serial',
-  'bigserial',
-  'uuid',
-  'json',
-  'jsonb',
-  'blob',
-  'varbinary',
-  'int4range',
-  'int4multirange',
-  'int8range',
-  'int8multirange',
-  'numrange',
-  'nummultirange',
-  'tsrange',
-  'tsmultirange',
-  'tstzrange',
-  'tstzmultirange',
-  'daterange',
-  'datemultirange',
-] as const
+const SIMPLE_COLUMN_DATA_TYPES = {
+  bigint: true,
+  bigserial: true,
+  binary: true,
+  blob: true,
+  boolean: true,
+  bytea: true,
+  char: true,
+  date: true,
+  datemultirange: true,
+  daterange: true,
+  datetime: true,
+  decimal: true,
+  'double precision': true,
+  float4: true,
+  float8: true,
+  int2: true,
+  int4: true,
+  int4multirange: true,
+  int4range: true,
+  int8: true,
+  int8multirange: true,
+  int8range: true,
+  integer: true,
+  json: true,
+  jsonb: true,
+  numeric: true,
+  nummultirange: true,
+  numrange: true,
+  real: true,
+  serial: true,
+  smallint: true,
+  text: true,
+  time: true,
+  timestamp: true,
+  timestamptz: true,
+  timetz: true,
+  tsmultirange: true,
+  tsrange: true,
+  tstzmultirange: true,
+  tstzrange: true,
+  uuid: true,
+  varbinary: true,
+  varchar: true,
+} as const satisfies Record<string, true>
 
-const COLUMN_DATA_TYPE_REGEX = [
+const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = [
   /^varchar\(\d+\)$/,
   /^char\(\d+\)$/,
   /^decimal\(\d+, \d+\)$/,
@@ -59,9 +59,9 @@ const COLUMN_DATA_TYPE_REGEX = [
   /^timestamp\(\d+\)$/,
   /^timestamptz\(\d+\)$/,
   /^varbinary\(\d+\)$/,
-]
+] as const
 
-type SimpleColumnDataType = (typeof SIMPLE_COLUMN_DATA_TYPES)[number]
+type SimpleColumnDataType = keyof typeof SIMPLE_COLUMN_DATA_TYPES
 
 export type ColumnDataType =
   | SimpleColumnDataType
@@ -106,13 +106,8 @@ export const DataTypeNode: DataTypeNodeFactory = freeze<DataTypeNodeFactory>({
 })
 
 export function isColumnDataType(dataType: string): dataType is ColumnDataType {
-  if (SIMPLE_COLUMN_DATA_TYPES.includes(dataType as SimpleColumnDataType)) {
-    return true
-  }
-
-  if (COLUMN_DATA_TYPE_REGEX.some((r) => r.test(dataType))) {
-    return true
-  }
-
-  return false
+  return (
+    SIMPLE_COLUMN_DATA_TYPES[dataType as never] ||
+    COLUMN_DATA_TYPE_REGEX.some((r) => r.test(dataType))
+  )
 }

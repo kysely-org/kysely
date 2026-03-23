@@ -40,7 +40,7 @@ export const COMPARISON_OPERATORS = [
   'regexp',
   'is distinct from',
   'is not distinct from',
-] as const
+] as const satisfies [string, ...string[]]
 
 export const ARITHMETIC_OPERATORS = [
   '+',
@@ -54,26 +54,38 @@ export const ARITHMETIC_OPERATORS = [
   '#',
   '<<',
   '>>',
-] as const
+] as const satisfies [string, ...string[]]
 
-export const JSON_OPERATORS = ['->', '->>'] as const
+export const JSON_OPERATORS = ['->', '->>'] as const satisfies [
+  string,
+  ...string[],
+]
 
 export const BINARY_OPERATORS = [
   ...COMPARISON_OPERATORS,
   ...ARITHMETIC_OPERATORS,
   '&&',
   '||',
-] as const
+] as const satisfies [string, ...string[]]
 
-export const UNARY_FILTER_OPERATORS = ['exists', 'not exists'] as const
-export const UNARY_OPERATORS = ['not', '-', ...UNARY_FILTER_OPERATORS] as const
+export const UNARY_FILTER_OPERATORS = [
+  'exists',
+  'not exists',
+] as const satisfies [string, ...string[]]
+
+export const UNARY_OPERATORS = [
+  'not',
+  '-',
+  ...UNARY_FILTER_OPERATORS,
+] as const satisfies [string, ...string[]]
+
 export const OPERATORS = [
   ...BINARY_OPERATORS,
   ...JSON_OPERATORS,
   ...UNARY_OPERATORS,
   'between',
   'between symmetric',
-] as const
+] as const satisfies [string, ...string[]]
 
 export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]
 export type ArithmeticOperator = (typeof ARITHMETIC_OPERATORS)[number]
