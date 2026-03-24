@@ -189,7 +189,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   }
 
   #isRootOperationNode(node: OperationNode): node is RootOperationNode {
-    return node.kind in ROOT_OPERATION_NODES
+    return ROOT_OPERATION_NODES[node.kind as never]
   }
 
   #collectSchemableIds(node: RootOperationNode): Set<string> {
