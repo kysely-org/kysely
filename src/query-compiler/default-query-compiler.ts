@@ -1895,7 +1895,7 @@ export class DefaultQueryCompiler
   }
 }
 
-const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
+const SELECT_MODIFIER_SQL = freeze({
   ForKeyShare: 'for key share',
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',
@@ -1903,20 +1903,19 @@ const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
   NoWait: 'nowait',
   SkipLocked: 'skip locked',
   Distinct: 'distinct',
-})
+} as const) satisfies Record<SelectModifier, string>
 
-const SELECT_MODIFIER_PRIORITY: Readonly<Record<SelectModifier, number>> =
-  freeze({
-    ForKeyShare: 1,
-    ForNoKeyUpdate: 1,
-    ForUpdate: 1,
-    ForShare: 1,
-    NoWait: 2,
-    SkipLocked: 2,
-    Distinct: 0,
-  })
+const SELECT_MODIFIER_PRIORITY = freeze({
+  ForKeyShare: 1,
+  ForNoKeyUpdate: 1,
+  ForUpdate: 1,
+  ForShare: 1,
+  NoWait: 2,
+  SkipLocked: 2,
+  Distinct: 0,
+} as const) satisfies Record<SelectModifier, number>
 
-const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
+const JOIN_TYPE_SQL = freeze({
   InnerJoin: 'inner join',
   LeftJoin: 'left join',
   RightJoin: 'right join',
@@ -1928,4 +1927,4 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   OuterApply: 'outer apply',
   CrossApply: 'cross apply',
   Using: 'using',
-})
+} as const) satisfies Record<JoinType, string>

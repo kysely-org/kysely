@@ -1,10 +1,5 @@
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
-import {
-  isBoolean,
-  isNull,
-  isString,
-  isUndefined,
-} from '../util/object-utils.js'
+import { isBoolean, isNull, isUndefined } from '../util/object-utils.js'
 import {
   type OperationNodeSource,
   isOperationNodeSource,
@@ -14,7 +9,7 @@ import {
   type ComparisonOperator,
   type BinaryOperator,
   type Operator,
-  OPERATORS,
+  isBinaryOperator,
 } from '../operation-node/operator-node.js'
 import {
   type ExtractTypeFromReferenceExpression,
@@ -95,14 +90,14 @@ export function parseValueBinaryOperation(
   if (isIsOperator(operator) && needsIsOperator(right)) {
     return BinaryOperationNode.create(
       parseReferenceExpression(left),
-      parseOperator(operator),
+      parseBinaryOperator(operator),
       ValueNode.createImmediate(right),
     )
   }
 
   return BinaryOperationNode.create(
     parseReferenceExpression(left),
-    parseOperator(operator),
+    parseBinaryOperator(operator),
     parseValueExpressionOrList(right),
   )
 }
@@ -114,7 +109,7 @@ export function parseReferentialBinaryOperation(
 ): BinaryOperationNode {
   return BinaryOperationNode.create(
     parseReferenceExpression(left),
-    parseOperator(operator),
+    parseBinaryOperator(operator),
     parseReferenceExpression(right),
   )
 }
@@ -171,8 +166,8 @@ function needsIsOperator(value: unknown): value is null | boolean {
   return isNull(value) || isBoolean(value)
 }
 
-function parseOperator(operator: OperatorExpression): OperationNode {
-  if (isString(operator) && OPERATORS.includes(operator)) {
+function parseBinaryOperator(operator: OperatorExpression): OperationNode {
+  if (isBinaryOperator(operator)) {
     return OperatorNode.create(operator)
   }
 

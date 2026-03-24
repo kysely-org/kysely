@@ -143,21 +143,17 @@ export function parseJSONReference(
   ref: string,
   op: JSONOperatorWith$,
 ): JSONReferenceNode {
-  const referenceNode = parseStringReference(ref)
-
   if (isJSONOperator(op)) {
     return JSONReferenceNode.create(
-      referenceNode,
+      parseStringReference(ref),
       JSONOperatorChainNode.create(OperatorNode.create(op)),
     )
   }
 
-  const opWithoutLastChar = op.slice(0, -1)
-
-  if (isJSONOperator(opWithoutLastChar)) {
+  if (op === '->$' || op === '->>$') {
     return JSONReferenceNode.create(
-      referenceNode,
-      JSONPathNode.create(OperatorNode.create(opWithoutLastChar)),
+      parseStringReference(ref),
+      JSONPathNode.create(OperatorNode.create(op.slice(0, -1) as never)),
     )
   }
 
