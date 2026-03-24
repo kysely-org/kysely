@@ -105,7 +105,7 @@ const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = [
   /^timestamp\(\d+\)$/,
   /^timestamptz\(\d+\)$/,
   /^varbinary\(\d+\)$/,
-] as const
+]
 
 export type ColumnDataType =
   | SimpleColumnDataType
