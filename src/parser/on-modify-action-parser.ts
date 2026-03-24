@@ -1,12 +1,12 @@
 import {
+  isOnModifyForeignAction,
   type OnModifyForeignAction,
-  ON_MODIFY_FOREIGN_ACTIONS,
 } from '../operation-node/references-node.js'
 
 export function parseOnModifyForeignAction(
-  action: OnModifyForeignAction,
+  action: string,
 ): OnModifyForeignAction {
-  if (ON_MODIFY_FOREIGN_ACTIONS.includes(action)) {
+  if (isOnModifyForeignAction(action)) {
     return action
   }
 

@@ -1,4 +1,5 @@
 import {
+  isUnaryOperator,
   OperatorNode,
   type UnaryOperator,
 } from '../operation-node/operator-node.js'
@@ -31,8 +32,12 @@ export function parseUnaryOperation(
   operator: UnaryOperator,
   operand: ReferenceExpression<any, any>,
 ): UnaryOperationNode {
-  return UnaryOperationNode.create(
-    OperatorNode.create(operator),
-    parseReferenceExpression(operand),
-  )
+  if (isUnaryOperator(operator)) {
+    return UnaryOperationNode.create(
+      OperatorNode.create(operator),
+      parseReferenceExpression(operand),
+    )
+  }
+
+  throw new Error(`invalid unary operator ${JSON.stringify(operator)}`)
 }

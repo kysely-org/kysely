@@ -1,20 +1,30 @@
 import type { OperationNode } from './operation-node.js'
 import type { ColumnNode } from './column-node.js'
 import type { TableNode } from './table-node.js'
-import { freeze } from '../util/object-utils.js'
-import type { ArrayItemType } from '../util/type-utils.js'
+import { freeze, isString } from '../util/object-utils.js'
 
-export const ON_MODIFY_FOREIGN_ACTIONS = [
-  'no action',
-  'restrict',
-  'cascade',
-  'set null',
-  'set default',
-] as const
+export type OnModifyForeignAction =
+  | 'cascade'
+  | 'no action'
+  | 'restrict'
+  | 'set default'
+  | 'set null'
 
-export type OnModifyForeignAction = ArrayItemType<
-  typeof ON_MODIFY_FOREIGN_ACTIONS
->
+const ON_MODIFY_FOREIGN_ACTIONS_DICTIONARY: Readonly<
+  Record<OnModifyForeignAction, true>
+> = freeze({
+  cascade: true,
+  'no action': true,
+  restrict: true,
+  'set default': true,
+  'set null': true,
+})
+
+/**
+ * @deprecated will be removed in version 0.30.x
+ */
+export const ON_MODIFY_FOREIGN_ACTIONS: readonly OnModifyForeignAction[] =
+  Object.keys(ON_MODIFY_FOREIGN_ACTIONS_DICTIONARY) as never
 
 export interface ReferencesNode extends OperationNode {
   readonly kind: 'ReferencesNode'
@@ -71,3 +81,9 @@ export const ReferencesNode: ReferencesNodeFactory =
       })
     },
   })
+
+export function isOnModifyForeignAction(
+  thing: unknown,
+): thing is OnModifyForeignAction {
+  return isString(thing) && ON_MODIFY_FOREIGN_ACTIONS_DICTIONARY[thing as never]
+}
