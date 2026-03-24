@@ -202,7 +202,11 @@ export * from './operation-node/primitive-value-list-node.js'
 export * from './operation-node/query-node.js'
 export * from './operation-node/raw-node.js'
 export * from './operation-node/reference-node.js'
-export * from './operation-node/references-node.js'
+export {
+  ON_MODIFY_FOREIGN_ACTIONS,
+  type OnModifyForeignAction,
+  ReferencesNode,
+} from './operation-node/references-node.js'
 export * from './operation-node/rename-column-node.js'
 export * from './operation-node/rename-constraint-node.js'
 export * from './operation-node/returning-node.js'

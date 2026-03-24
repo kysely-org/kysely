@@ -47,6 +47,7 @@ const SIMPLE_COLUMN_DATA_TYPES = {
   varchar: true,
 } as const satisfies Record<string, true>
 
+// TODO: look into optimizing this, perhaps merging regexes.
 const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = [
   /^varchar\(\d+\)$/,
   /^char\(\d+\)$/,
