@@ -1,7 +1,52 @@
 import { freeze } from '../util/object-utils.js'
 import type { OperationNode } from './operation-node.js'
 
-const SIMPLE_COLUMN_DATA_TYPES = {
+export type SimpleColumnDataType =
+  | 'bigint'
+  | 'bigserial'
+  | 'binary'
+  | 'blob'
+  | 'boolean'
+  | 'bytea'
+  | 'char'
+  | 'date'
+  | 'datemultirange'
+  | 'daterange'
+  | 'datetime'
+  | 'decimal'
+  | 'double precision'
+  | 'float4'
+  | 'float8'
+  | 'int2'
+  | 'int4'
+  | 'int4multirange'
+  | 'int4range'
+  | 'int8'
+  | 'int8multirange'
+  | 'int8range'
+  | 'integer'
+  | 'json'
+  | 'jsonb'
+  | 'numeric'
+  | 'nummultirange'
+  | 'numrange'
+  | 'real'
+  | 'serial'
+  | 'smallint'
+  | 'text'
+  | 'time'
+  | 'timestamp'
+  | 'timestamptz'
+  | 'timetz'
+  | 'tsmultirange'
+  | 'tsrange'
+  | 'tstzmultirange'
+  | 'tstzrange'
+  | 'uuid'
+  | 'varbinary'
+  | 'varchar'
+
+const SIMPLE_COLUMN_DATA_TYPES: Record<SimpleColumnDataType, true> = {
   bigint: true,
   bigserial: true,
   binary: true,
@@ -45,7 +90,7 @@ const SIMPLE_COLUMN_DATA_TYPES = {
   uuid: true,
   varbinary: true,
   varchar: true,
-} as const satisfies Record<string, true>
+}
 
 // TODO: look into optimizing this, perhaps merging regexes.
 const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = [
@@ -61,8 +106,6 @@ const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = [
   /^timestamptz\(\d+\)$/,
   /^varbinary\(\d+\)$/,
 ] as const
-
-type SimpleColumnDataType = keyof typeof SIMPLE_COLUMN_DATA_TYPES
 
 export type ColumnDataType =
   | SimpleColumnDataType
