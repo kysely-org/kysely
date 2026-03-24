@@ -21,31 +21,32 @@ import type { QueryId } from '../../util/query-id.js'
 // handle it correctly in the transformer.
 //
 // DO NOT REFACTOR THIS EVEN IF IT SEEMS USELESS TO YOU!
-const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
-  AlterTableNode: true,
-  CreateIndexNode: true,
-  CreateSchemaNode: true,
-  CreateTableNode: true,
-  CreateTypeNode: true,
-  CreateViewNode: true,
-  RefreshMaterializedViewNode: true,
-  DeleteQueryNode: true,
-  DropIndexNode: true,
-  DropSchemaNode: true,
-  DropTableNode: true,
-  DropTypeNode: true,
-  DropViewNode: true,
-  InsertQueryNode: true,
-  RawNode: true,
-  SelectQueryNode: true,
-  UpdateQueryNode: true,
-  MergeQueryNode: true,
-})
+const ROOT_OPERATION_NODES: Readonly<Record<RootOperationNode['kind'], true>> =
+  freeze({
+    AlterTableNode: true,
+    CreateIndexNode: true,
+    CreateSchemaNode: true,
+    CreateTableNode: true,
+    CreateTypeNode: true,
+    CreateViewNode: true,
+    RefreshMaterializedViewNode: true,
+    DeleteQueryNode: true,
+    DropIndexNode: true,
+    DropSchemaNode: true,
+    DropTableNode: true,
+    DropTypeNode: true,
+    DropViewNode: true,
+    InsertQueryNode: true,
+    RawNode: true,
+    SelectQueryNode: true,
+    UpdateQueryNode: true,
+    MergeQueryNode: true,
+  })
 
-const SCHEMALESS_FUNCTIONS: Record<string, true> = {
+const SCHEMALESS_FUNCTIONS: Readonly<Record<string, true>> = freeze({
   json_agg: true,
   to_json: true,
-}
+})
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
   readonly #schema: string
@@ -189,7 +190,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   }
 
   #isRootOperationNode(node: OperationNode): node is RootOperationNode {
-    return node.kind in ROOT_OPERATION_NODES
+    return ROOT_OPERATION_NODES[node.kind as never]
   }
 
   #collectSchemableIds(node: RootOperationNode): Set<string> {
