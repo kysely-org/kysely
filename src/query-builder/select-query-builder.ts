@@ -374,7 +374,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
-  select<CB extends SelectCallback<DB, TB>>(
+  select<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>
 
