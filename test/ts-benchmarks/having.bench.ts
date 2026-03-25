@@ -50,7 +50,7 @@ bench('kysely..having(column, op, select)', () =>
       .select('t2.col_1d726898491fbca9a8dac855d2be1be8')
       .limit(1),
   ),
-).types([3302, 'instantiations'])
+).types([3286, 'instantiations'])
 
 bench('kysely..having(eb => eb(...))', () =>
   query.having((eb) => eb('col_1d726898491fbca9a8dac855d2be1be8', '=', 123)),
