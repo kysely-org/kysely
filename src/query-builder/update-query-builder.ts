@@ -747,7 +747,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): UpdateQueryBuilder<DB, UT, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
