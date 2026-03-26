@@ -233,6 +233,10 @@ export type ShallowDehydrateObject<O> = {
  *
  * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`,
  * and anything in {@link NumbersWhenDataTypeNotAvailable} and convert it to `number`.
+ *
+ * Narrow string literal types (e.g. `'1' | '2'` from a pgEnum) are preserved as-is,
+ * even if they match {@link NumericString}. Only wide string types where
+ * `` `${number}` extends T `` holds (e.g. {@link NumericString} itself) are converted to `number`.
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T

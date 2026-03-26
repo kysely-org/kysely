@@ -6,6 +6,7 @@ import {
   sql,
   type ExpressionBuilder,
   type NumericString,
+  type ShallowDehydrateValue,
 } from '..'
 import type { Database } from '../shared'
 import { expectType } from 'tsd'
@@ -311,6 +312,22 @@ function withPets(eb: ExpressionBuilder<Database, 'person'>) {
       .whereRef('owner_id', '=', 'person.id')
       .orderBy('pet.name'),
   ).as('pets')
+}
+
+// Numeric-looking string literal unions (e.g. pgEnum) should be preserved, not converted to number.
+// See: https://github.com/kysely-org/kysely/issues/1763
+function testShallowDehydrateValuePreservesStringLiterals() {
+  type PgEnumValue = '1' | '2'
+  expectType<ShallowDehydrateValue<PgEnumValue>>({} as '1' | '2')
+
+  // NumericString should still be converted to number
+  expectType<ShallowDehydrateValue<NumericString>>({} as number)
+
+  // bigint should still be converted to number
+  expectType<ShallowDehydrateValue<bigint>>({} as number)
+
+  // Date should still be converted to string
+  expectType<ShallowDehydrateValue<Date>>({} as string)
 }
 
 function withDoggo(eb: ExpressionBuilder<Database, 'person'>) {
