@@ -29,6 +29,7 @@ runs on all other [JavaScript](https://developer.mozilla.org/en-US/docs/Web/Java
 and web browsers.
 
 ![](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
+[![Stack Health](https://indiestack.ai/api/badge/health/kysely-org/kysely.svg)](https://indiestack.ai/audit?repo=kysely-org/kysely)
 
 Kysely makes sure you only refer to tables and columns that are visible to the part of the query
 you're writing. The result type only has the selected columns with correct types and aliases. As an
