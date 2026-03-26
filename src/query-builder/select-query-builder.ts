@@ -95,7 +95,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     Streamable<O> {
   where<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+    const VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
@@ -117,7 +117,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   having<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+    const VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,

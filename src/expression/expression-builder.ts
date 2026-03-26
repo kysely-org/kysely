@@ -590,7 +590,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  val<VE>(
+  val<const VE>(
     value: VE,
   ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>
 
@@ -749,25 +749,25 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    */
-  tuple<V1, V2>(
+  tuple<const V1, const V2>(
     value1: V1,
     value2: V2,
   ): ExpressionWrapper<DB, TB, ValTuple2<V1, V2>>
 
-  tuple<V1, V2, V3>(
+  tuple<const V1, const V2, const V3>(
     value1: V1,
     value2: V2,
     value3: V3,
   ): ExpressionWrapper<DB, TB, ValTuple3<V1, V2, V3>>
 
-  tuple<V1, V2, V3, V4>(
+  tuple<const V1, const V2, const V3, const V4>(
     value1: V1,
     value2: V2,
     value3: V3,
     value4: V4,
   ): ExpressionWrapper<DB, TB, ValTuple4<V1, V2, V3, V4>>
 
-  tuple<V1, V2, V3, V4, V5>(
+  tuple<const V1, const V2, const V3, const V4, const V5>(
     value1: V1,
     value2: V2,
     value3: V3,
@@ -796,7 +796,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select 1 as "one" from "person"
    * ```
    */
-  lit<VE extends number | boolean | null>(
+  lit<const VE extends number | boolean | null>(
     literal: VE,
   ): ExpressionWrapper<DB, TB, VE>
 

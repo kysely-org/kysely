@@ -135,12 +135,7 @@ export interface Sql {
    * sql<ValueType>`${value}`
    * ```
    */
-  val<V>(value: V): RawBuilder<V>
-
-  /**
-   * @deprecated Use {@link Sql.val} instead.
-   */
-  value<V>(value: V): RawBuilder<V>
+  val<const V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -299,12 +294,7 @@ export interface Sql {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  lit<V>(value: V): RawBuilder<V>
-
-  /**
-   * @deprecated Use {@link lit} instead.
-   */
-  literal<V>(value: V): RawBuilder<V>
+  lit<const V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
@@ -417,10 +407,6 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    value<V>(value: V): RawBuilder<V> {
-      return this.val(value)
-    },
-
     table<T = unknown>(tableReference: string): RawBuilder<T> {
       return createRawBuilder({
         queryId: createQueryId(),
@@ -445,10 +431,6 @@ export const sql: Sql = Object.assign(
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
-    },
-
-    literal<V>(value: V): RawBuilder<V> {
-      return this.lit(value)
     },
 
     raw<R = unknown>(sql: string): RawBuilder<R> {
