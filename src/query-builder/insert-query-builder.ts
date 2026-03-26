@@ -949,7 +949,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     selections: ReadonlyArray<SE>,
   ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
