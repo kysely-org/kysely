@@ -209,7 +209,7 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
 
   using<
     TE extends TableExpression<DB, TT>,
-    FN extends JoinCallbackExpression<DB, TT, TE>,
+    const FN extends JoinCallbackExpression<DB, TT, TE>,
   >(
     sourceTable: TE,
     callback: FN,
