@@ -229,7 +229,7 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): MergeQueryBuilder<DB, TT, ReturningRow<DB, TT, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TT>>(
+  returning<const CB extends SelectCallback<DB, TT>>(
     callback: CB,
   ): MergeQueryBuilder<DB, TT, ReturningCallbackRow<DB, TT, O, CB>>
 
@@ -664,7 +664,7 @@ export class WheneableMergeQueryBuilder<
     selections: ReadonlyArray<SE>,
   ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningRow<DB, TT | ST, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TT | ST>>(
+  returning<const CB extends SelectCallback<DB, TT | ST>>(
     callback: CB,
   ): WheneableMergeQueryBuilder<
     DB,
