@@ -482,7 +482,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): DeleteQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
