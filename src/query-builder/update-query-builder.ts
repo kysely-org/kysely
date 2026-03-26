@@ -796,7 +796,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TB>>(
+  output<const CB extends OutputCallback<DB, TB>>(
     callback: CB,
   ): UpdateQueryBuilder<
     DB,

@@ -622,7 +622,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+  output<const CB extends OutputCallback<DB, TB, 'deleted'>>(
     callback: CB,
   ): DeleteQueryBuilder<
     DB,

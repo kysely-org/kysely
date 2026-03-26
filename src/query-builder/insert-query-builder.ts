@@ -987,7 +987,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TB, 'inserted'>>(
+  output<const CB extends OutputCallback<DB, TB, 'inserted'>>(
     callback: CB,
   ): InsertQueryBuilder<
     DB,

@@ -271,7 +271,7 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TT>>(
+  output<const CB extends OutputCallback<DB, TT>>(
     callback: CB,
   ): MergeQueryBuilder<
     DB,
@@ -717,7 +717,7 @@ export class WheneableMergeQueryBuilder<
     ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TT>>(
+  output<const CB extends OutputCallback<DB, TT>>(
     callback: CB,
   ): WheneableMergeQueryBuilder<
     DB,
