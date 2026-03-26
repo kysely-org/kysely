@@ -613,7 +613,7 @@ export class DefaultQueryCompiler
   protected override visitCreateTable(node: CreateTableNode): void {
     this.append('create ')
 
-    if (node.frontModifiers && node.frontModifiers.length > 0) {
+    if (node.frontModifiers?.length) {
       this.compileList(node.frontModifiers, ' ')
       this.append(' ')
     }
@@ -630,23 +630,25 @@ export class DefaultQueryCompiler
 
     this.visitNode(node.table)
 
-    if (node.selectQuery) {
-      this.append(' as ')
-      this.visitNode(node.selectQuery)
-    } else {
+    if (!node.selectQuery) {
       this.append(' (')
       this.compileList([...node.columns, ...(node.constraints ?? [])])
       this.append(')')
+    }
 
-      if (node.onCommit) {
-        this.append(' on commit ')
-        this.append(node.onCommit)
-      }
+    if (node.onCommit) {
+      this.append(' on commit ')
+      this.append(node.onCommit)
+    }
 
-      if (node.endModifiers && node.endModifiers.length > 0) {
-        this.append(' ')
-        this.compileList(node.endModifiers, ' ')
-      }
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
+    }
+
+    if (node.selectQuery) {
+      this.append(' as ')
+      this.visitNode(node.selectQuery)
     }
   }
 
@@ -1629,7 +1631,11 @@ export class DefaultQueryCompiler
 
     this.append(isArrayLocation ? '[' : '.')
 
-    this.append(String(node.value))
+    this.append(
+      typeof node.value === 'string'
+        ? this.sanitizeStringLiteral(node.value)
+        : String(node.value),
+    )
 
     if (isArrayLocation) {
       this.append(']')

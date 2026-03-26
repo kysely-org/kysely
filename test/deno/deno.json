@@ -1,8 +1,8 @@
 {
   "imports": {
-    "kysely": "npm:kysely@^0.28.7",
-    "mysql2": "npm:mysql2@^3.15.1",
-    "pg": "npm:pg@^8.16.3",
-    "pg-pool": "npm:pg-pool@^3.10.1"
+    "kysely": "npm:kysely@^0.28.13",
+    "mysql2": "npm:mysql2@^3.20.0",
+    "pg": "npm:pg@^8.20.0",
+    "pg-pool": "npm:pg-pool@^3.13.0"
   }
 }

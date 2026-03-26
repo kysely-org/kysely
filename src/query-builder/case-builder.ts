@@ -75,6 +75,14 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    *
    * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
+   *
+   * **Note:** Numbers, booleans, and `null` values are inlined directly into the
+   * SQL query string (e.g. `then 1`, `then true`, `then null`) instead of being
+   * added as parameterized values (e.g. `then $1`). This allows the database
+   * engine to correctly infer the data type of the `case` expression result.
+   * Without this behavior, all results would be returned as strings.
+   *
+   * String values are always parameterized as usual.
    */
   then<E extends Expression<unknown>>(
     expression: E,
@@ -137,6 +145,14 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
    * Adds an `else` clause to the `case` statement.
    *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
+   *
+   * **Note:** Numbers, booleans, and `null` values are inlined directly into the
+   * SQL query string (e.g. `else 0`, `else false`, `else null`) instead of being
+   * added as parameterized values (e.g. `else $1`). This allows the database
+   * engine to correctly infer the data type of the `case` expression result.
+   * Without this behavior, all results would be returned as strings.
+   *
+   * String values are always parameterized as usual.
    */
   else<E extends Expression<unknown>>(
     expression: E,

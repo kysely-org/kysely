@@ -7,6 +7,8 @@
     "module": "CommonJS",
     "outDir": "dist",
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["mocha"],
+    "rootDir": "./src"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "kysely-site",
-  "version": "0.28.11",
+  "version": "0.28.14",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -32,8 +32,8 @@
     "@docusaurus/tsconfig": "^3.9.2",
     "@docusaurus/types": "^3.9.2",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
-    "@types/react": "^19.2.10",
-    "mermaid": "^11.12.2",
+    "@types/react": "^19.2.14",
+    "mermaid": "^11.13.0",
     "typescript": "^5.9.3"
   },
   "browserslist": {

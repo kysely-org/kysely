@@ -210,7 +210,7 @@ class MysqlConnection implements DatabaseConnection {
     return new Promise((resolve, reject) => {
       this.#rawConnection.query(
         compiledQuery.sql,
-        compiledQuery.parameters,
+        compiledQuery.parameters as Array<unknown>,
         (err, result) => {
           if (err) {
             reject(err)
@@ -227,7 +227,7 @@ class MysqlConnection implements DatabaseConnection {
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#rawConnection
-      .query(compiledQuery.sql, compiledQuery.parameters)
+      .query(compiledQuery.sql, compiledQuery.parameters as Array<unknown>)
       .stream<O>({
         objectMode: true,
       })

@@ -1106,6 +1106,31 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create a temporary table with on commit and as expression', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .temporary()
+            .onCommit('drop')
+            .as(
+              ctx.db
+                .selectFrom('person')
+                .select(['first_name', 'last_name'])
+                .where('first_name', '=', 'Jennifer'),
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create temporary table "test" on commit drop as select "first_name", "last_name" from "person" where "first_name" = $1',
+              parameters: ['Jennifer'],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       }
 
       if (dialect === 'postgres' || dialect === 'mssql') {
