@@ -313,7 +313,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   where<
     RE extends ReferenceExpression<DB, TB>,
-    const VE extends OperandValueExpressionOrList<DB, TB, RE>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
