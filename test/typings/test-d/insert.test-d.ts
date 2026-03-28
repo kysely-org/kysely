@@ -105,6 +105,19 @@ async function testInsert(db: Kysely<Database>) {
       ),
   )
 
+  // Columns with `never` update type (GeneratedAlways) should be referenceable
+  // in onConflict WHERE clauses since WHERE is read-only (#1409)
+  await db
+    .insertInto('book')
+    .values({ name: 'foo' })
+    .onConflict((oc) =>
+      oc
+        .column('name')
+        .doUpdateSet({ name: 'bar' })
+        .where('id', '=', 1),
+    )
+    .execute()
+
   // GeneratedAlways column is not allowed to be inserted
   expectError(db.insertInto('book').values({ id: 1, name: 'foo' }))
 
