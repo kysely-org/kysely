@@ -135,7 +135,7 @@ export interface Sql {
    * sql<ValueType>`${value}`
    * ```
    */
-  val<const V>(value: V): RawBuilder<V>
+  val<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -294,7 +294,7 @@ export interface Sql {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  lit<const V>(value: V): RawBuilder<V>
+  lit<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
