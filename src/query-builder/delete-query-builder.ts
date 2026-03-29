@@ -407,7 +407,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
@@ -425,7 +425,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
@@ -443,7 +443,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
@@ -461,7 +461,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
@@ -482,7 +482,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): DeleteQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
@@ -622,7 +622,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+  output<const CB extends OutputCallback<DB, TB, 'deleted'>>(
     callback: CB,
   ): DeleteQueryBuilder<
     DB,

@@ -227,7 +227,7 @@ export class QueryCreator<DB> {
     selections: ReadonlyArray<SE>,
   ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
 
-  selectNoFrom<CB extends SelectCallback<DB, never>>(
+  selectNoFrom<const CB extends SelectCallback<DB, never>>(
     callback: CB,
   ): SelectQueryBuilder<DB, never, CallbackSelection<DB, never, CB>>
 

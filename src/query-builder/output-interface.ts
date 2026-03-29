@@ -138,7 +138,7 @@ export interface OutputInterface<
     OP
   >
 
-  output<CB extends OutputCallback<DB, TB, OP>>(
+  output<const CB extends OutputCallback<DB, TB, OP>>(
     callback: CB,
   ): OutputInterface<
     DB,
