@@ -138,11 +138,6 @@ export interface Sql {
   val<V>(value: V): RawBuilder<V>
 
   /**
-   * @deprecated Use {@link Sql.val} instead.
-   */
-  value<V>(value: V): RawBuilder<V>
-
-  /**
    * This can be used to add runtime column references to SQL snippets.
    *
    * By default `${}` substitutions in {@link sql} template strings get
@@ -302,11 +297,6 @@ export interface Sql {
   lit<V>(value: V): RawBuilder<V>
 
   /**
-   * @deprecated Use {@link lit} instead.
-   */
-  literal<V>(value: V): RawBuilder<V>
-
-  /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
    *
    * WARNING! Using this with unchecked inputs WILL lead to SQL injection
@@ -417,10 +407,6 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    value<V>(value: V): RawBuilder<V> {
-      return this.val(value)
-    },
-
     table<T = unknown>(tableReference: string): RawBuilder<T> {
       return createRawBuilder({
         queryId: createQueryId(),
@@ -445,10 +431,6 @@ export const sql: Sql = Object.assign(
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
-    },
-
-    literal<V>(value: V): RawBuilder<V> {
-      return this.lit(value)
     },
 
     raw<R = unknown>(sql: string): RawBuilder<R> {
