@@ -1,5 +1,4 @@
-import { ParseJSONResultsPlugin } from '../../..'
-import { createQueryId } from '../../../dist/cjs/util/query-id.js'
+import { createQueryId, ParseJSONResultsPlugin } from '../../../dist/index.js'
 
 describe('ParseJSONResultsPlugin', () => {
   describe("when `objectStrategy` is 'create'", () => {
