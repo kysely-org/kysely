@@ -73,7 +73,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
     selections: ReadonlyArray<SE>,
   ): ReturningInterface<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): ReturningInterface<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
