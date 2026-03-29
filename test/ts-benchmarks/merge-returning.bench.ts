@@ -17,7 +17,7 @@ bench.baseline(() => {
 
 bench('kysely.mergeInto(table).returning(column)', () =>
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([336, 'instantiations'])
+).types([307, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(~column)', () =>
   // @ts-expect-error
@@ -26,7 +26,7 @@ bench('kysely.mergeInto(table)..returning(~column)', () =>
 
 bench('kysely.mergeInto(table)..returning(table.column)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([336, 'instantiations'])
+).types([307, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(~table.column)', () =>
   // @ts-expect-error
@@ -35,11 +35,11 @@ bench('kysely.mergeInto(table)..returning(~table.column)', () =>
 
 bench('kysely.mergeInto(table)..returning(table.column as alias)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([336, 'instantiations'])
+).types([307, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(column as alias)', () =>
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([336, 'instantiations'])
+).types([307, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returningAll()', () =>
   mergeQuery.returningAll(),
@@ -47,17 +47,17 @@ bench('kysely.mergeInto(table)..returningAll()', () =>
 
 bench('kyselyAny.mergeInto(table)..returning(column)', () =>
   mergeQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([270, 'instantiations'])
+).types([241, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returning(table.column)', () =>
   mergeQueryAny.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([270, 'instantiations'])
+).types([241, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returning(table.column as alias)', () =>
   mergeQueryAny.returning(
     'my_table.col_164b7896ec8e770207febe0812c5f052 as foo',
   ),
-).types([270, 'instantiations'])
+).types([241, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returningAll()', () =>
   mergeQueryAny.returningAll(),

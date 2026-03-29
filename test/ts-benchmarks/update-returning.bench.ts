@@ -17,7 +17,7 @@ bench.baseline(() => {
 
 bench('kysely.updateTable(table).returning(column)', () =>
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([331, 'instantiations'])
+).types([301, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(~column)', () =>
   // @ts-expect-error
@@ -26,7 +26,7 @@ bench('kysely.updateTable(table)..returning(~column)', () =>
 
 bench('kysely.updateTable(table)..returning(table.column)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([331, 'instantiations'])
+).types([301, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(~table.column)', () =>
   // @ts-expect-error
@@ -35,11 +35,11 @@ bench('kysely.updateTable(table)..returning(~table.column)', () =>
 
 bench('kysely.updateTable(table)..returning(table.column as alias)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([331, 'instantiations'])
+).types([301, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(column as alias)', () =>
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([331, 'instantiations'])
+).types([301, 'instantiations'])
 
 bench('kysely.updateTable(table)..returningAll()', () =>
   updateQuery.returningAll(),
@@ -47,17 +47,17 @@ bench('kysely.updateTable(table)..returningAll()', () =>
 
 bench('kyselyAny.updateTable(table)..returning(column)', () =>
   updateQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([265, 'instantiations'])
+).types([235, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returning(table.column)', () =>
   updateQueryAny.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([265, 'instantiations'])
+).types([235, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returning(table.column as alias)', () =>
   updateQueryAny.returning(
     'my_table.col_164b7896ec8e770207febe0812c5f052 as foo',
   ),
-).types([265, 'instantiations'])
+).types([235, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returningAll()', () =>
   updateQueryAny.returningAll(),
