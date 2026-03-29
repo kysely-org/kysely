@@ -1,4 +1,4 @@
-import { Updateable } from '../../../dist/cjs'
+import { Updateable } from '../../../dist/index.js'
 
 import {
   destroyTest,

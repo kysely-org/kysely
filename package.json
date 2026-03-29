@@ -27,8 +27,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
   "typesVersions": {
     "<4.9": {
       "*": [
@@ -50,20 +52,35 @@
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
     },
-    "./helpers/postgres": {
-      "import": "./dist/esm/helpers/postgres.js",
-      "require": "./dist/cjs/helpers/postgres.js",
-      "default": "./dist/cjs/helpers/postgres.js"
+    "./helpers/mssql": {
+      "import": {
+        "types": "./dist/helpers/mssql.d.ts",
+        "default": "./dist/helpers/mssql.js"
+      },
+      "require": {
+        "types": "./dist/helpers/mssql.d.cts",
+        "default": "./dist/helpers/mssql.cjs"
+      }
     },
     "./helpers/mysql": {
-      "import": "./dist/esm/helpers/mysql.js",
-      "require": "./dist/cjs/helpers/mysql.js",
-      "default": "./dist/cjs/helpers/mysql.js"
+      "import": {
+        "types": "./dist/helpers/mysql.d.ts",
+        "default": "./dist/helpers/mysql.js"
+      },
+      "require": {
+        "types": "./dist/helpers/mysql.d.cts",
+        "default": "./dist/helpers/mysql.cjs"
+      }
     },
-    "./helpers/mssql": {
-      "import": "./dist/esm/helpers/mssql.js",
-      "require": "./dist/cjs/helpers/mssql.js",
-      "default": "./dist/cjs/helpers/mssql.js"
+    "./helpers/postgres": {
+      "import": {
+        "types": "./dist/helpers/postgres.d.ts",
+        "default": "./dist/helpers/postgres.js"
+      },
+      "require": {
+        "types": "./dist/helpers/postgres.d.cts",
+        "default": "./dist/helpers/postgres.cjs"
+      }
     },
     "./helpers/sqlite": {
       "import": "./dist/esm/helpers/sqlite.js",
@@ -92,15 +109,11 @@
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
-    "test:exports": "attw --pack . && node scripts/check-exports.js",
+    "test:exports": "node scripts/check-exports.js",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
     "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
-    "build": "pnpm clean && (pnpm build:esm & pnpm build:cjs) && pnpm script:module-fixup && pnpm script:copy-interface-doc",
-    "build:esm": "tsc -p tsconfig.json && pnpm script:add-deno-type-references",
-    "build:cjs": "tsc -p tsconfig-cjs.json",
-    "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
@@ -117,7 +130,7 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
+    "@arethetypeswrong/core": "^0.18.2",
     "@ark/attest": "^0.56.0",
     "@electric-sql/pglite": "^0.3.14",
     "@types/better-sqlite3": "^7.6.13",
@@ -145,6 +158,7 @@
     "pkg-types": "^2.3.0",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
+    "publint": "^0.3.18",
     "semver": "^7.7.4",
     "sinon": "^21.0.3",
     "std-env": "^4.0.0",

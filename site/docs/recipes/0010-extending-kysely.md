@@ -360,7 +360,7 @@ The following example adds an `addIdColumn` method to `CreateTableBuilder`, whic
 in adding a PostgreSQL UUID primary key column:
 
 ```ts
-declare module 'kysely/dist/cjs/schema/create-table-builder' {
+declare module 'kysely' {
   interface CreateTableBuilder<TB extends string, C extends string = never> {
     addIdColumn<CN extends string = 'id'>(
       col?: CN
