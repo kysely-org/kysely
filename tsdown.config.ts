@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { gzip } from 'node:zlib'
 import { promisify } from 'node:util'
-import { dirname, extname, join, relative, resolve } from 'pathe'
+import { gzip } from 'node:zlib'
+import { dirname, join, relative } from 'pathe'
 import { defineConfig } from 'tsdown'
 import packageJSON from './package.json' with { type: 'json' }
 
