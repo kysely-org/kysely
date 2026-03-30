@@ -13,8 +13,8 @@ import {
   type WheneableMergeQueryBuilder,
   mergeAction,
   sql,
-} from '..'
-import type { Database, Person, Pet } from '../shared'
+} from '../index.js'
+import type { Database, Person, Pet } from '../shared.d.ts'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')

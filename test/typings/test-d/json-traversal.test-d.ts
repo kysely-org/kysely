@@ -1,7 +1,7 @@
 import { expectError, expectType } from 'tsd'
-import type { ExpressionBuilder, JSONPathBuilder, Kysely } from '..'
-import type { Database, PersonMetadata } from '../shared'
-import type { KyselyTypeError } from '../../../dist/cjs/util/type-error'
+import type { ExpressionBuilder, JSONPathBuilder, Kysely } from '../index.js'
+import type { Database, PersonMetadata } from '../shared.d.ts'
+import type { KyselyTypeError } from '../../../dist/cjs/util/type-error.js'
 
 async function testJSONReference(db: Kysely<Database>) {
   const [r1] = await db

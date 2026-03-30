@@ -6,8 +6,8 @@ import {
   sql,
   type ExpressionBuilder,
   type NumericString,
-} from '..'
-import type { Database } from '../shared'
+} from '../index.js'
+import type { Database } from '../shared.d.ts'
 import { expectType } from 'tsd'
 
 async function testPostgresJsonSelects(db: Kysely<Database>) {
