@@ -31,7 +31,7 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "typesVersions": {
-    "<5.3": {
+    "<5.4": {
       "*": [
         "outdated-typescript.d.ts"
       ]
@@ -46,7 +46,7 @@
   ],
   "exports": {
     ".": {
-      "types@<5.3": "./outdated-typescript.d.ts",
+      "types@<5.4": "./outdated-typescript.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
@@ -124,11 +124,11 @@
     "@types/better-sqlite3": "7.6.13",
     "@types/chai": "5.2.3",
     "@types/chai-as-promised": "8.0.2",
-    "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/mocha": "10.0.10",
     "@types/node": "25.5.0",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
+    "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/semver": "7.7.1",
     "@types/sinon": "21.0.0",
     "better-sqlite3": "12.8.0",
@@ -140,12 +140,12 @@
     "mocha": "11.7.5",
     "mysql2": "3.20.0",
     "pathe": "2.0.3",
-    "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
     "pg": "8.20.0",
     "pg-cursor": "2.19.0",
     "pkg-types": "2.3.0",
     "playwright": "1.58.2",
     "prettier": "3.8.1",
+    "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
     "semver": "7.7.4",
     "sinon": "21.0.3",
     "std-env": "4.0.0",
