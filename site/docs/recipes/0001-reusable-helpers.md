@@ -191,7 +191,7 @@ const persons = await db
   .execute()
 ```
 
-## Complex function helpers using `ExpressionBuilder`
+#### SQL function + calculation
 
 Sometimes you need to refer to columns inside a function call. Below follows an example of a function that can be used to convert any timestamp column (MySQL `UNIX_TIMESTAMP`) to UNIX epoch milliseconds for ease of use in JavaScript. This is useful for having consistent timestamps with or without `jsonObjectFrom`/`jsonArrayFrom` - otherwise timestamps will be returned both as a `Date` and a string with format `YYYY-MM-DD hh:mm:ss.ffffff`.
 
