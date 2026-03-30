@@ -117,6 +117,8 @@ const persons = await db
 
 ## Reusable helpers using `ExpressionBuilder`
 
+#### Subquery
+
 Here's an example of a helper function that uses the expression builder to build a subquery that gets filtered by a dynamic string expression.
 
 ```ts
