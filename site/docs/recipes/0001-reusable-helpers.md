@@ -193,7 +193,9 @@ const persons = await db
 
 #### SQL function + calculation
 
-Here's another example of `ExpressionBuilder` usage, that passes a dynamic `Date` expression to a function expression that takes part in a calculation. A timestamp to milliseconds helper is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
+Here we pass a dynamic `Date` expression to a function expression that takes part in a calculation.
+
+A timestamp to milliseconds helper is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
 ```ts
 // This helper converts a MySQL timestamp expression to Unix epoch milliseconds.
