@@ -14,6 +14,6 @@
     "kysely": "file:../../"
   },
   "devDependencies": {
-    "typescript": "5.2.x"
+    "typescript": "5.3.x"
   }
 }
