@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
-    "moduleResolution": "Node",
-    "target": "ESNext",
     "declaration": true,
+    "moduleResolution": "node16",
+    "module": "node16",
+    "noImplicitAny": true,
+    "rootDir": "./src",
+    "skipLibCheck": true,
     "strict": true,
-    "noImplicitAny": true
+    "target": "es2022",
+    "types": ["node"]
   }
 }

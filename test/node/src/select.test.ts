@@ -1,4 +1,4 @@
-import { Kysely, PostgresDialect, sql } from '../../../'
+import { Kysely, PostgresDialect, sql } from '../../../dist/cjs/index.js'
 import { Pool } from 'pg'
 
 import {

@@ -9,8 +9,8 @@ import type {
   MergeResult,
   Selectable,
   UpdateResult,
-} from '..'
-import type { Database, Person, Pet } from '../shared'
+} from '../index.js'
+import type { Database, Person, Pet } from '../shared.js'
 
 function testInferResultSelectQuery(db: Kysely<Database>) {
   const query0 = db.selectFrom('person').selectAll()

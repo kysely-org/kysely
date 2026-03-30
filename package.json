@@ -27,6 +27,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "typesVersions": {
@@ -82,9 +83,9 @@
     "test:cloudflare-workers": "pnpm build && pnpm -r test --filter kysely-cloudflare-workers-test",
     "test:deno": "deno run --allow-env --allow-read --allow-net --no-lock test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net --no-lock test/deno/cdn.test.ts",
     "test:typings": "tsd test/typings",
-    "test:esmimports": "node scripts/check-esm-imports.js",
+    "test:esmimports": "node scripts/check-esm-imports.cjs",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
-    "test:exports": "attw --pack . && node scripts/check-exports.js",
+    "test:exports": "attw --pack . && node scripts/check-exports.cjs",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
     "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",
@@ -92,11 +93,11 @@
     "build": "pnpm clean && (pnpm build:esm & pnpm build:cjs) && pnpm script:module-fixup && pnpm script:copy-interface-doc",
     "build:esm": "tsc -p tsconfig.json && pnpm script:add-deno-type-references",
     "build:cjs": "tsc -p tsconfig-cjs.json",
-    "script:module-fixup": "node scripts/module-fixup.js",
-    "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
-    "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
+    "script:module-fixup": "node scripts/module-fixup.cjs",
+    "script:copy-interface-doc": "node scripts/copy-interface-documentation.cjs",
+    "script:add-deno-type-references": "node scripts/add-deno-type-references.cjs",
     "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
-    "script:generate-site-examples": "node scripts/generate-site-examples.js",
+    "script:generate-site-examples": "node scripts/generate-site-examples.cjs",
     "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
     "script:remove-global-augmentations": "node --experimental-strip-types scripts/remove-global-augmentations.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
@@ -140,7 +141,7 @@
     "tarn": "^3.0.2",
     "tedious": "^19.2.1",
     "tsd": "^0.33.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.2"
   },
   "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
 }

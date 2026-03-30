@@ -1,5 +1,5 @@
-import { type Expression, type Kysely, type SqlBool, sql } from '..'
-import type { Database } from '../shared'
+import { type Expression, type Kysely, type SqlBool, sql } from '../index.js'
+import type { Database } from '../shared.js'
 import { expectError } from 'tsd'
 
 function testWhere(db: Kysely<Database>) {

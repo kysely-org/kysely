@@ -4,7 +4,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from '../../../'
+} from '../../../dist/cjs/index.js'
 import { ImmediateValuePlugin } from '../../../dist/cjs/plugin/immediate-value/immediate-value-plugin.js'
 import { Database, NOT_SUPPORTED, testSql } from './test-setup.js'
 

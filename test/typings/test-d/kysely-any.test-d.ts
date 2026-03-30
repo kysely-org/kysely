@@ -1,4 +1,9 @@
-import type { DeleteResult, InsertResult, Kysely, UpdateResult } from '..'
+import type {
+  DeleteResult,
+  InsertResult,
+  Kysely,
+  UpdateResult,
+} from '../index.js'
 import { expectType } from 'tsd'
 
 async function testKyselyAnySelects(db: Kysely<any>) {

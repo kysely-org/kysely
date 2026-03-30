@@ -1,8 +1,11 @@
 {
+  "type": "module",
   "types": "index.d.ts",
   "tsd": {
     "compilerOptions": {
-      "exactOptionalPropertyTypes": true
+      "exactOptionalPropertyTypes": true,
+      "module": "node16",
+      "moduleResolution": "node16"
     }
   }
 }

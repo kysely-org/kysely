@@ -1,6 +1,7 @@
-import * as path from 'path'
-import { promises as fs } from 'fs'
-
+import fs from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'pathe'
+import { createSandbox, type SinonSpy } from 'sinon'
 import {
   FileMigrationProvider,
   Migration,
@@ -10,10 +11,8 @@ import {
   Migrator,
   NO_MIGRATIONS,
   MigratorProps,
-  type QueryExecutor,
   type Kysely,
-} from '../../../'
-
+} from '../../../dist/cjs/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -23,11 +22,13 @@ import {
   DIALECTS,
   type Database,
 } from './test-setup.js'
-import { createSandbox, type SinonSpy } from 'sinon'
 
 const CUSTOM_MIGRATION_SCHEMA = 'migrate'
 const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
 const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: migration`, () => {
@@ -332,8 +333,8 @@ for (const dialect of DIALECTS) {
             db: ctx.db,
             provider: new FileMigrationProvider({
               fs,
-              path,
-              migrationFolder: path.join(__dirname, 'test-migrations'),
+              path: { join },
+              migrationFolder: join(__dirname, 'test-migrations'),
             }),
           })
 

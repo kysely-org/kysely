@@ -1,5 +1,5 @@
-import type { Kysely } from '..'
-import type { Database } from '../shared'
+import type { Kysely } from '../index.js'
+import type { Database } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
 async function testWith(db: Kysely<Database>) {
