@@ -1,4 +1,9 @@
-import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
+import {
+  AliasedRawBuilder,
+  InsertResult,
+  Kysely,
+  sql,
+} from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,

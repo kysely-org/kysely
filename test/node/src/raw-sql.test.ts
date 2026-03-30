@@ -3,7 +3,7 @@ import {
   CompiledQuery,
   DefaultQueryCompiler,
   createQueryId,
-} from '../../../'
+} from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,

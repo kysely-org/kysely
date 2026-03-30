@@ -1,4 +1,4 @@
-import { isPlainObject } from '../../../dist/cjs/util/object-utils'
+import { isPlainObject } from '../../../dist/cjs/util/object-utils.js'
 
 import { expect } from './test-setup.js'
 

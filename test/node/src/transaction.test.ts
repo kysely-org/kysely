@@ -8,7 +8,7 @@ import {
   SqliteDriver,
   Transaction,
   TRANSACTION_ACCESS_MODES,
-} from '../../../'
+} from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,

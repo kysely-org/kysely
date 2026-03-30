@@ -6,8 +6,8 @@ import {
   destroyTest,
   expect,
   initTest,
-} from './test-setup'
-import { GeneratedAlways, Kysely, sql } from '../../..'
+} from './test-setup.js'
+import { GeneratedAlways, Kysely, sql } from '../../../dist/cjs/index.js'
 import { Request } from 'tedious'
 import { SinonSandbox, SinonSpy, createSandbox } from 'sinon'
 

@@ -6,7 +6,7 @@ import {
   NOT_SUPPORTED,
   DIALECTS,
   limit,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect} clear`, () => {
