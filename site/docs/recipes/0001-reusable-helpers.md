@@ -193,7 +193,7 @@ const persons = await db
 
 #### SQL function + calculation
 
-Sometimes you need to refer to columns inside a function call. Below follows an example of a function that can be used to convert any timestamp column (MySQL `UNIX_TIMESTAMP`) to UNIX epoch milliseconds for ease of use in JavaScript. This is useful for having consistent timestamps with or without `jsonObjectFrom`/`jsonArrayFrom` - otherwise timestamps will be returned both as a `Date` and a string with format `YYYY-MM-DD hh:mm:ss.ffffff`.
+Here's another example of `ExpressionBuilder` usage, that passes a dynamic `Date` expression to a function expression that takes part in a calculation. A timestamp to milliseconds helper is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
 ```ts
 // This helper converts a timestamp column to unix timestamp and then multiplies by 1000.
