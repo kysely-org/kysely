@@ -717,7 +717,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -738,7 +738,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -759,7 +759,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -782,7 +782,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -842,7 +842,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -895,7 +895,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   leftJoinLateral<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
