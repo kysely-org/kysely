@@ -207,7 +207,7 @@ export function timestampToUnix(expr: Expression<Date>) {
 Here's how to use it:
 
 ```ts
-await kysely.selectFrom('table').select((eb) => timestampToUnix(eb, eb.ref('created_at')).as('created_at'))
+await kysely.selectFrom('table').select((eb) => timestampToUnix(eb.ref('created_at')).as('created_at'))
 ```
 
 ## Dealing with nullable expressions
