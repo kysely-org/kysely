@@ -105,36 +105,36 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
-    return columns.reduce<TableMetadata[]>((tables, it) => {
-      let table = tables.find(
-        (tbl) => tbl.name === it.table && tbl.schema === it.schema,
-      )
+    return Object.values(
+      columns.reduce(
+        (tables, column) => {
+          const { schema, table } = column
 
-      if (!table) {
-        table = freeze({
-          name: it.table,
-          isView: it.table_type === 'v',
-          schema: it.schema,
-          columns: [],
-        })
+          const { columns } = (tables[`schema:${schema};table:${table}`] ??=
+            freeze({
+              columns: [],
+              isView: column.table_type === 'v',
+              name: table,
+              schema,
+            }))
 
-        tables.push(table)
-      }
+          columns.push(
+            freeze({
+              comment: column.column_description ?? undefined,
+              dataType: column.type,
+              dataTypeSchema: column.type_schema,
+              hasDefaultValue: column.has_default,
+              isAutoIncrementing: column.auto_incrementing !== null,
+              isNullable: !column.not_null,
+              name: column.column,
+            }),
+          )
 
-      table.columns.push(
-        freeze({
-          name: it.column,
-          dataType: it.type,
-          dataTypeSchema: it.type_schema,
-          isNullable: !it.not_null,
-          isAutoIncrementing: it.auto_incrementing !== null,
-          hasDefaultValue: it.has_default,
-          comment: it.column_description ?? undefined,
-        }),
-      )
-
-      return tables
-    }, [])
+          return tables
+        },
+        {} as Record<string, TableMetadata>,
+      ),
+    )
   }
 }
 
