@@ -196,11 +196,12 @@ const persons = await db
 Here's another example of `ExpressionBuilder` usage, that passes a dynamic `Date` expression to a function expression that takes part in a calculation. A timestamp to milliseconds helper is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
 ```ts
-// This helper converts a timestamp column to unix timestamp and then multiplies by 1000.
-export const timestampToUnix = <DB, TB extends keyof DB>(
-  eb: ExpressionBuilder<DB, TB>,
-  expr: ExpressionWrapper<DB, TB, Date>,
-) => eb(eb.fn<number>('UNIX_TIMESTAMP', [expr]), '*', eb.val(1000));
+// This helper converts a MySQL timestamp expression to Unix epoch milliseconds.
+export function timestampToUnix(expr: Expression<Date>) {
+  const eb = expressionBuilder<DB>()
+  
+  return eb(eb.fn<number>('UNIX_TIMESTAMP', [expr]), '*', 1_000)
+}
 ```
 
 Here's how to use it:
