@@ -117,7 +117,9 @@ const persons = await db
 
 ## Reusable helpers using `ExpressionBuilder`
 
-Here's an example of a helper function that uses the expression builder instead of raw SQL:
+#### Subquery
+
+Here's an example of a helper function that uses the expression builder to build a subquery that gets filtered by a dynamic string expression.
 
 ```ts
 import { Expression, expressionBuilder } from 'kysely'
@@ -187,6 +189,26 @@ const persons = await db
   .select(['id', 'first_name'])
   .where(({ val }) => isOlderThan(val(60)))
   .execute()
+```
+
+#### SQL function + calculation
+
+Here we pass a dynamic `Date` expression to a function expression that takes part in a calculation.
+
+It is a timestamp to milliseconds helper and it is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
+
+```ts
+export function timestampToUnix(expr: Expression<Date>) {
+  const eb = expressionBuilder<DB>()
+  
+  return eb(eb.fn<number>('UNIX_TIMESTAMP', [expr]), '*', 1_000)
+}
+```
+
+Here's how to use it:
+
+```ts
+await kysely.selectFrom('table').select((eb) => timestampToUnix(eb.ref('created_at')).as('created_at'))
 ```
 
 ## Dealing with nullable expressions
