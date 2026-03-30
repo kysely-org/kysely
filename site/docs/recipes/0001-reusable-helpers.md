@@ -204,6 +204,7 @@ export const timestampToUnix = <DB, TB extends keyof DB>(
 ```
 
 Here's how to use it:
+
 ```ts
 await kysely.selectFrom('table').select((eb) => timestampToUnix(eb, eb.ref('created_at')).as('created_at'))
 ```
