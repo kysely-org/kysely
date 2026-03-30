@@ -15,7 +15,7 @@ import {
   sql,
 } from '../index.js'
 import type { KyselyTypeError } from '../../../dist/cjs/util/type-error.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 
 function testExpression(db: Kysely<Database>) {
   const e1: Expression<number> = undefined!

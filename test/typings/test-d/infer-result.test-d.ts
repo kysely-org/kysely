@@ -10,7 +10,7 @@ import type {
   Selectable,
   UpdateResult,
 } from '../index.js'
-import type { Database, Person, Pet } from '../shared.d.ts'
+import type { Database, Person, Pet } from '../shared.js'
 
 function testInferResultSelectQuery(db: Kysely<Database>) {
   const query0 = db.selectFrom('person').selectAll()

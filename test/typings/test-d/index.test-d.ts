@@ -9,7 +9,7 @@
 
 import type { Kysely, Transaction, InsertResult, Selectable } from '../index.js'
 
-import type { Database, Person } from '../shared.d.ts'
+import type { Database, Person } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
 async function testOrderBy(db: Kysely<Database>) {

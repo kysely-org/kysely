@@ -14,7 +14,7 @@ import {
   mergeAction,
   sql,
 } from '../index.js'
-import type { Database, Person, Pet } from '../shared.d.ts'
+import type { Database, Person, Pet } from '../shared.js'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')

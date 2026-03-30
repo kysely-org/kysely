@@ -4,7 +4,7 @@ import type {
   UpdateResult,
   DeleteResult,
 } from '../index.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 import { expectType } from 'tsd'
 
 async function testIfInSelect(db: Kysely<Database>) {

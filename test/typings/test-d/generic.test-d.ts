@@ -9,7 +9,7 @@ import type {
 } from '../index.js'
 
 import { expectAssignable, expectType } from 'tsd'
-import type { Database, Movie, Person } from '../shared.d.ts'
+import type { Database, Movie, Person } from '../shared.js'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
 function testSelectQueryBuilderExtends() {

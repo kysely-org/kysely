@@ -1,5 +1,5 @@
 import type { Kysely } from '../index.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 import { expectType } from 'tsd'
 
 async function testClearSelect(db: Kysely<Database>) {

@@ -4,7 +4,7 @@ import {
   type ExpressionWrapper,
   sql,
 } from '../index.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 
 async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   // case...when...then...when...then...end

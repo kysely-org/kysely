@@ -5,7 +5,7 @@ import {
   type Selectable,
   sql,
 } from '../index.js'
-import type { Database, Person, Pet } from '../shared.d.ts'
+import type { Database, Person, Pet } from '../shared.js'
 
 async function testDelete(db: Kysely<Database>) {
   const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()

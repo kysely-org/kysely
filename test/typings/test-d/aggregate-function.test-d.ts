@@ -5,7 +5,7 @@ import {
   expectType,
 } from 'tsd'
 import { type Generated, type Kysely, sql } from '../index.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn

@@ -5,7 +5,7 @@ import {
   type Kysely,
   sql,
 } from '../index.js'
-import type { Database } from '../shared.d.ts'
+import type { Database } from '../shared.js'
 
 async function testInsert(db: Kysely<Database>) {
   const person = {
