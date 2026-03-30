@@ -198,7 +198,6 @@ Here we pass a dynamic `Date` expression to a function expression that takes par
 It is a timestamp to milliseconds helper and it is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
 ```ts
-// This helper converts a MySQL timestamp expression to Unix epoch milliseconds.
 export function timestampToUnix(expr: Expression<Date>) {
   const eb = expressionBuilder<DB>()
   
