@@ -247,7 +247,7 @@ export class DefaultQueryCompiler
 
     if (node.endModifiers?.length) {
       this.append(' ')
-      this.compileList(this.sortSelectModifiers([...node.endModifiers]), ' ')
+      this.compileList(this.sortSelectModifiers(node.endModifiers), ' ')
     }
 
     if (wrapInParens) {
@@ -1868,16 +1868,16 @@ export class DefaultQueryCompiler
   }
 
   protected sortSelectModifiers(
-    arr: SelectModifierNode[],
+    arr: readonly SelectModifierNode[],
   ): ReadonlyArray<SelectModifierNode> {
-    arr.sort((left, right) =>
-      left.modifier && right.modifier
-        ? SELECT_MODIFIER_PRIORITY[left.modifier] -
-          SELECT_MODIFIER_PRIORITY[right.modifier]
-        : 1,
+    return freeze(
+      arr.toSorted((left, right) =>
+        left.modifier && right.modifier
+          ? SELECT_MODIFIER_PRIORITY[left.modifier] -
+            SELECT_MODIFIER_PRIORITY[right.modifier]
+          : 1,
+      ),
     )
-
-    return freeze(arr)
   }
 
   protected compileColumnAlterations(
