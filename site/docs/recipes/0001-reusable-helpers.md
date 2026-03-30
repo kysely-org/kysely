@@ -195,7 +195,7 @@ const persons = await db
 
 Here we pass a dynamic `Date` expression to a function expression that takes part in a calculation.
 
-A timestamp to milliseconds helper is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
+It is a timestamp to milliseconds helper and it is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
 ```ts
 // This helper converts a MySQL timestamp expression to Unix epoch milliseconds.
