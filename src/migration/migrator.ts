@@ -674,8 +674,7 @@ export class Migrator {
   ): Promise<MigrationResultSet> {
     const migrationsToRollback: ReadonlyArray<NamedMigration> =
       state.executedMigrations
-        .slice()
-        .reverse()
+        .toReversed()
         .slice(0, step)
         .map((name) => {
           return state.migrations.find((it) => it.name === name)!
