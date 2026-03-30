@@ -6,7 +6,7 @@
 
 const fs = require('fs')
 const path = require('path')
-const forEachFile = require('./util/for-each-file')
+const forEachFile = require('./util/for-each-file.cjs')
 
 const ESM_DIST_PATH = path.join(__dirname, '..', 'dist', 'esm')
 

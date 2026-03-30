@@ -1,0 +1,1 @@
+module.exports = require('dist/cjs/migration/index.js')
