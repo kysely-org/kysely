@@ -5,7 +5,7 @@ import {
   SqliteAdapter,
   SqliteIntrospector,
   SqliteQueryCompiler,
-} from '../..'
+} from '../../dist/esm/index.js'
 
 interface Person {
   id: Generated<number>
