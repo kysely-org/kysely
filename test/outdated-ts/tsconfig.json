@@ -3,6 +3,6 @@
   "include": ["./**/*"],
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "bundler"
+    "moduleResolution": "node10"
   }
 }
