@@ -6,6 +6,7 @@ import {
   ParseJSONResultsPlugin,
   NumericString,
   expressionBuilder,
+  NonDehydrateable,
 } from '../../../dist/cjs/index.js'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
@@ -584,6 +585,23 @@ for (const dialect of DIALECTS) {
 
       const expectedType0: Buffer = result.buffer
       const expectedType1: string = result.dehydrated.buffer
+    })
+
+    it('should skip dehydration for NonDehydrateable types', async () => {
+      const mode = sql<NonDehydrateable<NumericString>>`'1'`.as('mode')
+
+      const result = await db
+        .selectNoFrom([
+          mode,
+          jsonObjectFrom(db.selectNoFrom(mode)).$notNull().as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.mode).to.equal('string')
+      expect(typeof result.dehydrated.mode).to.equal('string')
+
+      const expectedType0: NumericString = result.mode
+      const expectedType1: NumericString = result.dehydrated.mode
     })
   })
 
