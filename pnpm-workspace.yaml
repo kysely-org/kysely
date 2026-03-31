@@ -18,6 +18,9 @@ allowBuilds:
 # https://pnpm.io/settings#blockexoticsubdeps
 blockExoticSubdeps: true
 
+# see: https://github.com/pnpm/pnpm/issues/11070
+dedupePeers: true
+
 # The minimum number of minutes that must pass after a version is published before
 # pnpm will install it.
 # https://pnpm.io/settings#minimumreleaseage
