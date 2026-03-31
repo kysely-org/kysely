@@ -105,36 +105,41 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
-    return columns.reduce<TableMetadata[]>((tables, it) => {
-      let table = tables.find(
-        (tbl) => tbl.name === it.table && tbl.schema === it.schema,
-      )
+    const tableDictionary: Map<string, TableMetadata> = new Map()
 
-      if (!table) {
-        table = freeze({
-          name: it.table,
-          isView: it.table_type === 'v',
-          schema: it.schema,
-          columns: [],
-        })
+    for (let i = 0, len = columns.length; i < len; i++) {
+      const column = columns[i]
 
-        tables.push(table)
+      const { schema, table } = column
+
+      const tableKey = `schema:${schema};table:${table}`
+
+      if (!tableDictionary.has(tableKey)) {
+        tableDictionary.set(
+          tableKey,
+          freeze({
+            columns: [],
+            isView: column.table_type === 'v',
+            name: table,
+            schema,
+          }),
+        )
       }
 
-      table.columns.push(
+      tableDictionary.get(tableKey)!.columns.push(
         freeze({
-          name: it.column,
-          dataType: it.type,
-          dataTypeSchema: it.type_schema,
-          isNullable: !it.not_null,
-          isAutoIncrementing: it.auto_incrementing !== null,
-          hasDefaultValue: it.has_default,
-          comment: it.column_description ?? undefined,
+          comment: column.column_description ?? undefined,
+          dataType: column.type,
+          dataTypeSchema: column.type_schema,
+          hasDefaultValue: column.has_default,
+          isAutoIncrementing: column.auto_incrementing !== null,
+          isNullable: !column.not_null,
+          name: column.column,
         }),
       )
+    }
 
-      return tables
-    }, [])
+    return Array.from(tableDictionary.values())
   }
 }
 
