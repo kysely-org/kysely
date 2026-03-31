@@ -22,10 +22,18 @@ blockExoticSubdeps: true
 # see: https://github.com/pnpm/pnpm/issues/11070
 dedupePeers: true
 
+# Deny package installs that don't match the supported Node.js version/s.
+# https://pnpm.io/settings#enginestrict
+engineStrict: true
+
 # The minimum number of minutes that must pass after a version is published before
 # pnpm will install it.
 # https://pnpm.io/settings#minimumreleaseage
 minimumReleaseAge: 1440 # 1 day old in minutes.
+
+# Make repeat `pnpm install`s much faster by performing a cheap check before.
+# https://pnpm.io/settings#optimisticrepeatinstall
+optimisticRepeatInstall: true
 
 # Fail when a dependency tries running a script and it is not in `allowBuilds`.
 # https://pnpm.io/settings#strictdepbuilds
@@ -39,3 +47,7 @@ trustPolicy: no-downgrade
 # https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
   - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.9.2 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
+
+# Fail before running custom scripts if `node_modules` is out of date.
+# https://pnpm.io/settings#verifydepsbeforerun
+verifyDepsBeforeRun: error

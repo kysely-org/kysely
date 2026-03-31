@@ -10,168 +10,168 @@ importers:
   .:
     devDependencies:
       '@arethetypeswrong/cli':
-        specifier: ^0.18.2
+        specifier: 0.18.2
         version: 0.18.2
       '@ark/attest':
-        specifier: ^0.56.0
+        specifier: 0.56.0
         version: 0.56.0(typescript@6.0.2)
       '@types/better-sqlite3':
-        specifier: ^7.6.13
+        specifier: 7.6.13
         version: 7.6.13
       '@types/chai':
-        specifier: ^5.2.3
+        specifier: 5.2.3
         version: 5.2.3
       '@types/chai-as-promised':
-        specifier: ^8.0.2
+        specifier: 8.0.2
         version: 8.0.2
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^25.5.0
+        specifier: 25.5.0
         version: 25.5.0
       '@types/pg':
-        specifier: ^8.20.0
+        specifier: 8.20.0
         version: 8.20.0
       '@types/pg-cursor':
-        specifier: ^2.7.2
+        specifier: 2.7.2
         version: 2.7.2
       '@types/semver':
-        specifier: ^7.7.1
+        specifier: 7.7.1
         version: 7.7.1
       '@types/sinon':
-        specifier: ^21.0.0
+        specifier: 21.0.0
         version: 21.0.0
       better-sqlite3:
-        specifier: ^12.8.0
+        specifier: 12.8.0
         version: 12.8.0
       chai:
-        specifier: ^6.2.2
+        specifier: 6.2.2
         version: 6.2.2
       chai-as-promised:
-        specifier: ^8.0.2
+        specifier: 8.0.2
         version: 8.0.2(chai@6.2.2)
       esbuild:
-        specifier: ^0.27.4
+        specifier: 0.27.4
         version: 0.27.4
       jsr:
-        specifier: ^0.14.3
+        specifier: 0.14.3
         version: 0.14.3
       lodash:
-        specifier: ^4.17.23
+        specifier: 4.17.23
         version: 4.17.23
       mocha:
-        specifier: ^11.7.5
+        specifier: 11.7.5
         version: 11.7.5
       mysql2:
-        specifier: ^3.20.0
+        specifier: 3.20.0
         version: 3.20.0(@types/node@25.5.0)
       pathe:
-        specifier: ^2.0.3
+        specifier: 2.0.3
         version: 2.0.3
       pg:
-        specifier: ^8.20.0
+        specifier: 8.20.0
         version: 8.20.0
       pg-cursor:
-        specifier: ^2.19.0
+        specifier: 2.19.0
         version: 2.19.0(pg@8.20.0)
       pkg-types:
-        specifier: ^2.3.0
+        specifier: 2.3.0
         version: 2.3.0
       playwright:
-        specifier: ^1.58.2
+        specifier: 1.58.2
         version: 1.58.2
       prettier:
-        specifier: ^3.8.1
+        specifier: 3.8.1
         version: 3.8.1
       semver:
-        specifier: ^7.7.4
+        specifier: 7.7.4
         version: 7.7.4
       sinon:
-        specifier: ^21.0.3
+        specifier: 21.0.3
         version: 21.0.3
       std-env:
-        specifier: ^4.0.0
+        specifier: 4.0.0
         version: 4.0.0
       tarn:
-        specifier: ^3.0.2
+        specifier: 3.0.2
         version: 3.0.2
       tedious:
-        specifier: ^19.2.1
+        specifier: 19.2.1
         version: 19.2.1
       tsd:
-        specifier: ^0.33.0
+        specifier: 0.33.0
         version: 0.33.0
       typescript:
-        specifier: ~6.0.2
+        specifier: 6.0.2
         version: 6.0.2
 
   site:
     dependencies:
       '@docusaurus/core':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)(typescript@6.0.2)
       '@docusaurus/plugin-vercel-analytics':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)(typescript@6.0.2)
       '@docusaurus/preset-classic':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)(search-insights@2.17.3)(typescript@6.0.2)
       '@docusaurus/theme-common':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(@docusaurus/plugin-content-docs@3.9.2)(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)
       '@docusaurus/theme-mermaid':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(@docusaurus/plugin-content-docs@3.9.2)(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)(typescript@6.0.2)
       '@mdx-js/react':
-        specifier: ^3.1.1
+        specifier: 3.1.1
         version: 3.1.1(@types/react@19.2.14)(react@19.2.4)
       '@radix-ui/colors':
-        specifier: ^3.0.0
+        specifier: 3.0.0
         version: 3.0.0
       clsx:
-        specifier: ^2.1.1
+        specifier: 2.1.1
         version: 2.1.1
       prism-react-renderer:
-        specifier: ^2.3.1
+        specifier: 2.4.1
         version: 2.4.1(react@19.2.4)
       react:
-        specifier: ^19.2.4
+        specifier: 19.2.4
         version: 19.2.4
       react-dom:
-        specifier: ^19.2.4
+        specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
     devDependencies:
       '@docusaurus/module-type-aliases':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)
       '@docusaurus/tsconfig':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2
       '@docusaurus/types':
-        specifier: ^3.9.2
+        specifier: 3.9.2
         version: 3.9.2(acorn@8.16.0)(esbuild@0.27.4)(react-dom@19.2.4)(react@19.2.4)
       '@signalwire/docusaurus-plugin-llms-txt':
-        specifier: ^1.2.2
+        specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.9.2)
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 19.2.14
         version: 19.2.14
       mermaid:
-        specifier: ^11.13.0
+        specifier: 11.13.0
         version: 11.13.0
       typescript:
-        specifier: ^6.0.2
+        specifier: 6.0.2
         version: 6.0.2
 
   test/cloudflare-workers:
     dependencies:
       hono:
-        specifier: ^4.12.9
+        specifier: 4.12.9
         version: 4.12.9
     devDependencies:
       wrangler:
-        specifier: ^4.78.0
+        specifier: 4.78.0
         version: 4.78.0
 
 packages:
@@ -1971,9 +1971,6 @@ packages:
   '@jridgewell/source-map@0.3.11':
     resolution: {integrity: sha512-ZMp1V8ZFcPG5dIWnQLr3NSI1MiCU7UETdS/A0G8V/XWHvJv3ZsFqutJn1Y5RPmAPX6F3BiE397OqveU/9NCuIA==}
 
-  '@jridgewell/sourcemap-codec@1.5.4':
-    resolution: {integrity: sha512-VT2+G1VQs/9oz078bLrYbecdZKs912zQlkelYpuf+SXF+QvZDYJlbx/LSx+meSAwdDFnF8FVXW92AVjjkVmgFw==}
-
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
@@ -2430,9 +2427,6 @@ packages:
   '@types/node@17.0.45':
     resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
 
-  '@types/node@24.10.1':
-    resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
-
   '@types/node@25.5.0':
     resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
 
@@ -2632,11 +2626,6 @@ packages:
   acorn-walk@8.3.2:
     resolution: {integrity: sha512-cjkyv4OtNCIeqhHrfS81QWXoCBPExR/J62oyEqepVw8WaQeSqpW2uhuLPh1m9eWhDuOo/jUXVTlifvesOWp/4A==}
     engines: {node: '>=0.4.0'}
-
-  acorn@8.15.0:
-    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
 
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
@@ -4057,6 +4046,7 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   global-dirs@3.0.1:
@@ -6299,11 +6289,6 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.7.3:
-    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.7.4:
     resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
@@ -6767,9 +6752,6 @@ packages:
 
   ufo@1.6.3:
     resolution: {integrity: sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q==}
-
-  undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
@@ -8634,7 +8616,7 @@ snapshots:
       react-router: 5.3.4(react@19.2.4)
       react-router-config: 5.1.1(react-router@5.3.4)(react@19.2.4)
       react-router-dom: 5.3.4(react@19.2.4)
-      semver: 7.7.3
+      semver: 7.7.4
       serve-handler: 6.1.6
       tinypool: 1.1.1
       tslib: 2.8.1
@@ -9657,13 +9639,13 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       '@types/yargs': 17.0.33
       chalk: 4.1.2
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.4
+      '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.30
 
   '@jridgewell/resolve-uri@3.1.2': {}
@@ -9673,14 +9655,12 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.30
 
-  '@jridgewell/sourcemap-codec@1.5.4': {}
-
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@jridgewell/trace-mapping@0.3.30':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.4
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@jridgewell/trace-mapping@0.3.9':
     dependencies:
@@ -9986,16 +9966,16 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/bonjour@3.5.13':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/chai-as-promised@8.0.2':
     dependencies:
@@ -10009,11 +9989,11 @@ snapshots:
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
       '@types/express-serve-static-core': 5.0.7
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/d3-array@3.2.1': {}
 
@@ -10156,14 +10136,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
 
   '@types/express-serve-static-core@5.0.7':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
@@ -10193,7 +10173,7 @@ snapshots:
 
   '@types/http-proxy@1.17.16':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
@@ -10223,13 +10203,9 @@ snapshots:
 
   '@types/node-forge@1.3.14':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/node@17.0.45': {}
-
-  '@types/node@24.10.1':
-    dependencies:
-      undici-types: 7.16.0
 
   '@types/node@25.5.0':
     dependencies:
@@ -10239,7 +10215,7 @@ snapshots:
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       '@types/pg': 8.20.0
 
   '@types/pg@8.20.0':
@@ -10277,20 +10253,20 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/retry@0.12.2': {}
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/semver@7.7.1': {}
 
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/serve-index@1.9.4':
     dependencies:
@@ -10299,7 +10275,7 @@ snapshots:
   '@types/serve-static@1.15.8':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       '@types/send': 0.17.5
 
   '@types/sinon@21.0.0':
@@ -10310,7 +10286,7 @@ snapshots:
 
   '@types/sockjs@0.3.36':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -10321,7 +10297,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -10455,21 +10431,15 @@ snapshots:
       mime-types: 2.1.35
       negotiator: 0.6.3
 
-  acorn-import-phases@1.0.4(acorn@8.15.0):
+  acorn-import-phases@1.0.4(acorn@8.16.0):
     dependencies:
-      acorn: 8.15.0
-
-  acorn-jsx@5.3.2(acorn@8.15.0):
-    dependencies:
-      acorn: 8.15.0
+      acorn: 8.16.0
 
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
 
   acorn-walk@8.3.2: {}
-
-  acorn@8.15.0: {}
 
   acorn@8.16.0: {}
 
@@ -11107,7 +11077,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
-      semver: 7.7.3
+      semver: 7.7.4
     optionalDependencies:
       webpack: 5.101.3(esbuild@0.27.4)
 
@@ -11635,7 +11605,7 @@ snapshots:
   esast-util-from-js@2.0.1:
     dependencies:
       '@types/estree-jsx': 1.0.5
-      acorn: 8.15.0
+      acorn: 8.16.0
       esast-util-from-estree: 2.0.0
       vfile-message: 4.0.3
 
@@ -11782,7 +11752,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       require-like: 0.1.2
 
   event-target-shim@5.0.1: {}
@@ -12611,7 +12581,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -12619,13 +12589,13 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -13246,8 +13216,8 @@ snapshots:
 
   micromark-extension-mdxjs@3.0.0:
     dependencies:
-      acorn: 8.15.0
-      acorn-jsx: 5.3.2(acorn@8.15.0)
+      acorn: 8.16.0
+      acorn-jsx: 5.3.2(acorn@8.16.0)
       micromark-extension-mdx-expression: 3.0.1
       micromark-extension-mdx-jsx: 3.0.2
       micromark-extension-mdx-md: 2.0.0
@@ -13716,7 +13686,7 @@ snapshots:
       got: 12.6.1
       registry-auth-token: 5.1.0
       registry-url: 6.0.1
-      semver: 7.7.3
+      semver: 7.7.4
 
   package-manager-detector@1.3.0: {}
 
@@ -14028,7 +13998,7 @@ snapshots:
       cosmiconfig: 8.3.6(typescript@6.0.2)
       jiti: 1.21.7
       postcss: 8.5.6
-      semver: 7.7.3
+      semver: 7.7.4
       webpack: 5.101.3(esbuild@0.27.4)
     transitivePeerDependencies:
       - typescript
@@ -14800,13 +14770,11 @@ snapshots:
 
   semver-diff@4.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   semver@5.7.2: {}
 
   semver@6.3.1: {}
-
-  semver@7.7.3: {}
 
   semver@7.7.4: {}
 
@@ -15201,7 +15169,7 @@ snapshots:
       '@azure/identity': 4.10.2
       '@azure/keyvault-keys': 4.10.0
       '@js-joda/core': 5.6.5
-      '@types/node': 24.10.1
+      '@types/node': 25.5.0
       bl: 6.1.5
       iconv-lite: 0.7.2
       js-md4: 0.3.2
@@ -15224,7 +15192,7 @@ snapshots:
   terser@5.43.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.15.0
+      acorn: 8.16.0
       commander: 2.20.3
       source-map-support: 0.5.21
 
@@ -15325,8 +15293,6 @@ snapshots:
 
   ufo@1.6.3: {}
 
-  undici-types@7.16.0: {}
-
   undici-types@7.18.2: {}
 
   undici@7.24.4: {}
@@ -15417,7 +15383,7 @@ snapshots:
       is-yarn-global: 0.4.1
       latest-version: 7.0.0
       pupa: 3.1.0
-      semver: 7.7.3
+      semver: 7.7.4
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
 
@@ -15503,7 +15469,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.15.0
+      acorn: 8.16.0
       acorn-walk: 8.3.2
       commander: 7.2.0
       debounce: 1.2.1
@@ -15589,8 +15555,8 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.15.0
-      acorn-import-phases: 1.0.4(acorn@8.15.0)
+      acorn: 8.16.0
+      acorn-import-phases: 1.0.4(acorn@8.16.0)
       browserslist: 4.25.3
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.3

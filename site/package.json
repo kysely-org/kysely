@@ -15,26 +15,26 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.9.2",
-    "@docusaurus/plugin-vercel-analytics": "^3.9.2",
-    "@docusaurus/preset-classic": "^3.9.2",
-    "@docusaurus/theme-common": "^3.9.2",
-    "@docusaurus/theme-mermaid": "^3.9.2",
-    "@mdx-js/react": "^3.1.1",
-    "@radix-ui/colors": "^3.0.0",
-    "clsx": "^2.1.1",
-    "prism-react-renderer": "^2.3.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "@docusaurus/core": "3.9.2",
+    "@docusaurus/plugin-vercel-analytics": "3.9.2",
+    "@docusaurus/preset-classic": "3.9.2",
+    "@docusaurus/theme-common": "3.9.2",
+    "@docusaurus/theme-mermaid": "3.9.2",
+    "@mdx-js/react": "3.1.1",
+    "@radix-ui/colors": "3.0.0",
+    "clsx": "2.1.1",
+    "prism-react-renderer": "2.4.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.9.2",
-    "@docusaurus/tsconfig": "^3.9.2",
-    "@docusaurus/types": "^3.9.2",
-    "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
-    "@types/react": "^19.2.14",
-    "mermaid": "^11.13.0",
-    "typescript": "^6.0.2"
+    "@docusaurus/module-type-aliases": "3.9.2",
+    "@docusaurus/tsconfig": "3.9.2",
+    "@docusaurus/types": "3.9.2",
+    "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
+    "@types/react": "19.2.14",
+    "mermaid": "11.13.0",
+    "typescript": "6.0.2"
   },
   "browserslist": {
     "production": [
