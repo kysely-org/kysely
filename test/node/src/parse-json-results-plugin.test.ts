@@ -1,6 +1,6 @@
 import { ParseJSONResultsPlugin } from '../../../dist/cjs/index.js'
 import { createQueryId } from '../../../dist/cjs/util/query-id.js'
-import { expect } from './test-setup'
+import { expect } from './test-setup.js'
 import merge from 'prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
 
 describe('ParseJSONResultsPlugin', () => {
