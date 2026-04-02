@@ -633,7 +633,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```
    *
    * In the next example a reference tuple is compared to a subquery. Note that
-   * in this case you need to use the {@link @SelectQueryBuilder.$asTuple | $asTuple}
+   * in this case you need to use the {@link SelectQueryBuilder.$asTuple | $asTuple}
    * function:
    *
    * ```ts
