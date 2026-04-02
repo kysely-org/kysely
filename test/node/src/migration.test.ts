@@ -1,7 +1,9 @@
 import fs from 'node:fs/promises'
+import { setTimeout } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'pathe'
 import { createSandbox, type SinonSpy } from 'sinon'
+import type { Kysely } from '../../../dist/cjs/index.js'
 import {
   FileMigrationProvider,
   type Migration,
@@ -12,8 +14,7 @@ import {
   Migrator,
   NO_MIGRATIONS,
   type MigratorProps,
-  type Kysely,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/cjs/migration/index.js'
 import {
   clearDatabase,
   destroyTest,
