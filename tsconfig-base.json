@@ -7,7 +7,7 @@
     "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2022",
+    "target": "es2023",
     "types": ["node"]
   }
 }

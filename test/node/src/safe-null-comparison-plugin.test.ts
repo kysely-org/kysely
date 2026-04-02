@@ -1,4 +1,4 @@
-import { SafeNullComparisonPlugin } from '../../..'
+import { SafeNullComparisonPlugin } from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,
