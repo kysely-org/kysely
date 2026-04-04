@@ -269,14 +269,12 @@ jobs:
           echo "TS_VERSION=$TS_VERSION" >> $GITHUB_ENV
           TSD_VERSION=$(echo '{"~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
           echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
-          TS_TARGET=$(echo '{"~5.4.0":"es2022", "~5.8.0":"es2023", "~5.9.0":"es2023"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
-          echo "TS_TARGET=$TS_TARGET" >> $GITHUB_ENV
 
       - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
         run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Run tests with older TypeScript version
-        run: pnpm test:typings && pnpm test:node:build --lib ${{ env.TS_TARGET }} --target ${{ env.TS_TARGET }}
+        run: pnpm test:typings && pnpm tsc -p test/node${{ env.TS_VERSION == '~5.4.0' && '/tsconfig-5.4.json' || '' }}
 
   jsdocs:
     name: JSDocs
