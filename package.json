@@ -90,7 +90,7 @@
     "test:bun": "pnpm build && bun link && cd test/bun && bun install && bun run test",
     "test:cloudflare-workers": "pnpm build && pnpm -r test --filter kysely-cloudflare-workers-test",
     "test:deno": "deno run --allow-env --allow-read --allow-net --no-lock test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net --no-lock test/deno/cdn.test.ts",
-    "test:typings": "cd test/typings && tsd && cd -",
+    "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.cjs",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
     "test:exports": "attw --pack . && node scripts/check-exports.cjs",
