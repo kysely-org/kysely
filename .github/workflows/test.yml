@@ -273,8 +273,11 @@ jobs:
       - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
         run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
+        name: Make `tsconfig` backwards compatible.
+      - run: pnpm script:override-tsconfig-target
+
       - name: Run tests with older TypeScript version
-        run: pnpm test:typings && pnpm tsc -p test/node${{ env.TS_VERSION == '~5.4.0' && '/tsconfig-5.4.json' || '' }}
+        run: pnpm test:typings && pnpm test:node:build
 
   jsdocs:
     name: JSDocs
