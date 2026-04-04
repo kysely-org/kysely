@@ -106,7 +106,7 @@
     "script:add-deno-type-references": "node scripts/add-deno-type-references.cjs",
     "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
     "script:generate-site-examples": "node scripts/generate-site-examples.cjs",
-    "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
+    "script:override-tsconfig-target": "node --experimental-strip-types scripts/override-tsconfig-target.mts",
     "script:remove-global-augmentations": "node --experimental-strip-types scripts/remove-global-augmentations.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
     "version": "pnpm script:align-versions && git add ."

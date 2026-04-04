@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "target": "es2022"
+  }
+}
