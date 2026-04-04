@@ -14,6 +14,10 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
     return '?'
   }
 
+  protected override getExistingParameterPlaceholder(_parameter: unknown): undefined {
+    return undefined
+  }
+
   protected override getLeftExplainOptionsWrapper(): string {
     return ''
   }

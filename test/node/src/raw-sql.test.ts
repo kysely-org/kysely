@@ -65,6 +65,36 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
+    it('substitutions should reuse identical parameters in supported dialects', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .where(
+          sql<boolean>`first_name between ${'A'} and ${'B'} and first_name <> ${'A'}`,
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" where first_name between $1 and $2 and first_name <> $1',
+          parameters: ['A', 'B'],
+        },
+        mysql: {
+          sql: 'select * from `person` where first_name between ? and ? and first_name <> ?',
+          parameters: ['A', 'B', 'A'],
+        },
+        mssql: {
+          sql: 'select * from "person" where first_name between @1 and @2 and first_name <> @1',
+          parameters: ['A', 'B'],
+        },
+        sqlite: {
+          sql: 'select * from "person" where first_name between ? and ? and first_name <> ?',
+          parameters: ['A', 'B', 'A'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('substitutions should accept queries', async () => {
       const compiler = new DefaultQueryCompiler()
 
