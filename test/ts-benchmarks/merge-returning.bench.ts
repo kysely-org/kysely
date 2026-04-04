@@ -1,5 +1,5 @@
 import { bench } from '@ark/attest'
-import type { DB } from '../typings/test-d/huge-db.test-d'
+import type { DB } from '../typings/test-d/huge-db.test-d.js'
 import type { MergeQueryBuilder, Kysely } from '../../dist/esm/index.js'
 
 declare const kysely: Kysely<DB>
