@@ -168,8 +168,8 @@ export type NarrowPartial<O, T> = T extends object
     }>
   : never
 
-type SimplifyDeep<T> = T extends object
-  ? T extends Date | RegExp | Map<unknown, unknown> | Set<unknown>
+export type SimplifyDeep<T> = T extends object
+  ? T extends Date | RegExp | Map<any, any> | Set<any>
     ? T
     : DrainOuterGeneric<{ [K in keyof T]: SimplifyDeep<T[K]> } & {}>
   : T
