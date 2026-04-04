@@ -12,7 +12,7 @@ export function foo<T extends 'myColumn'>(db: Kysely<DB>, field: T) {
     .selectFrom('MyTable')
     .select(field) // <------- was missing DrainOuterGeneric & ExtractColumnType
     .$narrowType<{}>() // <------- was missing KyselyTypeError
-    .executeTakeFirst() // <------- was missing SimplifySingleResult
+    .executeTakeFirst() // <------- was missing Simplify & children, and NarrowPartial
 }
 
 export function bar<T extends keyof DB['MyTable']>(
@@ -22,7 +22,7 @@ export function bar<T extends keyof DB['MyTable']>(
   return db
     .insertInto('MyTable')
     .values({ myColumn: 'test', anotherColumn: 1 })
-    .returning(columns) // <----- was missing SimplifyResult
+    .returning(columns) // <----- was missing Simplify & children, and NarrowPartial
     .execute()
 }
 
