@@ -2,6 +2,8 @@
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true
   },
   "include": ["./"]
