@@ -2,8 +2,8 @@ import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'pathe'
 import { lt } from 'semver'
-import packageJson from '../package.json'
-import tsconfig from '../tsconfig-base.json'
+import packageJson from '../package.json' with { type: 'json' }
+import tsconfig from '../tsconfig-base.json' with { type: 'json' }
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
