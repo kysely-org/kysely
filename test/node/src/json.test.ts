@@ -565,14 +565,17 @@ for (const dialect of DIALECTS) {
       const result = await db
         .selectNoFrom([
           buffer,
-          jsonObjectFrom(
-            db.selectNoFrom([
-              dialect === 'sqlite'
-                ? expressionBuilder()
-                    .cast<string>(buffer.expression, 'text')
-                    .as('buffer')
-                : buffer,
-            ]),
+          // Type assertion needed due to union of dialect helper types
+          (
+            jsonObjectFrom(
+              db.selectNoFrom([
+                dialect === 'sqlite'
+                  ? expressionBuilder()
+                      .cast<string>(buffer.expression, 'text')
+                      .as('buffer')
+                  : buffer,
+              ]),
+            ) as RawBuilder<{ buffer: string } | null>
           )
             .$notNull()
             .as('dehydrated'),

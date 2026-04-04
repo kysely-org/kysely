@@ -3,12 +3,23 @@ import type { SelectQueryNode } from '../operation-node/select-query-node.js'
 import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 import { getJsonObjectArgs } from '../util/json-object-args.js'
 import type {
+  HasUint8Array,
+  ObjectHasUint8ArrayProperty,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   Simplify,
 } from '../util/type-utils.js'
+
+type ExpressionRecordHasUint8Array<
+  O extends Record<string, Expression<unknown>>,
+> = true extends {
+  [K in keyof O]: O[K] extends Expression<infer V> ? HasUint8Array<V> : false
+}[keyof O]
+  ? true
+  : false
 
 /**
  * A SQLite helper for aggregating a subquery into a JSON array.
@@ -73,10 +84,12 @@ import type {
  */
 export function jsonArrayFrom<O>(
   expr: SelectQueryBuilderExpression<O>,
-): RawBuilder<Simplify<ShallowDehydrateObject<O>>[]> {
+): ObjectHasUint8ArrayProperty<O> extends true
+  ? KyselyTypeError<'SQLite jsonArrayFrom does not support Buffer/Uint8Array columns. Cast to text using eb.cast<string>(column, "text") or sql<string>`hex(column)`'>
+  : RawBuilder<Simplify<ShallowDehydrateObject<O>>[]> {
   return sql`(select coalesce(json_group_array(json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'agg'),
-  )})), '[]') from ${expr} as agg)`
+  )})), '[]') from ${expr} as agg)` as any
 }
 
 /**
@@ -144,10 +157,12 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: SelectQueryBuilderExpression<O>,
-): RawBuilder<Simplify<ShallowDehydrateObject<O>> | null> {
+): ObjectHasUint8ArrayProperty<O> extends true
+  ? KyselyTypeError<'SQLite jsonObjectFrom does not support Buffer/Uint8Array columns. Cast to text using eb.cast<string>(column, "text") or sql<string>`hex(column)`'>
+  : RawBuilder<Simplify<ShallowDehydrateObject<O>> | null> {
   return sql`(select json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'obj'),
-  )}) from ${expr} as obj)`
+  )}) from ${expr} as obj)` as any
 }
 
 /**
@@ -208,16 +223,18 @@ export function jsonObjectFrom<O>(
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O,
-): RawBuilder<
-  Simplify<{
-    [K in keyof O]: O[K] extends Expression<infer V>
-      ? ShallowDehydrateValue<V>
-      : never
-  }>
-> {
+): ExpressionRecordHasUint8Array<O> extends true
+  ? KyselyTypeError<'SQLite jsonBuildObject does not support Buffer/Uint8Array values. Cast to text using eb.cast<string>(column, "text") or sql<string>`hex(column)`'>
+  : RawBuilder<
+      Simplify<{
+        [K in keyof O]: O[K] extends Expression<infer V>
+          ? ShallowDehydrateValue<V>
+          : never
+      }>
+    > {
   return sql`json_object(${sql.join(
     Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
-  )})`
+  )})` as any
 }
 
 function getSqliteJsonObjectArgs(

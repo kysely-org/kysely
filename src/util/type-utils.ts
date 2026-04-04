@@ -262,3 +262,17 @@ export type StringsWhenDataTypeNotAvailable =
 export type NumbersWhenDataTypeNotAvailable = bigint | NumericString
 
 export type NumericString = `${number}`
+
+/**
+ * Evaluates to `true` if type `T` is assignable to `Uint8Array`.
+ */
+export type HasUint8Array<T> = T extends Uint8Array ? true : false
+
+/**
+ * Evaluates to `true` if any property in object type `O` contains `Uint8Array`.
+ */
+export type ObjectHasUint8ArrayProperty<O> = true extends {
+  [K in keyof O]: HasUint8Array<O[K]>
+}[keyof O]
+  ? true
+  : false
