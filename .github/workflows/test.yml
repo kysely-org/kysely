@@ -276,7 +276,7 @@ jobs:
         run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Run tests with older TypeScript version
-        run: pnpm test:typings && pnpm test:node:build -- --lib=${{ env.TS_TARGET }} --target=${{ env.TS_TARGET }}
+        run: pnpm test:typings && pnpm test:node:build --lib=${{ env.TS_TARGET }} --target=${{ env.TS_TARGET }}
 
   jsdocs:
     name: JSDocs
