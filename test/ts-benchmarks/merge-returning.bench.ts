@@ -17,48 +17,48 @@ bench.baseline(() => {
 
 bench('kysely.mergeInto(table).returning(column)', () =>
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([307, 'instantiations'])
+).types([274, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(~column)', () =>
   // @ts-expect-error
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7321, 'instantiations'])
+).types([6906, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(table.column)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([307, 'instantiations'])
+).types([274, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(~table.column)', () =>
   // @ts-expect-error
   mergeQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7321, 'instantiations'])
+).types([6906, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(table.column as alias)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([307, 'instantiations'])
+).types([274, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(column as alias)', () =>
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([307, 'instantiations'])
+).types([274, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returningAll()', () =>
   mergeQuery.returningAll(),
-).types([88, 'instantiations'])
+).types([84, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returning(column)', () =>
   mergeQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([241, 'instantiations'])
+).types([208, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returning(table.column)', () =>
   mergeQueryAny.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([241, 'instantiations'])
+).types([208, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returning(table.column as alias)', () =>
   mergeQueryAny.returning(
     'my_table.col_164b7896ec8e770207febe0812c5f052 as foo',
   ),
-).types([241, 'instantiations'])
+).types([208, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)..returningAll()', () =>
   mergeQueryAny.returningAll(),
-).types([88, 'instantiations'])
+).types([84, 'instantiations'])
