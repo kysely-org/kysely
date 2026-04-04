@@ -247,7 +247,7 @@ export class DefaultQueryCompiler
 
     if (node.endModifiers?.length) {
       this.append(' ')
-      this.compileList(this.sortSelectModifiers([...node.endModifiers]), ' ')
+      this.compileList(this.sortSelectModifiers(node.endModifiers), ' ')
     }
 
     if (wrapInParens) {
@@ -634,7 +634,11 @@ export class DefaultQueryCompiler
 
     if (!node.selectQuery) {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.indexes ?? []),
+      ])
       this.append(')')
     }
 
@@ -747,7 +751,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDropTable(node: DropTableNode): void {
-    this.append('drop table ')
+    this.append('drop ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    this.append('table ')
 
     if (node.ifExists) {
       this.append('if exists ')
@@ -1440,6 +1450,15 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.additionalNames?.length) {
+      this.append(', ')
+      this.compileList(node.additionalNames)
+    }
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitExplain(node: ExplainNode): void {
@@ -1705,7 +1724,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')
@@ -1847,16 +1868,16 @@ export class DefaultQueryCompiler
   }
 
   protected sortSelectModifiers(
-    arr: SelectModifierNode[],
+    arr: readonly SelectModifierNode[],
   ): ReadonlyArray<SelectModifierNode> {
-    arr.sort((left, right) =>
-      left.modifier && right.modifier
-        ? SELECT_MODIFIER_PRIORITY[left.modifier] -
-          SELECT_MODIFIER_PRIORITY[right.modifier]
-        : 1,
+    return freeze(
+      arr.toSorted((left, right) =>
+        left.modifier && right.modifier
+          ? SELECT_MODIFIER_PRIORITY[left.modifier] -
+            SELECT_MODIFIER_PRIORITY[right.modifier]
+          : 1,
+      ),
     )
-
-    return freeze(arr)
   }
 
   protected compileColumnAlterations(
@@ -1874,7 +1895,7 @@ export class DefaultQueryCompiler
   }
 }
 
-const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
+const SELECT_MODIFIER_SQL = freeze({
   ForKeyShare: 'for key share',
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',
@@ -1882,20 +1903,19 @@ const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
   NoWait: 'nowait',
   SkipLocked: 'skip locked',
   Distinct: 'distinct',
-})
+} as const) satisfies Record<SelectModifier, string>
 
-const SELECT_MODIFIER_PRIORITY: Readonly<Record<SelectModifier, number>> =
-  freeze({
-    ForKeyShare: 1,
-    ForNoKeyUpdate: 1,
-    ForUpdate: 1,
-    ForShare: 1,
-    NoWait: 2,
-    SkipLocked: 2,
-    Distinct: 0,
-  })
+const SELECT_MODIFIER_PRIORITY = freeze({
+  ForKeyShare: 1,
+  ForNoKeyUpdate: 1,
+  ForUpdate: 1,
+  ForShare: 1,
+  NoWait: 2,
+  SkipLocked: 2,
+  Distinct: 0,
+} as const) satisfies Record<SelectModifier, number>
 
-const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
+const JOIN_TYPE_SQL = freeze({
   InnerJoin: 'inner join',
   LeftJoin: 'left join',
   RightJoin: 'right join',
@@ -1907,4 +1927,4 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   OuterApply: 'outer apply',
   CrossApply: 'cross apply',
   Using: 'using',
-})
+} as const) satisfies Record<JoinType, string>

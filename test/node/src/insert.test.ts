@@ -21,7 +21,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: insert into`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: insert into`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -70,7 +72,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -111,7 +113,7 @@ for (const dialect of DIALECTS) {
           .selectFrom('pet')
           .select(sql<string>`max(name)`.as('max_name')),
         last_name:
-          dialect === 'sqlite'
+          sqlSpec === 'sqlite'
             ? sql`'Bar' || 'son'`
             : sql`concat('Bar', 'son')`,
         gender: 'other',
@@ -146,7 +148,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should insert one row with expressions', async () => {
         const query = ctx.db.insertInto('person').values(({ selectFrom }) => ({
           first_name: selectFrom('pet')
@@ -236,7 +238,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       it('should insert the result of a values expression', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -255,7 +257,7 @@ for (const dialect of DIALECTS) {
               .select(['t.a', 't.b']),
           )
           .$call((qb) =>
-            dialect === 'postgres'
+            sqlSpec === 'postgres'
               ? qb.returning(['first_name', 'gender'])
               : qb.output(['inserted.first_name', 'inserted.gender']),
           )
@@ -315,14 +317,14 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
       }
     })
 
-    if (dialect === 'sqlite') {
+    if (sqlSpec === 'sqlite') {
       for (const { method, action } of [
         { method: 'orAbort', action: 'abort' },
         { method: 'orFail', action: 'fail' },
@@ -351,7 +353,7 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    if (dialect === 'mysql' || dialect == 'sqlite') {
+    if (sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
       it('should insert one row and ignore conflicts using insert ignore', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -386,7 +388,7 @@ for (const dialect of DIALECTS) {
 
         expect(result).to.be.instanceOf(InsertResult)
         expect(result.numInsertedOrUpdatedRows).to.equal(0n)
-        if (dialect === 'sqlite') {
+        if (sqlSpec === 'sqlite') {
           // SQLite seems to return the last inserted id even if nothing got inserted.
           expect(result.insertId! > 0n).to.be.equal(true)
         } else {
@@ -395,7 +397,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -434,7 +436,7 @@ for (const dialect of DIALECTS) {
         expect(result).to.be.instanceOf(InsertResult)
         expect(result.numInsertedOrUpdatedRows).to.equal(0n)
 
-        if (dialect === 'sqlite') {
+        if (sqlSpec === 'sqlite') {
           // SQLite seems to return the last inserted id even if nothing got inserted.
           expect(result.insertId! > 0n).to.be.equal(true)
         } else {
@@ -443,7 +445,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should insert one row and ignore conflicts using `on conflict on constraint do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -478,7 +480,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should update instead of insert on conflict when using onDuplicateKeyUpdate', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -525,7 +527,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should update instead of insert on conflict when using `on conflict do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -568,7 +570,7 @@ for (const dialect of DIALECTS) {
         expect(result).to.be.instanceOf(InsertResult)
         expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-        if (dialect === 'postgres') {
+        if (sqlSpec === 'postgres') {
           expect(result.insertId).to.be.undefined
         } else {
           expect(result.insertId).to.be.a('bigint')
@@ -587,7 +589,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should update instead of insert on conflict when using `on conflict on constraint do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -713,7 +715,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(2n)
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
+      if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -882,7 +884,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should insert a row and return data using `returning`', async () => {
         const result = await ctx.db
           .insertInto('person')
@@ -892,7 +894,7 @@ for (const dialect of DIALECTS) {
               .selectFrom('person')
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
-              dialect === 'postgres'
+              sqlSpec === 'postgres'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
                 : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
@@ -938,7 +940,7 @@ for (const dialect of DIALECTS) {
               .selectFrom('person')
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
-              dialect === 'postgres'
+              sqlSpec === 'postgres'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
                 : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
@@ -958,7 +960,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -986,7 +988,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres' && variant !== 'pglite') {
       it('should insert multiple rows and stream returned results', async () => {
         const values = [
           {
@@ -1018,7 +1020,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should insert top', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -1064,7 +1066,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should insert a row and return data using `output`', async () => {
         const result = await ctx.db
           .insertInto('person')

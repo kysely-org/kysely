@@ -14,8 +14,10 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  if (dialect === 'mysql' || dialect === 'sqlite') {
-    describe(`${dialect}: replace into`, () => {
+  const { sqlSpec, variant } = dialect
+
+  if (sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
+    describe(`${variant}: replace into`, () => {
       let ctx: TestContext
 
       before(async function () {

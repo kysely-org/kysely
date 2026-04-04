@@ -8,9 +8,11 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: select`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: select`, () => {
     let ctx: TestContext
-    const identifierWrapper = dialect === 'mysql' ? '`' : '"'
+    const identifierWrapper = sqlSpec === 'mysql' ? '`' : '"'
 
     before(async function () {
       ctx = await initTest(this, dialect)
@@ -62,7 +64,7 @@ for (const dialect of DIALECTS) {
       await assertDidNotDropTable(ctx, 'person')
     })
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should not allow SQL injection in $.key JSON paths', async () => {
         const injection =
           `first' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ` as never

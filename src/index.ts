@@ -3,6 +3,8 @@
  * @mergeModuleWith <project>
  */
 
+import type { KyselyTypeError } from './util/type-error.js'
+
 export * from './kysely.js'
 export * from './query-creator.js'
 
@@ -83,9 +85,9 @@ export * from './dialect/database-introspector.js'
 export * from './dialect/sqlite/sqlite-dialect.js'
 export * from './dialect/sqlite/sqlite-dialect-config.js'
 export * from './dialect/sqlite/sqlite-driver.js'
-export * from './dialect/postgres/postgres-query-compiler.js'
-export * from './dialect/postgres/postgres-introspector.js'
-export * from './dialect/postgres/postgres-adapter.js'
+export * from './dialect/sqlite/sqlite-query-compiler.js'
+export * from './dialect/sqlite/sqlite-introspector.js'
+export * from './dialect/sqlite/sqlite-adapter.js'
 
 export * from './dialect/mysql/mysql-dialect.js'
 export * from './dialect/mysql/mysql-dialect-config.js'
@@ -97,9 +99,9 @@ export * from './dialect/mysql/mysql-adapter.js'
 export * from './dialect/postgres/postgres-driver.js'
 export * from './dialect/postgres/postgres-dialect-config.js'
 export * from './dialect/postgres/postgres-dialect.js'
-export * from './dialect/sqlite/sqlite-query-compiler.js'
-export * from './dialect/sqlite/sqlite-introspector.js'
-export * from './dialect/sqlite/sqlite-adapter.js'
+export * from './dialect/postgres/postgres-query-compiler.js'
+export * from './dialect/postgres/postgres-introspector.js'
+export * from './dialect/postgres/postgres-adapter.js'
 
 export * from './dialect/mssql/mssql-adapter.js'
 export * from './dialect/mssql/mssql-dialect-config.js'
@@ -108,11 +110,13 @@ export * from './dialect/mssql/mssql-driver.js'
 export * from './dialect/mssql/mssql-introspector.js'
 export * from './dialect/mssql/mssql-query-compiler.js'
 
+export * from './dialect/pglite/pglite-adapter.js'
+export * from './dialect/pglite/pglite-driver.js'
+export * from './dialect/pglite/pglite-dialect.js'
+export * from './dialect/pglite/pglite-dialect-config.js'
+
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
-
-export * from './migration/migrator.js'
-export * from './migration/file-migration-provider.js'
 
 export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
@@ -121,6 +125,7 @@ export * from './plugin/with-schema/with-schema-plugin.js'
 export * from './plugin/parse-json-results/parse-json-results-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists.js'
+export * from './plugin/safe-null-comparison/safe-null-comparison-plugin.js'
 
 export * from './operation-node/add-column-node.js'
 export * from './operation-node/add-constraint-node.js'
@@ -240,18 +245,20 @@ export type {
   DrainOuterGeneric,
   Equals,
   ExtractColumnType,
-  UnknownRow,
-  Simplify,
-  SqlBool,
+  NarrowPartial,
+  NotNull,
   Nullable,
   NumbersWhenDataTypeNotAvailable,
-  NotNull,
   NumericString,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
+  Simplify,
+  SimplifyDeep,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
   StringsWhenDataTypeNotAvailable,
+  UnknownRow,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
@@ -307,4 +314,96 @@ export type {
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
 export type { Collation } from './parser/collate-parser.js'
-export type { QueryCreatorWithCommonTableExpression } from './parser/with-parser.js'
+export type {
+  CommonTableExpression,
+  CommonTableExpressionOutput,
+  CommonTableExpressionFactory,
+  RecursiveCommonTableExpression,
+  QueryCreatorWithCommonTableExpression,
+} from './parser/with-parser.js'
+
+// deprecated exports
+
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_ALLOW_UNORDERED_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_LOCK_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const MIGRATION_LOCK_ID: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrateOptions =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type Migration =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationInfo =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationProvider =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResult =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResultSet =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const Migrator: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigratorProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const NO_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type NoMigrations =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const FileMigrationProvider: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderFS =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderPath =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">

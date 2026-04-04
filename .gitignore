@@ -1,7 +1,9 @@
 dist
 /helpers
+migration.*
 /test/browser/bundle.js
 node_modules
 .vscode
 .idea
 tsconfig.tsbuildinfo
+/playground.ts

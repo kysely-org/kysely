@@ -3,9 +3,10 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "esModuleInterop": true,
-    "lib": ["esnext"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "outDir": "dist",
     "rootDir": "./src",
-    "types": ["mocha", "node"],
+    "types": ["mocha", "node"]
   }
 }

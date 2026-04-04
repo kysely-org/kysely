@@ -14,7 +14,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: join`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: join`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -685,7 +687,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mssql' || sqlSpec === 'sqlite') {
       describe('full join', () => {
         it(`should full join a table`, async () => {
           const query = ctx.db
@@ -746,7 +748,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       describe('lateral join', () => {
         it('should join an expression laterally', async () => {
           const query = ctx.db
@@ -859,7 +861,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       describe('apply', () => {
         it('should cross apply an expression', async () => {
           const q = ctx.db

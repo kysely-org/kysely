@@ -1,8 +1,8 @@
-import type { InsertResult } from '../query-builder/insert-result.js'
 import type { DeleteResult } from '../query-builder/delete-result.js'
+import type { InsertResult } from '../query-builder/insert-result.js'
+import type { MergeResult } from '../query-builder/merge-result.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
 import type { KyselyTypeError } from './type-error.js'
-import type { MergeResult } from '../query-builder/merge-result.js'
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -103,25 +103,21 @@ export type AnyAliasedColumnWithTable<
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
-export type SimplifySingleResult<O> = O extends InsertResult
+export type SimplifySingleResult<O> = O extends
+  | InsertResult
+  | UpdateResult
+  | DeleteResult
+  | MergeResult
   ? O
-  : O extends DeleteResult
-    ? O
-    : O extends UpdateResult
-      ? O
-      : O extends MergeResult
-        ? O
-        : Simplify<O> | undefined
+  : Simplify<O> | undefined
 
-export type SimplifyResult<O> = O extends InsertResult
+export type SimplifyResult<O> = O extends
+  | InsertResult
+  | UpdateResult
+  | DeleteResult
+  | MergeResult
   ? O
-  : O extends DeleteResult
-    ? O
-    : O extends UpdateResult
-      ? O
-      : O extends MergeResult
-        ? O
-        : Simplify<O>
+  : Simplify<O>
 
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 
@@ -141,6 +137,11 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
 export type IsNever<T> = [T] extends [never] ? true : false
 
 /**
+ * Evaluates to `true` if `T` is nullable.
+ */
+export type IsNullable<T> = [T] extends [NonNullable<T>] ? false : true
+
+/**
  * Evaluates to `true` if `T` is `any`.
  */
 export type IsAny<T> = 0 extends T & 1 ? true : false
@@ -153,19 +154,25 @@ export type Equals<T, U> =
     ? true
     : false
 
-export type NarrowPartial<O, T> = DrainOuterGeneric<
-  T extends object
-    ? {
-        [K in keyof O & string]: K extends keyof T
-          ? T[K] extends NotNull
-            ? Exclude<O[K], null>
+export type NarrowPartial<O, T> = T extends object
+  ? DrainOuterGeneric<{
+      [K in keyof O & string]: K extends keyof T
+        ? T[K] extends NotNull
+          ? Exclude<O[K], null>
+          : T[K] extends object
+            ? SimplifyDeep<O[K] & NarrowPartial<O[K], T[K]>>
             : T[K] extends O[K]
               ? T[K]
               : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-          : O[K]
-      }
-    : never
->
+        : O[K]
+    }>
+  : never
+
+export type SimplifyDeep<T> = T extends object
+  ? T extends Date | RegExp | Map<any, any> | Set<any>
+    ? T
+    : DrainOuterGeneric<{ [K in keyof T]: SimplifyDeep<T[K]> } & {}>
+  : T
 
 /**
  * A type constant for marking a column as not null. Can be used with `$narrowPartial`.
@@ -236,19 +243,19 @@ export type ShallowDehydrateObject<O> = {
  */
 export type ShallowDehydrateValue<T> = T extends null | undefined
   ? T
-  : '__kysely_dehydrate__' extends keyof NonNullable<T>
+  : '__kysely_dehydrate__' extends keyof T & {}
     ? T
-    : T extends (infer U)[] | null | undefined
+    : T & {} extends (infer U)[]
       ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
       :
           | Exclude<
               T,
               StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
             >
-          | ([Extract<T, NumbersWhenDataTypeNotAvailable>] extends [never]
+          | (IsNever<Extract<T, NumbersWhenDataTypeNotAvailable>> extends true
               ? never
               : number)
-          | ([Extract<T, StringsWhenDataTypeNotAvailable>] extends [never]
+          | (IsNever<Extract<T, StringsWhenDataTypeNotAvailable>> extends true
               ? never
               : string)
 

@@ -15,7 +15,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: delete`, () => {
+  const { sqlSpec, variant } = dialect
+
+  describe(`${variant}: delete`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -139,7 +141,7 @@ for (const dialect of DIALECTS) {
       expect(result.numDeletedRows).to.equal(0n)
     })
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should order and limit the deleted rows', async () => {
         const query = ctx.db.deleteFrom('person').orderBy('first_name').limit(2)
 
@@ -160,7 +162,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'sqlite') {
       it('should return deleted rows when `returning` is used', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -217,7 +219,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should delete from t1 using t2', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -510,7 +512,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql') {
+    if (sqlSpec === 'mysql') {
       it('should delete from t1 using t1 inner join t2', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -873,7 +875,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -899,7 +901,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (sqlSpec === 'postgres' && variant !== 'pglite') {
       it('should delete all rows and stream returned results', async () => {
         const stream = ctx.db
           .deleteFrom('person')
@@ -923,7 +925,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should delete top', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -968,7 +970,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mssql') {
+    if (sqlSpec === 'mssql') {
       it('should return deleted rows when `output` is used', async () => {
         const query = ctx.db
           .deleteFrom('person')
