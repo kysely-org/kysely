@@ -105,28 +105,31 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
-    const tableDictionary: Map<string, TableMetadata> = new Map()
+    const tables: TableMetadata[] = []
+    const schemas = new Map<string, Map<string, TableMetadata>>()
 
-    for (let i = 0, len = columns.length; i < len; i++) {
-      const column = columns[i]
+    for (const column of columns) {
+      let schema = schemas.get(column.schema)
 
-      const { schema, table } = column
-
-      const tableKey = `schema:${schema};table:${table}`
-
-      if (!tableDictionary.has(tableKey)) {
-        tableDictionary.set(
-          tableKey,
-          freeze({
-            columns: [],
-            isView: column.table_type === 'v',
-            name: table,
-            schema,
-          }),
-        )
+      if (!schema) {
+        schema = new Map<string, TableMetadata>()
+        schemas.set(column.schema, schema)
       }
 
-      tableDictionary.get(tableKey)!.columns.push(
+      let table = schema.get(column.table)
+
+      if (!table) {
+        table = freeze({
+          columns: [],
+          isView: column.table_type === 'v',
+          name: column.table,
+          schema: column.schema,
+        })
+        schema.set(column.table, table)
+        tables.push(table)
+      }
+
+      table.columns.push(
         freeze({
           comment: column.column_description ?? undefined,
           dataType: column.type,
@@ -139,7 +142,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       )
     }
 
-    return Array.from(tableDictionary.values())
+    return tables
   }
 }
 
