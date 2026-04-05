@@ -19,16 +19,12 @@ import {
 import type { QueryExecutor } from './query-executor/query-executor.js'
 import {
   type CommonTableExpression,
-  type CommonTableExpressionFactory,
-  type CommonTableExpressionOutput,
   type QueryCreatorWithCommonTableExpression,
+  type ReadonlyCommonTableExpression,
+  type ReadonlyQueryCreatorWithCommonTableExpression,
+  type ReadonlyRecursiveCommonTableExpression,
   type RecursiveCommonTableExpression,
   parseCommonTableExpression,
-  QueryCreatorWithCommonTableExpression,
-  ReadonlyCommonTableExpression,
-  ReadonlyQueryCreatorWithCommonTableExpression,
-  ReadonlyRecursiveCommonTableExpression,
-  RecursiveCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
@@ -783,19 +779,37 @@ export interface QueryCreatorProps {
   readonly withNode?: WithNode
 }
 
-export type ReadonlyQueryCreator<DB> = Pick<QueryCreator<DB>, 'selectFrom'> & {
+export type ReadonlyQueryCreator<DB> = Pick<
+  QueryCreator<DB>,
+  'selectFrom' | 'selectNoFrom'
+> & {
+  /**
+   * See {@link QueryCreator.with}
+   */
   with<N extends string, E extends ReadonlyCommonTableExpression<DB, N>>(
-    name: N,
-    expression: E
+    nameOrBuilder: N | CTEBuilderCallback<N>,
+    expression: E,
   ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
-  withoutPlugins(): ReadonlyQueryCreator<DB>
-  withPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
+  /**
+   * See {@link QueryCreator.withRecursive}
+   */
   withRecursive<
     N extends string,
-    E extends ReadonlyRecursiveCommonTableExpression<DB, N>
+    E extends ReadonlyRecursiveCommonTableExpression<DB, N>,
   >(
-    name: N,
-    expression: E
+    nameOrBuilder: N | CTEBuilderCallback<N>,
+    expression: E,
   ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
+  /**
+   * See {@link QueryCreator.withPlugin}
+   */
+  withPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
+  /**
+   * See {@link QueryCreator.withoutPlugins}
+   */
+  withoutPlugins(): ReadonlyQueryCreator<DB>
+  /**
+   * See {@link QueryCreator.withSchema}
+   */
   withSchema(schema: string): ReadonlyQueryCreator<DB>
 }
