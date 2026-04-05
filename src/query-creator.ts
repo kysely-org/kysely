@@ -20,9 +20,6 @@ import type { QueryExecutor } from './query-executor/query-executor.js'
 import {
   type CommonTableExpression,
   type QueryCreatorWithCommonTableExpression,
-  type ReadonlyCommonTableExpression,
-  type ReadonlyQueryCreatorWithCommonTableExpression,
-  type ReadonlyRecursiveCommonTableExpression,
   type RecursiveCommonTableExpression,
   parseCommonTableExpression,
 } from './parser/with-parser.js'
@@ -777,39 +774,4 @@ export class QueryCreator<DB> {
 export interface QueryCreatorProps {
   readonly executor: QueryExecutor
   readonly withNode?: WithNode
-}
-
-export type ReadonlyQueryCreator<DB> = Pick<
-  QueryCreator<DB>,
-  'selectFrom' | 'selectNoFrom'
-> & {
-  /**
-   * See {@link QueryCreator.with}
-   */
-  with<N extends string, E extends ReadonlyCommonTableExpression<DB, N>>(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
-  /**
-   * See {@link QueryCreator.withRecursive}
-   */
-  withRecursive<
-    N extends string,
-    E extends ReadonlyRecursiveCommonTableExpression<DB, N>,
-  >(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
-  /**
-   * See {@link QueryCreator.withPlugin}
-   */
-  withPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
-  /**
-   * See {@link QueryCreator.withoutPlugins}
-   */
-  withoutPlugins(): ReadonlyQueryCreator<DB>
-  /**
-   * See {@link QueryCreator.withSchema}
-   */
-  withSchema(schema: string): ReadonlyQueryCreator<DB>
 }
