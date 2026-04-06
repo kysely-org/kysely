@@ -27,12 +27,8 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  *
  * ```ts
  * import * as Sqlite from 'better-sqlite3'
- * import {
- *   type Generated,
- *   Kysely,
- *   type ReadonlyKysely,
- *   SqliteDialect
- * } from 'kysely'
+ * import { type Generated, Kysely, SqliteDialect } from 'kysely'
+ * import type { ReadonlyKysely } from 'kysely/readonly'
  *
  * interface Database {
  *   person: {
