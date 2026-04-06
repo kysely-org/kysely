@@ -35,10 +35,7 @@ import { parseExpression } from './parser/expression-parser.js'
 import type { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import type { DrainOuterGeneric } from './util/type-utils.js'
-import type {
-  QueryCompiler,
-  RootOperationNode,
-} from './query-compiler/query-compiler.js'
+import type { QueryCompiler } from './query-compiler/query-compiler.js'
 import type {
   ReleaseSavepoint,
   RollbackToSavepoint,
@@ -48,6 +45,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import type { ConnectionProvider } from './driver/connection-provider.js'
+import type { RootOperationNode } from './operation-node/root-operation-node.js'
 
 declare global {
   interface AsyncDisposable {}

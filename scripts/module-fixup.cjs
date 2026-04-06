@@ -9,7 +9,7 @@
 
 const fs = require('fs')
 const path = require('path')
-const package = require('../package.json')
+const packageJSON = require('../package.json')
 
 const ROOT_PATH = path.join(__dirname, '..')
 const DIST_PATH = path.join(ROOT_PATH, 'dist')
@@ -24,7 +24,7 @@ for (const [folder, type] of [
   )
 }
 
-for (const ex of Object.keys(package.exports)) {
+for (const ex of Object.keys(packageJSON.exports)) {
   if (ex === '.') {
     continue
   }
@@ -32,7 +32,7 @@ for (const ex of Object.keys(package.exports)) {
   const [, ...folders] = ex.split('/')
   const fileName = folders.pop()
 
-  const [, ...targetFolders] = package.exports[ex].require.split('/')
+  const [, ...targetFolders] = packageJSON.exports[ex].require.split('/')
   const targetFileName = targetFolders.pop()
   const target = path.posix.relative(
     path.posix.join(ROOT_PATH, ...folders),
@@ -45,11 +45,11 @@ for (const ex of Object.keys(package.exports)) {
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.js'),
-    `module.exports = require('${target}')`,
+    `module.exports = require('./${target}')`,
   )
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.d.ts'),
-    `export * from '${target}'`,
+    `export * from './${target}'`,
   )
 }

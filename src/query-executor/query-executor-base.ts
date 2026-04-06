@@ -4,7 +4,6 @@ import type {
   QueryResult,
 } from '../driver/database-connection.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
-import type { RootOperationNode } from '../query-compiler/query-compiler.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
@@ -12,6 +11,7 @@ import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import { logOnce } from '../util/log-once.js'
+import type { RootOperationNode } from '../operation-node/root-operation-node.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -64,7 +64,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
 
-      if ('numUpdatedOrDeletedRows' in result) {
+      if (Object.hasOwn(result, 'numUpdatedOrDeletedRows')) {
         logOnce(
           'kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`.',
         )

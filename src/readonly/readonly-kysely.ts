@@ -1,141 +1,23 @@
-/**
- * @experimental
- */
-
-import type { QueryResult } from './driver/database-connection.js'
-import type { IsolationLevel } from './driver/driver.js'
-import type { Expression } from './expression/expression.js'
+import type { IsolationLevel } from '../driver/driver.js'
 import type {
   Command,
   ConnectionBuilder,
   ControlledTransaction,
   Kysely,
   Transaction,
-  TransactionBuilder,
-} from './kysely.js'
-import type { SelectQueryNode } from './operation-node/select-query-node.js'
+} from '../kysely.js'
 import type {
   ReleaseSavepoint,
   RollbackToSavepoint,
-} from './parser/savepoint-parser.js'
-import type {
-  ExtractRowFromCommonTableExpression,
-  ExtractRowFromCommonTableExpressionName,
-  ExtractTableFromCommonTableExpressionName,
-} from './parser/with-parser.js'
-import type { KyselyPlugin } from './plugin/kysely-plugin.js'
-import type { CTEBuilderCallback } from './query-builder/cte-builder.js'
-import type { SelectQueryBuilder } from './query-builder/select-query-builder.js'
-import type { CompiledQuery } from './query-compiler/compiled-query.js'
-import type { QueryCreator } from './query-creator.js'
-import type { KyselyTypeError } from './util/type-error.js'
-import type { DrainOuterGeneric } from './util/type-utils.js'
-
-/**
- * Similar to {@link QueryCreator} but read-only.
- */
-export interface ReadonlyQueryCreator<DB> extends Pick<
-  QueryCreator<DB>,
-  'selectFrom' | 'selectNoFrom'
-> {
-  /**
-   * @deprecated not allowed with a read-only Kysely instance.
-   */
-  deleteFrom(
-    ...args: any[]
-  ): KyselyTypeError<'not allowed with a read-only Kysely instance.'>
-
-  /**
-   * @deprecated not allowed with a read-only Kysely instance.
-   */
-  insertInto(
-    ...args: any[]
-  ): KyselyTypeError<'not allowed with a read-only Kysely instance.'>
-
-  /**
-   * @deprecated not allowed with a read-only Kysely instance.
-   */
-  mergeInto(
-    ...args: any[]
-  ): KyselyTypeError<'not allowed with a read-only Kysely instance.'>
-
-  /**
-   * @deprecated not allowed with a read-only Kysely instance.
-   */
-  replaceInto(
-    ...args: any[]
-  ): KyselyTypeError<'not allowed with a read-only Kysely instance.'>
-
-  /**
-   * @deprecated not allowed with a read-only Kysely instance.
-   */
-  updateTable(
-    ...args: any[]
-  ): KyselyTypeError<'not allowed with a read-only Kysely instance.'>
-
-  /**
-   * Similar to {@link QueryCreator.with} but read-only.
-   */
-  with<N extends string, E extends ReadonlyCommonTableExpression<DB, N>>(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
-
-  /**
-   * Similar to {@link QueryCreator.withRecursive} but read-only.
-   */
-  withRecursive<
-    N extends string,
-    E extends ReadonlyRecursiveCommonTableExpression<DB, N>,
-  >(
-    nameOrBuilder: N | CTEBuilderCallback<N>,
-    expression: E,
-  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
-}
-
-/**
- * Similar to {@link CommonTableExpression} but read-only.
- */
-export type ReadonlyCommonTableExpression<DB, CN> =
-  | ReadonlyCommonTableExpressionOutput<CN>
-  | ReadonlyCommonTableExpressionFactory<DB, CN>
-
-/**
- * Similar to {@link CommonTableExpressionFactory} but read-only.
- */
-export type ReadonlyCommonTableExpressionFactory<DB, CN> = (
-  creator: ReadonlyQueryCreator<DB>,
-) => ReadonlyCommonTableExpressionOutput<CN>
-
-/**
- * Similar to {@link RecursiveCommonTableExpression} but read-only.
- */
-export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
-  creator: ReadonlyQueryCreator<
-    // Recursive CTE can select from itself.
-    DrainOuterGeneric<
-      DB & {
-        [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
-      }
-    >
-  >,
-) => ReadonlyCommonTableExpressionOutput<CN>
-
-export type ReadonlyCommonTableExpressionOutput<N> = Expression<
-  ExtractRowFromCommonTableExpressionName<N>
->
-
-export type ReadonlyQueryCreatorWithCommonTableExpression<
-  DB,
-  CN extends string,
-  CTE,
-> = ReadonlyQueryCreator<
-  DrainOuterGeneric<
-    DB & {
-      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
-    }
-  >
->
+} from '../parser/savepoint-parser.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import type { KyselyTypeError } from '../util/type-error.js'
+import type { DrainOuterGeneric } from '../util/type-utils.js'
+import type { ReadonlyCompiledQuery } from './readonly-compiled-query.js'
+import type { ReadonlyQueryResult } from './readonly-database-connection.js'
+import type { ReadonlyAccessMode } from './readonly-driver.js'
+import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
 /**
  * A helper type that allows you to expose a type-level read-only {@link Kysely} version
@@ -190,9 +72,7 @@ export interface ReadonlyKysely<DB>
    * Similar to {@link Kysely.executeQuery} but read-only.
    */
   executeQuery<R>(
-    query:
-      | (CompiledQuery<R> & { readonly query: SelectQueryNode })
-      | SelectQueryBuilder<DB, any, R>,
+    query: ReadonlyCompiledQuery<R> | SelectQueryBuilder<DB, any, R>,
   ): Promise<ReadonlyQueryResult<R>>
 
   /**
@@ -258,32 +138,16 @@ export interface ReadonlyKysely<DB>
   /**
    * Similar to {@link Kysely.$omitTables} but read-only.
    */
-  $omitTables<T extends keyof DB>(): ReadonlyKysely<Omit<DB, T>>
+  $omitTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Omit<DB, T> : DB
+  >
 
   /**
    * Similar to {@link Kysely.$pickTables} but read-only.
    */
-  $pickTables<T extends keyof DB>(): ReadonlyKysely<Pick<DB, T>>
-}
-
-/**
- * Similar to {@link QueryResult} but for read-only queries.
- */
-export interface ReadonlyQueryResult<R> extends Pick<QueryResult<R>, 'rows'> {
-  /**
-   * @deprecated read-only queries do not affect any rows.
-   */
-  readonly numAffectedRows?: KyselyTypeError<'read-only queries do not affect any rows.'>
-
-  /**
-   * @deprecated read-only queries do not change any rows.
-   */
-  readonly numChangedRows?: KyselyTypeError<'read-only queries do not change any rows.'>
-
-  /**
-   * @deprecated read-only queries do not insert anything.
-   */
-  readonly insertId?: KyselyTypeError<'read-only queries do not insert anything.'>
+  $pickTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Pick<DB, T> : DB
+  >
 }
 
 /**
@@ -311,7 +175,7 @@ export interface ReadonlyTransactionBuilder<DB> {
   /**
    * Similar to {@link TransactionBuilder.setAccessMode} but read-only.
    */
-  setAccessMode(accessMode: 'read only'): ReadonlyTransactionBuilder<DB>
+  setAccessMode(accessMode: ReadonlyAccessMode): ReadonlyTransactionBuilder<DB>
 
   /**
    * Similar to {@link TransactionBuilder.setIsolationLevel} but read-only.
@@ -368,12 +232,16 @@ export interface ReadonlyTransaction<DB>
   /**
    * Similar to {@link Transaction.$omitTables} but read-only.
    */
-  $omitTables<T extends keyof DB>(): ReadonlyTransaction<Omit<DB, T>>
+  $omitTables<T extends keyof DB>(): ReadonlyTransaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
 
   /**
    * Similar to {@link Transaction.$pickTables} but read-only.
    */
-  $pickTables<T extends keyof DB>(): ReadonlyTransaction<Pick<DB, T>>
+  $pickTables<T extends keyof DB>(): ReadonlyTransaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
 }
 
 /**
@@ -389,7 +257,7 @@ export interface ReadonlyControlledTransactionBuilder<DB> {
    * Similar to {@link ControlledTransactionBuilder.setAccessMode} but read-only.
    */
   setAccessMode(
-    accessMode: 'read only',
+    accessMode: ReadonlyAccessMode,
   ): ReadonlyControlledTransactionBuilder<DB>
 
   /**
