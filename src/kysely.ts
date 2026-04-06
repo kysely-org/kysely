@@ -543,7 +543,9 @@ export class Kysely<DB>
    * The query is arguably less readable now, and changing it is less obvious -
    * e.g. adding another table.
    */
-  $omitTables<T extends keyof DB>(): Kysely<Omit<DB, T>> {
+  $omitTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Omit<DB, T> : DB
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -577,7 +579,9 @@ export class Kysely<DB>
    * The query is arguably less readable now, and changing it is less obvious -
    * e.g. adding another table.
    */
-  $pickTables<T extends keyof DB>(): Kysely<Pick<DB, T>> {
+  $pickTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Pick<DB, T> : DB
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -741,14 +745,18 @@ export class Transaction<DB> extends Kysely<DB> {
   /**
    * Similar to {@link Kysely.$omitTables} but returns the transaction.
    */
-  override $omitTables<T extends keyof DB>(): Transaction<Omit<DB, T>> {
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  > {
     return new Transaction({ ...this.#props })
   }
 
   /**
    * Similar to {@link Kysely.$pickTables} but returns the transaction.
    */
-  override $pickTables<T extends keyof DB>(): Transaction<Pick<DB, T>> {
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  > {
     return new Transaction({ ...this.#props })
   }
 }
@@ -1242,18 +1250,20 @@ export class ControlledTransaction<
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>> {
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
     return new ControlledTransaction({ ...this.#props })
   }
 
   override $omitTables<T extends keyof DB>(): ControlledTransaction<
-    Omit<DB, T>
+    DB extends object ? Omit<DB, T> : DB,
+    S
   > {
     return new ControlledTransaction({ ...this.#props })
   }
 
   override $pickTables<T extends keyof DB>(): ControlledTransaction<
-    Pick<DB, T>
+    DB extends object ? Pick<DB, T> : DB,
+    S
   > {
     return new ControlledTransaction({ ...this.#props })
   }

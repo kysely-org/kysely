@@ -26,7 +26,7 @@ bench('kysely.$pickTables<tables>.mergeInto(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .mergeInto('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([87, 'instantiations'])
+}).types([90, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.mergeInto(~table)', () => {
   return (
@@ -35,7 +35,7 @@ bench('kysely.$pickTables<tables>.mergeInto(~table)', () => {
       // @ts-expect-error
       .mergeInto('my_table2')
   )
-}).types([114, 'instantiations'])
+}).types([117, 'instantiations'])
 
 bench('kyselyAny.mergeInto(table)', () => {
   return kyselyAny.mergeInto('table_fff4c6195261874920bc7ce92d67d2c2')
