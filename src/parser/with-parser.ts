@@ -3,9 +3,6 @@ import type { DeleteQueryBuilder } from '../query-builder/delete-query-builder.j
 import type { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import type { QueryCreator } from '../query-creator.js'
-import type { Expression } from '../expression/expression.js'
-import type { ShallowRecord } from '../util/type-utils.js'
-import type { OperationNode } from '../operation-node/operation-node.js'
 import { createQueryCreator } from './parse-utils.js'
 import { isFunction } from '../util/object-utils.js'
 import {
@@ -15,6 +12,9 @@ import {
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import type { Compilable } from '../util/compilable.js'
+import type { Expression } from '../expression/expression.js'
+import type { ShallowRecord } from '../util/type-utils.js'
+import type { OperationNode } from '../operation-node/operation-node.js'
 
 export type CommonTableExpression<DB, CN> =
   | CommonTableExpressionOutput<DB, CN>
@@ -60,7 +60,7 @@ export type CommonTableExpressionOutput<DB, CN> =
  * For example a CTE `(db) => db.selectFrom('person').select(['id', 'first_name'])`
  * would result in `Pick<Person, 'id' | 'first_name'>`.
  */
-type ExtractRowFromCommonTableExpression<CTE> = CTE extends
+export type ExtractRowFromCommonTableExpression<CTE> = CTE extends
   | Expression<infer O>
   | Compilable<infer O>
   ? O
@@ -73,7 +73,7 @@ type ExtractRowFromCommonTableExpression<CTE> = CTE extends
 /**
  * Extracts 'person' from a string like 'person(id, first_name)'.
  */
-type ExtractTableFromCommonTableExpressionName<CN> =
+export type ExtractTableFromCommonTableExpressionName<CN> =
   CN extends `${infer TB}(${string})` ? TB : CN
 
 /**
@@ -83,9 +83,8 @@ type ExtractTableFromCommonTableExpressionName<CN> =
  *   id: any,
  *   first_name: any
  * }
- *
  */
-type ExtractRowFromCommonTableExpressionName<CN> =
+export type ExtractRowFromCommonTableExpressionName<CN> =
   CN extends `${string}(${infer CL})`
     ? { [C in ExtractColumnNamesFromColumnList<CL>]: any }
     : ShallowRecord<string, any>

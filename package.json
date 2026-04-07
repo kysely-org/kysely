@@ -42,7 +42,9 @@
     "helpers",
     "migration.d.ts",
     "migration.js",
-    "outdated-typescript.d.ts"
+    "outdated-typescript.d.ts",
+    "readonly.d.ts",
+    "readonly.js"
   ],
   "exports": {
     ".": {
@@ -75,6 +77,11 @@
       "import": "./dist/esm/migration/index.js",
       "require": "./dist/cjs/migration/index.js",
       "default": "./dist/cjs/migration/index.js"
+    },
+    "./readonly": {
+      "import": "./dist/esm/readonly/index.js",
+      "require": "./dist/cjs/readonly/index.js",
+      "default": "./dist/cjs/readonly/index.js"
     }
   },
   "sideEffects": false,

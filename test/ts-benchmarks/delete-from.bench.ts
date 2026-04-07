@@ -65,7 +65,7 @@ bench('kysely.$pickTables<tables>.deleteFrom(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .deleteFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([112, 'instantiations'])
+}).types([115, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.deleteFrom(~table)', () => {
   return (
@@ -74,7 +74,7 @@ bench('kysely.$pickTables<tables>.deleteFrom(~table)', () => {
       // @ts-expect-error
       .deleteFrom('my_table2')
   )
-}).types([205, 'instantiations'])
+}).types([208, 'instantiations'])
 
 bench('kyselyAny.deleteFrom(table)', () => {
   return kyselyAny.deleteFrom('table_fff4c6195261874920bc7ce92d67d2c2')

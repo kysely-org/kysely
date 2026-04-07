@@ -45,11 +45,11 @@ for (const ex of Object.keys(packageJSON.exports)) {
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.js'),
-    `module.exports = require('${target}')`,
+    `module.exports = require('./${target}')`,
   )
 
   fs.writeFileSync(
     path.join(ROOT_PATH, ...folders, fileName + '.d.ts'),
-    `export * from '${target}'`,
+    `export * from './${target}'`,
   )
 }
