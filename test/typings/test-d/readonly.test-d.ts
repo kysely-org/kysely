@@ -1,6 +1,7 @@
 import {
   expectAssignable,
   expectDeprecated,
+  expectError,
   expectNotDeprecated,
   expectType,
 } from 'tsd'
@@ -11,8 +12,11 @@ import type {
   ReadonlyControlledTransaction,
   ReadonlyControlledTransactionBuilder,
   ReadonlyKysely,
+  ReadonlyQueryCreator,
+  ReadonlyQueryCreatorWithCommonTableExpression,
   ReadonlyQueryResult,
   ReadonlyTransaction,
+  ReadonlyTransactionBuilder,
 } from '../../../dist/cjs/readonly/index.js'
 import {
   createQueryId,
@@ -24,6 +28,8 @@ import {
   type KyselyTypeError,
   SelectQueryNode,
   type Transaction,
+  TransactionBuilder,
+  Selectable,
 } from '../../../dist/cjs/index.js'
 
 async function testReadonlyKysely(
@@ -179,20 +185,90 @@ async function testReadonlyKysely(
   expectType<ReadonlyControlledTransaction<Database>>(controlledTransaction)
   expectNotDeprecated(startTransactionResult.execute)
 
-  // TODO: expect type
+  expectType<ReadonlyTransactionBuilder<Database>>(rdb.transaction())
   expectNotDeprecated(rdb.transaction)
+  expectType<
+    (
+      cb: (trx: ReadonlyTransaction<Database>) => Promise<{ moshe: true }>,
+    ) => Promise<{ moshe: true }>
+  >(rdb.transaction().execute<{ moshe: true }>)
+  expectNotDeprecated(rdb.transaction().execute)
+  expectType<
+    (accessMode: ReadonlyAccessMode) => ReadonlyTransactionBuilder<Database>
+  >(rdb.transaction().setAccessMode)
+  expectNotDeprecated(rdb.transaction().setAccessMode)
+  expectType<
+    (
+      ...args: Parameters<TransactionBuilder<Database>['setIsolationLevel']>
+    ) => ReadonlyTransactionBuilder<Database>
+  >(rdb.transaction().setIsolationLevel)
+  expectNotDeprecated(rdb.transaction().setIsolationLevel)
 
   expectType<NotAllowed>(rdb.updateTable)
   expectDeprecated(rdb.updateTable)
 
-  // TODO: expect type
+  expectType<
+    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
+  >(rdb.with('cte', rdb.selectFrom('action').selectAll()))
   expectNotDeprecated(rdb.with)
+  expectError(rdb.with('cte', db.deleteFrom('action').returningAll()))
+  expectError(
+    rdb.with(
+      'cte',
+      db
+        .insertInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
+    rdb.with(
+      'cte',
+      db
+        .replaceInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
+    rdb.with(
+      'cte',
+      db.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
+    ),
+  )
 
   expectType<typeof rdb>(rdb.withPlugin(null as never))
   expectNotDeprecated(rdb.withPlugin)
 
-  // TODO: expect type
+  expectType<
+    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
+  >(rdb.withRecursive('cte', () => rdb.selectFrom('action').selectAll()))
   expectNotDeprecated(rdb.withRecursive)
+  expectError(rdb.withRecursive('cte', db.deleteFrom('action').returningAll()))
+  expectError(
+    rdb.withRecursive(
+      'cte',
+      db
+        .insertInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
+    rdb.withRecursive(
+      'cte',
+      db
+        .replaceInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
+    rdb.withRecursive(
+      'cte',
+      db.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
+    ),
+  )
 
   expectType<typeof rdb>(rdb.withSchema('moshe'))
   expectNotDeprecated(rdb.withSchema)
