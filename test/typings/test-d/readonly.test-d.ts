@@ -12,17 +12,19 @@ import type {
   ReadonlyControlledTransactionBuilder,
   ReadonlyKysely,
   ReadonlyQueryResult,
+  ReadonlyTransaction,
 } from '../../../dist/cjs/readonly/index.js'
 import {
   createQueryId,
   DeleteQueryNode,
   type InferResult,
-  SelectQueryNode,
+  type ControlledTransaction,
+  type ControlledTransactionBuilder,
   type Kysely,
   type KyselyTypeError,
-  type ControlledTransactionBuilder,
-  type ControlledTransaction,
-} from '../index.js'
+  SelectQueryNode,
+  type Transaction,
+} from '../../../dist/cjs/index.js'
 
 async function testReadonlyKysely(
   db: Kysely<Database>,
@@ -202,11 +204,123 @@ async function testReadonlyKysely(
   expectDeprecated(rdb.withTables)
 }
 
+async function testReadonlyTransaction(
+  tx: Transaction<Database>,
+  rtx: ReadonlyTransaction<Database>,
+) {
+  expectType<
+    (keyof ReadonlyKysely<Database> & string) | (keyof typeof tx & string)
+  >(keyof(rtx))
+
+  expectType<
+    ReadonlyTransaction<
+      DatabaseOf<ReturnType<typeof tx.$extendTables<{ moshe: { haim: true } }>>>
+    >
+  >(rtx.$extendTables<{ moshe: { haim: true } }>())
+  expectNotDeprecated(rtx.$extendTables)
+
+  expectType<
+    ReadonlyTransaction<
+      DatabaseOf<ReturnType<typeof tx.$omitTables<'person_metadata'>>>
+    >
+  >(rtx.$omitTables<'person_metadata'>())
+  expectNotDeprecated(rtx.$omitTables)
+
+  expectType<
+    ReadonlyTransaction<
+      DatabaseOf<ReturnType<typeof tx.$pickTables<'person_metadata'>>>
+    >
+  >(rtx.$pickTables<'person_metadata'>())
+  expectNotDeprecated(rtx.$pickTables)
+
+  expectType<typeof tx.case>(rtx.case)
+  expectNotDeprecated(rtx.case)
+
+  expectType<typeof tx.connection>(rtx.connection)
+  expectDeprecated(rtx.connection)
+
+  expectType<NotAllowed>(rtx.deleteFrom)
+  expectDeprecated(rtx.deleteFrom)
+
+  expectType<typeof tx.destroy>(rtx.destroy)
+  expectDeprecated(rtx.destroy)
+
+  expectType<typeof tx.dynamic>(rtx.dynamic)
+  expectNotDeprecated(rtx.dynamic)
+
+  expectType<ReadonlyKysely<Database>['executeQuery']>(rtx.executeQuery)
+  expectNotDeprecated(rtx.executeQuery(rtx.selectFrom('action').selectAll()))
+  expectDeprecated(rtx.executeQuery)
+
+  expectType<typeof tx.fn>(rtx.fn)
+  expectNotDeprecated(rtx.fn)
+
+  expectType<NotAllowed>(rtx.getExecutor)
+  expectDeprecated(rtx.getExecutor)
+
+  expectType<NotAllowed>(rtx.insertInto)
+  expectDeprecated(rtx.insertInto)
+
+  expectType<typeof tx.introspection>(rtx.introspection)
+  expectNotDeprecated(rtx.introspection)
+
+  expectType<typeof tx.isTransaction>(rtx.isTransaction)
+  expectNotDeprecated(rtx.isTransaction)
+
+  expectType<NotAllowed>(rtx.mergeInto)
+  expectDeprecated(rtx.mergeInto)
+
+  expectType<NotAllowed>(rtx.replaceInto)
+  expectDeprecated(rtx.replaceInto)
+
+  expectType<KyselyTypeError<'not allowed with a read-only Kysely instance.'>>(
+    rtx.schema,
+  )
+  expectDeprecated(rtx.schema)
+
+  expectType<typeof tx.selectFrom>(rtx.selectFrom)
+  expectNotDeprecated(rtx.selectFrom)
+
+  expectType<typeof tx.selectNoFrom>(rtx.selectNoFrom)
+  expectNotDeprecated(rtx.selectNoFrom)
+
+  expectType<typeof tx.startTransaction>(rtx.startTransaction)
+  expectDeprecated(rtx.startTransaction)
+
+  expectType<typeof tx.transaction>(rtx.transaction)
+  expectDeprecated(rtx.transaction)
+
+  expectType<NotAllowed>(rtx.updateTable)
+  expectDeprecated(rtx.updateTable)
+
+  expectType<ReadonlyKysely<Database>['with']>(rtx.with)
+  expectNotDeprecated(rtx.with)
+
+  expectType<typeof rtx>(rtx.withPlugin(null as never))
+  expectNotDeprecated(rtx.withPlugin)
+
+  expectType<ReadonlyKysely<Database>['withRecursive']>(rtx.withRecursive)
+  expectNotDeprecated(rtx.withRecursive)
+
+  expectType<typeof rtx>(rtx.withSchema('rivka'))
+  expectNotDeprecated(rtx.withSchema)
+
+  expectType<typeof rtx.$extendTables>(rtx.withTables)
+  expectDeprecated(rtx.withTables)
+
+  expectType<typeof rtx>(rtx.withoutPlugins())
+  expectNotDeprecated(rtx.withoutPlugins)
+}
+
 async function testReadonlyControlledTransaction(
   tx: ControlledTransaction<Database, ['haim', 'moshe']>,
   rtx: ReadonlyControlledTransaction<Database, ['haim', 'moshe']>,
 ) {
-  expectType<keyof typeof tx & string>(keyof(rtx))
+  expectType<
+    | (keyof ReadonlyKysely<Database> & string)
+    | (keyof ReadonlyTransaction<Database> & string)
+    | (keyof typeof tx & string)
+  >(keyof(rtx))
 
   expectType<
     ReadonlyControlledTransaction<
@@ -380,6 +494,7 @@ async function testReadonlyControlledTransaction(
 
 type DatabaseOf<K> = K extends
   | Kysely<infer DB>
+  | Transaction<infer DB>
   | ControlledTransaction<infer DB, any>
   ? DB
   : never

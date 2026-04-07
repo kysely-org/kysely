@@ -186,13 +186,24 @@ export interface ReadonlyTransactionBuilder<DB> {
  */
 export interface ReadonlyTransaction<DB>
   extends
-    Omit<
+    Pick<
       ReadonlyKysely<DB>,
-      | 'connection'
-      | 'destroy'
-      | 'isTransaction'
-      | 'startTransaction'
-      | 'transaction'
+      | 'case'
+      | 'deleteFrom'
+      | 'dynamic'
+      | 'executeQuery'
+      | 'fn'
+      | 'getExecutor'
+      | 'insertInto'
+      | 'introspection'
+      | 'mergeInto'
+      | 'replaceInto'
+      | 'schema'
+      | 'selectFrom'
+      | 'selectNoFrom'
+      | 'updateTable'
+      | 'with'
+      | 'withRecursive'
     >,
     Pick<
       Transaction<DB>,
