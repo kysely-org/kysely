@@ -29,7 +29,6 @@ import {
   SelectQueryNode,
   type Transaction,
   type TransactionBuilder,
-  QueryCreator,
 } from '../../../dist/cjs/index.js'
 
 async function testReadonlyKysely(
