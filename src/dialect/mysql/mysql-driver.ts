@@ -238,19 +238,18 @@ class MysqlConnection implements DatabaseConnection {
           rows: [row],
         }
       }
-    } catch (ex) {
+    } catch (error: unknown) {
       if (
-        ex &&
-        typeof ex === 'object' &&
-        'code' in ex &&
+        isObject(error) &&
+        'code' in error &&
         // @ts-ignore
-        ex.code === 'ERR_STREAM_PREMATURE_CLOSE'
+        error.code === 'ERR_STREAM_PREMATURE_CLOSE'
       ) {
         // Most likely because of https://github.com/mysqljs/mysql/blob/master/lib/protocol/sequences/Query.js#L220
         return
       }
 
-      throw ex
+      throw error
     }
   }
 

@@ -19,8 +19,6 @@ import {
 import type { QueryExecutor } from './query-executor/query-executor.js'
 import {
   type CommonTableExpression,
-  type CommonTableExpressionFactory,
-  type CommonTableExpressionOutput,
   type QueryCreatorWithCommonTableExpression,
   type RecursiveCommonTableExpression,
   parseCommonTableExpression,

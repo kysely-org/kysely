@@ -284,7 +284,7 @@ export type OnConflictTables<TB> = TB | 'excluded'
 
 export class OnConflictDoNothingBuilder<
   DB,
-  TB extends keyof DB,
+  _TB extends keyof DB,
 > implements OperationNodeSource {
   readonly #props: OnConflictBuilderProps
 

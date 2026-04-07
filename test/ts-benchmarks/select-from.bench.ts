@@ -65,7 +65,7 @@ bench('kysely.$pickTables<tables>.selectFrom(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([113, 'instantiations'])
+}).types([116, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
   return (
@@ -74,7 +74,7 @@ bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
       // @ts-expect-error
       .selectFrom('my_table2')
   )
-}).types([206, 'instantiations'])
+}).types([209, 'instantiations'])
 
 bench('kyselyAny.selectFrom(table)', () => {
   return kyselyAny.selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')

@@ -1,5 +1,5 @@
 import type { QueryResult } from '../../driver/database-connection.js'
-import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import type { RootOperationNode } from '../../operation-node/root-operation-node.js'
 import type { UnknownRow } from '../../util/type-utils.js'
 import type {
   KyselyPlugin,

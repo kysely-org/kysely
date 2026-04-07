@@ -1,5 +1,4 @@
 import type { QueryResult } from '../../driver/database-connection.js'
-import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import type {
   KyselyPlugin,
   PluginTransformQueryArgs,
@@ -8,6 +7,7 @@ import type {
 import type { UnknownRow } from '../../util/type-utils.js'
 import { HandleEmptyInListsTransformer } from './handle-empty-in-lists-transformer.js'
 import type { HandleEmptyInListsOptions } from './handle-empty-in-lists.js'
+import type { RootOperationNode } from '../../operation-node/root-operation-node.js'
 
 /**
  * A plugin that allows handling `in ()` and `not in ()` expressions.

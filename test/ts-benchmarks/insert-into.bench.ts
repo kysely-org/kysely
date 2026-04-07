@@ -30,7 +30,7 @@ bench('kysely.$pickTables<tables>.insertInto(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .insertInto('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([39, 'instantiations'])
+}).types([42, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.insertInto(~table)', () => {
   return (
@@ -39,4 +39,4 @@ bench('kysely.$pickTables<tables>.insertInto(~table)', () => {
       // @ts-expect-error
       .insertInto('my_table2')
   )
-}).types([40, 'instantiations'])
+}).types([43, 'instantiations'])
