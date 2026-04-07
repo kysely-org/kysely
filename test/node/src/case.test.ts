@@ -4,7 +4,6 @@ import {
   TestContext,
   clearDatabase,
   destroyTest,
-  expect,
   initTest,
   insertDefaultDataSet,
   testSql,
