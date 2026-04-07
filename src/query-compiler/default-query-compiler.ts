@@ -27,7 +27,6 @@ import type { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import type { OrderByNode } from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import type { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import type { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import type { ReferenceNode } from '../operation-node/reference-node.js'
 import type { ReferencesNode } from '../operation-node/references-node.js'
@@ -54,7 +53,7 @@ import {
   isBigInt,
 } from '../util/object-utils.js'
 import type { CompiledQuery } from './compiled-query.js'
-import type { RootOperationNode, QueryCompiler } from './query-compiler.js'
+import type { QueryCompiler } from './query-compiler.js'
 import type { HavingNode } from '../operation-node/having-node.js'
 import type { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import type { DropSchemaNode } from '../operation-node/drop-schema-node.js'
@@ -117,6 +116,7 @@ import { logOnce } from '../util/log-once.js'
 import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import type { RootOperationNode } from '../operation-node/root-operation-node.js'
 
 const LIT_WRAP_REGEX = /'/g
 
