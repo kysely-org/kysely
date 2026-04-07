@@ -1,3 +1,5 @@
+import { isObject, isString } from '../util/object-utils.js'
+
 export type OperationNodeKind =
   | 'IdentifierNode'
   | 'SchemableIdentifierNode'
@@ -99,4 +101,8 @@ export type OperationNodeKind =
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
+}
+
+export function isOperationNode(thing: unknown): thing is OperationNode {
+  return isObject(thing) && isString(thing.kind)
 }

@@ -2,7 +2,6 @@ import { BinaryOperationNode } from '../../operation-node/binary-operation-node.
 import { CastNode } from '../../operation-node/cast-node.js'
 import { DataTypeNode } from '../../operation-node/data-type-node.js'
 import { OperatorNode } from '../../operation-node/operator-node.js'
-import type { ParensNode } from '../../operation-node/parens-node.js'
 import type { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../../operation-node/value-list-node.js'
 import { ValueNode } from '../../operation-node/value-node.js'

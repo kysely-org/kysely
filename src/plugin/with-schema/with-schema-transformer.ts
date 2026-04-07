@@ -7,41 +7,17 @@ import { ListNode } from '../../operation-node/list-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import type { OperationNode } from '../../operation-node/operation-node.js'
 import type { ReferencesNode } from '../../operation-node/references-node.js'
+import {
+  isRootOperationNode,
+  type RootOperationNode,
+} from '../../operation-node/root-operation-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import type { SelectModifierNode } from '../../operation-node/select-modifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
 import { UsingNode } from '../../operation-node/using-node.js'
 import type { WithNode } from '../../operation-node/with-node.js'
-import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { freeze } from '../../util/object-utils.js'
 import type { QueryId } from '../../util/query-id.js'
-
-// This object exist only so that we get a type error when a new RootOperationNode
-// is added. If you get a type error here, make sure to add the new root node and
-// handle it correctly in the transformer.
-//
-// DO NOT REFACTOR THIS EVEN IF IT SEEMS USELESS TO YOU!
-const ROOT_OPERATION_NODES: Readonly<Record<RootOperationNode['kind'], true>> =
-  freeze({
-    AlterTableNode: true,
-    CreateIndexNode: true,
-    CreateSchemaNode: true,
-    CreateTableNode: true,
-    CreateTypeNode: true,
-    CreateViewNode: true,
-    RefreshMaterializedViewNode: true,
-    DeleteQueryNode: true,
-    DropIndexNode: true,
-    DropSchemaNode: true,
-    DropTableNode: true,
-    DropTypeNode: true,
-    DropViewNode: true,
-    InsertQueryNode: true,
-    RawNode: true,
-    SelectQueryNode: true,
-    UpdateQueryNode: true,
-    MergeQueryNode: true,
-  })
 
 const SCHEMALESS_FUNCTIONS: Readonly<Record<string, true>> = freeze({
   json_agg: true,
@@ -62,7 +38,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: T,
     queryId: QueryId,
   ): T {
-    if (!this.#isRootOperationNode(node)) {
+    if (!isRootOperationNode(node)) {
       return super.transformNodeImpl(node, queryId)
     }
 
@@ -187,10 +163,6 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
               },
         )
       : this.transformNodeList(node[argsKey], queryId)
-  }
-
-  #isRootOperationNode(node: OperationNode): node is RootOperationNode {
-    return ROOT_OPERATION_NODES[node.kind as never]
   }
 
   #collectSchemableIds(node: RootOperationNode): Set<string> {

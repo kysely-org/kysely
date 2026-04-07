@@ -2,9 +2,7 @@ import type {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
-import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import type { ReferenceExpression } from '../parser/reference-parser.js'
-import type { SqlBool } from '../util/type-utils.js'
 
 export interface HavingInterface<DB, TB extends keyof DB> {
   /**

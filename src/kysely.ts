@@ -35,10 +35,7 @@ import { parseExpression } from './parser/expression-parser.js'
 import type { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import type { DrainOuterGeneric } from './util/type-utils.js'
-import type {
-  QueryCompiler,
-  RootOperationNode,
-} from './query-compiler/query-compiler.js'
+import type { QueryCompiler } from './query-compiler/query-compiler.js'
 import type {
   ReleaseSavepoint,
   RollbackToSavepoint,
@@ -48,7 +45,7 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import type { ConnectionProvider } from './driver/connection-provider.js'
-import { logOnce } from './util/log-once.js'
+import type { RootOperationNode } from './operation-node/root-operation-node.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -544,7 +541,9 @@ export class Kysely<DB>
    * The query is arguably less readable now, and changing it is less obvious -
    * e.g. adding another table.
    */
-  $omitTables<T extends keyof DB>(): Kysely<Omit<DB, T>> {
+  $omitTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Omit<DB, T> : DB
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -578,7 +577,9 @@ export class Kysely<DB>
    * The query is arguably less readable now, and changing it is less obvious -
    * e.g. adding another table.
    */
-  $pickTables<T extends keyof DB>(): Kysely<Pick<DB, T>> {
+  $pickTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Pick<DB, T> : DB
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -625,15 +626,7 @@ export class Kysely<DB>
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    // TODO: remove this in the future. deprecated in  0.28.x
-    queryId?: QueryId,
   ): Promise<QueryResult<R>> {
-    if (queryId !== undefined) {
-      logOnce(
-        'Passing `queryId` in `db.executeQuery` is deprecated and will result in a compile-time error in the future.',
-      )
-    }
-
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
     return this.getExecutor().executeQuery<R>(compiledQuery)
@@ -659,24 +652,45 @@ export class Transaction<DB> extends Kysely<DB> {
     return true
   }
 
-  override transaction(): TransactionBuilder<DB> {
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  override transaction(): never {
     throw new Error(
       'calling the transaction method for a Transaction is not supported',
     )
   }
 
-  override connection(): ConnectionBuilder<DB> {
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  override startTransaction(): never {
+    throw new Error(
+      'calling the controlled transaction method for a Transaction is not supported',
+    )
+  }
+
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  override connection(): never {
     throw new Error(
       'calling the connection method for a Transaction is not supported',
     )
   }
 
-  override async destroy(): Promise<void> {
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  override destroy(): never {
     throw new Error(
       'calling the destroy method for a Transaction is not supported',
     )
   }
 
+  /**
+   * Similar to {@link Kysely.withPlugin} but returns the transaction.
+   */
   override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -684,6 +698,9 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withoutPlugins} but returns the transaction.
+   */
   override withoutPlugins(): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -691,6 +708,9 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withSchema} but returns the transaction.
+   */
   override withSchema(schema: string): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -700,9 +720,41 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withTables} but returns the transaction.
+   *
+   * @deprecated use {@link $extendTables} instead.
+   */
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$extendTables} but returns the transaction.
+   */
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>> {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$omitTables} but returns the transaction.
+   */
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  > {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$pickTables} but returns the transaction.
+   */
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  > {
     return new Transaction({ ...this.#props })
   }
 }
@@ -1191,6 +1243,26 @@ export class ControlledTransaction<
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  > {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $pickTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  > {
     return new ControlledTransaction({ ...this.#props })
   }
 }
