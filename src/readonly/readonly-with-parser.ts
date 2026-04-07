@@ -9,14 +9,14 @@ import type {
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
 } from '../parser/with-parser.js'
-import type { DrainOuterGeneric } from '../util/type-utils.js'
+import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
 /**
  * Similar to {@link CommonTableExpression} but read-only.
  */
 export type ReadonlyCommonTableExpression<DB, CN> =
-  | ReadonlyCommonTableExpressionOutput<CN>
+  | ReadonlyCommonTableExpressionOutput<DB, CN>
   | ReadonlyCommonTableExpressionFactory<DB, CN>
 
 /**
@@ -24,7 +24,7 @@ export type ReadonlyCommonTableExpression<DB, CN> =
  */
 export type ReadonlyCommonTableExpressionFactory<DB, CN> = (
   creator: ReadonlyQueryCreator<DB>,
-) => ReadonlyCommonTableExpressionOutput<CN>
+) => ReadonlyCommonTableExpressionOutput<DB, CN>
 
 /**
  * Similar to {@link RecursiveCommonTableExpression} but read-only.
@@ -32,20 +32,18 @@ export type ReadonlyCommonTableExpressionFactory<DB, CN> = (
 export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
   creator: ReadonlyQueryCreator<
     // Recursive CTE can select from itself.
-    DrainOuterGeneric<
-      DB & {
-        [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
-      }
-    >
+    DB & {
+      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+    }
   >,
-) => ReadonlyCommonTableExpressionOutput<CN>
+) => ReadonlyCommonTableExpressionOutput<DB, CN>
 
 /**
  * Similar to {@link CommonTableExpressionOutput} but read-only.
  */
-export type ReadonlyCommonTableExpressionOutput<N> = Expression<
-  ExtractRowFromCommonTableExpressionName<N>
->
+export type ReadonlyCommonTableExpressionOutput<DB, CN> =
+  | SelectQueryBuilder<DB, any, any>
+  | Expression<ExtractRowFromCommonTableExpressionName<CN>>
 
 /**
  * Similar to {@link QueryCreatorWithCommonTableExpression} but read-only.
@@ -55,9 +53,19 @@ export type ReadonlyQueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE,
 > = ReadonlyQueryCreator<
-  DrainOuterGeneric<
-    DB & {
-      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
-    }
-  >
+  DB & {
+    [K in ExtractTableFromCommonTableExpressionName<CN>]: ReadonlyExtractRowFromCommonTableExpression<CTE>
+  }
 >
+
+/**
+ * Similar to {@link ExtractRowFromCommonTableExpression} but read-only.
+ */
+export type ReadonlyExtractRowFromCommonTableExpression<CTE> =
+  CTE extends Expression<infer O>
+    ? O
+    : CTE extends (creator: ReadonlyQueryCreator<any>) => infer Q
+      ? Q extends Expression<infer O>
+        ? O
+        : never
+      : never

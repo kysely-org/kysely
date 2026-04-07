@@ -29,6 +29,7 @@ import {
   SelectQueryNode,
   type Transaction,
   type TransactionBuilder,
+  QueryCreator,
 } from '../../../dist/cjs/index.js'
 
 async function testReadonlyKysely(
@@ -209,12 +210,24 @@ async function testReadonlyKysely(
   expectType<
     ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
   >(rdb.with('cte', rdb.selectFrom('action').selectAll()))
+  expectType<
+    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
+  >(rdb.with('cte', (qb) => qb.selectFrom('action').selectAll()))
   expectNotDeprecated(rdb.with)
   expectError(rdb.with('cte', db.deleteFrom('action').returningAll()))
+  expectError(rdb.with('cte', (qb) => qb.deleteFrom('action').returningAll()))
   expectError(
     rdb.with(
       'cte',
       db
+        .insertInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
+    rdb.with('cte', (qb) =>
+      qb
         .insertInto('action')
         .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
         .returningAll(),
@@ -230,42 +243,54 @@ async function testReadonlyKysely(
     ),
   )
   expectError(
+    rdb.with('cte', (qb) =>
+      qb
+        .replaceInto('action')
+        .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
+        .returningAll(),
+    ),
+  )
+  expectError(
     rdb.with(
       'cte',
       db.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
+    ),
+  )
+  expectError(
+    rdb.with('cte', (qb) =>
+      qb.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
     ),
   )
 
   expectType<typeof rdb>(rdb.withPlugin(null as never))
   expectNotDeprecated(rdb.withPlugin)
 
-  expectType<
-    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
-  >(rdb.withRecursive('cte', () => rdb.selectFrom('action').selectAll()))
+  rdb.withRecursive('cte(callback_url, id, queue_id, type)', (qb) =>
+    qb.selectFrom('cte').selectAll(),
+  )
   expectNotDeprecated(rdb.withRecursive)
-  expectError(rdb.withRecursive('cte', db.deleteFrom('action').returningAll()))
   expectError(
-    rdb.withRecursive(
-      'cte',
-      db
+    rdb.withRecursive('cte', (qb) => qb.deleteFrom('action').returningAll()),
+  )
+  expectError(
+    rdb.withRecursive('cte', (qb) =>
+      qb
         .insertInto('action')
         .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
         .returningAll(),
     ),
   )
   expectError(
-    rdb.withRecursive(
-      'cte',
-      db
+    rdb.withRecursive('cte', (qb) =>
+      qb
         .replaceInto('action')
         .values({ callback_url: 'url', queue_id: '12', type: 'CALL_WEBHOOK' })
         .returningAll(),
     ),
   )
   expectError(
-    rdb.withRecursive(
-      'cte',
-      db.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
+    rdb.withRecursive('cte', (qb) =>
+      qb.updateTable('action').set('type', 'CALL_WEBHOOK').returningAll(),
     ),
   )
 
