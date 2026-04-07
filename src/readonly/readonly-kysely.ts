@@ -188,11 +188,19 @@ export interface ReadonlyTransaction<DB>
   extends
     Omit<
       ReadonlyKysely<DB>,
-      'connection' | 'destroy' | 'isTransaction' | 'transaction'
+      | 'connection'
+      | 'destroy'
+      | 'isTransaction'
+      | 'startTransaction'
+      | 'transaction'
     >,
     Pick<
       Transaction<DB>,
-      'connection' | 'destroy' | 'isTransaction' | 'transaction'
+      | 'connection'
+      | 'destroy'
+      | 'isTransaction'
+      | 'startTransaction'
+      | 'transaction'
     > {
   /**
    * Similar to {@link Transaction.withoutPlugins} but read-only.
@@ -207,7 +215,7 @@ export interface ReadonlyTransaction<DB>
   /**
    * Similar to {@link Transaction.withSchema} but read-only.
    */
-  withSchemaPlugin(schema: string): ReadonlyTransaction<DB>
+  withSchema(schema: string): ReadonlyTransaction<DB>
 
   /**
    * Similar to {@link Transaction.withTables} but read-only.
@@ -313,4 +321,36 @@ export interface ReadonlyControlledTransaction<DB, S extends string[] = []>
    * Similar to {@link ControlledTransaction.withSchema} but read-only.
    */
   withSchema(schema: string): ReadonlyControlledTransaction<DB, S>
+
+  /**
+   * Similar to {@link ControlledTransaction.withTables} but read-only.
+   *
+   * @deprecated use {@link $extendTables} instead.
+   */
+  withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  /**
+   * Similar to {@link ControlledTransaction.$extendTables} but read-only.
+   */
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  /**
+   * Similar to {@link ControlledTransaction.$omitTables} but read-only.
+   */
+  $omitTables<T extends keyof DB>(): ReadonlyControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
+
+  /**
+   * Similar to {@link ControlledTransaction.$pickTables} but read-only.
+   */
+  $pickTables<T extends keyof DB>(): ReadonlyControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  >
 }

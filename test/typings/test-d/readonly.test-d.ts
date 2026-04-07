@@ -6,7 +6,10 @@ import {
 } from 'tsd'
 import type { Database } from '../shared.js'
 import type {
+  ReadonlyAccessMode,
   ReadonlyConnectionBuilder,
+  ReadonlyControlledTransaction,
+  ReadonlyControlledTransactionBuilder,
   ReadonlyKysely,
   ReadonlyQueryResult,
 } from '../../../dist/cjs/readonly/index.js'
@@ -17,6 +20,8 @@ import {
   SelectQueryNode,
   type Kysely,
   type KyselyTypeError,
+  type ControlledTransactionBuilder,
+  type ControlledTransaction,
 } from '../index.js'
 
 async function testReadonlyKysely(
@@ -146,8 +151,31 @@ async function testReadonlyKysely(
   expectType<(typeof db)['selectNoFrom']>(rdb.selectNoFrom)
   expectNotDeprecated(rdb.selectNoFrom)
 
-  // TODO: expect type
+  const startTransactionResult = rdb.startTransaction()
+  expectType<ReadonlyControlledTransactionBuilder<Database>>(
+    startTransactionResult,
+  )
   expectNotDeprecated(rdb.startTransaction)
+  expectType<keyof ReturnType<typeof db.startTransaction>>(
+    keyof(startTransactionResult),
+  )
+  expectType<
+    (
+      accessMode: ReadonlyAccessMode,
+    ) => ReadonlyControlledTransactionBuilder<Database>
+  >(startTransactionResult.setAccessMode)
+  expectNotDeprecated(startTransactionResult.setAccessMode)
+  expectType<
+    (
+      ...args: Parameters<
+        ControlledTransactionBuilder<Database>['setIsolationLevel']
+      >
+    ) => ReadonlyControlledTransactionBuilder<Database>
+  >(startTransactionResult.setIsolationLevel)
+  expectNotDeprecated(startTransactionResult.setIsolationLevel)
+  const controlledTransaction = await startTransactionResult.execute()
+  expectType<ReadonlyControlledTransaction<Database>>(controlledTransaction)
+  expectNotDeprecated(startTransactionResult.execute)
 
   // TODO: expect type
   expectNotDeprecated(rdb.transaction)
@@ -174,7 +202,189 @@ async function testReadonlyKysely(
   expectDeprecated(rdb.withTables)
 }
 
-type DatabaseOf<K> = K extends Kysely<infer DB> ? DB : never
+async function testReadonlyControlledTransaction(
+  tx: ControlledTransaction<Database, ['haim', 'moshe']>,
+  rtx: ReadonlyControlledTransaction<Database, ['haim', 'moshe']>,
+) {
+  expectType<keyof typeof tx & string>(keyof(rtx))
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<
+        ReturnType<typeof tx.$extendTables<{ moshe: { haim: true } }>>
+      >,
+      SavepointsOf<
+        ReturnType<typeof tx.$extendTables<{ moshe: { haim: true } }>>
+      >
+    >
+  >(rtx.$extendTables<{ moshe: { haim: true } }>())
+  expectNotDeprecated(rtx.$extendTables)
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<ReturnType<typeof tx.$omitTables<'person_metadata'>>>,
+      SavepointsOf<ReturnType<typeof tx.$omitTables<'person_metadata'>>>
+    >
+  >(rtx.$omitTables<'person_metadata'>())
+  expectNotDeprecated(rtx.$omitTables)
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<ReturnType<typeof tx.$pickTables<'person_metadata'>>>,
+      SavepointsOf<ReturnType<typeof tx.$pickTables<'person_metadata'>>>
+    >
+  >(rtx.$pickTables<'person_metadata'>())
+  expectNotDeprecated(rtx.$pickTables)
+
+  expectType<typeof tx.case>(rtx.case)
+  expectNotDeprecated(rtx.case)
+
+  expectType<typeof tx.commit>(rtx.commit)
+  expectNotDeprecated(rtx.commit)
+
+  expectType<typeof tx.connection>(rtx.connection)
+  expectDeprecated(rtx.connection)
+
+  expectType<NotAllowed>(rtx.deleteFrom)
+  expectDeprecated(rtx.deleteFrom)
+
+  expectType<typeof tx.destroy>(rtx.destroy)
+  expectDeprecated(rtx.destroy)
+
+  expectType<typeof tx.dynamic>(rtx.dynamic)
+  expectNotDeprecated(rtx.dynamic)
+
+  expectType<ReadonlyKysely<Database>['executeQuery']>(rtx.executeQuery)
+  expectNotDeprecated(rtx.executeQuery(rtx.selectFrom('action').selectAll()))
+  expectDeprecated(rtx.executeQuery)
+
+  expectType<typeof tx.fn>(rtx.fn)
+  expectNotDeprecated(rtx.fn)
+
+  expectType<NotAllowed>(rtx.getExecutor)
+  expectDeprecated(rtx.getExecutor)
+
+  expectType<NotAllowed>(rtx.insertInto)
+  expectDeprecated(rtx.insertInto)
+
+  expectType<typeof tx.introspection>(rtx.introspection)
+  expectNotDeprecated(rtx.introspection)
+
+  expectType<typeof tx.isCommitted>(rtx.isCommitted)
+  expectNotDeprecated(rtx.isCommitted)
+
+  expectType<typeof tx.isRolledBack>(rtx.isRolledBack)
+  expectNotDeprecated(rtx.isRolledBack)
+
+  expectType<typeof tx.isTransaction>(rtx.isTransaction)
+  expectNotDeprecated(rtx.isTransaction)
+
+  expectType<NotAllowed>(rtx.mergeInto)
+  expectDeprecated(rtx.mergeInto)
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<
+        Awaited<
+          ReturnType<ReturnType<typeof tx.releaseSavepoint<'moshe'>>['execute']>
+        >
+      >,
+      SavepointsOf<
+        Awaited<
+          ReturnType<ReturnType<typeof tx.releaseSavepoint<'moshe'>>['execute']>
+        >
+      >
+    >
+  >(await rtx.releaseSavepoint('moshe').execute())
+  expectNotDeprecated(rtx.releaseSavepoint)
+  expectNotDeprecated(rtx.releaseSavepoint('moshe').execute)
+
+  expectType<NotAllowed>(rtx.replaceInto)
+  expectDeprecated(rtx.replaceInto)
+
+  expectType<typeof tx.rollback>(rtx.rollback)
+  expectNotDeprecated(rtx.rollback)
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<
+        Awaited<
+          ReturnType<
+            ReturnType<typeof tx.rollbackToSavepoint<'haim'>>['execute']
+          >
+        >
+      >,
+      SavepointsOf<
+        Awaited<
+          ReturnType<
+            ReturnType<typeof tx.rollbackToSavepoint<'haim'>>['execute']
+          >
+        >
+      >
+    >
+  >(await rtx.rollbackToSavepoint('haim').execute())
+  expectNotDeprecated(rtx.rollbackToSavepoint)
+  expectNotDeprecated(rtx.rollbackToSavepoint('haim').execute)
+
+  expectType<
+    ReadonlyControlledTransaction<
+      DatabaseOf<
+        Awaited<ReturnType<ReturnType<typeof tx.savepoint<'rivka'>>['execute']>>
+      >,
+      SavepointsOf<
+        Awaited<ReturnType<ReturnType<typeof tx.savepoint<'rivka'>>['execute']>>
+      >
+    >
+  >(await rtx.savepoint('rivka').execute())
+  expectNotDeprecated(rtx.savepoint)
+  expectNotDeprecated(rtx.savepoint('rivka').execute)
+
+  expectType<KyselyTypeError<'not allowed with a read-only Kysely instance.'>>(
+    rtx.schema,
+  )
+  expectDeprecated(rtx.schema)
+
+  expectType<typeof tx.selectFrom>(rtx.selectFrom)
+  expectNotDeprecated(rtx.selectFrom)
+
+  expectType<typeof tx.selectNoFrom>(rtx.selectNoFrom)
+  expectNotDeprecated(rtx.selectNoFrom)
+
+  expectType<typeof tx.startTransaction>(rtx.startTransaction)
+  expectDeprecated(rtx.startTransaction)
+
+  expectType<typeof tx.transaction>(rtx.transaction)
+  expectDeprecated(rtx.transaction)
+
+  expectType<NotAllowed>(rtx.updateTable)
+  expectDeprecated(rtx.updateTable)
+
+  expectType<ReadonlyKysely<Database>['with']>(rtx.with)
+  expectNotDeprecated(rtx.with)
+
+  expectType<typeof rtx>(rtx.withPlugin(null as never))
+  expectNotDeprecated(rtx.withPlugin)
+
+  expectType<ReadonlyKysely<Database>['withRecursive']>(rtx.withRecursive)
+  expectNotDeprecated(rtx.withRecursive)
+
+  expectType<typeof rtx>(rtx.withSchema('rivka'))
+  expectNotDeprecated(rtx.withSchema)
+
+  expectType<typeof rtx.$extendTables>(rtx.withTables)
+  expectDeprecated(rtx.withTables)
+
+  expectType<typeof rtx>(rtx.withoutPlugins())
+  expectNotDeprecated(rtx.withoutPlugins)
+}
+
+type DatabaseOf<K> = K extends
+  | Kysely<infer DB>
+  | ControlledTransaction<infer DB, any>
+  ? DB
+  : never
+
+type SavepointsOf<T> = T extends ControlledTransaction<any, infer S> ? S : never
 
 declare function keyof<T>(thing: T): keyof T & string
 
