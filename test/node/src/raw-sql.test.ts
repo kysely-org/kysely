@@ -369,7 +369,7 @@ for (const dialect of DIALECTS) {
     }
 
     it('raw sql kitchen sink', async () => {
-      const result = await sql`insert into ${sql.table('toy')} (${sql.join([
+      await sql`insert into ${sql.table('toy')} (${sql.join([
         sql.ref('name'),
         sql.ref('pet_id'),
         sql.ref('price'),
