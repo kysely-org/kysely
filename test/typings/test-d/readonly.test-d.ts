@@ -13,7 +13,6 @@ import type {
   ReadonlyControlledTransactionBuilder,
   ReadonlyKysely,
   ReadonlyQueryCreator,
-  ReadonlyQueryCreatorWithCommonTableExpression,
   ReadonlyQueryResult,
   ReadonlyTransaction,
   ReadonlyTransactionBuilder,
@@ -26,10 +25,10 @@ import {
   type ControlledTransactionBuilder,
   type Kysely,
   type KyselyTypeError,
+  type Selectable,
   SelectQueryNode,
   type Transaction,
-  TransactionBuilder,
-  Selectable,
+  type TransactionBuilder,
 } from '../../../dist/cjs/index.js'
 
 async function testReadonlyKysely(
