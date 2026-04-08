@@ -1,12 +1,12 @@
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import Cursor from 'pg-cursor'
-import { Pool, PoolConfig } from 'pg'
+import { Pool, type PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
 import Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
-import { PoolOptions } from 'mysql2'
+import type { PoolOptions } from 'mysql2'
 import { PGlite } from '@electric-sql/pglite'
 
 chai.use(chaiAsPromised)

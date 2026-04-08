@@ -1,7 +1,7 @@
 import { sql } from '../../../dist/index.js'
 import {
   DIALECTS,
-  TestContext,
+  type TestContext,
   clearDatabase,
   destroyTest,
   initTest,

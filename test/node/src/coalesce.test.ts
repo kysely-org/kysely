@@ -5,7 +5,7 @@ import {
   initTest,
   insertDefaultDataSet,
   NOT_SUPPORTED,
-  TestContext,
+  type TestContext,
   testSql,
   DIALECTS,
 } from './test-setup.js'

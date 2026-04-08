@@ -1,11 +1,11 @@
-import { SinonSandbox, SinonSpy, createSandbox } from 'sinon'
-import { Database, expect } from './test-setup.js'
+import { type SinonSandbox, type SinonSpy, createSandbox } from 'sinon'
+import { type Database, expect } from './test-setup.js'
 import {
-  DatabaseConnection,
-  Driver,
+  type DatabaseConnection,
+  type Driver,
   DummyDriver,
   Kysely,
-  LogConfig,
+  type LogConfig,
   PostgresDialect,
 } from '../../../dist/index.js'
 

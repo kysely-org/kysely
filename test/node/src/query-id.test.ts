@@ -1,15 +1,15 @@
 import { expect } from 'chai'
 import {
-  DatabaseConnection,
+  type DatabaseConnection,
   DummyDriver,
   Kysely,
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  RootOperationNode,
-  QueryId,
+  type RootOperationNode,
+  type QueryId,
 } from '../../../dist/index.js'
-import { Database } from './test-setup.js'
+import type { Database } from './test-setup.js'
 
 describe('queryId', () => {
   const visits = new Map()

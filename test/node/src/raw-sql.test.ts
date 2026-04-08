@@ -9,7 +9,7 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   insertDefaultDataSet,
   testSql,
   NOT_SUPPORTED,

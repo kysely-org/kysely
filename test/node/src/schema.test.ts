@@ -7,7 +7,7 @@ import {
   expect,
   initTest,
   NOT_SUPPORTED,
-  TestContext,
+  type TestContext,
   testSql,
   DIALECTS,
 } from './test-setup.js'

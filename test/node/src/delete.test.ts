@@ -4,14 +4,14 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DEFAULT_DATA_SET,
   DIALECTS,
-  Species,
+  type Species,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {

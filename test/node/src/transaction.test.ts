@@ -15,9 +15,9 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
-  Database,
+  type Database,
   insertDefaultDataSet,
   DIALECTS,
 } from './test-setup.js'

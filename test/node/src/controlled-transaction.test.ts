@@ -3,7 +3,7 @@ import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
   ControlledTransaction,
-  Driver,
+  type Driver,
   DummyDriver,
   Kysely,
   SqliteDialect,
@@ -11,8 +11,8 @@ import {
 } from '../../../dist/index.js'
 import {
   DIALECTS,
-  Database,
-  TestContext,
+  type Database,
+  type TestContext,
   clearDatabase,
   destroyTest,
   expect,

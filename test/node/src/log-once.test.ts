@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createSandbox, SinonSpy } from 'sinon'
+import { createSandbox, type SinonSpy } from 'sinon'
 import { logOnce } from '../../../dist/index.js'
 
 describe('logOnce', () => {

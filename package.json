@@ -69,7 +69,7 @@
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.cjs",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/index.js --outfile=/dev/null",
-    "test:exports": "attw --pack . && node scripts/check-exports.cjs",
+    "test:exports": "attw --profile esm-only --pack . && node scripts/check-exports.cjs",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
     "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",

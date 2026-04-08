@@ -3,7 +3,7 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
   insertDefaultDataSet,
   DIALECTS,

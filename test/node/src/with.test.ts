@@ -4,7 +4,7 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   NOT_SUPPORTED,

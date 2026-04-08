@@ -3,7 +3,7 @@ import { mergeAction } from '../../../dist/helpers/postgres.js'
 import {
   DIALECTS,
   NOT_SUPPORTED,
-  TestContext,
+  type TestContext,
   clearDatabase,
   destroyTest,
   expect,

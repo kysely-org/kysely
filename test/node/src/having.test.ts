@@ -5,7 +5,7 @@ import {
   destroyTest,
   initTest,
   insertPersons,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   DIALECTS,

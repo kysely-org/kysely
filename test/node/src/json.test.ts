@@ -1,12 +1,12 @@
 import {
-  Generated,
+  type Generated,
   Kysely,
-  RawBuilder,
+  type RawBuilder,
   sql,
   ParseJSONResultsPlugin,
-  NumericString,
+  type NumericString,
   expressionBuilder,
-  NonDehydrateable,
+  type NonDehydrateable,
 } from '../../../dist/index.js'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
@@ -32,9 +32,9 @@ import {
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
-  Database,
+  type Database,
   insertDefaultDataSet,
   clearDatabase,
   DIALECTS,

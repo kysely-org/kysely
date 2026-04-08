@@ -4,7 +4,7 @@ import { sql } from '../../../dist/index.js'
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
   DIALECTS,
 } from './test-setup.js'
