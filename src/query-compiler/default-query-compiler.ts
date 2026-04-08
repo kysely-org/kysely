@@ -117,6 +117,9 @@ import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
+import type { AddValueNode } from '../operation-node/add-value-node.js'
+import type { AlterTypeNode } from '../operation-node/alter-type-node.js'
+import type { RenameValueNode } from '../operation-node/rename-value-node.js'
 
 const LIT_WRAP_REGEX = /'/g
 const JSON_PATH_MEMBER_WRAP_REGEX = /['"]/g
@@ -1460,6 +1463,46 @@ export class DefaultQueryCompiler
     if (node.cascade) {
       this.append(' cascade')
     }
+  }
+
+  protected override visitAlterType(node: AlterTypeNode): void {
+    this.append('alter type ')
+    this.visitNode(node.name)
+    this.append(' ')
+
+    if (node.addValue) {
+      this.visitNode(node.addValue)
+    } else if (node.renameTo) {
+      this.append('rename to ')
+      this.visitNode(node.renameTo)
+    } else if (node.renameValue) {
+      this.visitNode(node.renameValue)
+    } else if (node.setSchema) {
+      this.append('set schema ')
+      this.visitNode(node.setSchema)
+    }
+  }
+
+  protected override visitAddValue(node: AddValueNode): void {
+    this.append('add value ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
+    this.visitNode(node.value)
+
+    if (node.neighborValue) {
+      this.append(node.isBefore ? ' before ' : ' after ')
+      this.visitNode(node.neighborValue)
+    }
+  }
+
+  protected override visitRenameValue(node: RenameValueNode): void {
+    this.append('rename value ')
+    this.visitNode(node.oldValue)
+    this.append(' to ')
+    this.visitNode(node.newValue)
   }
 
   protected override visitExplain(node: ExplainNode): void {
