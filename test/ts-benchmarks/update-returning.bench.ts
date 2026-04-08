@@ -22,7 +22,7 @@ bench('kysely.updateTable(table).returning(column)', () =>
 bench('kysely.updateTable(table)..returning(~column)', () =>
   // @ts-expect-error
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7186, 'instantiations'])
+).types([7159, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(table.column)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
@@ -31,7 +31,7 @@ bench('kysely.updateTable(table)..returning(table.column)', () =>
 bench('kysely.updateTable(table)..returning(~table.column)', () =>
   // @ts-expect-error
   updateQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7186, 'instantiations'])
+).types([7159, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(table.column as alias)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),

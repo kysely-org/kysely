@@ -22,7 +22,7 @@ bench('kysely.deleteFrom(table).returning(column)', () =>
 bench('kysely.deleteFrom(table)..returning(~column)', () =>
   // @ts-expect-error
   deleteQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7306, 'instantiations'])
+).types([7279, 'instantiations'])
 
 bench('kysely.deleteFrom(table)..returning(table.column)', () =>
   deleteQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
@@ -31,7 +31,7 @@ bench('kysely.deleteFrom(table)..returning(table.column)', () =>
 bench('kysely.deleteFrom(table)..returning(~table.column)', () =>
   // @ts-expect-error
   deleteQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7306, 'instantiations'])
+).types([7279, 'instantiations'])
 
 bench('kysely.deleteFrom(table)..returning(table.column as alias)', () =>
   deleteQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),

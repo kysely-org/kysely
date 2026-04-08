@@ -35,7 +35,7 @@ bench('kysely..having(~table.column, op, value)', () =>
 
 bench('kysely..having(column, is, null)', () =>
   query.having('col_6f5e1903664b084bf6197f2b86849d5e', 'is', null),
-).types([2207, 'instantiations'])
+).types([2192, 'instantiations'])
 
 bench('kysely..having(column, op, select)', () =>
   query.having(
@@ -59,7 +59,7 @@ bench('kysely..having(eb => eb.and([...]))', () =>
       eb('col_4d742b2f247bec99b41a60acbebc149a', '=', 456),
     ]),
   ),
-).types([2879, 'instantiations'])
+).types([2870, 'instantiations'])
 
 bench('kysely..having(sql`...`)', () =>
   query.having(sql<boolean>`col = 'foo'`),
