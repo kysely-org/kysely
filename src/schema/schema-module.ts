@@ -313,11 +313,11 @@ export class SchemaModule {
    *   .execute()
    * ```
    */
-  alterType(typeName: string): AlterTypeBuilder {
+  alterType<const N extends string>(name: N): AlterTypeBuilder<N> {
     return new AlterTypeBuilder({
-      queryId: createQueryId(),
       executor: this.#executor,
-      node: AlterTypeNode.create(parseSchemableIdentifier(typeName)),
+      node: AlterTypeNode.create(parseSchemableIdentifier(name)),
+      queryId: createQueryId(),
     })
   }
 

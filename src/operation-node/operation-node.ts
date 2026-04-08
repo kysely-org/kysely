@@ -100,6 +100,7 @@ export type OperationNodeKind =
   | 'RenameConstraintNode'
   | 'AlterTypeNode'
   | 'AddValueNode'
+  | 'RenameValueNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

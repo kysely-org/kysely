@@ -7,6 +7,7 @@ import type { KyselyTypeError } from './util/type-error.js'
 
 export * from './kysely.js'
 export * from './query-creator.js'
+export * from './query-finalizer.js'
 
 export * from './expression/expression.js'
 export {
@@ -49,7 +50,7 @@ export type * from './query-executor/query-executor-provider.js'
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/compiled-query.js'
 
-export * from './schema/schema.js'
+export * from './schema/schema-module.js'
 export * from './schema/create-table-builder.js'
 export * from './schema/create-type-builder.js'
 export * from './schema/drop-table-builder.js'

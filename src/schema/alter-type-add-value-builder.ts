@@ -1,71 +1,70 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AddValueNode } from '../operation-node/add-value-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { AlterTypeNode } from '../operation-node/alter-type-node.js'
+import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { QueryId } from '../util/query-id.js'
+import { QueryFinalizer } from '../query-finalizer.js'
 
-export class AlterTypeAddValueBuilder implements OperationNodeSource {
-  readonly #node: AddValueNode
+export class AlterTypeAddValueBuilder<
+  const V extends string,
+> extends QueryFinalizer<AlterTypeNode> {
+  readonly #props: AlterTypeAddValueBuilderProps
 
-  constructor(node: AddValueNode) {
-    this.#node = node
+  constructor(props: AlterTypeAddValueBuilderProps) {
+    super(props)
+    this.#props = props
   }
 
   /**
-   * Avoids the query throwing an error if the value already exists inside the enum type.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * db.schema.alterType('species').renameValue('cat', 'dog').execute()
-   * ```
+   * Adds an `if not exists` clause.
    */
-  ifNotExists() {
-    return new AlterTypeAddValueBuilder(
-      AddValueNode.cloneWithAddValueProps(this.#node, {
-        ifNotExists: true,
+  ifNotExists(): AlterTypeAddValueBuilder<V> {
+    return new AlterTypeAddValueBuilder({
+      ...this.#props,
+      node: AlterTypeNode.cloneWith(this.#props.node, {
+        addValue: AddValueNode.cloneWith(this.#props.node.addValue!, {
+          ifNotExists: true,
+        }),
       }),
-    )
+    })
   }
 
   /**
-   * Adds the new value before the specified existing value.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * db.schema.alterType('species').renameValue('cat', 'dog').execute()
-   * ```
+   * Sets a `before <value>` clause.
    */
-  before(value: string) {
-    return new AlterTypeAddValueBuilder(
-      AddValueNode.cloneWithAddValueProps(this.#node, {
-        before: ValueNode.createImmediate(value),
-        after: undefined, // before and after are mutually exclusive
-      }),
-    )
-  }
-  /**
-   * Adds the new value after the specified existing value.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * db.schema.alterType('species').renameValue('cat', 'dog').execute()
-   * ```
-   */
-  after(value: string) {
-    return new AlterTypeAddValueBuilder(
-      AddValueNode.cloneWithAddValueProps(this.#node, {
-        after: ValueNode.createImmediate(value),
-        before: undefined, // before and after are mutually exclusive
-      }),
-    )
+  before<const NV extends string>(
+    neighborValue: NV extends V ? never : NV,
+  ): AlterTypeAddValueBuilder<V> {
+    return this.#setNeighbor(neighborValue, true)
   }
 
-  toOperationNode(): AddValueNode {
-    return this.#node
+  /**
+   * Sets an `after <value>` clause.
+   */
+  after<const NV extends string>(
+    neighborValue: NV extends V ? never : NV,
+  ): AlterTypeAddValueBuilder<V> {
+    return this.#setNeighbor(neighborValue, false)
+  }
+
+  #setNeighbor(
+    neighborValue: string,
+    isBefore: boolean,
+  ): AlterTypeAddValueBuilder<V> {
+    return new AlterTypeAddValueBuilder({
+      ...this.#props,
+      node: AlterTypeNode.cloneWith(this.#props.node, {
+        addValue: AddValueNode.cloneWith(this.#props.node.addValue!, {
+          isBefore,
+          neighborValue: ValueNode.createImmediate(neighborValue),
+        }),
+      }),
+    })
   }
 }
 
-export type AlterTypeAddValueCallback = (
-  builder: AlterTypeAddValueBuilder,
-) => AlterTypeAddValueBuilder
+export interface AlterTypeAddValueBuilderProps {
+  readonly executor: QueryExecutor
+  readonly node: AlterTypeNode
+  readonly queryId: QueryId
+}
