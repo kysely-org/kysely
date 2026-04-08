@@ -1,6 +1,6 @@
 import type { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { ValueNode } from './value-node.js'
+import type { ValueNode } from './value-node.js'
 
 export type AddValueNodeProps = Omit<AddValueNode, 'kind' | 'value'>
 
