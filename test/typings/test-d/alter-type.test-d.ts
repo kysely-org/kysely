@@ -1,20 +1,31 @@
-import { expectError, expectType } from 'tsd'
-import { AlterTableBuilder, Kysely } from '..'
-import { Database } from '../shared'
-import { AlterTypeExecutor } from '../../../dist/cjs/schema/alter-type-executor'
-import { AlterTypeBuilder } from '../../../dist/cjs/schema/alter-type-builder.js'
+import { expectError } from 'tsd'
+import type { Kysely } from '../index.js'
+import type { Database } from '../shared.js'
+
 async function testAlterType(db: Kysely<Database>) {
-  expectType<AlterTypeBuilder>(db.schema.alterType('test'))
-  expectType<AlterTypeExecutor>(db.schema.alterType('test').ownerTo('user'))
-  expectType<AlterTypeExecutor>(db.schema.alterType('test').renameTo('test2'))
-  expectType<AlterTypeExecutor>(db.schema.alterType('test').setSchema('test2'))
-  expectType<AlterTypeExecutor>(
-    db.schema.alterType('test').renameValue('test', 'test2'),
+  db.schema.alterType('my_type').addValue('value').execute()
+  db.schema.alterType('my_type').addValue('value').ifNotExists().execute()
+  db.schema.alterType('my_type').addValue('value').after('another_value')
+  db.schema.alterType('my_type').addValue('value').before('another_value')
+
+  expectError(db.schema.alterType('my_type').addValue('value').after('value'))
+  expectError(db.schema.alterType('my_type').addValue('value').before('value'))
+
+  db.schema.alterType('my_type').renameTo('another_type')
+
+  expectError(db.schema.alterType('my_type').renameTo('my_type'))
+
+  db.schema.alterType('my_type').renameValue('value', 'another_value')
+
+  expectError(
+    db.schema.alterType('my_type').renameValue(
+      'value',
+      'value', // compilation error!
+    ),
   )
-  expectType<AlterTypeExecutor>(db.schema.alterType('test').addValue('test'))
-  expectType<AlterTypeExecutor>(
-    db.schema
-      .alterType('test')
-      .addValue('test', (qb) => qb.ifNotExists().after('test2')),
-  )
+
+  db.schema.alterType('my_type').setSchema('another_schema')
+  db.schema.alterType('my_schema.my_type').setSchema('another_schema')
+
+  expectError(db.schema.alterType('my_schema.my_type').setSchema('my_schema'))
 }

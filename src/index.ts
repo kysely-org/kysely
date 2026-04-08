@@ -238,6 +238,7 @@ export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 export * from './operation-node/alter-type-node.js'
 export * from './operation-node/add-value-node.js'
+export * from './operation-node/rename-value-node.js'
 
 export type * from './util/column-type.js'
 export * from './util/compilable.js'
