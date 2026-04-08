@@ -5,7 +5,7 @@ import {
   ParseJSONResultsPlugin,
   RawBuilder,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 import {
   destroyTest,

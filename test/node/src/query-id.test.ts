@@ -8,7 +8,7 @@ import {
   PostgresQueryCompiler,
   RootOperationNode,
   QueryId,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import { Database } from './test-setup.js'
 
 describe('queryId', () => {

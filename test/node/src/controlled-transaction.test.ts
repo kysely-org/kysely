@@ -8,7 +8,7 @@ import {
   Kysely,
   SqliteDialect,
   TRANSACTION_ACCESS_MODES,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   DIALECTS,
   Database,

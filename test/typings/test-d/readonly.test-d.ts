@@ -6,30 +6,28 @@ import {
   expectType,
 } from 'tsd'
 import type { Database } from '../shared.js'
-import type {
-  ReadonlyAccessMode,
-  ReadonlyConnectionBuilder,
-  ReadonlyControlledTransaction,
-  ReadonlyControlledTransactionBuilder,
-  ReadonlyKysely,
-  ReadonlyQueryCreator,
-  ReadonlyQueryResult,
-  ReadonlyTransaction,
-  ReadonlyTransactionBuilder,
-} from '../../../dist/cjs/readonly/index.js'
 import {
+  type ControlledTransaction,
+  type ControlledTransactionBuilder,
   createQueryId,
   DeleteQueryNode,
   type InferResult,
-  type ControlledTransaction,
-  type ControlledTransactionBuilder,
   type Kysely,
   type KyselyTypeError,
+  type ReadonlyAccessMode,
+  type ReadonlyConnectionBuilder,
+  type ReadonlyControlledTransaction,
+  type ReadonlyControlledTransactionBuilder,
+  type ReadonlyKysely,
+  type ReadonlyQueryCreator,
+  type ReadonlyQueryResult,
+  type ReadonlyTransaction,
+  type ReadonlyTransactionBuilder,
   type Selectable,
   SelectQueryNode,
   type Transaction,
   type TransactionBuilder,
-} from '../../../dist/cjs/index.js'
+} from '../index.js'
 
 async function testReadonlyKysely(
   db: Kysely<Database>,

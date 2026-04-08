@@ -1,4 +1,4 @@
-import { DeleteResult, sql } from '../../../dist/cjs/index.js'
+import { DeleteResult, sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,

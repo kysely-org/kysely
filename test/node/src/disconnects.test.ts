@@ -1,4 +1,4 @@
-import { Kysely, MssqlDialect, sql } from '../../../dist/cjs/index.js'
+import { Kysely, MssqlDialect, sql } from '../../../dist/index.js'
 import { DIALECTS, DIALECT_CONFIGS, Database, expect } from './test-setup.js'
 import * as tarn from 'tarn'
 import * as tedious from 'tedious'

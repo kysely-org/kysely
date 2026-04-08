@@ -1,4 +1,4 @@
-import { InsertResult, Kysely, sql } from '../../../dist/cjs/index.js'
+import { InsertResult, Kysely, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,

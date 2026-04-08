@@ -10,7 +10,7 @@ import {
   QueryResult,
   RootOperationNode,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import { expect } from './test-setup.js'
 
 describe('async dispose', function () {

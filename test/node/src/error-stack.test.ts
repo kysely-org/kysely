@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { Assertion } from 'chai'
-import { sql } from '../../../dist/cjs/index.js'
+import { sql } from '../../../dist/index.js'
 import {
   destroyTest,
   initTest,

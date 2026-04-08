@@ -7,7 +7,7 @@ import {
   Kysely,
   LogConfig,
   PostgresDialect,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 describe('logging', () => {
   let sandbox: SinonSandbox

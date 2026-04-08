@@ -37,7 +37,7 @@ import {
   type OrderByDirection,
   type OrderByExpression,
   PGliteDialect,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import type { ConnectionConfiguration } from 'tedious'
 
 export type Gender = 'male' | 'female' | 'other'

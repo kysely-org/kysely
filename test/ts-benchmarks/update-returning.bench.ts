@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { Kysely, UpdateQueryBuilder } from '../../dist/esm/index.js'
+import type { Kysely, UpdateQueryBuilder } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>

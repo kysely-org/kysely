@@ -4,7 +4,7 @@ import {
   PostgresDialect,
   MysqlDialect,
   sql,
-} from '../../dist/esm/index.js'
+} from '../../dist/index.js'
 import { createPool } from 'mysql2'
 import Pool from 'pg-pool'
 

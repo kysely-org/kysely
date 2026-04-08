@@ -3,7 +3,7 @@ import {
   InsertResult,
   Kysely,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 import {
   clearDatabase,

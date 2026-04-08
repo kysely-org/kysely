@@ -4,7 +4,7 @@ import {
   NoResultError,
   QueryExecutor,
   QueryNode,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,

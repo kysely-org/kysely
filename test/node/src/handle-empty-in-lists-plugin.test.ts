@@ -2,7 +2,7 @@ import {
   HandleEmptyInListsPlugin,
   pushValueIntoList,
   replaceWithNoncontingentExpression,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   destroyTest,
   initTest,

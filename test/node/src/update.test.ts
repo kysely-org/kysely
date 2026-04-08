@@ -1,4 +1,4 @@
-import { UpdateResult, sql } from '../../../dist/cjs/index.js'
+import { UpdateResult, sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,

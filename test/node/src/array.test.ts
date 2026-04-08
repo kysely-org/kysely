@@ -1,4 +1,4 @@
-import { Generated, Kysely, sql } from '../../../dist/cjs/index.js'
+import { Generated, Kysely, sql } from '../../../dist/index.js'
 
 import {
   destroyTest,

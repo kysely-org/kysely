@@ -4,7 +4,7 @@ import {
   ParseJSONResultsPlugin,
   SqlBool,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   DialectDescriptor,
   DIALECTS,

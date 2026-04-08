@@ -4,7 +4,7 @@ import {
   SimpleReferenceExpression,
   ReferenceExpression,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   Database,
   destroyTest,
