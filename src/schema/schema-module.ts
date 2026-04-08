@@ -31,7 +31,8 @@ import {
 } from '../parser/identifier-parser.js'
 import { RefreshMaterializedViewBuilder } from './refresh-materialized-view-builder.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
-
+import { AlterTypeBuilder } from './alter-type-builder.js'
+import { AlterTypeNode } from '../operation-node/alter-type-node.js'
 /**
  * Provides methods for building database schema.
  */
@@ -298,6 +299,26 @@ export class SchemaModule {
       queryId: createQueryId(),
       executor: this.#executor,
       node: CreateTypeNode.create(parseSchemableIdentifier(typeName)),
+    })
+  }
+
+  /**
+   * Alter a type. Rename it, change schema or add/rename enum type values.
+   *
+   * Only some dialects like PostgreSQL have user-defined types.
+   *
+   * ```ts
+   * await db.schema
+   *   .alterType('species')
+   *   .addValue('capybara')
+   *   .execute()
+   * ```
+   */
+  alterType<const N extends string>(name: N): AlterTypeBuilder<N> {
+    return new AlterTypeBuilder({
+      executor: this.#executor,
+      node: AlterTypeNode.create(parseSchemableIdentifier(name)),
+      queryId: createQueryId(),
     })
   }
 

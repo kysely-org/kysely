@@ -1,5 +1,5 @@
 import type { Dialect } from './dialect/dialect.js'
-import { SchemaModule } from './schema/schema.js'
+import { SchemaModule } from './schema/schema-module.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
 import type { QueryExecutor } from './query-executor/query-executor.js'
