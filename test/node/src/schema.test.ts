@@ -2914,6 +2914,26 @@ for (const dialect of DIALECTS) {
           await query.execute()
         })
 
+        it('should add enum value if not exists after another', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .addValue('capybara')
+            .ifNotExists()
+            .after('frog')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value if not exists 'capybara' after 'frog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
         async function cleanup(): Promise<void> {
           await ctx.db.schema
             .dropType(['species', 'new_species', 'moshe.species'])
