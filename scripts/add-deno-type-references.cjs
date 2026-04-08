@@ -5,12 +5,12 @@
  */
 
 const fs = require('fs')
-const path = require('path')
+const path = require('pathe')
 const forEachFile = require('./util/for-each-file.cjs')
 
-const ESM_DIST_PATH = path.join(__dirname, '..', 'dist', 'esm')
+const DIST_PATH = path.join(__dirname, '..', 'dist')
 
-forEachFile(ESM_DIST_PATH, (filePath) => {
+forEachFile(DIST_PATH, (filePath) => {
   if (filePath.endsWith('.js')) {
     const dTsFile = path.basename(filePath).replace(/\.js$/, '.d.ts')
     const content = fs.readFileSync(filePath, { encoding: 'utf-8' })
