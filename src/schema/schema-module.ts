@@ -303,9 +303,10 @@ export class SchemaModule {
   }
 
   /**
-   * Alter a type.
+   * Alter a type. Rename it, change schema or add/rename enum type values.
    *
    * Only some dialects like PostgreSQL have user-defined types.
+   *
    * ```ts
    * await db.schema
    *   .alterType('species')
