@@ -46,7 +46,7 @@ trustPolicy: no-downgrade
 # A list of package selectors that should be excluded from the trust policy check.
 # https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
-  - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.9.2 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
+  - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
 
 # Fail before running custom scripts if `node_modules` is out of date.
 # https://pnpm.io/settings#verifydepsbeforerun
