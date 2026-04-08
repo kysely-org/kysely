@@ -1,4 +1,5 @@
 import type { AlterTableNode } from './alter-table-node.js'
+import type { AlterTypeNode } from './alter-type-node.js'
 import type { CreateIndexNode } from './create-index-node.js'
 import type { CreateSchemaNode } from './create-schema-node.js'
 import type { CreateTableNode } from './create-table-node.js'
@@ -29,11 +30,13 @@ export type RootOperationNode =
   | RawNode
   | CreateTypeNode
   | DropTypeNode
+  | AlterTypeNode
 
 const ROOT_OPERATION_NODE_KINDS: Readonly<
   Record<RootOperationNode['kind'], true>
 > = {
   AlterTableNode: true,
+  AlterTypeNode: true,
   CreateIndexNode: true,
   CreateSchemaNode: true,
   CreateTableNode: true,

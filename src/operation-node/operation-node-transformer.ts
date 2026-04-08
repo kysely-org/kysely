@@ -99,6 +99,9 @@ import type { OrActionNode } from './or-action-node.js'
 import type { CollateNode } from './collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from './rename-constraint-node.js'
+import type { AddValueNode } from './add-value-node.js'
+import type { AlterTypeNode } from './alter-type-node.js'
+import type { RenameValueNode } from './rename-value-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -242,6 +245,9 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    AlterTypeNode: this.transformAlterType.bind(this),
+    AddValueNode: this.transformAddValue.bind(this),
+    RenameValueNode: this.transformRenameValue.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -1286,6 +1292,44 @@ export class OperationNodeTransformer {
     return requireAllProps<OutputNode>({
       kind: 'OutputNode',
       selections: this.transformNodeList(node.selections, queryId),
+    })
+  }
+
+  protected transformAlterType(
+    node: AlterTypeNode,
+    queryId?: QueryId,
+  ): AlterTypeNode {
+    return requireAllProps<AlterTypeNode>({
+      kind: 'AlterTypeNode',
+      name: this.transformNode(node.name, queryId),
+      addValue: this.transformNode(node.addValue, queryId),
+      renameTo: this.transformNode(node.renameTo, queryId),
+      renameValue: this.transformNode(node.renameValue, queryId),
+      setSchema: this.transformNode(node.setSchema, queryId),
+    })
+  }
+
+  protected transformAddValue(
+    node: AddValueNode,
+    queryId?: QueryId,
+  ): AddValueNode {
+    return requireAllProps<AddValueNode>({
+      kind: 'AddValueNode',
+      value: this.transformNode(node.value, queryId),
+      ifNotExists: node.ifNotExists,
+      isBefore: node.isBefore,
+      neighborValue: this.transformNode(node.neighborValue, queryId),
+    })
+  }
+
+  protected transformRenameValue(
+    node: RenameValueNode,
+    queryId?: QueryId,
+  ): RenameValueNode {
+    return requireAllProps<RenameValueNode>({
+      kind: 'RenameValueNode',
+      oldValue: this.transformNode(node.oldValue, queryId),
+      newValue: this.transformNode(node.newValue, queryId),
     })
   }
 

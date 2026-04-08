@@ -371,9 +371,9 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
 }
 
 export interface AlterTableBuilderProps {
-  readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly node: AlterTableNode
+  readonly queryId: QueryId
 }
 
 export interface ColumnAlteringInterface {

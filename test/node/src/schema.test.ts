@@ -2651,8 +2651,8 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    describe('create type', () => {
-      if (sqlSpec === 'postgres') {
+    if (sqlSpec === 'postgres') {
+      describe('create type', () => {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -2673,15 +2673,13 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
-      }
 
-      async function cleanup() {
-        await ctx.db.schema.dropType('species').ifExists().execute()
-      }
-    })
+        async function cleanup() {
+          await ctx.db.schema.dropType('species').ifExists().execute()
+        }
+      })
 
-    describe('drop type', () => {
-      if (sqlSpec === 'postgres') {
+      describe('drop type', () => {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -2776,12 +2774,179 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
-      }
 
-      async function cleanup() {
-        await ctx.db.schema.dropType(['species', 'colors']).ifExists().execute()
-      }
-    })
+        async function cleanup() {
+          await ctx.db.schema
+            .dropType(['species', 'colors'])
+            .ifExists()
+            .execute()
+        }
+      })
+
+      describe('alter type', () => {
+        beforeEach(cleanup)
+        afterEach(cleanup)
+
+        it('should rename type', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .renameTo('new_species')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" rename to "new_species"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it("should set type's schema", async () => {
+          const query = ctx.db.schema.alterType('species').setSchema('moshe')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" set schema "moshe"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await ctx.db.schema.createSchema('moshe').execute()
+
+          await query.execute()
+        })
+
+        it('should rename enum value', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .renameValue('cat', 'capybara')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" rename value 'cat' to 'capybara'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should add enum value', async () => {
+          const query = ctx.db.schema.alterType('species').addValue('capybara')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value 'capybara'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should add enum value if not exists', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .addValue('capybara')
+            .ifNotExists()
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value if not exists 'capybara'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should add enum value before another', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .addValue('capybara')
+            .before('frog')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value 'capybara' before 'frog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should add enum value after another', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .addValue('capybara')
+            .after('frog')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value 'capybara' after 'frog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should add enum value if not exists after another', async () => {
+          const query = ctx.db.schema
+            .alterType('species')
+            .addValue('capybara')
+            .ifNotExists()
+            .after('frog')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `alter type "species" add value if not exists 'capybara' after 'frog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        async function cleanup(): Promise<void> {
+          await ctx.db.schema
+            .dropType(['species', 'new_species', 'moshe.species'])
+            .ifExists()
+            .execute()
+          await ctx.db.schema.dropSchema('moshe').ifExists().execute()
+          await ctx.db.schema
+            .createType('species')
+            .asEnum(['cat', 'dog', 'frog'])
+            .execute()
+        }
+      })
+    }
 
     describe('alter table', () => {
       beforeEach(async () => {
