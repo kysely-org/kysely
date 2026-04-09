@@ -47,6 +47,11 @@ export default {
           ],
           enableLlmsFullTxt: true,
           includeGeneratedIndex: false,
+          // Explicitly exclude auto-generated category index pages.
+          // These only list child pages and have no meaningful content for LLMs.
+          excludeRoutes: [
+            '/docs/category/**',
+          ],
           includePages: true,
           includeVersionedDocs: false,
           relativePaths: false,
