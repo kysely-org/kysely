@@ -1,14 +1,14 @@
-import { Generated, Kysely, sql } from '../../../dist/cjs/index.js'
+import { type Generated, Kysely, sql } from '../../../dist/index.js'
 
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
-  Database,
+  type Database,
   insertDefaultDataSet,
   clearDatabase,
-  Person,
+  type Person,
   DIALECTS,
 } from './test-setup.js'
 

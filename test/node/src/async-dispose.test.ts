@@ -1,16 +1,16 @@
 import {
   CompiledQuery,
-  DatabaseConnection,
+  type DatabaseConnection,
   DummyDriver,
   Kysely,
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  QueryId,
-  QueryResult,
-  RootOperationNode,
+  type QueryId,
+  type QueryResult,
+  type RootOperationNode,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import { expect } from './test-setup.js'
 
 describe('async dispose', function () {

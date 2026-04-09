@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { Kysely } from '../../dist/esm/index.js'
+import type { Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -15,7 +15,7 @@ bench('kysely.with(cte, qc => qc.selectFrom(table))', () => {
 
 bench('kysely.with(cte, qc => qc.insertInto(table))', () => {
   return kysely.with('cte', (qc) => qc.insertInto('my_table').returningAll())
-}).types([3308, 'instantiations'])
+}).types([3281, 'instantiations'])
 
 bench('kysely.with(cte, qc => qc.updateTable(table))', () => {
   return kysely.with('cte', (qc) => qc.updateTable('my_table').returningAll())
@@ -49,7 +49,7 @@ bench('kysely.with(cte, () => selectQuery)', () => {
 
 bench('kysely.with(cte, () => insertQuery)', () => {
   return kysely.with('cte', () => kysely.insertInto('my_table').returningAll())
-}).types([3296, 'instantiations'])
+}).types([3269, 'instantiations'])
 
 bench('kysely.with(cte, () => updateQuery)', () => {
   return kysely.with('cte', () => kysely.updateTable('my_table').returningAll())
@@ -89,7 +89,7 @@ bench('kysely.with(cte, selectQuery)', () => {
 
 bench('kysely.with(cte, insertQuery)', () => {
   return kysely.with('cte', kysely.insertInto('my_table').returningAll())
-}).types([3265, 'instantiations'])
+}).types([3238, 'instantiations'])
 
 bench('kysely.with(cte, updateQuery)', () => {
   return kysely.with('cte', kysely.updateTable('my_table').returningAll())

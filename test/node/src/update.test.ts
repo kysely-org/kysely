@@ -1,10 +1,10 @@
-import { UpdateResult, sql } from '../../../dist/cjs/index.js'
+import { UpdateResult, sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   NOT_SUPPORTED,
