@@ -1,10 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import {
-  type SelectQueryBuilder,
-  type Kysely,
-  sql,
-} from '../../dist/esm/index.js'
+import { type SelectQueryBuilder, type Kysely, sql } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -39,7 +35,7 @@ bench('kysely..where(~table.column, op, value)', () =>
 
 bench('kysely..where(column, is, null)', () =>
   query.where('col_6f5e1903664b084bf6197f2b86849d5e', 'is', null),
-).types([2207, 'instantiations'])
+).types([2192, 'instantiations'])
 
 bench('kysely..where(column, op, select)', () =>
   query.where(
@@ -63,7 +59,7 @@ bench('kysely..where(eb => eb.and([...]))', () =>
       eb('col_4d742b2f247bec99b41a60acbebc149a', '=', 456),
     ]),
   ),
-).types([2879, 'instantiations'])
+).types([2870, 'instantiations'])
 
 bench('kysely..where(sql`...`)', () =>
   query.where(sql<boolean>`col = 'foo'`),

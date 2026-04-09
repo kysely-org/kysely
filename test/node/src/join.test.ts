@@ -1,11 +1,11 @@
-import { sql } from '../../../dist/cjs/index.js'
+import { sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
   insertPersons,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   NOT_SUPPORTED,

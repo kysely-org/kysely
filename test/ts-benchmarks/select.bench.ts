@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { Kysely, SelectQueryBuilder } from '../../dist/esm/index.js'
+import type { Kysely, SelectQueryBuilder } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -22,7 +22,7 @@ bench('kysely..select(column)', () =>
 bench('kysely..select(~column)', () =>
   // @ts-expect-error
   query.select('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7258, 'instantiations'])
+).types([7231, 'instantiations'])
 
 bench('kysely..select(table.column)', () =>
   query.select('my_table.col_164b7896ec8e770207febe0812c5f052'),
@@ -31,7 +31,7 @@ bench('kysely..select(table.column)', () =>
 bench('kysely..select(~table.column)', () =>
   // @ts-expect-error
   query.select('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7258, 'instantiations'])
+).types([7231, 'instantiations'])
 
 bench('kysely..select(table.column as alias)', () =>
   query.select('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
@@ -47,14 +47,14 @@ bench('kysely..selectAll()', () => query.selectAll()).types([
 ])
 
 bench('kysely..selectAll(table)', () => query.selectAll('my_table')).types([
-  473,
+  446,
   'instantiations',
 ])
 
 bench('kysely..selectAll(~table)', () =>
   // @ts-expect-error
   query.selectAll('NO_SUCH_TABLE'),
-).types([652, 'instantiations'])
+).types([625, 'instantiations'])
 
 bench('kyselyAny..select(column)', () =>
   queryAny.select('col_164b7896ec8e770207febe0812c5f052'),

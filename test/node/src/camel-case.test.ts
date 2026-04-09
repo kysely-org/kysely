@@ -1,16 +1,16 @@
 import {
   CamelCasePlugin,
-  Generated,
+  type Generated,
   Kysely,
   ParseJSONResultsPlugin,
-  RawBuilder,
+  type RawBuilder,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   createTableWithId,

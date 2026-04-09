@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { InsertQueryBuilder, Kysely } from '../../dist/esm/index.js'
+import type { InsertQueryBuilder, Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -22,7 +22,7 @@ bench('kysely.insertInto(table).returning(column)', () =>
 bench('kysely.insertInto(table)..returning(~column)', () =>
   // @ts-expect-error
   insertQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7333, 'instantiations'])
+).types([7306, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(table.column)', () =>
   insertQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
@@ -31,7 +31,7 @@ bench('kysely.insertInto(table)..returning(table.column)', () =>
 bench('kysely.insertInto(table)..returning(~table.column)', () =>
   // @ts-expect-error
   insertQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7333, 'instantiations'])
+).types([7306, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(table.column as alias)', () =>
   insertQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
@@ -43,7 +43,7 @@ bench('kysely.insertInto(table)..returning(column as alias)', () =>
 
 bench('kysely.insertInto(table)..returningAll()', () =>
   insertQuery.returningAll(),
-).types([520, 'instantiations'])
+).types([493, 'instantiations'])
 
 bench('kyselyAny.insertInto(table)..returning(column)', () =>
   insertQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
