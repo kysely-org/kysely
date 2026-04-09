@@ -269,3 +269,11 @@ export type StringsWhenDataTypeNotAvailable =
 export type NumbersWhenDataTypeNotAvailable = bigint | NumericString
 
 export type NumericString = `${number}`
+
+/**
+ * Forces all properties of `T` to be present in an object literal,
+ * while still allowing `undefined` values for optional properties.
+ *
+ * Unlike `Required<T>`, this does not strip `undefined` from property types.
+ */
+export type AllProps<T> = T & { [P in keyof T]-?: unknown }
