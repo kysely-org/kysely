@@ -27,31 +27,24 @@ const JSDOC_START_REGEX = /^\s+\/\*\*/
 const JSDOC_END_REGEX = /^\s+\*\//
 
 function main() {
-  for (const distSubDir of ['cjs', 'esm']) {
-    const subDirPath = path.join(DIST_PATH, distSubDir)
-    const files = []
+  const files = []
 
-    if (!fs.existsSync(subDirPath)) {
-      continue
-    }
-
-    forEachFile(subDirPath, (filePath) => {
-      if (filePath.endsWith('.d.ts')) {
-        const file = {
-          path: filePath,
-          lines: readLines(filePath),
-        }
-
-        file.objects = parseObjects(file)
-
-        if (file.objects.length > 0) {
-          files.push(file)
-        }
+  forEachFile(DIST_PATH, (filePath) => {
+    if (filePath.endsWith('.d.ts')) {
+      const file = {
+        path: filePath,
+        lines: readLines(filePath),
       }
-    })
 
-    copyDocumentation(files)
-  }
+      file.objects = parseObjects(file)
+
+      if (file.objects.length > 0) {
+        files.push(file)
+      }
+    }
+  })
+
+  copyDocumentation(files)
 }
 
 function readLines(filePath) {

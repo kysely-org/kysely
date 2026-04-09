@@ -10,11 +10,11 @@ import {
   type ExpressionBuilder,
   type Generated,
   type Kysely,
+  type KyselyTypeError,
   type SqlBool,
   expressionBuilder,
   sql,
 } from '../index.js'
-import type { KyselyTypeError } from '../../../dist/cjs/util/type-error.js'
 import type { Database } from '../shared.js'
 
 function testExpression(db: Kysely<Database>) {

@@ -1,9 +1,9 @@
-import {
+import type {
   ColumnType,
   Generated,
   GeneratedAlways,
   JSONColumnType,
-} from '../../dist/cjs/index.js'
+} from '../../dist/index.js'
 
 export interface Pet {
   id: Generated<string>

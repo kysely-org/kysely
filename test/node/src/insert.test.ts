@@ -1,19 +1,19 @@
 import {
-  AliasedRawBuilder,
+  type AliasedRawBuilder,
   InsertResult,
   Kysely,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
-  Person,
-  Database,
+  type Person,
+  type Database,
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DIALECTS,

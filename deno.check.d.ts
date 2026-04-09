@@ -7,7 +7,7 @@ import type {
   Selectable,
   SqlBool,
   Updateable,
-} from './dist/esm'
+} from './dist'
 
 export interface Database {
   audit: AuditTable

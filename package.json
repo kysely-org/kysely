@@ -28,8 +28,8 @@
     "node": ">=20.0.0"
   },
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "typesVersions": {
     "<5.4": {
       "*": [
@@ -39,54 +39,23 @@
   },
   "files": [
     "dist",
-    "helpers",
-    "migration.d.ts",
-    "migration.js",
-    "outdated-typescript.d.ts",
-    "readonly.d.ts",
-    "readonly.js"
+    "outdated-typescript.d.ts"
   ],
   "exports": {
     ".": {
       "types@<5.4": "./outdated-typescript.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "default": "./dist/cjs/index.js"
+      "default": "./dist/index.js"
     },
-    "./helpers/postgres": {
-      "import": "./dist/esm/helpers/postgres.js",
-      "require": "./dist/cjs/helpers/postgres.js",
-      "default": "./dist/cjs/helpers/postgres.js"
-    },
-    "./helpers/mysql": {
-      "import": "./dist/esm/helpers/mysql.js",
-      "require": "./dist/cjs/helpers/mysql.js",
-      "default": "./dist/cjs/helpers/mysql.js"
-    },
-    "./helpers/mssql": {
-      "import": "./dist/esm/helpers/mssql.js",
-      "require": "./dist/cjs/helpers/mssql.js",
-      "default": "./dist/cjs/helpers/mssql.js"
-    },
-    "./helpers/sqlite": {
-      "import": "./dist/esm/helpers/sqlite.js",
-      "require": "./dist/cjs/helpers/sqlite.js",
-      "default": "./dist/cjs/helpers/sqlite.js"
-    },
-    "./migration": {
-      "import": "./dist/esm/migration/index.js",
-      "require": "./dist/cjs/migration/index.js",
-      "default": "./dist/cjs/migration/index.js"
-    },
-    "./readonly": {
-      "import": "./dist/esm/readonly/index.js",
-      "require": "./dist/cjs/readonly/index.js",
-      "default": "./dist/cjs/readonly/index.js"
-    }
+    "./helpers/mssql": "./dist/helpers/mssql.js",
+    "./helpers/mysql": "./dist/helpers/mysql.js",
+    "./helpers/postgres": "./dist/helpers/postgres.js",
+    "./helpers/sqlite": "./dist/helpers/sqlite.js",
+    "./migration": "./dist/migration/index.js",
+    "./readonly": "./dist/readonly/index.js"
   },
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
+    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js",
     "bench:ts": "pnpm build && node --experimental-strip-types ./test/ts-benchmarks/index.ts",
     "test": "pnpm build && pnpm test:node:build && pnpm test:node:run && pnpm test:typings && pnpm test:esmimports && pnpm test:exports",
     "test:node:build": "tsc -p test/node",
@@ -99,16 +68,13 @@
     "test:deno": "deno run --allow-env --allow-read --allow-net --no-lock test/deno/test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.cjs",
-    "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
-    "test:exports": "attw --pack . && node scripts/check-exports.cjs",
+    "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/index.js --outfile=/dev/null",
+    "test:exports": "attw --profile esm-only --pack . && node scripts/check-exports.cjs",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
     "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
-    "build": "pnpm clean && (pnpm build:esm & pnpm build:cjs) && pnpm script:module-fixup && pnpm script:copy-interface-doc",
-    "build:esm": "tsc -p tsconfig.json && pnpm script:add-deno-type-references",
-    "build:cjs": "tsc -p tsconfig-cjs.json",
-    "script:module-fixup": "node scripts/module-fixup.cjs",
+    "build": "pnpm clean && tsc && pnpm script:add-deno-type-references && pnpm script:copy-interface-doc",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.cjs",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.cjs",
     "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
