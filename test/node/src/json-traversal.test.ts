@@ -1,12 +1,12 @@
 import {
   ColumnDefinitionBuilder,
-  JSONColumnType,
+  type JSONColumnType,
   ParseJSONResultsPlugin,
-  SqlBool,
+  type SqlBool,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
-  DialectDescriptor,
+  type DialectDescriptor,
   DIALECTS,
   type JSONTestContext,
   NOT_SUPPORTED,

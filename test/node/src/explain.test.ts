@@ -1,13 +1,13 @@
 import { expect } from 'chai'
-import { createSandbox, SinonSpy } from 'sinon'
-import { DefaultQueryExecutor, sql } from '../../../dist/cjs/index.js'
+import { createSandbox, type SinonSpy } from 'sinon'
+import { DefaultQueryExecutor, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
   initTest,
   insertDefaultDataSet,
   NOT_SUPPORTED,
-  TestContext,
+  type TestContext,
   DIALECTS,
 } from './test-setup.js'
 

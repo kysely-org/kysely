@@ -1,7 +1,7 @@
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   NOT_SUPPORTED,
   DIALECTS,
