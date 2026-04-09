@@ -3,7 +3,7 @@ import {
   destroyTest,
   initTest,
   insertDefaultDataSet,
-  TestContext,
+  type TestContext,
   testSql,
   DIALECTS,
 } from './test-setup.js'

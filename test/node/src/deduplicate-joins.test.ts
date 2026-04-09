@@ -1,10 +1,10 @@
-import { DeduplicateJoinsPlugin } from '../../../dist/cjs/index.js'
+import { DeduplicateJoinsPlugin } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   insertDefaultDataSet,
   DIALECTS,

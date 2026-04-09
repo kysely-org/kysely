@@ -9,15 +9,15 @@ import {
   SqliteDriver,
   Transaction,
   TRANSACTION_ACCESS_MODES,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
-  Database,
+  type Database,
   insertDefaultDataSet,
   DIALECTS,
 } from './test-setup.js'

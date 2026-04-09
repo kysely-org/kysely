@@ -1,10 +1,10 @@
-import { SafeNullComparisonPlugin } from '../../../dist/cjs/index.js'
+import { SafeNullComparisonPlugin } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   insertDefaultDataSet,
   DIALECTS,

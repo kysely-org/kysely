@@ -2,16 +2,16 @@ import {
   HandleEmptyInListsPlugin,
   pushValueIntoList,
   replaceWithNoncontingentExpression,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   DIALECTS,
   insertDefaultDataSet,
-  DialectDescriptor,
+  type DialectDescriptor,
   NOT_SUPPORTED,
   clearDatabase,
 } from './test-setup.js'

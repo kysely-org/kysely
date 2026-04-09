@@ -1,10 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import {
-  type SelectQueryBuilder,
-  sql,
-  type Kysely,
-} from '../../dist/esm/index.js'
+import { type SelectQueryBuilder, sql, type Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -43,7 +39,7 @@ bench('kysely..groupBy(sql)', () =>
 
 bench('kysely..groupBy(eb => ref)', () =>
   query.groupBy((eb) => eb.ref('col_164b7896ec8e770207febe0812c5f052')),
-).types([967, 'instantiations'])
+).types([958, 'instantiations'])
 
 bench('kysely..groupBy(column).groupBy(column)', () =>
   query

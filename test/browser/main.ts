@@ -1,11 +1,11 @@
 import {
   Kysely,
-  Generated,
+  type Generated,
   DummyDriver,
   SqliteAdapter,
   SqliteIntrospector,
   SqliteQueryCompiler,
-} from '../../dist/esm/index.js'
+} from '../../dist/index.js'
 
 interface Person {
   id: Generated<number>

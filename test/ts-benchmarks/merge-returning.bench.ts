@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { MergeQueryBuilder, Kysely } from '../../dist/esm/index.js'
+import type { MergeQueryBuilder, Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -22,7 +22,7 @@ bench('kysely.mergeInto(table).returning(column)', () =>
 bench('kysely.mergeInto(table)..returning(~column)', () =>
   // @ts-expect-error
   mergeQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([6906, 'instantiations'])
+).types([6879, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(table.column)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
@@ -31,7 +31,7 @@ bench('kysely.mergeInto(table)..returning(table.column)', () =>
 bench('kysely.mergeInto(table)..returning(~table.column)', () =>
   // @ts-expect-error
   mergeQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([6906, 'instantiations'])
+).types([6879, 'instantiations'])
 
 bench('kysely.mergeInto(table)..returning(table.column as alias)', () =>
   mergeQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),

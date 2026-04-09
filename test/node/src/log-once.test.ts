@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { createSandbox, SinonSpy } from 'sinon'
-import { logOnce } from '../../../dist/cjs/index.js'
+import { createSandbox, type SinonSpy } from 'sinon'
+import { logOnce } from '../../../dist/index.js'
 
 describe('logOnce', () => {
   let logSpy: SinonSpy

@@ -9,7 +9,7 @@ import {
   MysqlDialect,
   sql,
   MssqlDialect,
-} from '../../dist/esm/index.js'
+} from '../../dist/index.js'
 
 interface Person {
   id: Generated<number>

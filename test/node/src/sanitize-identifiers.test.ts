@@ -1,10 +1,10 @@
-import { Updateable } from '../../../dist/cjs/index.js'
+import type { Updateable } from '../../../dist/index.js'
 
 import {
   destroyTest,
   initTest,
-  TestContext,
-  Person,
+  type TestContext,
+  type Person,
   testSql,
   DIALECTS,
 } from './test-setup.js'

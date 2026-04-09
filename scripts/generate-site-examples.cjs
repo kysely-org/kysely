@@ -10,7 +10,7 @@ const path = require('path')
 const forEachFile = require('./util/for-each-file.cjs')
 const _ = require('lodash')
 
-const ESM_PATH = path.join(__dirname, '..', 'dist', 'esm')
+const DIST_PATH = path.join(__dirname, '..', 'dist')
 const SITE_EXAMPLE_PATH = path.join(__dirname, '..', 'site', 'docs', 'examples')
 
 const SITE_EXAMPLE_START_REGEX = /<!--\s*siteExample\(/
@@ -98,7 +98,7 @@ const moreExamplesByCategory = {
 function main() {
   deleteAllExamples()
 
-  forEachFile(ESM_PATH, (filePath) => {
+  forEachFile(DIST_PATH, (filePath) => {
     if (!filePath.endsWith('.d.ts')) {
       return
     }

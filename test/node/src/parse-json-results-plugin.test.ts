@@ -1,5 +1,5 @@
-import { ParseJSONResultsPlugin } from '../../../dist/cjs/index.js'
-import { createQueryId } from '../../../dist/cjs/util/query-id.js'
+import { ParseJSONResultsPlugin } from '../../../dist/index.js'
+import { createQueryId } from '../../../dist/util/query-id.js'
 import { expect } from './test-setup.js'
 import merge from 'prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
 

@@ -1,16 +1,16 @@
 import {
   AggregateFunctionBuilder,
-  ExpressionBuilder,
-  SimpleReferenceExpression,
-  ReferenceExpression,
+  type ExpressionBuilder,
+  type SimpleReferenceExpression,
+  type ReferenceExpression,
   sql,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
-  Database,
+  type Database,
   destroyTest,
   initTest,
   NOT_SUPPORTED,
-  TestContext,
+  type TestContext,
   testSql,
   DIALECTS,
 } from './test-setup.js'

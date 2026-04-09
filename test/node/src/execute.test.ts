@@ -1,16 +1,16 @@
-import { createSandbox, SinonSpy } from 'sinon'
+import { createSandbox, type SinonSpy } from 'sinon'
 import {
   CompiledQuery,
   NoResultError,
-  QueryExecutor,
+  type QueryExecutor,
   QueryNode,
-} from '../../../dist/cjs/index.js'
+} from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
   initTest,
   insertPersons,
-  TestContext,
+  type TestContext,
   expect,
   DIALECTS,
 } from './test-setup.js'

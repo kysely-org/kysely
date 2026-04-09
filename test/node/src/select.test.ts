@@ -1,4 +1,4 @@
-import { Kysely, PostgresDialect, sql } from '../../../dist/cjs/index.js'
+import { Kysely, PostgresDialect, sql } from '../../../dist/index.js'
 import { Pool } from 'pg'
 
 import {
@@ -6,13 +6,13 @@ import {
   destroyTest,
   initTest,
   insertPersons,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
   NOT_SUPPORTED,
   PLUGINS,
   DIALECT_CONFIGS,
-  Database,
+  type Database,
   POOL_SIZE,
   DIALECTS,
   limit,

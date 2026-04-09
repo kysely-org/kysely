@@ -16,6 +16,9 @@ export default {
     locales: ['en'],
   },
   markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
     mdx1Compat: {
       admonitions: false,
       comments: false,
@@ -25,7 +28,6 @@ export default {
   },
   onBrokenAnchors: 'throw',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'throw',
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [

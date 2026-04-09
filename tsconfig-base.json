@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2023",
-    "types": ["node"]
+    "types": ["node"],
+    "verbatimModuleSyntax": true
   }
 }

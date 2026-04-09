@@ -1,40 +1,40 @@
 import {
-  Generated,
+  type Generated,
   Kysely,
-  RawBuilder,
+  type RawBuilder,
   sql,
   ParseJSONResultsPlugin,
-  NumericString,
+  type NumericString,
   expressionBuilder,
-  NonDehydrateable,
-} from '../../../dist/cjs/index.js'
+  type NonDehydrateable,
+} from '../../../dist/index.js'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
   jsonObjectFrom as pg_jsonObjectFrom,
   jsonBuildObject as pg_jsonBuildObject,
-} from '../../../dist/cjs/helpers/postgres.js'
+} from '../../../dist/helpers/postgres.js'
 import {
   jsonArrayFrom as mysql_jsonArrayFrom,
   jsonObjectFrom as mysql_jsonObjectFrom,
   jsonBuildObject as mysql_jsonBuildObject,
-} from '../../../dist/cjs/helpers/mysql.js'
+} from '../../../dist/helpers/mysql.js'
 import {
   jsonArrayFrom as mssql_jsonArrayFrom,
   jsonObjectFrom as mssql_jsonObjectFrom,
   jsonBuildObject as mssql_jsonBuildObject,
-} from '../../../dist/cjs/helpers/mssql.js'
+} from '../../../dist/helpers/mssql.js'
 import {
   jsonArrayFrom as sqlite_jsonArrayFrom,
   jsonObjectFrom as sqlite_jsonObjectFrom,
   jsonBuildObject as sqlite_jsonBuildObject,
-} from '../../../dist/cjs/helpers/sqlite.js'
+} from '../../../dist/helpers/sqlite.js'
 
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
-  Database,
+  type Database,
   insertDefaultDataSet,
   clearDatabase,
   DIALECTS,

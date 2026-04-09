@@ -1,4 +1,4 @@
-import type { Kysely } from '../../../dist/cjs/index.js'
+import type { Kysely } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,

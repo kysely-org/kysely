@@ -1,15 +1,15 @@
 import {
   DIALECTS,
-  Database,
-  TestContext,
+  type Database,
+  type TestContext,
   createTableWithId,
   destroyTest,
   expect,
   initTest,
 } from './test-setup.js'
-import { GeneratedAlways, Kysely, sql } from '../../../dist/cjs/index.js'
+import { type GeneratedAlways, Kysely, sql } from '../../../dist/index.js'
 import { Request } from 'tedious'
-import { SinonSandbox, SinonSpy, createSandbox } from 'sinon'
+import { type SinonSandbox, type SinonSpy, createSandbox } from 'sinon'
 
 const CHUNK_SIZE = 10
 const ITEM_COUNT = 100
