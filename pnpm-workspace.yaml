@@ -35,6 +35,11 @@ minimumReleaseAge: 1440 # 1 day old in minutes.
 # https://pnpm.io/settings#optimisticrepeatinstall
 optimisticRepeatInstall: true
 
+# Override dependency versions across the workspace.
+# https://pnpm.io/settings#overrides
+overrides:
+  webpack: 5.101.3 # newer versions currently break docusaurus build.
+
 # Fail when a dependency tries running a script and it is not in `allowBuilds`.
 # https://pnpm.io/settings#strictdepbuilds
 strictDepBuilds: true
