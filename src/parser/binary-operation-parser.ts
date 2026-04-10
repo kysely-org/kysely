@@ -66,7 +66,7 @@ export type ComparisonOperatorExpression =
 
 export type FilterObject<DB, TB extends keyof DB> =
   IsNever<TB> extends true
-    ? KyselyTypeError<'there are no tables in query context, so a filter object cannot be defined.'>
+    ? KyselyTypeError<'there are no tables in query context, so a filter object cannot be defined. try passing an array instead.'>
     : {
         [R in StringReference<DB, TB>]?: ValueExpressionOrList<
           DB,
