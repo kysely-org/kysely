@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "kysely": "link:kysely",
-    "mysql2": "3.20.0",
+    "mysql2": "3.21.0",
     "pg": "8.20.0",
     "tarn": "3.0.2",
     "tedious": "19.2.1"
