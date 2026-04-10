@@ -2,6 +2,7 @@
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "module": "node20",
     "resolveJsonModule": true
   },
   "include": ["./"]
