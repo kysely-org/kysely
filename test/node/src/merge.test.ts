@@ -1211,23 +1211,13 @@ for (const dialect of DIALECTS) {
 
           const result = await query.execute()
 
-          expect(result).to.eql(
-            variant === 'pglite'
-              ? [
-                  { action: 'UPDATE', name: "Jennifer's pet" },
-                  { action: 'UPDATE', name: "Arnold's pet" },
-                  { action: 'UPDATE', name: "Sylvester's pet" },
-                  { action: 'INSERT', name: "Moshe's pet" },
-                  { action: 'DELETE', name: 'Ralph' },
-                ]
-              : [
-                  { action: 'UPDATE', name: "Jennifer's pet" },
-                  { action: 'UPDATE', name: "Arnold's pet" },
-                  { action: 'UPDATE', name: "Sylvester's pet" },
-                  { action: 'DELETE', name: 'Ralph' },
-                  { action: 'INSERT', name: "Moshe's pet" },
-                ],
-          )
+          expect(result).to.eql([
+            { action: 'UPDATE', name: "Jennifer's pet" },
+            { action: 'UPDATE', name: "Arnold's pet" },
+            { action: 'UPDATE', name: "Sylvester's pet" },
+            { action: 'DELETE', name: 'Ralph' },
+            { action: 'INSERT', name: "Moshe's pet" },
+          ])
         })
       }
 
