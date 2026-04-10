@@ -12,6 +12,12 @@ allowBuilds:
   sharp: false # wrangler dependency, useless scripts
   workerd@1.20260405.1: true # wrangler@4.81.0 dependency
 
+auditConfig:
+  # Don't show in `pnpm audit`.
+  # https://pnpm.io/cli/audit#auditconfigignoreghsas
+  ignoreGhsas:
+    - GHSA-h726-x36v-rx45 # prototype-pollution-vulnerable-lodash.merge-dont-upgrade
+
 # All transitive dependencies must be resolved from a trusted source.
 # Packages from trusted sources are considered safer, as they are typically subject
 # to more reliable verification and scanning for malware and vulnerabilities.
@@ -54,6 +60,8 @@ trustPolicyExclude:
   - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
 
 updateConfig:
+  # Don't show in `pnpm outdated` or update in `pnpm update`.
+  # https://pnpm.io/settings#updateconfigignoredependencies
   ignoreDependencies:
     - '@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
     - 'prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
