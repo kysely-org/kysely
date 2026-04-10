@@ -64,8 +64,8 @@ importers:
         specifier: 11.7.5
         version: 11.7.5
       mysql2:
-        specifier: 3.20.0
-        version: 3.20.0(@types/node@25.5.0)
+        specifier: 3.21.0
+        version: 3.21.0(@types/node@25.5.0)
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -5124,8 +5124,8 @@ packages:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
     hasBin: true
 
-  mysql2@3.20.0:
-    resolution: {integrity: sha512-eCLUs7BNbgA6nf/MZXsaBO1SfGs0LtLVrJD3WeWq+jPLDWkSufTD+aGMwykfUVPdZnblaUK1a8G/P63cl9FkKg==}
+  mysql2@3.21.0:
+    resolution: {integrity: sha512-CYNKIuhnalXHTa4gonZ+KhzLESKllvo1qQIDYUVuatpN4NgMk+lsA3WwHYno5AS4PACUiD2qEmiVD9pr3bXWOw==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -13490,7 +13490,7 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  mysql2@3.20.0(@types/node@25.5.0):
+  mysql2@3.21.0(@types/node@25.5.0):
     dependencies:
       '@types/node': 25.5.0
       aws-ssl-profiles: 1.1.2
