@@ -53,6 +53,11 @@ trustPolicy: no-downgrade
 trustPolicyExclude:
   - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
 
+updateConfig:
+  ignoreDependencies:
+    - '@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
+    - 'prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
+
 # Prompt before running custom scripts if `node_modules` is out of date.
 # https://pnpm.io/settings#verifydepsbeforerun
 verifyDepsBeforeRun: prompt
