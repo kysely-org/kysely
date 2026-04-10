@@ -28,8 +28,8 @@ importers:
         specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: 25.5.0
-        version: 25.5.0
+        specifier: 25.5.2
+        version: 25.5.2
       '@types/pg':
         specifier: 8.20.0
         version: 8.20.0
@@ -65,7 +65,7 @@ importers:
         version: 11.7.5
       mysql2:
         specifier: 3.21.0
-        version: 3.21.0(@types/node@25.5.0)
+        version: 3.21.0(@types/node@25.5.2)
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -2429,6 +2429,9 @@ packages:
 
   '@types/node@25.5.0':
     resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
+
+  '@types/node@25.5.2':
+    resolution: {integrity: sha512-tO4ZIRKNC+MDWV4qKVZe3Ql/woTnmHDr5JD8UI5hn2pwBrHEwOEMZK7WlNb5RKB6EoJ02gwmQS9OrjuFnZYdpg==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -9969,7 +9972,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -10214,16 +10217,20 @@ snapshots:
     dependencies:
       undici-types: 7.18.2
 
+  '@types/node@25.5.2':
+    dependencies:
+      undici-types: 7.18.2
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       '@types/pg': 8.20.0
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       pg-protocol: 1.13.0
       pg-types: 2.2.0
 
@@ -10256,7 +10263,7 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
 
   '@types/retry@0.12.2': {}
 
@@ -13495,9 +13502,9 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  mysql2@3.21.0(@types/node@25.5.0):
+  mysql2@3.21.0(@types/node@25.5.2):
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       aws-ssl-profiles: 1.1.2
       denque: 2.1.0
       generate-function: 2.3.1
@@ -15174,7 +15181,7 @@ snapshots:
       '@azure/identity': 4.10.2
       '@azure/keyvault-keys': 4.10.0
       '@js-joda/core': 5.6.5
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       bl: 6.1.5
       iconv-lite: 0.7.2
       js-md4: 0.3.2
