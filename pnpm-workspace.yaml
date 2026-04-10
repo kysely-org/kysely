@@ -8,7 +8,7 @@ allowBuilds:
   better-sqlite3@12.8.0: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
-  esbuild@0.27.4: true
+  esbuild@0.28.0: true
   sharp: false # wrangler dependency, useless scripts
   workerd@1.20260317.1: true # wrangler@4.78.0 dependency
 
