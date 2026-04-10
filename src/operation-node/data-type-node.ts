@@ -31,6 +31,7 @@ export type SimpleColumnDataType =
   | 'uuid'
   | 'json'
   | 'jsonb'
+  | 'datetime2'
   | 'blob'
   | 'varbinary'
   | 'int4range'
@@ -59,6 +60,7 @@ const SIMPLE_COLUMN_DATA_TYPES: Readonly<Record<SimpleColumnDataType, true>> =
     datemultirange: true,
     daterange: true,
     datetime: true,
+    datetime2: true,
     decimal: true,
     'double precision': true,
     float4: true,
@@ -93,19 +95,11 @@ const SIMPLE_COLUMN_DATA_TYPES: Readonly<Record<SimpleColumnDataType, true>> =
     varchar: true,
   })
 
-// TODO: look into optimizing this, perhaps merging regexes.
 const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = freeze([
-  /^varchar\(\d+\)$/,
-  /^char\(\d+\)$/,
-  /^decimal\(\d+, \d+\)$/,
-  /^numeric\(\d+, \d+\)$/,
-  /^binary\(\d+\)$/,
-  /^datetime\(\d+\)$/,
-  /^time\(\d+\)$/,
-  /^timetz\(\d+\)$/,
-  /^timestamp\(\d+\)$/,
-  /^timestamptz\(\d+\)$/,
-  /^varbinary\(\d+\)$/,
+  /^(?:var)?(?:char|binary)\(\d+\)$/,
+  /^time(?:stamp)?(?:tz)?\(\d+\)$/,
+  /^(?:decimal|numeric)\(\d+, \d+\)$/,
+  /^datetime2?\(\d+\)$/,
 ])
 
 export type ColumnDataType =
@@ -116,6 +110,7 @@ export type ColumnDataType =
   | `numeric(${number}, ${number})`
   | `binary(${number})`
   | `datetime(${number})`
+  | `datetime2(${number})`
   | `time(${number})`
   | `timetz(${number})`
   | `timestamp(${number})`
