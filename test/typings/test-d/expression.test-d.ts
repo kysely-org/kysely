@@ -316,6 +316,8 @@ function testExpressionBuilderConstructor(db: Kysely<Database>) {
 function testTablelessExpressionBuilder(
   eb: ExpressionBuilder<Database, never>,
 ) {
+  eb.and([eb.or([])])
+  eb.or([eb.and([])])
   expectError(eb.and({}))
   expectError(eb.or({}))
   expectError(eb.and(eb.or([])))
