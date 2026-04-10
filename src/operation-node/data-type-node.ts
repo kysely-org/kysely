@@ -96,10 +96,18 @@ const SIMPLE_COLUMN_DATA_TYPES: Readonly<Record<SimpleColumnDataType, true>> =
   })
 
 const COLUMN_DATA_TYPE_REGEX: readonly RegExp[] = freeze([
-  /^(?:var)?(?:char|binary)\(\d+\)$/,
-  /^time(?:stamp)?(?:tz)?\(\d+\)$/,
-  /^(?:decimal|numeric)\(\d+, \d+\)$/,
-  /^datetime2?\(\d+\)$/,
+  /^varchar\(\d+\)$/,
+  /^char\(\d+\)$/,
+  /^decimal\(\d+, \d+\)$/,
+  /^numeric\(\d+, \d+\)$/,
+  /^binary\(\d+\)$/,
+  /^datetime\(\d+\)$/,
+  /^time\(\d+\)$/,
+  /^timetz\(\d+\)$/,
+  /^timestamp\(\d+\)$/,
+  /^timestamptz\(\d+\)$/,
+  /^datetime2\(\d+\)$/,
+  /^varbinary\(\d+\)$/,
 ])
 
 export type ColumnDataType =
