@@ -312,6 +312,7 @@ function testExpressionBuilderConstructor(db: Kysely<Database>) {
   expectType<ExpressionBuilder<Database, 'action' | 'pet'>>(eb3)
 }
 
+// See: https://github.com/kysely-org/kysely/issues/1783
 function testTablelessExpressionBuilder(
   eb: ExpressionBuilder<Database, never>,
 ) {
