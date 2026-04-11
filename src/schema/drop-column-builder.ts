@@ -3,21 +3,26 @@ import type { OperationNodeSource } from '../operation-node/operation-node-sourc
 import { freeze } from '../util/object-utils.js'
 
 export class DropColumnBuilder implements OperationNodeSource {
-  readonly #node: DropColumnNode
+  readonly #props: DropColumnBuilderProps
 
-  constructor(node: DropColumnNode) {
-    this.#node = node
+  constructor(props: DropColumnBuilderProps) {
+    this.#props = freeze({ ...props })
   }
 
   ifExists(): DropColumnBuilder {
-    return new DropColumnBuilder(
-      DropColumnNode.cloneWith(this.#node, { ifExists: true }),
-    )
+    return new DropColumnBuilder({
+      ...this.#props,
+      node: DropColumnNode.cloneWith(this.#props.node, { ifExists: true }),
+    })
   }
 
   toOperationNode(): DropColumnNode {
-    return this.#node
+    return this.#props.node
   }
+}
+
+export interface DropColumnBuilderProps {
+  readonly node: DropColumnNode
 }
 
 export type DropColumnBuilderCallback = (

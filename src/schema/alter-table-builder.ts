@@ -111,7 +111,9 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     column: string,
     build: DropColumnBuilderCallback = noop,
   ): AlterTableColumnAlteringBuilder {
-    const builder = build(new DropColumnBuilder(DropColumnNode.create(column)))
+    const builder = build(
+      new DropColumnBuilder({ node: DropColumnNode.create(column) }),
+    )
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
@@ -444,7 +446,9 @@ export class AlterTableColumnAlteringBuilder
     column: string,
     build: DropColumnBuilderCallback = noop,
   ): AlterTableColumnAlteringBuilder {
-    const builder = build(new DropColumnBuilder(DropColumnNode.create(column)))
+    const builder = build(
+      new DropColumnBuilder({ node: DropColumnNode.create(column) }),
+    )
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
