@@ -2,6 +2,8 @@ import type { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 
+export type DropColumnNodeProps = Omit<DropColumnNode, 'kind' | 'column'>
+
 export interface DropColumnNode extends OperationNode {
   readonly kind: 'DropColumnNode'
   readonly column: ColumnNode
@@ -13,7 +15,7 @@ type DropColumnNodeFactory = Readonly<{
   create(column: string): Readonly<DropColumnNode>
   cloneWith(
     node: DropColumnNode,
-    props: Omit<Partial<DropColumnNode>, 'kind' | 'column'>,
+    props: DropColumnNodeProps,
   ): Readonly<DropColumnNode>
 }>
 
