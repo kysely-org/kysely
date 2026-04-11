@@ -27,9 +27,10 @@ describe('FileMigrationProvider', () => {
 
         provider = new FileMigrationProvider({
           fs: { readdir },
-          import: extension.startsWith('c')
-            ? (module: string) => tsxRequire(module, __filename)
-            : undefined,
+          import:
+            extension.startsWith('c') || process.version.startsWith('v20.')
+              ? (module: string) => tsxRequire(module, __filename)
+              : undefined,
           migrationFolder: migrationFolderPath,
           path: { join },
         })
