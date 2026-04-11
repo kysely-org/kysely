@@ -30,7 +30,7 @@ export class FileMigrationProvider implements MigrationProvider {
 
     for (const fileName of files) {
       if (!this.hasExpectedExtension(fileName)) {
-        this.#props.onDiscarded?.(fileName, 'Extension')
+        this.#props.onFileIgnored?.(fileName, 'Extension')
         continue
       }
 
@@ -51,7 +51,7 @@ export class FileMigrationProvider implements MigrationProvider {
       } else if (isMigration(migration)) {
         migrations[migrationKey] = migration
       } else {
-        this.#props.onDiscarded?.(fileName, 'NotMigration')
+        this.#props.onFileIgnored?.(fileName, 'NotMigration')
       }
     }
 
@@ -86,6 +86,6 @@ export interface FileMigrationProviderProps {
   fs: FileMigrationProviderFS
   import?(module: string): Promise<any>
   migrationFolder: string
-  onDiscarded?(fileName: string, reason: 'Extension' | 'NotMigration'): void
+  onFileIgnored?(fileName: string, reason: 'Extension' | 'NotMigration'): void
   path: FileMigrationProviderPath
 }

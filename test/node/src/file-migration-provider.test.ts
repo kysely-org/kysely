@@ -54,7 +54,7 @@ describe('FileMigrationProvider', () => {
       const migrationFolderPath = join(__dirname, migrationFolder)
       let provider: FileMigrationProvider
       const migrationFileName = `123_noop.${extension}`
-      let discarded: { fileName: string; reason: string }[]
+      const ignored: { fileName: string; reason: string }[] = []
 
       before(async () => {
         await mkdir(migrationFolderPath)
@@ -62,13 +62,12 @@ describe('FileMigrationProvider', () => {
           join(migrationFolderPath, migrationFileName),
           extension.endsWith('ts') ? 'export {}' : '==asdhjgbaudg1827dg127',
         )
-        discarded = []
 
         provider = new FileMigrationProvider({
           fs: { readdir },
           migrationFolder: migrationFolderPath,
-          onDiscarded: (fileName, reason) => {
-            discarded.push({ fileName, reason })
+          onFileIgnored: (fileName, reason) => {
+            ignored.push({ fileName, reason })
           },
           path: { join },
         })
@@ -82,8 +81,8 @@ describe('FileMigrationProvider', () => {
         const migrations = await provider.getMigrations()
 
         expect(migrations).to.deep.equal({})
-        expect(discarded).to.have.length(1)
-        expect(discarded[0]).to.deep.equal({
+        expect(ignored).to.have.length(1)
+        expect(ignored[0]).to.deep.equal({
           fileName: migrationFileName,
           reason: 'Extension',
         })
