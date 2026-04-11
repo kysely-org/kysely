@@ -865,6 +865,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropColumnNode',
       column: this.transformNode(node.column, queryId),
+      ifExists: node.ifExists,
     } satisfies AllProps<DropColumnNode>
   }
 
