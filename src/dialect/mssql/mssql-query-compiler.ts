@@ -52,12 +52,18 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
     // multiple of these are not really supported by mssql,
     // but for the sake of WYSIWYG.
     if (nodesByKind.AlterColumnNode) {
-      if (!first) this.append(', ')
+      if (!first) {
+        this.append(', ')
+      }
+
       this.compileList(nodesByKind.AlterColumnNode)
     }
 
     if (nodesByKind.DropColumnNode) {
-      if (!first) this.append(', ')
+      if (!first) {
+        this.append(', ')
+      }
+
       this.append('drop ')
       this.compileList(nodesByKind.DropColumnNode)
       first = false
@@ -65,13 +71,19 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
 
     // not really supported by mssql, but for the sake of WYSIWYG.
     if (nodesByKind.ModifyColumnNode) {
-      if (!first) this.append(', ')
+      if (!first) {
+        this.append(', ')
+      }
+
       this.compileList(nodesByKind.ModifyColumnNode)
     }
 
     // not really supported by mssql, but for the sake of WYSIWYG.
     if (nodesByKind.RenameColumnNode) {
-      if (!first) this.append(', ')
+      if (!first) {
+        this.append(', ')
+      }
+
       this.compileList(nodesByKind.RenameColumnNode)
     }
   }
@@ -82,9 +94,11 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
 
   protected override visitDropColumn(node: DropColumnNode): void {
     this.append('column ')
+
     if (node.ifExists) {
       this.append('if exists ')
     }
+
     this.visitNode(node.column)
   }
 
