@@ -1,8 +1,12 @@
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'pathe'
 import { require as tsxRequire } from 'tsx/cjs/api'
-import { FileMigrationProvider } from '../../..'
+import { FileMigrationProvider } from '../../../dist/migration/file-migration-provider.js'
 import { expect } from './test-setup.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 describe('FileMigrationProvider', () => {
   ;['js', 'ts', 'mjs', 'cjs', 'mts', 'cts'].forEach((extension) => {
@@ -16,17 +20,16 @@ describe('FileMigrationProvider', () => {
         await mkdir(migrationFolderPath)
         await writeFile(
           join(migrationFolderPath, `${migrationName}.${extension}`),
-          extension.endsWith('js')
+          extension.startsWith('c')
             ? 'exports.up = () => {}'
             : 'export const up = () => {}',
         )
 
         provider = new FileMigrationProvider({
           fs: { readdir },
-          import:
-            extension.endsWith('ts') || extension.startsWith('m')
-              ? (module: string) => tsxRequire(module, __filename)
-              : undefined,
+          import: extension.startsWith('c')
+            ? (module: string) => tsxRequire(module, __filename)
+            : undefined,
           migrationFolder: migrationFolderPath,
           path: { join },
         })
