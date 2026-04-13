@@ -1,52 +1,12 @@
-export type AuthenticationErrors =
-  | 'NoUserIdParameter'
-  | 'InvalidAuthorizationHeader'
-  | 'InvalidAuthToken'
-  | 'ExpiredAuthToken'
-  | 'UserMismatch'
-  | 'UserOrRefreshTokenNotFound'
+import type { StatusCode } from 'hono/utils/http-status'
 
-export type UserApiErrors = 'InvalidUser' | 'UserNotFound'
-
-export type SignInMethodApiErrors =
-  | 'InvalidSignInMethod'
-  | 'UserAlreadyHasSignInMethod'
-  | 'PasswordTooWeak'
-  | 'PasswordTooLong'
-  | 'InvalidCredentials'
-  | 'InvalidRefreshToken'
-  | 'RefreshTokenUserIdMismatch'
-
-export type ErrorCode =
-  | 'UnknownError'
-  | AuthenticationErrors
-  | UserApiErrors
-  | SignInMethodApiErrors
-
-export type ErrorStatus = 400 | 401 | 403 | 404 | 409 | 500
-
-export class ControllerError extends Error {
-  readonly status: ErrorStatus
-  readonly code: ErrorCode
-  readonly data?: any
-
+export class AppError extends Error {
   constructor(
-    status: ErrorStatus,
-    code: ErrorCode,
+    readonly status: StatusCode,
+    readonly code: string,
     message: string,
-    data?: any,
   ) {
     super(message)
-    this.status = status
-    this.code = code
-    this.data = data
-  }
-
-  toJSON() {
-    return {
-      error: { code: this.code, message: this.message },
-    }
+    this.name = 'AppError'
   }
 }
-
-export class UserNotFoundError extends Error {}

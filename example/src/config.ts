@@ -1,30 +1,21 @@
-import * as dotenv from 'dotenv'
-import { ConnectionConfig } from 'pg'
-
-dotenv.config()
-
-export interface Config {
-  readonly port: number
-  readonly authTokenSecret: string
-  readonly authTokenExpiryDuration: string
-  readonly database: ConnectionConfig
+function env(name: string, fallback?: string): string {
+  const value = process.env[name] ?? fallback
+  if (value === undefined) {
+    throw new Error(`missing environment variable: ${name}`)
+  }
+  return value
 }
 
-export const config: Config = Object.freeze({
-  port: parseInt(getEnvVariable('PORT'), 10),
-  authTokenSecret: getEnvVariable('AUTH_TOKEN_SECRET'),
-  authTokenExpiryDuration: getEnvVariable('AUTH_TOKEN_EXIRY_DURATION'),
+export const config = Object.freeze({
+  port: Number(env('PORT', '3000')),
+  authSecret: env('AUTH_SECRET', 'dev-secret'),
   database: Object.freeze({
-    database: getEnvVariable('DATABASE'),
-    host: getEnvVariable('DATABASE_HOST'),
-    user: getEnvVariable('DATABASE_USER'),
+    host: env('DATABASE_HOST', 'localhost'),
+    port: Number(env('DATABASE_PORT', '5432')),
+    user: env('DATABASE_USER', 'postgres'),
+    password: env('DATABASE_PASSWORD', 'postgres'),
+    database: env('DATABASE_NAME', 'northwind'),
   }),
 })
 
-function getEnvVariable(name: string): string {
-  if (!process.env[name]) {
-    throw new Error(`environment variable ${name} not found`)
-  }
-
-  return process.env[name]!
-}
+export type Config = typeof config

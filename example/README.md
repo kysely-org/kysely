@@ -1,22 +1,104 @@
-# An example server that uses Kysely
+# Kysely Example -- Northwind API
 
-This is a simple but realistic Koa based server that shows one way to use Kysely. Since this example attempts to mimic a real world project, most of the code isn't relevant to learning how to use Kysely. The relevant parts are the repositories and how they are used. This examples is by no means the best or the right way to use Kysely, but simply one possible way.
+A modern, production-style REST API demonstrating [Kysely](https://github.com/kysely-org/kysely) with a [Northwind Traders](https://en.wikipedia.org/wiki/Northwind_Traders)-inspired schema.
 
-The server has three main levels of abstraction:
+## Stack
 
-1. **Repository**: Repositories contain all Kysely code and provide higher level methods for dealing with the database.
+| Layer | Choice |
+|-------|--------|
+| Runtime | Node.js (ESM) |
+| Web framework | [Hono](https://hono.dev) |
+| Database | PostgreSQL via Kysely |
+| Validation | [Zod](https://zod.dev) |
+| Auth | [jose](https://github.com/panva/jose) (JWT) |
+| Testing | [Vitest](https://vitest.dev) |
+| TypeScript | 5.x (strict) |
 
-2. **Service**: All business logic is implemented in the service layer. Services use repositories to interact with the database. While repositories deal with database rows and types like `UserRow` the service layer doesn't leak out those types. For example user service methods return and take `User` objects instead of `UserRow` objects.
+## Architecture
 
-3. **Controller**: Controllers define the HTTP API. Controllers validate and convert the inputs and outputs from/to the network and call services to carry out the actual business logic.
+The server follows a three-layer pattern:
 
-## Running the example
+1. **Repository** -- all Kysely queries live here. Each entity has a repository that
+   returns typed rows and throws `AppError` on missing records.
 
-All you need to do start poking around with the code is to clone kysely, go to the example folder and run:
+2. **Routes** -- define the HTTP API using Hono. Routes validate input with Zod
+   schemas, call repositories, and return JSON responses.
+
+3. **Middleware** -- cross-cutting concerns like authentication and error handling.
+
+## Schema
+
+Four tables inspired by the classic Northwind database:
+
+- **customer** -- name, email, city
+- **product** -- name, unit price, stock, discontinued flag
+- **order** -- belongs to a customer, has an order date and optional shipped date
+- **order_line** -- joins an order to products with quantity and price snapshot
+
+## Getting started
+
+```bash
+# Start PostgreSQL
+docker compose up -d
+
+# Install dependencies
+npm install
+
+# Run migrations
+npm run migrate
+
+# Copy env file (defaults work with docker compose)
+cp .env.example .env
+
+# Start the dev server
+npm run dev
+```
+
+The server starts at `http://localhost:3000`. A health check is available at `GET /health`.
+
+## API
+
+All endpoints except `/auth/login` and `/health` require a `Bearer` token.
+
+### Auth
 
 ```
-npm install
+POST /auth/login   { "email": "..." }  -->  { "token": "..." }
+```
+
+### Customers
+
+```
+GET    /customers
+GET    /customers/:id
+POST   /customers      { "name": "...", "email": "...", "city": "..." }
+PATCH  /customers/:id  { "name": "..." }
+DELETE /customers/:id
+```
+
+### Products
+
+```
+GET    /products
+GET    /products/:id
+POST   /products       { "name": "...", "unit_price": 9.99, "units_in_stock": 10 }
+PATCH  /products/:id   { "unit_price": 12.99 }
+DELETE /products/:id
+```
+
+### Orders
+
+```
+GET    /orders
+GET    /orders/:id     (includes line items with product names)
+POST   /orders         { "customer_id": 1, "lines": [{ "product_id": 1, "quantity": 2, "unit_price": 9.99 }] }
+```
+
+## Tests
+
+Tests require a running PostgreSQL instance (same docker compose setup). They
+create an isolated `northwind_test` database for each run.
+
+```bash
 npm test
 ```
-
-You need to have postgres running in the default port `5432` and the default postgres user `postgres` should exist with no password. You can modify the [test configuration](https://github.com/kysely-org/kysely/blob/master/example/test/test-config.ts) if you want to use different settings.
