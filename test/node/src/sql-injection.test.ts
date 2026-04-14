@@ -1,6 +1,11 @@
 import { expect } from 'chai'
-import { sql } from '../../../'
-import { destroyTest, DIALECTS, initTest, type TestContext } from './test-setup'
+import { sql } from '../../../dist/cjs/index.js'
+import {
+  destroyTest,
+  DIALECTS,
+  initTest,
+  type TestContext,
+} from './test-setup.js'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: select`, () => {

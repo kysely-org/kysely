@@ -4,7 +4,7 @@
  */
 
 import { expectError } from 'tsd'
-import type { ColumnType, Kysely } from '..'
+import type { ColumnType, Kysely } from '../index.js'
 
 export type Decimal = ColumnType<string, number | string, number | string>
 

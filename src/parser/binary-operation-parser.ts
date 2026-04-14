@@ -38,6 +38,8 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
 import type { WhenNode } from '../operation-node/when-node.js'
 import type { RawNode } from '../operation-node/raw-node.js'
+import type { IsNever } from '../util/type-utils.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 
 export type OperandValueExpression<
   DB,
@@ -62,13 +64,16 @@ export type ComparisonOperatorExpression =
   | ComparisonOperator
   | Expression<unknown>
 
-export type FilterObject<DB, TB extends keyof DB> = {
-  [R in StringReference<DB, TB>]?: ValueExpressionOrList<
-    DB,
-    TB,
-    SelectType<ExtractTypeFromStringReference<DB, TB, R>>
-  >
-}
+export type FilterObject<DB, TB extends keyof DB> =
+  IsNever<TB> extends true
+    ? KyselyTypeError<'there are no tables in query context, so a filter object cannot be defined. try passing an array instead.'>
+    : {
+        [R in StringReference<DB, TB>]?: ValueExpressionOrList<
+          DB,
+          TB,
+          SelectType<ExtractTypeFromStringReference<DB, TB, R>>
+        >
+      }
 
 export function parseValueBinaryOperationOrExpression(
   args: any[],

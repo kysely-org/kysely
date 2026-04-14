@@ -6,27 +6,28 @@ import {
   ParseJSONResultsPlugin,
   NumericString,
   expressionBuilder,
-} from '../../..'
+  NonDehydrateable,
+} from '../../../dist/cjs/index.js'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
   jsonObjectFrom as pg_jsonObjectFrom,
   jsonBuildObject as pg_jsonBuildObject,
-} from '../../../helpers/postgres'
+} from '../../../dist/cjs/helpers/postgres.js'
 import {
   jsonArrayFrom as mysql_jsonArrayFrom,
   jsonObjectFrom as mysql_jsonObjectFrom,
   jsonBuildObject as mysql_jsonBuildObject,
-} from '../../../helpers/mysql'
+} from '../../../dist/cjs/helpers/mysql.js'
 import {
   jsonArrayFrom as mssql_jsonArrayFrom,
   jsonObjectFrom as mssql_jsonObjectFrom,
   jsonBuildObject as mssql_jsonBuildObject,
-} from '../../../helpers/mssql'
+} from '../../../dist/cjs/helpers/mssql.js'
 import {
   jsonArrayFrom as sqlite_jsonArrayFrom,
   jsonObjectFrom as sqlite_jsonObjectFrom,
   jsonBuildObject as sqlite_jsonBuildObject,
-} from '../../../helpers/sqlite'
+} from '../../../dist/cjs/helpers/sqlite.js'
 
 import {
   destroyTest,
@@ -584,6 +585,23 @@ for (const dialect of DIALECTS) {
 
       const expectedType0: Buffer = result.buffer
       const expectedType1: string = result.dehydrated.buffer
+    })
+
+    it('should skip dehydration for NonDehydrateable types', async () => {
+      const mode = sql<NonDehydrateable<NumericString>>`'1'`.as('mode')
+
+      const result = await db
+        .selectNoFrom([
+          mode,
+          jsonObjectFrom(db.selectNoFrom(mode)).$notNull().as('dehydrated'),
+        ])
+        .executeTakeFirstOrThrow()
+
+      expect(typeof result.mode).to.equal('string')
+      expect(typeof result.dehydrated.mode).to.equal('string')
+
+      const expectedType0: NumericString = result.mode
+      const expectedType1: NumericString = result.dehydrated.mode
     })
   })
 

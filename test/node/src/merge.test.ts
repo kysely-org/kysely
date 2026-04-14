@@ -1,5 +1,5 @@
-import { MergeResult, sql } from '../../..'
-import { mergeAction } from '../../../helpers/postgres'
+import { MergeResult, sql } from '../../../dist/cjs/index.js'
+import { mergeAction } from '../../../dist/cjs/helpers/postgres.js'
 import {
   DIALECTS,
   NOT_SUPPORTED,

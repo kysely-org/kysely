@@ -16,10 +16,6 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * On supported databases like PostgreSQL, this method can be chained to
    * `insert`, `update`, `delete` and `merge` queries to return data.
    *
-   * Note that on SQLite you need to give aliases for the expressions to avoid
-   * [this bug](https://sqlite.org/forum/forumpost/033daf0b32) in SQLite.
-   * For example `.returning('id as id')`.
-   *
    * Also see the {@link returningAll} method.
    *
    * ### Examples

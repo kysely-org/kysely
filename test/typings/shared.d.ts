@@ -3,7 +3,7 @@ import {
   Generated,
   GeneratedAlways,
   JSONColumnType,
-} from '../../dist/cjs'
+} from '../../dist/cjs/index.js'
 
 export interface Pet {
   id: Generated<string>

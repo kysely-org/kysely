@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { createSandbox, SinonSpy } from 'sinon'
-import { DefaultQueryExecutor, sql } from '../../../'
+import { DefaultQueryExecutor, sql } from '../../../dist/cjs/index.js'
 import {
   clearDatabase,
   destroyTest,

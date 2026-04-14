@@ -12,32 +12,30 @@ chai.use(chaiAsPromised)
 
 import {
   Kysely,
-  KyselyConfig,
-  KyselyPlugin,
-  Compilable,
-  RootOperationNode,
-  PluginTransformQueryArgs,
-  PluginTransformResultArgs,
-  QueryResult,
-  UnknownRow,
+  type KyselyConfig,
+  type KyselyPlugin,
+  type Compilable,
+  type RootOperationNode,
+  type PluginTransformQueryArgs,
+  type PluginTransformResultArgs,
+  type QueryResult,
+  type UnknownRow,
   OperationNodeTransformer,
   PostgresDialect,
   MysqlDialect,
-  SchemaModule,
-  InsertResult,
+  type SchemaModule,
+  type InsertResult,
   SqliteDialect,
-  InsertQueryBuilder,
-  Generated,
+  type InsertQueryBuilder,
+  type Generated,
   sql,
-  ColumnType,
-  InsertObject,
+  type ColumnType,
+  type InsertObject,
   MssqlDialect,
-  SelectQueryBuilder,
-} from '../../../'
-import {
-  OrderByDirection,
-  OrderByExpression,
-} from '../../../dist/cjs/parser/order-by-parser'
+  type SelectQueryBuilder,
+  type OrderByDirection,
+  type OrderByExpression,
+} from '../../../dist/cjs/index.js'
 import type { ConnectionConfiguration } from 'tedious'
 
 export type Gender = 'male' | 'female' | 'other'

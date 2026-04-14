@@ -7,8 +7,8 @@ import {
   type Selectable,
   type Simplify,
   sql,
-} from '..'
-import type { Database, Person } from '../shared'
+} from '../index.js'
+import type { Database, Person } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
 async function testSelectSingle(db: Kysely<Database>) {

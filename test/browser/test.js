@@ -5,8 +5,11 @@
  * in the browser.
  */
 
-const path = require('path')
-const { chromium } = require('playwright')
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'pathe'
+import { chromium } from 'playwright'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const EXPECTED_SQL = 'select "id" from "person"'
 
@@ -17,7 +20,7 @@ const EXPECTED_SQL = 'select "id" from "person"'
     browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
 
-    await page.goto('file://' + path.join(__dirname, 'index.html'))
+    await page.goto('file://' + join(__dirname, 'index.html'))
     // Wait until the main.ts script has finished and the result
     // span exists in the body.
     await page.waitForSelector('#result', { timeout: 5000 })
