@@ -896,13 +896,13 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       expr1: T,
       expr2: number | boolean | string | null,
     ): ExpressionWrapper<DB, TB, T | null> {
-      var v1 =
+      const v1 =
         typeof expr1 === 'string'
           ? parseValueExpression(expr1)
           : isSafeImmediateValue(expr1)
             ? parseSafeImmediateValue(expr1)
             : parseReferenceExpression(expr1)
-      var v2 =
+      const v2 =
         typeof expr2 === 'string'
           ? parseValueExpression(expr2)
           : isSafeImmediateValue(expr2)
