@@ -73,7 +73,6 @@ export const OPERATORS = [
   ...UNARY_OPERATORS,
   'between',
   'between symmetric',
-  'nullif',
 ] as const
 
 export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]
