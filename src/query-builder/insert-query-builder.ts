@@ -36,11 +36,6 @@ import type {
 } from '../parser/returning-parser.js'
 import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
-import {
   type ExpressionOrFactory,
   parseExpression,
 } from '../parser/expression-parser.js'
@@ -68,11 +63,11 @@ import type {
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
-import {
+import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
-import { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
   implements

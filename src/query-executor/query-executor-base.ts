@@ -8,13 +8,10 @@ import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type { DialectAdapter } from '../dialect/dialect-adapter.js'
-import type { ExecuteQueryOptions, QueryExecutor } from './query-executor.js'
-import { QueryId } from '../util/query-id.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
-import { QueryExecutor } from './query-executor.js'
+import type { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import {
-  AbortableOperationOptions,
+  type AbortableOperationOptions,
   assertNotAborted,
   throwReasonWithTiming,
 } from '../util/abort.js'

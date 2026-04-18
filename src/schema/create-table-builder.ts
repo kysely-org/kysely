@@ -47,7 +47,7 @@ import {
   CreateTableAddIndexBuilder,
   type CreateTableAddIndexBuilderCallback,
 } from './create-table-add-index-builder.js'
-import { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `create table` query.

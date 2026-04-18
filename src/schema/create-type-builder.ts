@@ -5,7 +5,7 @@ import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
-import { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class CreateTypeBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateTypeBuilderProps

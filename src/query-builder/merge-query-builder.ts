@@ -60,11 +60,6 @@ import type {
 } from '../util/type-utils.js'
 import { MergeResult } from './merge-result.js'
 import { NoResultError, isNoResultErrorConstructor } from './no-result-error.js'
-import {
-  NoResultError,
-  type NoResultErrorConstructor,
-  isNoResultErrorConstructor,
-} from './no-result-error.js'
 import type {
   OutputCallback,
   OutputExpression,

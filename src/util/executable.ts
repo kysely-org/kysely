@@ -1,7 +1,7 @@
-import { QueryNode } from '../operation-node/query-node.js'
-import { NoResultErrorConstructor } from '../query-builder/no-result-error.js'
-import { AbortableOperationOptions } from './abort.js'
-import { SimplifyResult, SimplifySingleResult } from './type-utils.js'
+import type { QueryNode } from '../operation-node/query-node.js'
+import type { NoResultErrorConstructor } from '../query-builder/no-result-error.js'
+import type { AbortableOperationOptions } from './abort.js'
+import type { SimplifyResult, SimplifySingleResult } from './type-utils.js'
 
 export interface Executable<O> {
   /**
@@ -34,8 +34,7 @@ export interface Executable<O> {
   ): Promise<SimplifyResult<O>>
 }
 
-export interface ExecuteTakeFirstOrThrowOptions
-  extends AbortableOperationOptions {
+export interface ExecuteTakeFirstOrThrowOptions extends AbortableOperationOptions {
   /**
    * An optional error constructor that is used to create an error
    * when the query returns no results.

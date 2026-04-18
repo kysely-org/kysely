@@ -87,11 +87,11 @@ import {
   type OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
-import {
+import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
-import { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements

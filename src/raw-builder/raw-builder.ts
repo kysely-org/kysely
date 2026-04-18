@@ -15,7 +15,7 @@ import type {
   Expression,
 } from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * An instance of this class can be used to create raw SQL snippets or queries.

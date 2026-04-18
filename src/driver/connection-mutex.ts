@@ -1,4 +1,4 @@
-import { AbortableOperationOptions, waitOrAbort } from '../util/abort.js'
+import { type AbortableOperationOptions, waitOrAbort } from '../util/abort.js'
 
 /**
  * This mutex is used to ensure that only one operation at a time can

@@ -44,7 +44,7 @@ import {
   type ControlledConnection,
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
-import { ConnectionProvider } from './driver/connection-provider.js'
+import type { ConnectionProvider } from './driver/connection-provider.js'
 import type { RootOperationNode } from './operation-node/root-operation-node.js'
 import type { AbortableOperationOptions } from './util/abort.js'
 

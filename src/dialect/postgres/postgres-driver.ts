@@ -9,7 +9,7 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import type { AbortableOperationOptions } from '../../util/abort.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
-import { createQueryId, QueryId } from '../../util/query-id.js'
+import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
   PostgresClientConstructor,
