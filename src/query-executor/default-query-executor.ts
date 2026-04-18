@@ -7,6 +7,7 @@ import { QueryExecutorBase } from './query-executor-base.js'
 import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class DefaultQueryExecutor extends QueryExecutorBase {
   #compiler: QueryCompiler
@@ -35,9 +36,13 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
   }
 
   provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>,
+    consumer: (
+      connection: DatabaseConnection,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
-    return this.#connectionProvider.provideConnection(consumer)
+    return this.#connectionProvider.provideConnection(consumer, options)
   }
 
   withPlugins(plugins: ReadonlyArray<KyselyPlugin>): DefaultQueryExecutor {

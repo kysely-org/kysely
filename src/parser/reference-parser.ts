@@ -15,7 +15,7 @@ import {
   isExpressionOrFactory,
 } from './expression-parser.js'
 import type { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import type { SelectType, UpdateType } from '../util/column-type.js'
+import type { SelectType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import type { OperationNode } from '../operation-node/operation-node.js'
 import type { Expression } from '../expression/expression.js'

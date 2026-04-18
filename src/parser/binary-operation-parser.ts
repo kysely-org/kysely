@@ -31,8 +31,6 @@ import type { SelectType } from '../util/column-type.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
-import type { WhenNode } from '../operation-node/when-node.js'
-import type { RawNode } from '../operation-node/raw-node.js'
 import type { IsNever } from '../util/type-utils.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 

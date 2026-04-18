@@ -3,8 +3,10 @@ import type {
   Command,
   ConnectionBuilder,
   ControlledTransaction,
+  ControlledTransactionBuilder,
   Kysely,
   Transaction,
+  TransactionBuilder,
 } from '../kysely.js'
 import type {
   ReleaseSavepoint,
@@ -12,6 +14,7 @@ import type {
 } from '../parser/savepoint-parser.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 import type { DrainOuterGeneric } from '../util/type-utils.js'
 import type { ReadonlyCompiledQuery } from './readonly-compiled-query.js'
@@ -69,6 +72,7 @@ export interface ReadonlyKysely<DB>
    */
   executeQuery<R>(
     query: ReadonlyCompiledQuery<R> | SelectQueryBuilder<DB, any, R>,
+    options?: AbortableOperationOptions,
   ): Promise<ReadonlyQueryResult<R>>
 
   /**
@@ -156,7 +160,13 @@ export interface ReadonlyConnectionBuilder<DB> extends Omit<
   /**
    * Similar to {@link ConnectionBuilder.execute} but read-only.
    */
-  execute<T>(callback: (db: ReadonlyKysely<DB>) => Promise<T>): Promise<T>
+  execute<T>(
+    callback: (
+      db: ReadonlyKysely<DB>,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
+  ): Promise<T>
 }
 
 /**
@@ -166,7 +176,13 @@ export interface ReadonlyTransactionBuilder<DB> {
   /**
    * Similar to {@link TransactionBuilder.execute} but read-only.
    */
-  execute<T>(callback: (trx: ReadonlyTransaction<DB>) => Promise<T>): Promise<T>
+  execute<T>(
+    callback: (
+      trx: ReadonlyTransaction<DB>,
+      options?: AbortableOperationOptions,
+    ) => Promise<T>,
+    options?: AbortableOperationOptions,
+  ): Promise<T>
 
   /**
    * Similar to {@link TransactionBuilder.setAccessMode} but read-only.
@@ -266,7 +282,9 @@ export interface ReadonlyControlledTransactionBuilder<DB> {
   /**
    * Similar to {@link ControlledTransactionBuilder.execute} but read-only.
    */
-  execute(): Promise<ReadonlyControlledTransaction<DB>>
+  execute(
+    options?: AbortableOperationOptions,
+  ): Promise<ReadonlyControlledTransaction<DB>>
 
   /**
    * Similar to {@link ControlledTransactionBuilder.setAccessMode} but read-only.

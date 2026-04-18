@@ -63,6 +63,7 @@ import {
   DropColumnBuilder,
   type DropColumnBuilderCallback,
 } from './drop-column-builder.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -532,8 +533,8 @@ export class AlterTableColumnAlteringBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

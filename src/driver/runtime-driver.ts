@@ -2,6 +2,11 @@ import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { Log } from '../util/log.js'
+import {
+  type AbortableOperationOptions,
+  assertNotAborted,
+  waitOrAbort,
+} from '../util/abort.js'
 import { performanceNow } from '../util/performance-now.js'
 import { ConnectionMutex } from './connection-mutex.js'
 import type { DatabaseConnection, QueryResult } from './database-connection.js'
@@ -32,14 +37,14 @@ export class RuntimeDriver implements Driver {
     }
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     if (this.#destroyPromise) {
       throw new Error('driver has already been destroyed')
     }
 
     if (!this.#initPromise) {
       this.#initPromise = this.#driver
-        .init()
+        .init(options)
         .then(() => {
           this.#initDone = true
         })
@@ -52,20 +57,30 @@ export class RuntimeDriver implements Driver {
     await this.#initPromise
   }
 
-  async acquireConnection(): Promise<DatabaseConnection> {
+  async acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<DatabaseConnection> {
     if (this.#destroyPromise) {
       throw new Error('driver has already been destroyed')
     }
 
+    const { signal } = options || {}
+
     if (!this.#initDone) {
-      await this.init()
+      assertNotAborted(signal, 'before acquireConnection:init')
+
+      await this.init(options)
     }
 
     if (this.#connectionMutex) {
-      await this.#connectionMutex.lock()
+      assertNotAborted(signal, 'before acquireConnection:mutex')
+
+      await this.#connectionMutex.lock(options)
     }
 
-    const connection = await this.#driver.acquireConnection()
+    assertNotAborted(signal, 'before acquireConnction:acquire')
+
+    const connection = await this.#driver.acquireConnection(options)
 
     if (!this.#connections.has(connection)) {
       if (this.#needsLogging()) {
@@ -78,8 +93,11 @@ export class RuntimeDriver implements Driver {
     return connection
   }
 
-  async releaseConnection(connection: DatabaseConnection): Promise<void> {
-    await this.#driver.releaseConnection(connection)
+  async releaseConnection(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    await this.#driver.releaseConnection(connection, options)
 
     this.#connectionMutex?.unlock()
   }
@@ -87,25 +105,38 @@ export class RuntimeDriver implements Driver {
   beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
-    return this.#driver.beginTransaction(connection, settings)
+    return this.#driver.beginTransaction(connection, settings, options)
   }
 
-  commitTransaction(connection: DatabaseConnection): Promise<void> {
-    return this.#driver.commitTransaction(connection)
+  commitTransaction(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    return this.#driver.commitTransaction(connection, options)
   }
 
-  rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    return this.#driver.rollbackTransaction(connection)
+  rollbackTransaction(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    return this.#driver.rollbackTransaction(connection, options)
   }
 
   savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.savepoint) {
-      return this.#driver.savepoint(connection, savepointName, compileQuery)
+      return this.#driver.savepoint(
+        connection,
+        savepointName,
+        compileQuery,
+        options,
+      )
     }
 
     throw new Error('The `savepoint` method is not supported by this driver')
@@ -115,12 +146,14 @@ export class RuntimeDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.rollbackToSavepoint) {
       return this.#driver.rollbackToSavepoint(
         connection,
         savepointName,
         compileQuery,
+        options,
       )
     }
 
@@ -133,12 +166,14 @@ export class RuntimeDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.releaseSavepoint) {
       return this.#driver.releaseSavepoint(
         connection,
         savepointName,
         compileQuery,
+        options,
       )
     }
 
@@ -147,15 +182,15 @@ export class RuntimeDriver implements Driver {
     )
   }
 
-  async destroy(): Promise<void> {
+  async destroy(options?: AbortableOperationOptions): Promise<void> {
     if (!this.#initPromise) {
       return
     }
 
-    await this.#initPromise
+    await waitOrAbort(this.#initPromise, options?.signal, 'destroy:initPromise')
 
     if (!this.#destroyPromise) {
-      this.#destroyPromise = this.#driver.destroy().catch((err) => {
+      this.#destroyPromise = this.#driver.destroy(options).catch((err) => {
         this.#destroyPromise = undefined
         return Promise.reject(err)
       })
@@ -180,12 +215,13 @@ export class RuntimeDriver implements Driver {
 
     connection.executeQuery = async (
       compiledQuery,
+      options,
     ): Promise<QueryResult<any>> => {
       let caughtError: unknown
       const startTime = performanceNow()
 
       try {
-        return await executeQuery.call(connection, compiledQuery)
+        return await executeQuery.call(connection, compiledQuery, options)
       } catch (error) {
         caughtError = error
         await dis.#logError(error, compiledQuery, startTime)
@@ -200,6 +236,7 @@ export class RuntimeDriver implements Driver {
     connection.streamQuery = async function* (
       compiledQuery,
       chunkSize,
+      options,
     ): AsyncIterableIterator<QueryResult<any>> {
       let caughtError: unknown
       const startTime = performanceNow()
@@ -209,6 +246,7 @@ export class RuntimeDriver implements Driver {
           connection,
           compiledQuery,
           chunkSize,
+          options,
         )) {
           yield result
         }

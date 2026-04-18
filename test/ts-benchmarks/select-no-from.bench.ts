@@ -19,13 +19,13 @@ bench('kysely.selectNoFrom([sql0.as(alias0), sql1.as(alias1)])', () =>
 
 bench('kysely.selectNoFrom((eb) => selectFrom)', () =>
   kysely.selectNoFrom((eb) => eb.selectFrom('my_table').selectAll().as('foo')),
-).types([756, 'instantiations'])
+).types([760, 'instantiations'])
 
 bench('kysely.selectNoFrom((eb) => [selectFrom])', () =>
   kysely.selectNoFrom((eb) => [
     eb.selectFrom('my_table').selectAll().as('foo'),
   ]),
-).types([774, 'instantiations'])
+).types([778, 'instantiations'])
 
 bench('kyselyAny.selectNoFrom(sql.as(alias))', () =>
   kyselyAny.selectNoFrom(sql`1`.as('foo')),
@@ -39,10 +39,10 @@ bench('kyselyAny.selectNoFrom((eb) => selectFrom)', () =>
   kyselyAny.selectNoFrom((eb) =>
     eb.selectFrom('my_table').selectAll().as('foo'),
   ),
-).types([508, 'instantiations'])
+).types([512, 'instantiations'])
 
 bench('kyselyAny.selectNoFrom((eb) => [selectFrom])', () =>
   kyselyAny.selectNoFrom((eb) => [
     eb.selectFrom('my_table').selectAll().as('foo'),
   ]),
-).types([526, 'instantiations'])
+).types([530, 'instantiations'])

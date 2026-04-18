@@ -16,14 +16,12 @@ export class Deferred<T> {
   }
 
   resolve = (value: T | PromiseLike<T>): void => {
-    if (this.#resolve) {
-      this.#resolve(value)
-    }
+    this.#resolve?.(value)
+    this.#resolve = this.#reject = undefined
   }
 
   reject = (reason?: any): void => {
-    if (this.#reject) {
-      this.#reject(reason)
-    }
+    this.#reject?.(reason)
+    this.#reject = this.#resolve = undefined
   }
 }
