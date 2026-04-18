@@ -1,23 +1,39 @@
 import { Deferred } from './deferred.js'
-import type { DatabaseConnection } from '../driver/database-connection.js'
+import type {
+  ControlConnectionProvider,
+  DatabaseConnection,
+} from '../driver/database-connection.js'
+import { logOnce } from './log-once.js'
 
 export interface AbortableOperationOptions {
   /**
-   * Controls what happens when the {@link signal} is aborted.
+   * Controls what happens when the {@link signal} is aborted while a query is
+   * in-flight.
    *
-   * `'client-only'` stops waiting for query results. The query continues
-   * running on the database server, and the connection is released back to
-   * the pool only after the in-flight query settles.
+   * `'ignore query'` stops waiting for query results. The query continues running
+   * on the database server, and the connection is released back to the pool only
+   * after the in-flight query settles.
    *
-   * `'aggressive'` attempts to cancel the query on the database side (e.g.
-   * `pg_cancel_backend` in PostgreSQL). This requires the dialect's connection
-   * to implement {@link DatabaseConnection.cancelQuery}. If it doesn't, behaves
-   * like `'client-only'` with a warning. Writes (insert, update, delete) are not
-   * cancellable in most database engines, so your mileage may vary.
+   * `'cancel query'` attempts to cancel the query on the database side (e.g. `pg_cancel_backend`
+   * in PostgreSQL or `kill query` in MySQL). This requires the dialect's connection
+   * to implement {@link DatabaseConnection.cancelQuery}. Otherwise, falls back
+   * to `'ignore query'` with a warning. Writes (insert, update, delete) are not
+   * cancellable in most database engines, so your mileage
+   * may vary. Also, some databases do not cancel the running query immediately
+   * resulting in changes being committed sometimes - consider `'kill session'`
+   * when you need stronger guarantees, at all costs.
    *
-   * Default is `'client-only'`.
+   * `'kill session'` attempts to kill the database process/session the query is
+   * running in (e.g. `pg_terminate_backend` in PostgreSQL) and with it any running
+   * queries, transactions and obtained locks. This requires the dialect's connection
+   * to implement {@link DatabaseConnection.killSession}. Otherwise, falls back
+   * to `'cancel query'` with a warning. Killing the session is very aggressive,
+   * and will require reconnection on the next database operation if there are
+   * no idle connections available in the pool.
+   *
+   * Default is `'ignore query'`.
    */
-  queryAbortStrategy?: 'client-only' | 'aggressive' | undefined
+  inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
 
   /**
    * An optional signal that can be used to abort the execution of (async) operations.
@@ -25,16 +41,63 @@ export interface AbortableOperationOptions {
    * This is useful for cancelling long-running queries, for example when
    * the user navigates away from the page or closes the browser tab.
    *
-   * See {@link queryAbortStrategy} for handling of database side query.
+   * See {@link inflightQueryAbortStrategy} for handling of database side query.
    */
   signal?: AbortSignal | undefined
+}
+
+export type InflightQueryAbortStrategy =
+  | 'ignore query'
+  | 'cancel query'
+  | 'kill session'
+
+export function getInflightQueryAbortHandler(
+  abortStrategy: InflightQueryAbortStrategy | undefined = 'ignore query',
+  connection: DatabaseConnection,
+  beforeThrow: () => void,
+) {
+  if (abortStrategy === 'ignore query') {
+    return
+  }
+
+  if (abortStrategy === 'kill session') {
+    const handler = connection.killSession
+
+    if (handler) {
+      return handler.bind(connection)
+    }
+
+    logOnce(
+      'This kysely dialect does not implement the `killSession` method. This means sessions will not be killed on the database side when the `signal` is aborted.',
+    )
+  }
+
+  if (abortStrategy === 'cancel query' || abortStrategy === 'kill session') {
+    const handler = connection.cancelQuery
+
+    if (!handler) {
+      logOnce(
+        'This kysely dialect does not implement the `cancelQuery` method. This means queries will not be cancelled on the database side when the `signal` is aborted.',
+      )
+    }
+
+    return handler?.bind(connection)
+  }
+
+  beforeThrow()
+
+  throw new Error(
+    `Unexpected \`inflightQueryAbortStrategy\`: ${abortStrategy satisfies never}`,
+  )
 }
 
 export function assertNotAborted(
   signal: AbortSignal | undefined,
   timing: string,
+  beforeThrow?: () => void,
 ): void {
   if (signal?.aborted) {
+    beforeThrow?.()
     throwReasonWithTiming(signal.reason, timing)
   }
 }

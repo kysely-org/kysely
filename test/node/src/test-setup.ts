@@ -1,7 +1,7 @@
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import Cursor from 'pg-cursor'
-import { Pool, type PoolConfig } from 'pg'
+import { Client, Pool, type PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
 import Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
@@ -186,10 +186,16 @@ export const DIALECT_CONFIGS = {
   pglite: PGLITE_CONFIG,
 }
 
+export const PG_ERRORS: Error[] = []
+
 export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
-      pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+      controlClient: Client,
+      pool: async () =>
+        new Pool(DIALECT_CONFIGS.postgres).on('error', (error) =>
+          PG_ERRORS.push(error),
+        ),
       cursor: Cursor,
     }),
     plugins: PLUGINS,

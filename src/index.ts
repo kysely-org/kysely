@@ -274,7 +274,10 @@ export type * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
 export type { KyselyTypeError } from './util/type-error.js'
-export type { AbortableOperationOptions } from './util/abort.js'
+export type {
+  AbortableOperationOptions,
+  InflightQueryAbortStrategy,
+} from './util/abort.js'
 
 export type {
   SelectExpression,

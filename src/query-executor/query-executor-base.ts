@@ -13,10 +13,10 @@ import { provideControlledConnection } from '../util/provide-controlled-connecti
 import {
   type AbortableOperationOptions,
   assertNotAborted,
+  getInflightQueryAbortHandler,
   throwReasonWithTiming,
 } from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
-import { logOnce } from '../util/log-once.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
@@ -74,8 +74,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     compiledQuery: CompiledQuery,
     options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>> {
-    const { signal } = options || {}
+    const { inflightQueryAbortStrategy, signal } = options || {}
 
+    // intentionally isolating the simple common case from the new experimental cancellation flow.
     if (!signal) {
       return await this.provideConnection(async (connection) => {
         const result = await connection.executeQuery(compiledQuery, options)
@@ -95,31 +96,41 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       options,
     )
 
-    if (!connection.cancelQuery) {
-      logOnce(
-        'This kysely dialect does not implement the `cancelQuery` method. This means queries will not be cancelled on the database side when the `signal` is aborted.',
-      )
-    }
-
+    const controlConnectionProvider = this.provideConnection.bind(this)
     const { promise: abortPromise, resolve } = new Deferred<void>()
 
     signal.addEventListener('abort', () => resolve(), { once: true })
 
     try {
-      assertNotAborted(signal, 'before query execution')
+      assertNotAborted(signal, 'before query execution', release)
+
+      const queryAbortHandler = getInflightQueryAbortHandler(
+        inflightQueryAbortStrategy,
+        connection,
+        release,
+      )
 
       const queryPromise = connection.executeQuery(compiledQuery, options)
 
       const result = await Promise.race([abortPromise, queryPromise])
+        // only the query can error. in that case, we want to release immediately.
+        .catch((error) => {
+          release()
+          throw error
+        })
 
       // aborted.
       if (!result) {
         void Promise.allSettled([
           queryPromise,
-          connection.cancelQuery?.(this.provideConnection.bind(this)),
+          queryAbortHandler?.(controlConnectionProvider).catch(console.error),
         ])
+          // the abort handler might use the same connection that runs the query.
+          .finally(release)
 
         throwReasonWithTiming(signal.reason, 'during query execution')
+      } else {
+        release()
       }
 
       const transformPromise = this.#transformResult<R>(
@@ -144,7 +155,6 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
       return transformedResult
     } finally {
-      release()
       resolve()
     }
   }
@@ -154,7 +164,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     chunkSize: number,
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
-    const { signal } = options || {}
+    const { inflightQueryAbortStrategy, signal } = options || {}
 
     if (!signal) {
       const { connection, release } = await provideControlledConnection(this)
@@ -188,31 +198,46 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
 
     try {
-      assertNotAborted(signal, 'before query streaming')
+      assertNotAborted(signal, 'before query streaming', release)
 
-      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, options)
-
+      const inflightQueryAbortHandler = getInflightQueryAbortHandler(
+        inflightQueryAbortStrategy,
+        connection,
+        release,
+      )
       const { queryId } = compiledQuery
       const controlConnectionProvider = this.provideConnection.bind(this)
 
+      asyncIterator = connection.streamQuery(compiledQuery, chunkSize, options)
+
       while (true) {
-        assertNotAborted(signal, 'during query streaming')
+        assertNotAborted(signal, 'during query streaming', release)
 
         const nextPromise = asyncIterator.next()
 
         const result = await Promise.race([abortPromise, nextPromise])
+          // only the iteration can error. in that case, we want to release immediately.
+          .catch((error) => {
+            release()
+            throw error
+          })
 
         // aborted.
         if (!result) {
           void Promise.allSettled([
             nextPromise,
-            connection.cancelQuery?.(controlConnectionProvider),
+            inflightQueryAbortHandler?.(controlConnectionProvider),
           ])
+            // the abort handler might use the same connection that runs the query.
+            // we want to wait for both of them to finish before allowing other queries
+            // to run on that connection.
+            .finally(release)
 
           throwReasonWithTiming(signal.reason, 'during query streaming')
         }
 
         if (result.done) {
+          release()
           break
         }
 
@@ -231,8 +256,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         if (!transformedResult) {
           void Promise.allSettled([
             transformPromise,
-            connection.cancelQuery?.(controlConnectionProvider),
+            inflightQueryAbortHandler?.(controlConnectionProvider),
           ])
+            // the abort handler might use the same connection that runs the query.
+            // we want to wait for both of them to finish before allowing other queries
+            // to run on that connection.
+            .finally(release)
 
           throwReasonWithTiming(signal.reason, 'during result transformation')
         }
@@ -240,7 +269,6 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         yield transformedResult
       }
     } finally {
-      release()
       resolve()
       await asyncIterator?.return?.()
     }

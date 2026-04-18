@@ -7,6 +7,7 @@ import {
   DIALECTS,
   initTest,
   insertDefaultDataSet,
+  PG_ERRORS,
   type SQLSpec,
   type TestContext,
 } from './test-setup.js'
@@ -57,9 +58,52 @@ for (const dialect of DIALECTS) {
         })
     })
 
+    it('should throw an abort error when aborted during query execution', async () => {
+      const writeQuery = ctx.db
+        .insertInto('person')
+        .values({ gender: sql.lit('woah') as never })
+
+      const delayedQuery = (
+        {
+          postgres: sql`select pg_sleep(0.1); ${writeQuery};`,
+          mysql: sql`select sleep(0.1); ${writeQuery};`,
+          mssql: sql`waitfor delay '00:00:00.100'; ${writeQuery};`,
+          sqlite: sql`WITH RECURSIVE timer(i) AS (
+              SELECT 1
+              UNION ALL
+              SELECT i + 1 FROM timer WHERE i < 10000000
+            )
+            SELECT COUNT(*) FROM timer; ${writeQuery};`,
+        } as const satisfies Record<SQLSpec, RawBuilder<any>>
+      )[sqlSpec]
+
+      await expect(
+        delayedQuery.execute(ctx.db, { signal: AbortSignal.timeout(10) }),
+      )
+        .to.eventually.be.rejectedWith(DOMException)
+        .and.satisfies(
+          (error: DOMException & { __kysely_timing__: string }) => {
+            expect(error.name).to.equal('TimeoutError')
+            expect(error.__kysely_timing__).to.equal('during query execution')
+            return true
+          },
+        )
+
+      await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
+      await expect(
+        ctx.db
+          .selectFrom('person')
+          .where('gender', '=', 'woah' as never)
+          .select(ctx.db.fn.countAll().as('count'))
+          .executeTakeFirstOrThrow(),
+      ).to.eventually.satisfy((result: { count: unknown }) =>
+        expect(Number(result.count)).to.equal(1),
+      )
+    })
+
     // database-side cancellation was only implemented in PostgresDialect thus far.
     if (variant === 'postgres') {
-      it('should throw an abort error when aborted during query execution', async () => {
+      it("should cancel query on database side when inflightQueryAbortStrategy is 'cancel query'", async () => {
         const writeQuery = ctx.db
           .insertInto('person')
           .values({ gender: sql.lit('woah') as never })
@@ -79,7 +123,10 @@ for (const dialect of DIALECTS) {
         )[sqlSpec]
 
         await expect(
-          delayedQuery.execute(ctx.db, { signal: AbortSignal.timeout(10) }),
+          delayedQuery.execute(ctx.db, {
+            inflightQueryAbortStrategy: 'cancel query',
+            signal: AbortSignal.timeout(10),
+          }),
         )
           .to.eventually.be.rejectedWith(DOMException)
           .and.satisfies(
@@ -99,6 +146,55 @@ for (const dialect of DIALECTS) {
             .executeTakeFirstOrThrow(),
         ).to.eventually.satisfy((result: { count: unknown }) =>
           expect(Number(result.count)).to.equal(0),
+        )
+      })
+
+      it("should kill session on database side when inflightQueryAbortStrategy is 'kill session'", async () => {
+        const writeQuery = ctx.db
+          .insertInto('person')
+          .values({ gender: sql.lit('woah') as never })
+
+        const delayedQuery = (
+          {
+            postgres: sql`select pg_sleep(0.1); ${writeQuery};`,
+            mysql: sql`select sleep(0.1); ${writeQuery};`,
+            mssql: sql`waitfor delay '00:00:00.100'; ${writeQuery};`,
+            sqlite: sql`WITH RECURSIVE timer(i) AS (
+              SELECT 1
+              UNION ALL
+              SELECT i + 1 FROM timer WHERE i < 10000000
+            )
+            SELECT COUNT(*) FROM timer; ${writeQuery};`,
+          } as const satisfies Record<SQLSpec, RawBuilder<any>>
+        )[sqlSpec]
+
+        await expect(
+          delayedQuery.execute(ctx.db, {
+            inflightQueryAbortStrategy: 'kill session',
+            signal: AbortSignal.timeout(10),
+          }),
+        )
+          .to.eventually.be.rejectedWith(DOMException)
+          .and.satisfies(
+            (error: DOMException & { __kysely_timing__: string }) => {
+              expect(error.name).to.equal('TimeoutError')
+              expect(error.__kysely_timing__).to.equal('during query execution')
+              return true
+            },
+          )
+
+        await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
+        await expect(
+          ctx.db
+            .selectFrom('person')
+            .where('gender', '=', 'woah' as never)
+            .select(ctx.db.fn.countAll().as('count'))
+            .executeTakeFirstOrThrow(),
+        ).to.eventually.satisfy((result: { count: unknown }) =>
+          expect(Number(result.count)).to.equal(0),
+        )
+        expect(PG_ERRORS.at(-1)?.message).to.equal(
+          'Connection terminated unexpectedly',
         )
       })
     }

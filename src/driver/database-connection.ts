@@ -16,6 +16,10 @@ export interface DatabaseConnection {
     options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>>
 
+  killSession?(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void>
+
   streamQuery<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,

@@ -107,7 +107,10 @@ export type PostgresClientConstructor = new (options: any) => PostgresClient
  *
  * https://node-postgres.com/apis/pool#releasing-clients
  */
-export interface PostgresPoolClient extends Omit<PostgresClient, 'end'> {
+export interface PostgresPoolClient extends Omit<
+  PostgresClient,
+  'connect' | 'end'
+> {
   release(): void
 }
 

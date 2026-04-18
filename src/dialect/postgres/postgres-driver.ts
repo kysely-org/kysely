@@ -179,44 +179,10 @@ class PostgresConnection implements DatabaseConnection {
   async cancelQuery(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void> {
-    if (!this.#queryId) {
-      return
-    }
-
-    const { Client, poolOptions } = this.#options
-
-    const queryIdToCancel = this.#queryId
-    const cancelQuery = `select pg_cancel_backend(${this.#pid})`
-
-    // we fallback to a pool connection, and execute a SQL query to cancel the
-    // query. this is not ideal, as we might have to wait for an idle connection.
-    if (!Client) {
-      return await controlConnectionProvider(async (controlConnection) => {
-        // by the time we get the connection, another query might have been executed.
-        // we need to ensure we're not canceling the wrong query.
-        if (queryIdToCancel === this.#queryId) {
-          await controlConnection.executeQuery(
-            CompiledQuery.raw(cancelQuery, []),
-          )
-        }
-      })
-    }
-
-    const controlClient = new Client({ ...poolOptions })
-
-    try {
-      await controlClient.connect()
-
-      // by the time we get the connection, another query might have been executed.
-      // we need to ensure we're not canceling the wrong query.
-      if (queryIdToCancel !== this.#queryId) {
-        return
-      }
-
-      await controlClient.query(cancelQuery, [])
-    } finally {
-      controlClient.end()
-    }
+    return await this.#executeControlQuery(
+      `select pg_cancel_backend(${this.#pid})`,
+      controlConnectionProvider,
+    )
   }
 
   async executeQuery<O>(
@@ -251,6 +217,15 @@ class PostgresConnection implements DatabaseConnection {
     } finally {
       this.#queryId = undefined
     }
+  }
+
+  async killSession(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    return await this.#executeControlQuery(
+      `select pg_terminate_backend(${this.#pid})`,
+      controlConnectionProvider,
+    )
   }
 
   async *streamQuery<O>(
@@ -326,5 +301,46 @@ class PostgresConnection implements DatabaseConnection {
     )
 
     this.#pid = Number(pid)
+  }
+
+  async #executeControlQuery(
+    query: string,
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    if (!this.#queryId) {
+      return
+    }
+
+    const { Client, poolOptions } = this.#options
+
+    const queryIdToCancel = this.#queryId
+
+    // we fallback to a pool connection, and execute a SQL query to cancel the
+    // query. this is not ideal, as we might have to wait for an idle connection.
+    if (!Client) {
+      return await controlConnectionProvider(async (controlConnection) => {
+        // by the time we get the connection, another query might have been executed.
+        // we need to ensure we're not canceling the wrong query.
+        if (queryIdToCancel.queryId === this.#queryId?.queryId) {
+          await controlConnection.executeQuery(CompiledQuery.raw(query, []))
+        }
+      })
+    }
+
+    const controlClient = new Client({ ...poolOptions })
+
+    try {
+      await controlClient.connect()
+
+      // by the time we get the connection, another query might have been executed.
+      // we need to ensure we're not canceling the wrong query.
+      if (queryIdToCancel.queryId !== this.#queryId.queryId) {
+        return
+      }
+
+      await controlClient.query(query, [])
+    } finally {
+      controlClient.end()
+    }
   }
 }
