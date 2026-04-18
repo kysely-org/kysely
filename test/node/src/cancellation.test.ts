@@ -1,14 +1,14 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import { RawBuilder, sql } from '../../..'
+import { type RawBuilder, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
   DIALECTS,
   initTest,
   insertDefaultDataSet,
-  SQLSpec,
-  TestContext,
+  type SQLSpec,
+  type TestContext,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {

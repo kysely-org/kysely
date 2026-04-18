@@ -86,7 +86,7 @@ export interface PostgresPool {
  * https://node-postgres.com/apis/client
  */
 export interface PostgresClient {
-  connect(): Promise<void>
+  connect(): Promise<PostgresClient>
   end(): void
   // internal
   processID?: number

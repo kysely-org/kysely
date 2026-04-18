@@ -7,7 +7,6 @@ import {
   assertNotAborted,
   waitOrAbort,
 } from '../util/abort.js'
-import { Deferred } from '../util/deferred.js'
 import { performanceNow } from '../util/performance-now.js'
 import { ConnectionMutex } from './connection-mutex.js'
 import type { DatabaseConnection, QueryResult } from './database-connection.js'
