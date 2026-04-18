@@ -59,7 +59,7 @@ bench('kysely.deleteFrom([table as alias, table as alias])', () => {
 
 bench('kysely.deleteFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.deleteFrom(kysely.selectFrom('my_table').as('t'))
-}).types([1261, 'instantiations'])
+}).types([1263, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.deleteFrom(table)', () => {
   return kysely

@@ -10,6 +10,7 @@ import {
 } from '../parser/reference-parser.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 import type { Compilable } from '../util/compilable.js'
 import { freeze, isString } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
@@ -239,8 +240,8 @@ export class AlterTableAddIndexBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 
