@@ -1,16 +1,33 @@
 import { Deferred } from './deferred.js'
+import type { DatabaseConnection } from '../driver/database-connection.js'
 
 export interface AbortableOperationOptions {
+  /**
+   * Controls what happens when the {@link signal} is aborted.
+   *
+   * `'client-only'` stops waiting for query results. The query continues
+   * running on the database server, and the connection is released back to
+   * the pool only after the in-flight query settles.
+   *
+   * `'aggressive'` attempts to cancel the query on the database side (e.g.
+   * `pg_cancel_backend` in PostgreSQL). This requires the dialect's connection
+   * to implement {@link DatabaseConnection.cancelQuery}. If it doesn't, behaves
+   * like `'client-only'` with a warning. Writes (insert, update, delete) are not
+   * cancellable in most database engines, so your mileage may vary.
+   *
+   * Default is `'client-only'`.
+   */
+  queryAbortStrategy?: 'client-only' | 'aggressive' | undefined
+
   /**
    * An optional signal that can be used to abort the execution of (async) operations.
    *
    * This is useful for cancelling long-running queries, for example when
    * the user navigates away from the page or closes the browser tab.
    *
-   * Writes (insert, update, delete) are not cancellable in most database engines,
-   * so this signal is mostly useful for read queries.
+   * See {@link queryAbortStrategy} for handling of database side query.
    */
-  signal?: AbortSignal
+  signal?: AbortSignal | undefined
 }
 
 export function assertNotAborted(
