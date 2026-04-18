@@ -631,7 +631,7 @@ export class Kysely<DB>
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return await this.getExecutor().executeQuery<R>(compiledQuery, options)
+    return await this.#props.executor.executeQuery<R>(compiledQuery, options)
   }
 
   async [Symbol.asyncDispose]() {
@@ -842,6 +842,10 @@ export class ConnectionBuilder<DB> {
     ) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
+    if (options) {
+      options = freeze({ ...options })
+    }
+
     return this.#props.executor.provideConnection(async (connection) => {
       const executor = this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection),
@@ -888,6 +892,10 @@ export class TransactionBuilder<DB> {
     const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
+
+    if (options) {
+      options = freeze({ ...options })
+    }
 
     return this.#props.executor.provideConnection(async (connection) => {
       const state = { isCommitted: false, isRolledBack: false }
@@ -959,6 +967,10 @@ export class ControlledTransactionBuilder<DB> {
     const settings = { isolationLevel, accessMode }
 
     validateTransactionSettings(settings)
+
+    if (options) {
+      options = freeze({ ...options })
+    }
 
     const connection = await provideControlledConnection(
       this.#props.executor,
@@ -1325,6 +1337,10 @@ export class Command<T> {
    * Executes the command.
    */
   async execute(options?: AbortableOperationOptions): Promise<T> {
+    if (options) {
+      options = freeze({ ...options })
+    }
+
     return await this.#cb(options)
   }
 }

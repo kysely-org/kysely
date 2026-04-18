@@ -89,6 +89,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       }, options)
     }
 
+    if (!Object.isFrozen(options)) {
+      options = freeze({ ...options })
+    }
+
     assertNotAborted(signal, 'before query execution')
 
     const { connection, release } = await provideControlledConnection(
@@ -99,7 +103,8 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     const controlConnectionProvider = this.provideConnection.bind(this)
     const { promise: abortPromise, resolve } = new Deferred<void>()
 
-    signal.addEventListener('abort', () => resolve(), { once: true })
+    const abortListener = () => resolve()
+    signal.addEventListener('abort', abortListener, { once: true })
 
     try {
       assertNotAborted(signal, 'before query execution', release)
@@ -123,7 +128,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       if (!result) {
         void Promise.allSettled([
           queryPromise,
-          queryAbortHandler?.(controlConnectionProvider).catch(console.error),
+          queryAbortHandler?.(controlConnectionProvider),
         ])
           // the abort handler might use the same connection that runs the query.
           .finally(release)
@@ -156,6 +161,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       return transformedResult
     } finally {
       resolve()
+      signal.removeEventListener('abort', abortListener)
     }
   }
 
@@ -187,13 +193,18 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       return
     }
 
+    if (!Object.isFrozen(options)) {
+      options = freeze({ ...options })
+    }
+
     assertNotAborted(signal, 'before connection acquisition')
 
     const { connection, release } = await provideControlledConnection(this)
 
     const { promise: abortPromise, resolve } = new Deferred<void>()
 
-    signal.addEventListener('abort', () => resolve(), { once: true })
+    const abortListener = () => resolve()
+    signal.addEventListener('abort', abortListener, { once: true })
 
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
 
@@ -270,6 +281,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       }
     } finally {
       resolve()
+      signal.removeEventListener('abort', abortListener)
       await asyncIterator?.return?.()
     }
   }
