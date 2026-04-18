@@ -5,6 +5,7 @@ import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class DropViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: DropViewBuilderProps
@@ -62,8 +63,8 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

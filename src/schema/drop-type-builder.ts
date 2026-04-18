@@ -5,6 +5,7 @@ import type { Compilable } from '../util/compilable.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class DropTypeBuilder implements OperationNodeSource, Compilable {
   readonly #props: DropTypeBuilderProps
@@ -59,8 +60,8 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

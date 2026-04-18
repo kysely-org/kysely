@@ -63,7 +63,7 @@ import {
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
-import type { Streamable } from '../util/streamable.js'
+import type { Streamable, StreamOptions } from '../util/streamable.js'
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   type ValueExpression,
@@ -87,6 +87,11 @@ import {
   type OrderByModifiers,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
+import type {
+  Executable,
+  ExecuteTakeFirstOrThrowOptions,
+} from '../util/executable.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -96,6 +101,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     OrderByInterface<DB, TB, never>,
     OperationNodeSource,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O>
 {
@@ -1140,15 +1146,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
   }
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  async execute(): Promise<SimplifyResult<O>[]> {
+  async execute(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as UpdateQueryNode
@@ -1157,42 +1163,42 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.rows as never
     }
 
     return [
       new UpdateResult(
         result.numAffectedRows ?? BigInt(0),
         result.numChangedRows,
-      ) as any,
+      ) as never,
     ]
   }
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: AbortableOperationOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
-   */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+    errorConstructorOrOptions?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
-    const result = await this.executeTakeFirst()
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -1200,13 +1206,25 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       throw error
     }
 
-    return result as SimplifyResult<O>
+    return result as never
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
 
     for await (const item of stream) {
       yield* item.rows

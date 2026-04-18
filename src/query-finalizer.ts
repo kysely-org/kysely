@@ -4,6 +4,7 @@ import type { OperationNode } from './operation-node/operation-node.js'
 import type { RootOperationNode } from './operation-node/root-operation-node.js'
 import type { CompiledQuery } from './query-compiler/compiled-query.js'
 import type { QueryExecutor } from './query-executor/query-executor.js'
+import type { AbortableOperationOptions } from './util/abort.js'
 import type { Compilable } from './util/compilable.js'
 import { freeze } from './util/object-utils.js'
 import type { QueryId } from './util/query-id.js'
@@ -37,8 +38,8 @@ export class QueryFinalizer<N extends RootOperationNode, O = unknown>
   /**
    * Executes the query.
    */
-  async execute(): Promise<QueryResult<O>> {
-    return await this.#props.executor.executeQuery<O>(this.compile())
+  async execute(options?: AbortableOperationOptions): Promise<QueryResult<O>> {
+    return await this.#props.executor.executeQuery<O>(this.compile(), options)
   }
 }
 
