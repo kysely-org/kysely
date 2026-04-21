@@ -196,7 +196,7 @@ export class RuntimeDriver implements Driver {
       })
     }
 
-    await this.#destroyPromise
+    await waitOrAbort(this.#destroyPromise, options?.signal, 'destroy')
   }
 
   #needsLogging(): boolean {

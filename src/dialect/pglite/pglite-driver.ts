@@ -6,6 +6,10 @@ import type { Driver } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import type { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import {
+  waitOrAbort,
+  type AbortableOperationOptions,
+} from '../../util/abort.js'
 import { Deferred } from '../../util/deferred.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
@@ -47,9 +51,9 @@ export class PGliteDriver implements Driver {
     }
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     this.#pglite = isFunction(this.#config.pglite)
-      ? await this.#config.pglite()
+      ? await this.#config.pglite(options)
       : this.#config.pglite
 
     if (this.#pglite.closed) {
@@ -57,13 +61,13 @@ export class PGliteDriver implements Driver {
     }
 
     if (!this.#pglite.ready) {
-      await this.#pglite.waitReady
+      await waitOrAbort(this.#pglite.waitReady, options?.signal, 'wait ready')
     }
 
     this.#connection = new PGliteConnection(this.#pglite!)
 
     if (this.#config.onCreateConnection) {
-      await this.#config.onCreateConnection(this.#connection)
+      await this.#config.onCreateConnection(this.#connection, options)
     }
   }
 
