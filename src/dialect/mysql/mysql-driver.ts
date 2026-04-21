@@ -7,8 +7,12 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import {
+  waitOrAbort,
+  type AbortableOperationOptions,
+} from '../../util/abort.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
-import { createQueryId } from '../../util/query-id.js'
+import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
   MysqlDialectConfig,
@@ -25,24 +29,27 @@ export class MysqlDriver implements Driver {
   readonly #connections = new WeakMap<MysqlPoolConnection, DatabaseConnection>()
   #pool?: MysqlPool
 
-  constructor(configOrPool: MysqlDialectConfig) {
-    this.#config = freeze({ ...configOrPool })
+  constructor(config: MysqlDialectConfig) {
+    this.#config = freeze({ ...config })
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     this.#pool = isFunction(this.#config.pool)
-      ? await this.#config.pool()
+      ? await this.#config.pool(options)
       : this.#config.pool
   }
 
-  async acquireConnection(): Promise<DatabaseConnection> {
-    const rawConnection = await this.#acquireConnection()
+  async acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<DatabaseConnection> {
+    const rawConnection = await this.#acquireConnection(options)
+
     let connection = this.#connections.get(rawConnection)
 
     if (!connection) {
       connection = new MysqlConnection(
         rawConnection,
-        this.#config.createConnection,
+        this.#config.controlConnection,
       )
       this.#connections.set(rawConnection, connection)
 
@@ -50,12 +57,12 @@ export class MysqlDriver implements Driver {
       // connection is created. The `mysql2` module doesn't provide an async hook
       // for the connection creation. We need to call the method explicitly.
       if (this.#config?.onCreateConnection) {
-        await this.#config.onCreateConnection(connection)
+        await this.#config.onCreateConnection(connection, options)
       }
     }
 
     if (this.#config?.onReserveConnection) {
-      await this.#config.onReserveConnection(connection)
+      await this.#config.onReserveConnection(connection, options)
     }
 
     return connection
@@ -64,6 +71,7 @@ export class MysqlDriver implements Driver {
   async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     if (settings.isolationLevel || settings.accessMode) {
       const parts: string[] = []
@@ -79,30 +87,38 @@ export class MysqlDriver implements Driver {
       const sql = `set transaction ${parts.join(', ')}`
 
       // On MySQL this sets the isolation level of the next transaction.
-      await connection.executeQuery(CompiledQuery.raw(sql))
+      await connection.executeQuery(CompiledQuery.raw(sql), options)
     }
 
-    await connection.executeQuery(CompiledQuery.raw('begin'))
+    await connection.executeQuery(CompiledQuery.raw('begin'), options)
   }
 
-  async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+  async commitTransaction(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('commit'), options)
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+  async rollbackTransaction(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('rollback'), options)
   }
 
   async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('savepoint', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -110,12 +126,14 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('rollback to', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -123,12 +141,14 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
+    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('release savepoint', savepointName),
         createQueryId(),
       ),
+      options,
     )
   }
 
@@ -148,16 +168,26 @@ export class MysqlDriver implements Driver {
     })
   }
 
-  async #acquireConnection(): Promise<MysqlPoolConnection> {
-    return new Promise((resolve, reject) => {
-      this.#pool!.getConnection(async (err, rawConnection) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(rawConnection)
-        }
-      })
-    })
+  async #acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<MysqlPoolConnection> {
+    const connectionPromise = new Promise<MysqlPoolConnection>(
+      (resolve, reject) => {
+        this.#pool!.getConnection(async (err, rawConnection) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve(rawConnection)
+          }
+        })
+      },
+    )
+
+    return waitOrAbort(connectionPromise, options?.signal, 'pool connect', () =>
+      connectionPromise
+        .then((connection) => connection.release())
+        .catch(() => {}),
+    )
   }
 }
 
@@ -166,66 +196,31 @@ function isOkPacket(obj: unknown): obj is MysqlOkPacket {
 }
 
 class MysqlConnection implements DatabaseConnection {
-  readonly #createConnection: MysqlDialectConfig['createConnection']
-  readonly #rawConnection: MysqlPoolConnection
+  readonly #connection: MysqlPoolConnection
+  readonly #controlConnection: MysqlDialectConfig['controlConnection']
+  #queryId?: QueryId
 
   constructor(
-    rawConnection: MysqlPoolConnection,
-    createConnection: MysqlDialectConfig['createConnection'],
+    connection: MysqlPoolConnection,
+    controlConnection: MysqlDialectConfig['controlConnection'],
   ) {
-    this.#createConnection = createConnection
-    this.#rawConnection = rawConnection
+    this.#connection = connection
+    this.#controlConnection = controlConnection
   }
 
   async cancelQuery(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void> {
-    try {
-      // this removes the connection from the pool.
-      // this is done to avoid picking it up after the `kill` command next, which
-      // would cause an error when attempting to query.
-      this.#rawConnection.destroy()
-    } catch {
-      // noop
-    }
-
-    const { config, threadId } = this.#rawConnection
-
-    // this kills the query and the connection database-side.
-    // we're not using `kill query <connection_id>` here because it doesn't
-    // guarantee that the query is killed immediately. we saw that in tests,
-    // the query can still run for a while after - including registering writes.
-    const cancelQuery = `kill connection ${threadId}`
-
-    if (this.#createConnection && config) {
-      const controlConnection = await this.#createConnection({ ...config })
-
-      return await new Promise((resolve, reject) => {
-        controlConnection.connect((connectError) => {
-          if (connectError) {
-            return reject(connectError)
-          }
-
-          controlConnection.query(cancelQuery, [], (error) => {
-            controlConnection.destroy()
-
-            if (error) {
-              return reject(error)
-            }
-
-            resolve()
-          })
-        })
-      })
-    }
-
-    await controlConnectionProvider(async (controlConnection) => {
-      await controlConnection.executeQuery(CompiledQuery.raw(cancelQuery, []))
-    })
+    await this.#executeControlQuery(
+      `kill query ${this.#connection.threadId}`,
+      controlConnectionProvider,
+    )
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
+      this.#queryId = compiledQuery.queryId
+
       const result = await this.#executeQuery(compiledQuery)
 
       if (!isOkPacket(result)) {
@@ -238,32 +233,45 @@ class MysqlConnection implements DatabaseConnection {
 
       return {
         insertId:
-          insertId !== undefined &&
-          insertId !== null &&
-          insertId.toString() !== '0'
+          insertId != null && insertId.toString() !== '0'
             ? BigInt(insertId)
             : undefined,
         numAffectedRows:
-          affectedRows !== undefined && affectedRows !== null
-            ? BigInt(affectedRows)
-            : undefined,
-        numChangedRows:
-          changedRows !== undefined && changedRows !== null
-            ? BigInt(changedRows)
-            : undefined,
+          affectedRows != null ? BigInt(affectedRows) : undefined,
+        numChangedRows: changedRows != null ? BigInt(changedRows) : undefined,
         rows: [],
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
+    } finally {
+      this.#queryId = undefined
     }
+  }
+
+  async killSession(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    try {
+      // this removes the connection from the pool.
+      // this is done to avoid picking it up after the `kill` command next, which
+      // would cause an error when attempting to query.
+      this.#connection.destroy()
+    } catch {
+      // noop
+    }
+
+    await this.#executeControlQuery(
+      `kill connection ${this.#connection.threadId}`,
+      controlConnectionProvider,
+    )
   }
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
-    const stream = this.#rawConnection
-      .query(compiledQuery.sql, compiledQuery.parameters)
+    const stream = this.#connection
+      .query(compiledQuery.sql, [...compiledQuery.parameters])
       .stream<O>({ objectMode: true })
 
     try {
@@ -288,14 +296,14 @@ class MysqlConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#rawConnection.release()
+    this.#connection.release()
   }
 
   #executeQuery(compiledQuery: CompiledQuery): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
-      this.#rawConnection.query(
+      this.#connection.query(
         compiledQuery.sql,
-        compiledQuery.parameters,
+        [...compiledQuery.parameters],
         (err, result) => {
           if (err) {
             reject(err)
@@ -305,5 +313,65 @@ class MysqlConnection implements DatabaseConnection {
         },
       )
     })
+  }
+
+  async #executeControlQuery(
+    query: string,
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void> {
+    if (!this.#queryId) {
+      return
+    }
+
+    const { config } = this.#connection
+
+    const queryIdToCancel = this.#queryId
+
+    // we fallback to a pool connection, and execute a SQL query to cancel the
+    // query. this is not ideal, as we might have to wait for an idle connection.
+    if (!this.#controlConnection || !config) {
+      return await controlConnectionProvider(async (controlConnection) => {
+        // by the time we get the connection, another query might have been executed.
+        // we need to ensure we're not canceling the wrong query.
+        if (queryIdToCancel.queryId === this.#queryId?.queryId) {
+          await controlConnection.executeQuery(CompiledQuery.raw(query, []))
+        }
+      })
+    }
+
+    const {
+      // omitting these as they cause a warning and perhaps a future error when passed.
+      clientFlags: _,
+      maxPacketSize: __,
+      ...cfg
+    } = config as Record<string, unknown>
+
+    const controlConnection = this.#controlConnection(cfg)
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        controlConnection.connect((connectError) => {
+          if (connectError) {
+            return reject(connectError)
+          }
+
+          // by the time we get the connection, another query might have been executed.
+          // we need to ensure we're not canceling the wrong query.
+          if (queryIdToCancel.queryId !== this.#queryId?.queryId) {
+            return resolve()
+          }
+
+          controlConnection.query(query, [], (queryError) => {
+            if (queryError) {
+              return reject(queryError)
+            }
+
+            resolve()
+          })
+        })
+      })
+    } finally {
+      controlConnection.destroy()
+    }
   }
 }
