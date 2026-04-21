@@ -1,4 +1,5 @@
 import type { DatabaseConnection } from '../../driver/database-connection.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 
 /**
  * Config for the PGlite dialect.
@@ -10,7 +11,10 @@ export interface PGliteDialectConfig {
    * This is a Kysely specific feature and does not come from the `@electric-sql/pglite`
    * module.
    */
-  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+  onCreateConnection?: (
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ) => Promise<void>
 
   /**
    * A PGlite instance or a function that returns one.
@@ -19,7 +23,9 @@ export interface PGliteDialectConfig {
    *
    * https://pglite.dev/docs/api#main-constructor
    */
-  pglite: PGlite | (() => PGlite | Promise<PGlite>)
+  pglite:
+    | PGlite
+    | ((options?: AbortableOperationOptions) => PGlite | Promise<PGlite>)
 }
 
 /**
