@@ -6,12 +6,12 @@ import type { AbortableOperationOptions } from '../../util/abort.js'
  */
 export interface PostgresDialectConfig {
   /**
-   * A postgres `Client` constructor, to be used for connecting to the database
+   * A `pg` `Client` constructor, to be used for connecting to the database
    * outside of the `pool` to avoid waiting for an idle connection.
    *
    * This is useful for cancelling queries on the database side.
    *
-   * Defaults to the pool's undocumented `Client` member, if it exists.
+   * Defaults to the `Pool`'s undocumented `Client` member, if it exists.
    */
   controlClient?: PostgresClientConstructor
 

@@ -1,10 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import {
-  type InsertQueryBuilder,
-  type RawBuilder,
-  sql,
-} from '../../../dist/index.js'
+import { type RawBuilder, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -12,7 +8,6 @@ import {
   initTest,
   insertDefaultDataSet,
   PG_ERRORS,
-  type Database,
   type TestContext,
 } from './test-setup.js'
 
@@ -38,15 +33,14 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    function getDelayedWriteQuery(
+    function getLongRunningWriteQuery(
       sqlSpec: Exclude<(typeof dialect)['sqlSpec'], 'sqlite'>,
-      writeQuery: InsertQueryBuilder<Database, any, any>,
     ) {
       return (
         {
-          postgres: sql`select pg_sleep(0.1); ${writeQuery};`,
-          mysql: sql`select sleep(0.1); ${writeQuery};`,
-          mssql: sql`waitfor delay '00:00:00.100'; ${writeQuery};`,
+          postgres: sql`with delayed as (select pg_sleep(0.1)) insert into person (gender) select 'woah' from delayed;`,
+          mysql: sql`insert into person (gender) select 'woah' from (select sleep(0.1)) as t;`,
+          mssql: sql`waitfor delay '00:00:00.100'; insert into person (gender) values ('woah');`,
         } as const satisfies Record<typeof sqlSpec, RawBuilder<any>>
       )[sqlSpec]
     }
@@ -77,12 +71,8 @@ for (const dialect of DIALECTS) {
 
     if (variant === 'mssql' || variant === 'mysql' || variant === 'postgres') {
       it('should throw an abort error when aborted during query execution', async () => {
-        const writeQuery = ctx.db
-          .insertInto('person')
-          .values({ gender: sql.lit('woah') as never })
-
         await expect(
-          getDelayedWriteQuery(sqlSpec, writeQuery).execute(ctx.db, {
+          getLongRunningWriteQuery(sqlSpec).execute(ctx.db, {
             signal: AbortSignal.timeout(10),
           }),
         )
@@ -95,7 +85,7 @@ for (const dialect of DIALECTS) {
             },
           )
 
-        await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
+        await setTimeout(250)
         await expect(
           ctx.db
             .selectFrom('person')
@@ -108,15 +98,10 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    // database-side cancellation was only implemented in PostgresDialect thus far.
-    if (variant === 'postgres') {
+    if (variant === 'postgres' || variant === 'mysql') {
       it("should cancel query on database side when inflightQueryAbortStrategy is 'cancel query'", async () => {
-        const writeQuery = ctx.db
-          .insertInto('person')
-          .values({ gender: sql.lit('woah') as never })
-
         await expect(
-          getDelayedWriteQuery(sqlSpec, writeQuery).execute(ctx.db, {
+          getLongRunningWriteQuery(sqlSpec).execute(ctx.db, {
             inflightQueryAbortStrategy: 'cancel query',
             signal: AbortSignal.timeout(10),
           }),
@@ -130,7 +115,7 @@ for (const dialect of DIALECTS) {
             },
           )
 
-        await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
+        await setTimeout(250)
         await expect(
           ctx.db
             .selectFrom('person')
@@ -143,12 +128,8 @@ for (const dialect of DIALECTS) {
       })
 
       it("should kill session on database side when inflightQueryAbortStrategy is 'kill session'", async () => {
-        const writeQuery = ctx.db
-          .insertInto('person')
-          .values({ gender: sql.lit('woah') as never })
-
         await expect(
-          getDelayedWriteQuery(sqlSpec, writeQuery).execute(ctx.db, {
+          getLongRunningWriteQuery(sqlSpec).execute(ctx.db, {
             inflightQueryAbortStrategy: 'kill session',
             signal: AbortSignal.timeout(10),
           }),
@@ -162,7 +143,7 @@ for (const dialect of DIALECTS) {
             },
           )
 
-        await setTimeout(250) // long enough to ensure that if the query was not aborted, the write would have registered.
+        await setTimeout(250)
         await expect(
           ctx.db
             .selectFrom('person')
@@ -172,6 +153,7 @@ for (const dialect of DIALECTS) {
         ).to.eventually.satisfy((result: { count: unknown }) =>
           expect(Number(result.count)).to.equal(0),
         )
+
         if (variant === 'postgres') {
           expect(PG_ERRORS.at(-1)?.message).to.equal(
             'Connection terminated unexpectedly',
