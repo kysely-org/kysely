@@ -1,10 +1,6 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import {
-  type InsertQueryBuilder,
-  type RawBuilder,
-  sql,
-} from '../../../dist/index.js'
+import { type RawBuilder, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -12,7 +8,6 @@ import {
   initTest,
   insertDefaultDataSet,
   PG_ERRORS,
-  type Database,
   type TestContext,
 } from './test-setup.js'
 
