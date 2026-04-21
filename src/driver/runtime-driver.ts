@@ -102,36 +102,36 @@ export class RuntimeDriver implements Driver {
     this.#connectionMutex?.unlock()
   }
 
-  beginTransaction(
+  async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
     options?: AbortableOperationOptions,
   ): Promise<void> {
-    return this.#driver.beginTransaction(connection, settings, options)
+    return await this.#driver.beginTransaction(connection, settings, options)
   }
 
-  commitTransaction(
+  async commitTransaction(
     connection: DatabaseConnection,
     options?: AbortableOperationOptions,
   ): Promise<void> {
-    return this.#driver.commitTransaction(connection, options)
+    return await this.#driver.commitTransaction(connection, options)
   }
 
-  rollbackTransaction(
+  async rollbackTransaction(
     connection: DatabaseConnection,
     options?: AbortableOperationOptions,
   ): Promise<void> {
-    return this.#driver.rollbackTransaction(connection, options)
+    return await this.#driver.rollbackTransaction(connection, options)
   }
 
-  savepoint(
+  async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
     options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.savepoint) {
-      return this.#driver.savepoint(
+      return await this.#driver.savepoint(
         connection,
         savepointName,
         compileQuery,
@@ -142,14 +142,14 @@ export class RuntimeDriver implements Driver {
     throw new Error('The `savepoint` method is not supported by this driver')
   }
 
-  rollbackToSavepoint(
+  async rollbackToSavepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
     options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.rollbackToSavepoint) {
-      return this.#driver.rollbackToSavepoint(
+      return await this.#driver.rollbackToSavepoint(
         connection,
         savepointName,
         compileQuery,
@@ -162,14 +162,14 @@ export class RuntimeDriver implements Driver {
     )
   }
 
-  releaseSavepoint(
+  async releaseSavepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
     options?: AbortableOperationOptions,
   ): Promise<void> {
     if (this.#driver.releaseSavepoint) {
-      return this.#driver.releaseSavepoint(
+      return await this.#driver.releaseSavepoint(
         connection,
         savepointName,
         compileQuery,

@@ -1,11 +1,18 @@
 import type { DatabaseConnection } from '../../driver/database-connection.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 
 /**
  * Config for the MySQL dialect.
- *
- * https://github.com/sidorares/node-mysql2#using-connection-pools
  */
 export interface MysqlDialectConfig {
+  /**
+   * A `mysql2` `Client` constructor, to be used for connecting to the database
+   * outside of the `pool` to avoid waiting for an idle connection.
+   *
+   * This is useful for cancelling queries on the database side.
+   */
+  controlConnection?: (config: object) => MysqlConnection
+
   /**
    * A mysql2 Pool instance or a function that returns one.
    *
@@ -13,17 +20,25 @@ export interface MysqlDialectConfig {
    *
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
-  pool: MysqlPool | (() => Promise<MysqlPool>)
+  pool:
+    | MysqlPool
+    | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
 
   /**
    * Called once for each created connection.
    */
-  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+  onCreateConnection?: (
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ) => Promise<void>
 
   /**
-   * Called every time a connection is acquired from the connection pool.
+   * Called every time a connection is acquired from the pool.
    */
-  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
+  onReserveConnection?: (
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ) => Promise<void>
 }
 
 /**
@@ -41,7 +56,10 @@ export interface MysqlPool {
   end(callback: (error: unknown) => void): void
 }
 
-export interface MysqlPoolConnection {
+export interface MysqlConnection {
+  config: object
+  connect(callback?: (error: unknown) => void): void
+  destroy(): void
   query(
     sql: string,
     parameters: Array<unknown>,
@@ -51,6 +69,12 @@ export interface MysqlPoolConnection {
     parameters: Array<unknown>,
     callback: (error: unknown, result: MysqlQueryResult) => void,
   ): void
+  threadId: number
+}
+
+export type MysqlConectionConstructor = new (opts?: object) => MysqlConnection
+
+export interface MysqlPoolConnection extends MysqlConnection {
   release(): void
 }
 

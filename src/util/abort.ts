@@ -107,33 +107,41 @@ export function throwReasonWithTiming(reason: any, timing: string): never {
   throw reason
 }
 
+const ABORT_TOKEN = {} as symbol
+
 export async function waitOrAbort<T>(
   happyPromise: Promise<T> | (() => Promise<T>),
   signal: AbortSignal | undefined,
   name: string,
+  onAbort?: (happyPromise?: Promise<T>) => void | Promise<void>,
 ): Promise<T> {
   if (!signal) {
     return typeof happyPromise === 'function' ? happyPromise() : happyPromise
   }
 
-  assertNotAborted(signal, name)
+  const { promise: abortPromise, resolve } = new Deferred<typeof ABORT_TOKEN>()
 
-  const { promise: abortPromise, reject, resolve } = new Deferred<never>()
-
-  const abortListener = () => reject(decorateWithTiming(signal.reason, name))
+  const abortListener = () => resolve(ABORT_TOKEN)
 
   try {
-    assertNotAborted(signal, name)
+    assertNotAborted(signal, `before ${name}`, onAbort)
 
     signal.addEventListener('abort', abortListener)
 
-    return await Promise.race([
-      typeof happyPromise === 'function' ? happyPromise() : happyPromise,
-      abortPromise,
-    ])
+    happyPromise =
+      typeof happyPromise === 'function' ? happyPromise() : happyPromise
+
+    const result = await Promise.race([happyPromise, abortPromise])
+
+    if (result !== ABORT_TOKEN) {
+      return result as T
+    }
+
+    onAbort?.(happyPromise)
+    throwReasonWithTiming(signal.reason, `during ${name}`)
   } finally {
     signal.removeEventListener('abort', abortListener)
-    resolve(undefined as never)
+    resolve(ABORT_TOKEN)
   }
 }
 

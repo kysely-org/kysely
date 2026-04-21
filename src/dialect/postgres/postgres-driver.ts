@@ -7,7 +7,10 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import type { AbortableOperationOptions } from '../../util/abort.js'
+import {
+  waitOrAbort,
+  type AbortableOperationOptions,
+} from '../../util/abort.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -39,12 +42,20 @@ export class PostgresDriver implements Driver {
   async acquireConnection(
     options?: AbortableOperationOptions,
   ): Promise<DatabaseConnection> {
-    const client = await this.#pool!.connect()
+    const clientPromise = this.#pool!.connect()
+
+    const client = await waitOrAbort(
+      clientPromise,
+      options?.signal,
+      'pool connect',
+      () => clientPromise.then((client) => client.release()).catch(() => {}),
+    )
+
     let connection = this.#connections.get(client)
 
     if (!connection) {
       connection = new PostgresConnection(client, {
-        Client: this.#config.controlClient || this.#pool!.Client,
+        controlClient: this.#config.controlClient || this.#pool!.Client,
         cursor: this.#config.cursor ?? null,
         poolOptions: this.#pool!.options,
       })
@@ -160,7 +171,7 @@ export class PostgresDriver implements Driver {
 }
 
 interface PostgresConnectionOptions {
-  Client?: PostgresClientConstructor
+  controlClient?: PostgresClientConstructor
   cursor: PostgresCursorConstructor | null
   poolOptions: object
 }
@@ -311,7 +322,7 @@ class PostgresConnection implements DatabaseConnection {
       return
     }
 
-    const { Client, poolOptions } = this.#options
+    const { controlClient: Client, poolOptions } = this.#options
 
     const queryIdToCancel = this.#queryId
 
