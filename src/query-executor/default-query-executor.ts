@@ -36,10 +36,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
   }
 
   provideConnection<T>(
-    consumer: (
-      connection: DatabaseConnection,
-      options?: AbortableOperationOptions,
-    ) => Promise<T>,
+    consumer: (connection: DatabaseConnection) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
     return this.#connectionProvider.provideConnection(consumer, options)

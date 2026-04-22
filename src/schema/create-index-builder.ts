@@ -24,7 +24,10 @@ import { QueryNode } from '../operation-node/query-node.js'
 import type { ExpressionBuilder } from '../expression/expression-builder.js'
 import type { ShallowRecord, SqlBool } from '../util/type-utils.js'
 import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type {
+  AbortableOperationOptions,
+  AbortableQueryOptions,
+} from '../util/abort.js'
 
 export class CreateIndexBuilder<C = never>
   implements OperationNodeSource, Compilable
@@ -340,7 +343,7 @@ export class CreateIndexBuilder<C = never>
     )
   }
 
-  async execute(options?: AbortableOperationOptions): Promise<void> {
+  async execute(options?: AbortableQueryOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }

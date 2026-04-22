@@ -91,7 +91,7 @@ import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -1146,9 +1146,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(
-    options?: AbortableOperationOptions,
-  ): Promise<SimplifyResult<O>[]> {
+  async execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1175,7 +1173,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   async executeTakeFirst(
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 
