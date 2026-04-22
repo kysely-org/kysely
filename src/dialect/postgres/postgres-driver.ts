@@ -48,7 +48,14 @@ export class PostgresDriver implements Driver {
       clientPromise,
       options?.signal,
       'pool connect',
-      () => clientPromise.then((client) => client.release()).catch(() => {}),
+      () =>
+        clientPromise
+          .then((client) => client.release())
+          .catch((reason) =>
+            console.error(
+              `\`pool.connect\` failed in the background after abortion: ${reason instanceof Error ? reason.message : String(reason)}`,
+            ),
+          ),
     )
 
     let connection = this.#connections.get(client)
@@ -79,7 +86,6 @@ export class PostgresDriver implements Driver {
   async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     let sql = 'begin'
 
@@ -95,35 +101,27 @@ export class PostgresDriver implements Driver {
       }
     }
 
-    await connection.executeQuery(CompiledQuery.raw(sql), options)
+    await connection.executeQuery(CompiledQuery.raw(sql))
   }
 
-  async commitTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'), options)
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'), options)
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
   async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('savepoint', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -131,14 +129,12 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('rollback to', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -146,14 +142,12 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('release', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -205,11 +199,13 @@ class PostgresConnection implements DatabaseConnection {
         await this.#setupCancelability()
       }
 
+      // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
 
-      const result = await this.#client.query<O>(compiledQuery.sql, [
-        ...compiledQuery.parameters,
-      ])
+      const result = await this.#client.query<O>(
+        compiledQuery.sql,
+        compiledQuery.parameters,
+      )
 
       const { command, rowCount, rows } = result
 
@@ -226,6 +222,7 @@ class PostgresConnection implements DatabaseConnection {
     } catch (err) {
       throw extendStackTrace(err, new Error())
     } finally {
+      // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
     }
   }
@@ -246,18 +243,15 @@ class PostgresConnection implements DatabaseConnection {
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
-        "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres.",
+        "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
       )
-    }
-
-    if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
-      throw new Error('chunkSize must be a positive integer')
     }
 
     if (options?.signal) {
       await this.#setupCancelability()
     }
 
+    // this helps ensure we don't cancel the wrong query when aborted.
     this.#queryId = compiledQuery.queryId
 
     const cursor = this.#client.query(
@@ -280,6 +274,7 @@ class PostgresConnection implements DatabaseConnection {
         }
       }
     } finally {
+      // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
       await cursor.close()
     }
