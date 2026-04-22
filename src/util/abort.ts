@@ -11,7 +11,7 @@ export interface AbortableOperationOptions {
    *
    * See {@link inflightQueryAbortStrategy} for handling of database side query.
    */
-  signal?: AbortSignal | undefined
+  readonly signal?: AbortSignal | undefined
 }
 
 export interface AbortableQueryOptions extends AbortableOperationOptions {
@@ -42,7 +42,7 @@ export interface AbortableQueryOptions extends AbortableOperationOptions {
    *
    * Default is `'ignore query'`.
    */
-  inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
+  readonly inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
 }
 
 export type InflightQueryAbortStrategy =
