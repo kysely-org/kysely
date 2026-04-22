@@ -5,7 +5,7 @@ import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { QueryId } from '../util/query-id.js'
 import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 /**
  * This interface abstracts away the details of how to compile a query into SQL
@@ -47,7 +47,7 @@ export interface QueryExecutor extends ConnectionProvider {
    */
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>>
 
   /**
@@ -62,7 +62,7 @@ export interface QueryExecutor extends ConnectionProvider {
      * only by the postgres driver.
      */
     chunkSize: number,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**

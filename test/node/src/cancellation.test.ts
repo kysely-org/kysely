@@ -14,7 +14,7 @@ import {
 for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
 
-  describe(`${variant}: query cancellation`, () => {
+  describe(`${variant}: cancellation`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -285,5 +285,42 @@ for (const dialect of DIALECTS) {
           })
       })
     }
+
+    describe('ConnectionBuilder', () => {
+      it('should execute normally when not aborted', async () => {
+        await expect(
+          ctx.db
+            .connection()
+            .execute(
+              async (con) =>
+                con.selectFrom('person').selectAll().executeTakeFirstOrThrow(),
+              { signal: new AbortController().signal },
+            ),
+        ).to.not.be.eventually.rejected
+      })
+
+      it('should throw an abort error when aborted before connection acquisition', async () => {
+        const reason = new Error('blazers in 5')
+
+        await expect(
+          ctx.db
+            .connection()
+            .execute(
+              async (con) =>
+                con.selectFrom('person').selectAll().executeTakeFirstOrThrow(),
+              { signal: AbortSignal.abort(reason) },
+            ),
+        )
+          .to.eventually.be.rejectedWith(reason)
+          .and.satisfies((error: { __kysely_timing__: string }) => {
+            expect(error.__kysely_timing__).to.equal(
+              ctx.db.getExecutor().adapter.supportsMultipleConnections
+                ? 'before acquireConnection:acquire'
+                : 'before acquireConnection:mutex',
+            )
+            return true
+          })
+      })
+    })
   })
 }

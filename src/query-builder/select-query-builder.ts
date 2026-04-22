@@ -49,11 +49,7 @@ import { asArray, freeze } from '../util/object-utils.js'
 import { type GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { WhereInterface } from './where-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import type { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import type { Explainable, ExplainFormat } from '../util/explainable.js'
@@ -88,7 +84,7 @@ import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends
@@ -2126,11 +2122,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   compile(): CompiledQuery<Simplify<O>>
 
   execute(
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<NonNullable<SimplifyResult<O>>[]>
 
   executeTakeFirst(
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<SimplifySingleResult<O>>
 
   executeTakeFirstOrThrow(
@@ -2648,9 +2644,7 @@ class SelectQueryBuilderImpl<
     )
   }
 
-  async execute(
-    options?: AbortableOperationOptions,
-  ): Promise<SimplifyResult<O>[]> {
+  async execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -2662,7 +2656,7 @@ class SelectQueryBuilderImpl<
   }
 
   async executeTakeFirst(
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 

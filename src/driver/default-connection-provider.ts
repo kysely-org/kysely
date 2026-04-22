@@ -11,16 +11,13 @@ export class DefaultConnectionProvider implements ConnectionProvider {
   }
 
   async provideConnection<T>(
-    consumer: (
-      connection: DatabaseConnection,
-      options?: AbortableOperationOptions,
-    ) => Promise<T>,
+    consumer: (connection: DatabaseConnection) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
     const connection = await this.#driver.acquireConnection(options)
 
     try {
-      return await consumer(connection, options)
+      return await consumer(connection)
     } finally {
       await this.#driver.releaseConnection(connection, options)
     }

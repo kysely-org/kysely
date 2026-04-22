@@ -67,10 +67,7 @@ async function testReadonlyKysely(
   expectNotDeprecated(rdb.connection)
   expectType<
     (
-      callback: (
-        db: ReadonlyKysely<Database>,
-        options?: AbortableOperationOptions,
-      ) => Promise<{ moshe: true }>,
+      callback: (db: ReadonlyKysely<Database>) => Promise<{ moshe: true }>,
       options?: AbortableOperationOptions,
     ) => Promise<{ moshe: true }>
   >(rdb.connection().execute<{ moshe: true }>)
@@ -191,11 +188,7 @@ async function testReadonlyKysely(
   expectNotDeprecated(rdb.transaction)
   expectType<
     (
-      cb: (
-        trx: ReadonlyTransaction<Database>,
-        options?: AbortableOperationOptions,
-      ) => Promise<{ moshe: true }>,
-      options?: AbortableOperationOptions,
+      cb: (trx: ReadonlyTransaction<Database>) => Promise<{ moshe: true }>,
     ) => Promise<{ moshe: true }>
   >(rdb.transaction().execute<{ moshe: true }>)
   expectNotDeprecated(rdb.transaction().execute)

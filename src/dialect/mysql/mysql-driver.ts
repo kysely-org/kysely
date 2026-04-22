@@ -7,10 +7,7 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import {
-  waitOrAbort,
-  type AbortableOperationOptions,
-} from '../../util/abort.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -42,7 +39,7 @@ export class MysqlDriver implements Driver {
   async acquireConnection(
     options?: AbortableOperationOptions,
   ): Promise<DatabaseConnection> {
-    const rawConnection = await this.#acquireConnection(options)
+    const rawConnection = await this.#acquireConnection()
 
     let connection = this.#connections.get(rawConnection)
 
@@ -71,7 +68,6 @@ export class MysqlDriver implements Driver {
   async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     if (settings.isolationLevel || settings.accessMode) {
       const parts: string[] = []
@@ -87,38 +83,30 @@ export class MysqlDriver implements Driver {
       const sql = `set transaction ${parts.join(', ')}`
 
       // On MySQL this sets the isolation level of the next transaction.
-      await connection.executeQuery(CompiledQuery.raw(sql), options)
+      await connection.executeQuery(CompiledQuery.raw(sql))
     }
 
-    await connection.executeQuery(CompiledQuery.raw('begin'), options)
+    await connection.executeQuery(CompiledQuery.raw('begin'))
   }
 
-  async commitTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'), options)
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'), options)
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
   async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('savepoint', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -126,14 +114,12 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('rollback to', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -141,14 +127,12 @@ export class MysqlDriver implements Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void> {
     await connection.executeQuery(
       compileQuery(
         parseSavepointCommand('release savepoint', savepointName),
         createQueryId(),
       ),
-      options,
     )
   }
 
@@ -168,26 +152,16 @@ export class MysqlDriver implements Driver {
     })
   }
 
-  async #acquireConnection(
-    options?: AbortableOperationOptions,
-  ): Promise<MysqlPoolConnection> {
-    const connectionPromise = new Promise<MysqlPoolConnection>(
-      (resolve, reject) => {
-        this.#pool!.getConnection(async (err, rawConnection) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(rawConnection)
-          }
-        })
-      },
-    )
-
-    return waitOrAbort(connectionPromise, options?.signal, 'pool connect', () =>
-      connectionPromise
-        .then((connection) => connection.release())
-        .catch(() => {}),
-    )
+  async #acquireConnection(): Promise<MysqlPoolConnection> {
+    return new Promise<MysqlPoolConnection>((resolve, reject) => {
+      this.#pool!.getConnection(async (err, rawConnection) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(rawConnection)
+        }
+      })
+    })
   }
 }
 
@@ -271,7 +245,7 @@ class MysqlConnection implements DatabaseConnection {
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#connection
-      .query(compiledQuery.sql, [...compiledQuery.parameters])
+      .query(compiledQuery.sql, compiledQuery.parameters as never)
       .stream<O>({ objectMode: true })
 
     try {
@@ -303,7 +277,7 @@ class MysqlConnection implements DatabaseConnection {
     return new Promise((resolve, reject) => {
       this.#connection.query(
         compiledQuery.sql,
-        [...compiledQuery.parameters],
+        compiledQuery.parameters as never,
         (err, result) => {
           if (err) {
             reject(err)

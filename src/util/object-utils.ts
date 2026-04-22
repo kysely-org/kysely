@@ -119,6 +119,10 @@ export function compare(obj1: unknown, obj2: unknown): boolean {
   return obj1 === obj2
 }
 
+export function getMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 function compareArrays(
   arr1: ReadonlyArray<unknown>,
   arr2: ReadonlyArray<unknown>,

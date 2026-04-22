@@ -1,11 +1,20 @@
 import { Deferred } from './deferred.js'
-import type {
-  ControlConnectionProvider,
-  DatabaseConnection,
-} from '../driver/database-connection.js'
-import { logOnce } from './log-once.js'
+import type { DatabaseConnection } from '../driver/database-connection.js'
+import { getMessage } from './object-utils.js'
 
 export interface AbortableOperationOptions {
+  /**
+   * An optional signal that can be used to abort the execution of (async) operations.
+   *
+   * This is useful for cancelling long-running queries, for example when
+   * the user navigates away from the page or closes the browser tab.
+   *
+   * See {@link inflightQueryAbortStrategy} for handling of database side query.
+   */
+  readonly signal?: AbortSignal | undefined
+}
+
+export interface AbortableQueryOptions extends AbortableOperationOptions {
   /**
    * Controls what happens when the {@link signal} is aborted while a query is
    * in-flight.
@@ -33,17 +42,7 @@ export interface AbortableOperationOptions {
    *
    * Default is `'ignore query'`.
    */
-  inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
-
-  /**
-   * An optional signal that can be used to abort the execution of (async) operations.
-   *
-   * This is useful for cancelling long-running queries, for example when
-   * the user navigates away from the page or closes the browser tab.
-   *
-   * See {@link inflightQueryAbortStrategy} for handling of database side query.
-   */
-  signal?: AbortSignal | undefined
+  readonly inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
 }
 
 export type InflightQueryAbortStrategy =
@@ -60,34 +59,47 @@ export function getInflightQueryAbortHandler(
     return
   }
 
-  if (abortStrategy === 'kill session') {
-    const handler = connection.killSession
-
-    if (handler) {
-      return handler.bind(connection)
-    }
-
-    logOnce(
-      'This kysely dialect does not implement the `killSession` method. This means sessions will not be killed on the database side when the `signal` is aborted.',
-    )
-  }
-
-  if (abortStrategy === 'cancel query' || abortStrategy === 'kill session') {
+  if (abortStrategy === 'cancel query') {
     const handler = connection.cancelQuery
 
     if (!handler) {
-      logOnce(
-        'This kysely dialect does not implement the `cancelQuery` method. This means queries will not be cancelled on the database side when the `signal` is aborted.',
+      throwUnsupportedInflightQueryAbortStrategyError(
+        abortStrategy,
+        connection.killSession ? 'kill session' : undefined,
       )
     }
 
-    return handler?.bind(connection)
+    return handler.bind(connection)
+  }
+
+  if (abortStrategy === 'kill session') {
+    const handler = connection.killSession
+
+    if (!handler) {
+      throwUnsupportedInflightQueryAbortStrategyError(
+        abortStrategy,
+        connection.cancelQuery ? 'cancel query' : undefined,
+      )
+    }
+
+    return handler.bind(connection)
   }
 
   beforeThrow()
 
   throw new Error(
-    `Unexpected \`inflightQueryAbortStrategy\`: ${abortStrategy satisfies never}`,
+    `Unexpected \`inflightQueryAbortStrategy\`: "${abortStrategy satisfies never}"`,
+  )
+}
+
+function throwUnsupportedInflightQueryAbortStrategyError(
+  abortStrategy: Exclude<InflightQueryAbortStrategy, 'ignore query'>,
+  alt: InflightQueryAbortStrategy | undefined,
+): never {
+  throw new Error(
+    `This dialect doesn't support \`inflightQueryAbortStrategy\` "${abortStrategy}". Use "${'ignore query' satisfies InflightQueryAbortStrategy}"${
+      alt ? ` or "${alt satisfies InflightQueryAbortStrategy}"` : ''
+    } instead.`,
   )
 }
 
@@ -107,42 +119,47 @@ export function throwReasonWithTiming(reason: any, timing: string): never {
   throw reason
 }
 
-const ABORT_TOKEN = {} as symbol
+export const ABORTED: unique symbol = {} as never
 
 export async function waitOrAbort<T>(
-  happyPromise: Promise<T> | (() => Promise<T>),
+  promise: Promise<T>,
   signal: AbortSignal | undefined,
   name: string,
-  onAbort?: (happyPromise?: Promise<T>) => void | Promise<void>,
+  onAbort?: () => void | Promise<void>,
 ): Promise<T> {
   if (!signal) {
-    return typeof happyPromise === 'function' ? happyPromise() : happyPromise
+    return promise
   }
 
-  const { promise: abortPromise, resolve } = new Deferred<typeof ABORT_TOKEN>()
+  assertNotAborted(signal, `before ${name}`, onAbort)
 
-  const abortListener = () => resolve(ABORT_TOKEN)
+  const { promise: abortPromise, resolve } = new Deferred<typeof ABORTED>()
+
+  const abortListener = () => resolve(ABORTED)
+  signal.addEventListener('abort', abortListener)
 
   try {
     assertNotAborted(signal, `before ${name}`, onAbort)
 
-    signal.addEventListener('abort', abortListener)
+    const result = await Promise.race([promise, abortPromise])
 
-    happyPromise =
-      typeof happyPromise === 'function' ? happyPromise() : happyPromise
-
-    const result = await Promise.race([happyPromise, abortPromise])
-
-    if (result !== ABORT_TOKEN) {
-      return result as T
+    if (result !== ABORTED) {
+      return result
     }
 
-    onAbort?.(happyPromise)
+    onAbort?.()
     throwReasonWithTiming(signal.reason, `during ${name}`)
   } finally {
     signal.removeEventListener('abort', abortListener)
-    resolve(ABORT_TOKEN)
+    resolve(ABORTED)
   }
+}
+
+export function printBackgroundFail(name: string): (reason: unknown) => void {
+  return (reason: unknown) =>
+    console.error(
+      `\`${name}\` failed in the background after abortion: ${getMessage(reason)}`,
+    )
 }
 
 function decorateWithTiming(reason: any, timing: string): void {
