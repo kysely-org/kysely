@@ -14,7 +14,7 @@ import {
 for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
 
-  describe.only(`${variant}: cancellation`, () => {
+  describe(`${variant}: cancellation`, () => {
     let ctx: TestContext
 
     before(async function () {

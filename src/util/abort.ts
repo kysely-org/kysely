@@ -1,6 +1,7 @@
 import { Deferred } from './deferred.js'
 import type { DatabaseConnection } from '../driver/database-connection.js'
 import { logOnce } from './log-once.js'
+import { getMessage } from './object-utils.js'
 
 export interface AbortableOperationOptions {
   /**
@@ -122,39 +123,44 @@ export function throwReasonWithTiming(reason: any, timing: string): never {
 export const ABORTED: unique symbol = {} as never
 
 export async function waitOrAbort<T>(
-  happyPromise: Promise<T> | (() => Promise<T>),
+  promise: Promise<T>,
   signal: AbortSignal | undefined,
   name: string,
-  onAbort?: (happyPromise?: Promise<T>) => void | Promise<void>,
+  onAbort?: () => void | Promise<void>,
 ): Promise<T> {
   if (!signal) {
-    return typeof happyPromise === 'function' ? happyPromise() : happyPromise
+    return promise
   }
+
+  assertNotAborted(signal, `before ${name}`, onAbort)
 
   const { promise: abortPromise, resolve } = new Deferred<typeof ABORTED>()
 
   const abortListener = () => resolve(ABORTED)
+  signal.addEventListener('abort', abortListener)
 
   try {
     assertNotAborted(signal, `before ${name}`, onAbort)
 
-    signal.addEventListener('abort', abortListener)
-
-    happyPromise =
-      typeof happyPromise === 'function' ? happyPromise() : happyPromise
-
-    const result = await Promise.race([happyPromise, abortPromise])
+    const result = await Promise.race([promise, abortPromise])
 
     if (result !== ABORTED) {
       return result
     }
 
-    onAbort?.(happyPromise)
+    onAbort?.()
     throwReasonWithTiming(signal.reason, `during ${name}`)
   } finally {
     signal.removeEventListener('abort', abortListener)
     resolve(ABORTED)
   }
+}
+
+export function printBackgroundFail(name: string): (reason: unknown) => void {
+  return (reason: unknown) =>
+    console.error(
+      `\`${name}\` failed in the background after abortion: ${getMessage(reason)}`,
+    )
 }
 
 function decorateWithTiming(reason: any, timing: string): void {

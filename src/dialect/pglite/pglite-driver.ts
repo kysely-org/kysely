@@ -52,7 +52,7 @@ export class PGliteDriver implements Driver {
   }
 
   async init(options?: AbortableOperationOptions): Promise<void> {
-    this.#pglite = isFunction(this.#config.pglite)
+    this.#pglite ??= isFunction(this.#config.pglite)
       ? await this.#config.pglite(options)
       : this.#config.pglite
 

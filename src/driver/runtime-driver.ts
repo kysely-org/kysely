@@ -4,7 +4,7 @@ import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { Log } from '../util/log.js'
 import {
   type AbortableOperationOptions,
-  assertNotAborted,
+  printBackgroundFail,
   waitOrAbort,
 } from '../util/abort.js'
 import { performanceNow } from '../util/performance-now.js'
@@ -42,19 +42,18 @@ export class RuntimeDriver implements Driver {
       throw new Error('driver has already been destroyed')
     }
 
-    if (!this.#initPromise) {
-      this.#initPromise = this.#driver
-        .init(options)
-        .then(() => {
-          this.#initDone = true
-        })
-        .catch((err) => {
-          this.#initPromise = undefined
-          return Promise.reject(err)
-        })
-    }
+    this.#initPromise ??= this.#driver
+      .init(options)
+      .then(() => {
+        this.#initDone = true
+      })
+      .catch((reason) => {
+        // ensure `init` is retried later.
+        this.#initPromise = undefined
+        throw reason
+      })
 
-    await this.#initPromise
+    await waitOrAbort(this.#initPromise, options?.signal, 'init')
   }
 
   async acquireConnection(
@@ -64,23 +63,36 @@ export class RuntimeDriver implements Driver {
       throw new Error('driver has already been destroyed')
     }
 
-    const { signal } = options || {}
-
     if (!this.#initDone) {
-      assertNotAborted(signal, 'before acquireConnection:init')
-
       await this.init(options)
     }
 
     if (this.#connectionMutex) {
-      assertNotAborted(signal, 'before acquireConnection:mutex')
+      const lockPromise = this.#connectionMutex.obtainLock()
 
-      await this.#connectionMutex.obtainLock()
+      await waitOrAbort(
+        lockPromise,
+        options?.signal,
+        'acquireConnection:mutex',
+        () => lockPromise.then(() => this.#connectionMutex?.releaseLock()),
+      )
     }
 
-    assertNotAborted(signal, 'before acquireConnection:acquire')
+    const connectionPromise = this.#driver.acquireConnection(options)
 
-    const connection = await this.#driver.acquireConnection(options)
+    const connection = await waitOrAbort(
+      connectionPromise,
+      options?.signal,
+      'acquireConnection:acquire',
+      () =>
+        connectionPromise
+          ?.then((connection) =>
+            this.releaseConnection(connection).catch(
+              printBackgroundFail('driver.releaseConnection'),
+            ),
+          )
+          .catch(printBackgroundFail('driver.acquireConnection')),
+    )
 
     if (!this.#connections.has(connection)) {
       if (this.#needsLogging()) {
@@ -176,12 +188,11 @@ export class RuntimeDriver implements Driver {
 
     await waitOrAbort(this.#initPromise, options?.signal, 'destroy:initPromise')
 
-    if (!this.#destroyPromise) {
-      this.#destroyPromise = this.#driver.destroy(options).catch((err) => {
-        this.#destroyPromise = undefined
-        return Promise.reject(err)
-      })
-    }
+    this.#destroyPromise ??= this.#driver.destroy(options).catch((reason) => {
+      // ensure `destroy` is retried later.
+      this.#destroyPromise = undefined
+      throw reason
+    })
 
     await waitOrAbort(this.#destroyPromise, options?.signal, 'destroy')
   }

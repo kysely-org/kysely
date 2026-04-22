@@ -4,7 +4,10 @@ import type {
   QueryResult,
 } from '../driver/database-connection.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
-import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import type {
+  KyselyPlugin,
+  PluginTransformResultArgs,
+} from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type { DialectAdapter } from '../dialect/dialect-adapter.js'
@@ -13,8 +16,10 @@ import { provideControlledConnection } from '../util/provide-controlled-connecti
 import {
   type AbortableOperationOptions,
   type AbortableQueryOptions,
+  ABORTED,
   assertNotAborted,
   getInflightQueryAbortHandler,
+  printBackgroundFail,
   throwReasonWithTiming,
 } from '../util/abort.js'
 import { Deferred } from '../util/deferred.js'
@@ -77,24 +82,18 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     const { inflightQueryAbortStrategy, signal } = options || {}
 
-    // intentionally isolating the simple common case from the new experimental cancellation flow.
+    // intentionally isolating the simple common case from the new cancellation flow.
     if (!signal) {
-      return await this.provideConnection(async (connection) => {
-        const result = await connection.executeQuery(compiledQuery, options)
-
-        return await this.#transformResult<R>(
-          result,
-          compiledQuery.queryId,
-          options,
-        )
+      const result = await this.provideConnection(async (connection) => {
+        return await connection.executeQuery(compiledQuery, options)
       }, options)
-    }
 
-    if (!Object.isFrozen(options)) {
-      options = freeze({ ...options })
+      return await this.#transformResult<R>(result, compiledQuery.queryId)
     }
 
     assertNotAborted(signal, 'before query execution')
+
+    options = freeze({ signal })
 
     const { connection, release } = await provideControlledConnection(
       this,
@@ -102,15 +101,15 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     )
 
     const controlConnectionProvider = this.provideConnection.bind(this)
-    const { promise: abortPromise, resolve } = new Deferred<void>()
+    const { promise: abortPromise, resolve } = new Deferred<typeof ABORTED>()
 
-    const abortListener = () => resolve()
+    const abortListener = () => resolve(ABORTED)
     signal.addEventListener('abort', abortListener, { once: true })
 
     try {
       assertNotAborted(signal, 'before query execution', release)
 
-      const queryAbortHandler = getInflightQueryAbortHandler(
+      const inflightQueryAbortHandler = getInflightQueryAbortHandler(
         inflightQueryAbortStrategy,
         connection,
         release,
@@ -125,11 +124,12 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           throw error
         })
 
-      // aborted.
-      if (!result) {
+      if (result === ABORTED) {
         void Promise.allSettled([
-          queryPromise,
-          queryAbortHandler?.(controlConnectionProvider),
+          queryPromise.catch(printBackgroundFail('query')),
+          inflightQueryAbortHandler?.(controlConnectionProvider).catch(
+            printBackgroundFail('inflightQueryAbortHandler'),
+          ),
         ])
           // the abort handler might use the same connection that runs the query.
           .finally(release)
@@ -150,18 +150,15 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         transformPromise,
       ])
 
-      // aborted.
-      if (!transformedResult) {
-        transformPromise.catch(() => {
-          // noop
-        })
+      if (transformedResult === ABORTED) {
+        transformPromise.catch(printBackgroundFail('plugins.transformResult'))
 
         throwReasonWithTiming(signal.reason, 'during result transformation')
       }
 
       return transformedResult
     } finally {
-      resolve()
+      resolve(ABORTED)
       signal.removeEventListener('abort', abortListener)
     }
   }
@@ -194,17 +191,18 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       return
     }
 
-    if (!Object.isFrozen(options)) {
-      options = freeze({ ...options })
-    }
+    options = freeze({ signal })
 
     assertNotAborted(signal, 'before connection acquisition')
 
-    const { connection, release } = await provideControlledConnection(this)
+    const { connection, release } = await provideControlledConnection(
+      this,
+      options,
+    )
 
-    const { promise: abortPromise, resolve } = new Deferred<void>()
+    const { promise: abortPromise, resolve } = new Deferred<typeof ABORTED>()
 
-    const abortListener = () => resolve()
+    const abortListener = () => resolve(ABORTED)
     signal.addEventListener('abort', abortListener, { once: true })
 
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
@@ -234,10 +232,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             throw error
           })
 
-        // aborted.
-        if (!result) {
+        if (result === ABORTED) {
           void Promise.allSettled([
-            nextPromise,
+            nextPromise.catch(printBackgroundFail('iterator.next')),
             inflightQueryAbortHandler?.(controlConnectionProvider),
           ])
             // the abort handler might use the same connection that runs the query.
@@ -263,12 +260,20 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           abortPromise,
           transformPromise,
         ])
+          // only the transformation can error. in that case, we want to release immediately.
+          .catch((reason) => {
+            release()
+            throw reason
+          })
 
-        // aborted.
-        if (!transformedResult) {
+        if (transformedResult === ABORTED) {
           void Promise.allSettled([
-            transformPromise,
-            inflightQueryAbortHandler?.(controlConnectionProvider),
+            transformPromise.catch(
+              printBackgroundFail('plugins.transformResult'),
+            ),
+            inflightQueryAbortHandler?.(controlConnectionProvider).catch(
+              printBackgroundFail('inflightQueryAbortHandler'),
+            ),
           ])
             // the abort handler might use the same connection that runs the query.
             // we want to wait for both of them to finish before allowing other queries
@@ -281,7 +286,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         yield transformedResult
       }
     } finally {
-      resolve()
+      resolve(ABORTED)
       signal.removeEventListener('abort', abortListener)
       await asyncIterator?.return?.()
     }
@@ -299,10 +304,16 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async #transformResult<T>(
     result: QueryResult<any>,
     queryId: QueryId,
-    options: AbortableOperationOptions | undefined,
+    options?: AbortableOperationOptions | undefined,
   ): Promise<QueryResult<T>> {
+    const args = freeze({
+      queryId,
+      result,
+      signal: options?.signal,
+    } satisfies PluginTransformResultArgs)
+
     for (const plugin of this.#plugins) {
-      result = await plugin.transformResult({ ...options, result, queryId })
+      result = await plugin.transformResult(args)
     }
 
     return result

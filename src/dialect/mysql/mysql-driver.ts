@@ -7,10 +7,7 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import {
-  waitOrAbort,
-  type AbortableOperationOptions,
-} from '../../util/abort.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -42,7 +39,7 @@ export class MysqlDriver implements Driver {
   async acquireConnection(
     options?: AbortableOperationOptions,
   ): Promise<DatabaseConnection> {
-    const rawConnection = await this.#acquireConnection(options)
+    const rawConnection = await this.#acquireConnection()
 
     let connection = this.#connections.get(rawConnection)
 
@@ -155,32 +152,16 @@ export class MysqlDriver implements Driver {
     })
   }
 
-  async #acquireConnection(
-    options?: AbortableOperationOptions,
-  ): Promise<MysqlPoolConnection> {
-    const connectionPromise = new Promise<MysqlPoolConnection>(
-      (resolve, reject) => {
-        this.#pool!.getConnection(async (err, rawConnection) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(rawConnection)
-          }
-        })
-      },
-    )
-
-    return waitOrAbort(connectionPromise, options?.signal, 'pool connect', () =>
-      connectionPromise
-        .then((connection) => connection.release())
-        .catch((reason) =>
-          console.error(
-            `\`pool.getConnection\` failed in the background after abortion: ${
-              reason instanceof Error ? reason.message : String(reason)
-            }`,
-          ),
-        ),
-    )
+  async #acquireConnection(): Promise<MysqlPoolConnection> {
+    return new Promise<MysqlPoolConnection>((resolve, reject) => {
+      this.#pool!.getConnection(async (err, rawConnection) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(rawConnection)
+        }
+      })
+    })
   }
 }
 
