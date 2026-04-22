@@ -276,6 +276,7 @@ export { createQueryId, type QueryId } from './util/query-id.js'
 export type { KyselyTypeError } from './util/type-error.js'
 export type {
   AbortableOperationOptions,
+  AbortableQueryOptions,
   InflightQueryAbortStrategy,
 } from './util/abort.js'
 
