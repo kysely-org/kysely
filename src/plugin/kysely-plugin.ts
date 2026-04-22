@@ -1,5 +1,6 @@
 import type { QueryResult } from '../driver/database-connection.js'
 import type { RootOperationNode } from '../operation-node/root-operation-node.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 import type { QueryId } from '../util/query-id.js'
 import type { UnknownRow } from '../util/type-utils.js'
 
@@ -72,8 +73,7 @@ export interface PluginTransformQueryArgs {
   readonly node: RootOperationNode
 }
 
-export interface PluginTransformResultArgs {
+export interface PluginTransformResultArgs extends AbortableOperationOptions {
   readonly queryId: QueryId
   readonly result: QueryResult<UnknownRow>
-  readonly signal?: AbortSignal
 }
