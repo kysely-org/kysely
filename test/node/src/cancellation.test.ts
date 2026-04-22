@@ -314,7 +314,9 @@ for (const dialect of DIALECTS) {
           .to.eventually.be.rejectedWith(reason)
           .and.satisfies((error: { __kysely_timing__: string }) => {
             expect(error.__kysely_timing__).to.equal(
-              'before acquireConnection:acquire',
+              ctx.db.getExecutor().adapter.supportsMultipleConnections
+                ? 'before acquireConnection:acquire'
+                : 'before acquireConnection:mutex',
             )
             return true
           })
