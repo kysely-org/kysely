@@ -1,6 +1,5 @@
 import { Deferred } from './deferred.js'
 import type { DatabaseConnection } from '../driver/database-connection.js'
-import { logOnce } from './log-once.js'
 import { getMessage } from './object-utils.js'
 
 export interface AbortableOperationOptions {
