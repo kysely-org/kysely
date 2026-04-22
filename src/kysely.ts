@@ -46,7 +46,10 @@ import {
 } from './util/provide-controlled-connection.js'
 import type { ConnectionProvider } from './driver/connection-provider.js'
 import type { RootOperationNode } from './operation-node/root-operation-node.js'
-import type { AbortableOperationOptions } from './util/abort.js'
+import type {
+  AbortableOperationOptions,
+  AbortableQueryOptions,
+} from './util/abort.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -627,7 +630,7 @@ export class Kysely<DB>
    */
   async executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
@@ -1406,7 +1409,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
 
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.executeQuery(compiledQuery, options)
@@ -1415,7 +1418,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.stream(compiledQuery, chunkSize, options)
