@@ -47,7 +47,7 @@ import {
   CreateTableAddIndexBuilder,
   type CreateTableAddIndexBuilderCallback,
 } from './create-table-add-index-builder.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -616,7 +616,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     )
   }
 
-  async execute(options?: AbortableOperationOptions): Promise<void> {
+  async execute(options?: AbortableQueryOptions): Promise<void> {
     await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
