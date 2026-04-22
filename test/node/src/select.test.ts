@@ -1111,7 +1111,7 @@ for (const dialect of DIALECTS) {
             }
           })(),
         ).to.be.rejectedWith(
-          "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres.",
+          "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
         )
 
         await db.destroy()

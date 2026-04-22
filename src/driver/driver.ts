@@ -29,24 +29,17 @@ export interface Driver {
   beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
-    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
    * Commits a transaction.
    */
-  commitTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void>
+  commitTransaction(connection: DatabaseConnection): Promise<void>
 
   /**
    * Rolls back a transaction.
    */
-  rollbackTransaction(
-    connection: DatabaseConnection,
-    options?: AbortableOperationOptions,
-  ): Promise<void>
+  rollbackTransaction(connection: DatabaseConnection): Promise<void>
 
   /**
    * Establishses a new savepoint within a transaction.
@@ -55,7 +48,6 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -65,7 +57,6 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**
@@ -75,7 +66,6 @@ export interface Driver {
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
-    options?: AbortableOperationOptions,
   ): Promise<void>
 
   /**

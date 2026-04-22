@@ -42,11 +42,7 @@ import { freeze } from '../util/object-utils.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { WhereInterface } from './where-interface.js'
 import type { MultiTableReturningInterface } from './returning-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
@@ -85,7 +81,7 @@ import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
-import type { AbortableOperationOptions } from '../util/abort.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1057,9 +1053,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  async execute(
-    options?: AbortableOperationOptions,
-  ): Promise<SimplifyResult<O>[]> {
+  async execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1081,7 +1075,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   async executeTakeFirst(
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute(options)
 

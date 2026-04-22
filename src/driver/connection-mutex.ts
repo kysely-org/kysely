@@ -1,5 +1,3 @@
-import { type AbortableOperationOptions, waitOrAbort } from '../util/abort.js'
-
 /**
  * This mutex is used to ensure that only one operation at a time can
  * acquire a connection from the driver. This is necessary when the
@@ -11,11 +9,9 @@ export class ConnectionMutex {
   #promise?: Promise<void>
   #resolve?: () => void
 
-  async lock(options?: AbortableOperationOptions): Promise<void> {
-    const { signal } = options || {}
-
+  async obtainLock(): Promise<void> {
     while (this.#promise) {
-      await waitOrAbort(this.#promise, signal, 'mutex:lock')
+      await this.#promise
     }
 
     this.#promise = new Promise((resolve) => {
@@ -23,7 +19,7 @@ export class ConnectionMutex {
     })
   }
 
-  unlock(): void {
+  releaseLock(): void {
     const resolve = this.#resolve
 
     this.#promise = undefined

@@ -1,4 +1,4 @@
-import type { AbortableOperationOptions } from './abort.js'
+import type { AbortableQueryOptions } from './abort.js'
 
 export interface Streamable<O> {
   /**
@@ -32,7 +32,7 @@ export interface Streamable<O> {
   ): AsyncIterableIterator<O>
 }
 
-export interface StreamOptions extends AbortableOperationOptions {
+export interface StreamOptions extends AbortableQueryOptions {
   /**
    * How many rows should be pulled from the database at once.
    *
