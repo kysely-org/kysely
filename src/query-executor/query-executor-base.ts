@@ -12,6 +12,7 @@ import type { QueryExecutor } from './query-executor.js'
 import { provideControlledConnection } from '../util/provide-controlled-connection.js'
 import {
   type AbortableOperationOptions,
+  type AbortableQueryOptions,
   assertNotAborted,
   getInflightQueryAbortHandler,
   throwReasonWithTiming,
@@ -72,7 +73,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
   async executeQuery<R>(
     compiledQuery: CompiledQuery,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     const { inflightQueryAbortStrategy, signal } = options || {}
 
@@ -168,7 +169,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: AbortableOperationOptions,
+    options?: AbortableQueryOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { inflightQueryAbortStrategy, signal } = options || {}
 
