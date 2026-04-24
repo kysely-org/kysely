@@ -7,7 +7,10 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import type { AbortableOperationOptions } from '../../util/abort.js'
+import type {
+  AbortableOperationOptions,
+  AbortableQueryOptions,
+} from '../../util/abort.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
@@ -173,15 +176,32 @@ class PostgresConnection implements DatabaseConnection {
     )
   }
 
-  async executeQuery<O>(
-    compiledQuery: CompiledQuery,
-    options?: AbortableOperationOptions,
-  ): Promise<QueryResult<O>> {
-    try {
-      if (options?.signal) {
-        await this.#setupCancelability()
-      }
+  async collectSessionInfo(): Promise<void> {
+    if (this.#pid) {
+      return
+    }
 
+    const { processID } = this.#client
+
+    // `processID` is an undocumented member of the `Client` class.
+    // it might not exist in old or future versions of the `pg` driver.
+    // if it does, use it.
+    if (processID) {
+      this.#pid = processID
+    } else {
+      const {
+        rows: [{ pid }],
+      } = await this.#client.query<{ pid: string }>(
+        'select pg_backend_pid() as pid',
+        [],
+      )
+
+      this.#pid = Number(pid)
+    }
+  }
+
+  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
 
@@ -222,16 +242,11 @@ class PostgresConnection implements DatabaseConnection {
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
         "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
       )
-    }
-
-    if (options?.signal) {
-      await this.#setupCancelability()
     }
 
     // this helps ensure we don't cancel the wrong query when aborted.
@@ -257,39 +272,14 @@ class PostgresConnection implements DatabaseConnection {
         }
       }
     } finally {
+      await cursor.close()
       // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
-      await cursor.close()
     }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
     this.#client.release()
-  }
-
-  async #setupCancelability(): Promise<void> {
-    if (this.#pid) {
-      return
-    }
-
-    const { processID } = this.#client
-
-    // `processID` is an undocumented member of the `Client` class.
-    // it might not exist in old or future versions of the `pg` driver.
-    // if it does, use it.
-    if (processID) {
-      this.#pid = processID
-      return
-    }
-
-    const {
-      rows: [{ pid }],
-    } = await this.#client.query<{ pid: string }>(
-      'select pg_backend_pid() as pid',
-      [],
-    )
-
-    this.#pid = Number(pid)
   }
 
   async #executeControlQuery(
