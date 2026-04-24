@@ -1371,7 +1371,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
-    options?: AbortableQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor.stream(compiledQuery, chunkSize, options)
