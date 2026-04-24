@@ -125,6 +125,8 @@ class MssqlConnection implements DatabaseConnection {
   readonly #connection: TediousConnection
   #hasSocketError: boolean
   readonly #tedious: Tedious
+  #inflightRequest: MssqlRequest<any> | undefined
+  #sessionId: unknown
 
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
@@ -147,6 +149,23 @@ class MssqlConnection implements DatabaseConnection {
           : undefined,
       ),
     )
+  }
+
+  async cancelQuery(): Promise<void> {
+    if (!this.#inflightRequest) {
+      return
+    }
+
+    return new Promise<void>((resolve) => {
+      this.#inflightRequest?.request.once('requestCompleted', resolve)
+
+      const wasCanceled = this.#connection.cancel()
+
+      if (!wasCanceled) {
+        this.#inflightRequest?.request.off('requestCompleted', resolve)
+        resolve()
+      }
+    })
   }
 
   async commitTransaction(): Promise<void> {
@@ -203,13 +222,13 @@ class MssqlConnection implements DatabaseConnection {
     try {
       const deferred = new Deferred<OnDone<O>>()
 
-      const request = new MssqlRequest<O>({
+      this.#inflightRequest = new MssqlRequest<O>({
         compiledQuery,
         tedious: this.#tedious,
         onDone: deferred,
       })
 
-      this.#connection.execSql(request.request)
+      this.#connection.execSql(this.#inflightRequest.request)
 
       const { rowCount, rows } = await deferred.promise
 
@@ -219,6 +238,8 @@ class MssqlConnection implements DatabaseConnection {
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
+    } finally {
+      this.#inflightRequest = undefined
     }
   }
 
@@ -244,21 +265,17 @@ class MssqlConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
-    if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
-      throw new Error('chunkSize must be a positive integer')
-    }
-
-    const request = new MssqlRequest<O>({
+    this.#inflightRequest = new MssqlRequest<O>({
       compiledQuery,
       streamChunkSize: chunkSize,
       tedious: this.#tedious,
     })
 
-    this.#connection.execSql(request.request)
+    this.#connection.execSql(this.#inflightRequest.request)
 
     try {
       while (true) {
-        const rows = await request.readChunk()
+        const rows = await this.#inflightRequest.readChunk()
 
         if (rows.length === 0) {
           break
@@ -271,7 +288,8 @@ class MssqlConnection implements DatabaseConnection {
         }
       }
     } finally {
-      await this.#cancelRequest(request)
+      await this.cancelQuery()
+      this.#inflightRequest = undefined
     }
   }
 
@@ -296,19 +314,6 @@ class MssqlConnection implements DatabaseConnection {
     }
 
     return tediousIsolationLevel
-  }
-
-  #cancelRequest<O>(request: MssqlRequest<O>): Promise<void> {
-    return new Promise<void>((resolve) => {
-      request.request.once('requestCompleted', resolve)
-
-      const wasCanceled = this.#connection.cancel()
-
-      if (!wasCanceled) {
-        request.request.off('requestCompleted', resolve)
-        resolve()
-      }
-    })
   }
 
   [PRIVATE_DESTROY_METHOD](): Promise<void> {

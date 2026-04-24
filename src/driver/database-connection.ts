@@ -7,15 +7,26 @@ import type { AbortableOperationOptions } from '../util/abort.js'
  * These are created by an instance of {@link Driver}.
  */
 export interface DatabaseConnection {
+  /**
+   * Used by executors to cancel the inflight query on the database side.
+   */
   cancelQuery?(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void>
+
+  /**
+   * Used by executors to prepare the connection for operations on the database side.
+   */
+  collectSessionInfo?(): Promise<void>
 
   executeQuery<R>(
     compiledQuery: CompiledQuery,
     options?: AbortableOperationOptions,
   ): Promise<QueryResult<R>>
 
+  /**
+   * Used by executors to kill the session on the database side.
+   */
   killSession?(
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void>
