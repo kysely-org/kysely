@@ -172,6 +172,7 @@ function isOkPacket(obj: unknown): obj is MysqlOkPacket {
 class MysqlConnection implements DatabaseConnection {
   readonly #connection: MysqlPoolConnection
   readonly #controlConnection: MysqlDialectConfig['controlConnection']
+  #cid?: number
   #queryId?: QueryId
 
   constructor(
@@ -186,13 +187,32 @@ class MysqlConnection implements DatabaseConnection {
     controlConnectionProvider: ControlConnectionProvider,
   ): Promise<void> {
     await this.#executeControlQuery(
-      `kill query ${this.#connection.threadId}`,
+      `kill query ${this.#cid}`,
       controlConnectionProvider,
     )
   }
 
+  async collectSessionInfo(): Promise<void> {
+    if (this.#cid) {
+      return
+    }
+
+    const { threadId } = this.#connection
+
+    if (threadId != null) {
+      this.#cid = threadId
+    } else {
+      const [{ cid }] = (await this.#executeQuery(
+        CompiledQuery.raw(`select connection_id() as cid`),
+      )) as never as [{ cid: string }]
+
+      this.#cid = Number(cid)
+    }
+  }
+
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
+      // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
 
       const result = await this.#executeQuery(compiledQuery)
@@ -218,6 +238,7 @@ class MysqlConnection implements DatabaseConnection {
     } catch (err) {
       throw extendStackTrace(err, new Error())
     } finally {
+      // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
     }
   }
@@ -235,7 +256,7 @@ class MysqlConnection implements DatabaseConnection {
     }
 
     await this.#executeControlQuery(
-      `kill connection ${this.#connection.threadId}`,
+      `kill connection ${this.#cid}`,
       controlConnectionProvider,
     )
   }
@@ -244,6 +265,9 @@ class MysqlConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
+    // this helps ensure we don't cancel the wrong query when aborted.
+    this.#queryId = compiledQuery.queryId
+
     const stream = this.#connection
       .query(compiledQuery.sql, compiledQuery.parameters as never)
       .stream<O>({ objectMode: true })
@@ -266,6 +290,9 @@ class MysqlConnection implements DatabaseConnection {
       }
 
       throw error
+    } finally {
+      // this tells cancellation the query is no longer relevant.
+      this.#queryId = undefined
     }
   }
 

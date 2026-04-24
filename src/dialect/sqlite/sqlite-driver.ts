@@ -7,6 +7,7 @@ import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import type {
@@ -24,15 +25,15 @@ export class SqliteDriver implements Driver {
     this.#config = freeze({ ...config })
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     this.#db = isFunction(this.#config.database)
-      ? await this.#config.database()
+      ? await this.#config.database(options)
       : this.#config.database
 
     this.#connection = new SqliteConnection(this.#db)
 
     if (this.#config.onCreateConnection) {
-      await this.#config.onCreateConnection(this.#connection)
+      await this.#config.onCreateConnection(this.#connection, options)
     }
   }
 
@@ -107,27 +108,23 @@ class SqliteConnection implements DatabaseConnection {
     this.#db = db
   }
 
-  executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 
     if (stmt.reader) {
-      return Promise.resolve({
+      return {
         rows: stmt.all(parameters) as O[],
-      })
+      }
     }
 
     const { changes, lastInsertRowid } = stmt.run(parameters)
 
-    return Promise.resolve({
-      numAffectedRows:
-        changes !== undefined && changes !== null ? BigInt(changes) : undefined,
-      insertId:
-        lastInsertRowid !== undefined && lastInsertRowid !== null
-          ? BigInt(lastInsertRowid)
-          : undefined,
+    return {
+      insertId: lastInsertRowid != null ? BigInt(lastInsertRowid) : undefined,
+      numAffectedRows: changes != null ? BigInt(changes) : undefined,
       rows: [],
-    })
+    }
   }
 
   async *streamQuery<R>(
@@ -135,16 +132,19 @@ class SqliteConnection implements DatabaseConnection {
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters, query } = compiledQuery
+
     const stmt = this.#db.prepare(sql)
-    if (SelectQueryNode.is(query)) {
-      const iter = stmt.iterate(parameters) as IterableIterator<R>
-      for (const row of iter) {
-        yield {
-          rows: [row],
-        }
-      }
-    } else {
+
+    if (!SelectQueryNode.is(query)) {
       throw new Error('Sqlite driver only supports streaming of select queries')
+    }
+
+    const iter = stmt.iterate(parameters)
+
+    for (const row of iter) {
+      yield {
+        rows: [row as R],
+      }
     }
   }
 }

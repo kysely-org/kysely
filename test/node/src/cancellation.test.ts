@@ -98,7 +98,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (variant === 'postgres' || variant === 'mysql') {
+    if (variant === 'postgres' || variant === 'mysql' || variant === 'mssql') {
       it("should cancel query on database side when inflightQueryAbortStrategy is 'cancel query'", async () => {
         await expect(
           getLongRunningWriteQuery(sqlSpec).execute(ctx.db, {
@@ -126,7 +126,9 @@ for (const dialect of DIALECTS) {
           expect(Number(result.count)).to.equal(0),
         )
       })
+    }
 
+    if (variant === 'postgres' || variant === 'mysql') {
       it("should kill session on database side when inflightQueryAbortStrategy is 'kill session'", async () => {
         await expect(
           getLongRunningWriteQuery(sqlSpec).execute(ctx.db, {

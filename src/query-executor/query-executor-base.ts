@@ -77,12 +77,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     compiledQuery: CompiledQuery,
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
-    const { inflightQueryAbortStrategy, signal } = options || {}
+    const { inflightQueryAbortStrategy = 'ignore query', signal } =
+      options || {}
 
     // intentionally isolating the simple common case from the new cancellation flow.
     if (!signal) {
       const result = await this.provideConnection(async (connection) => {
-        return await connection.executeQuery(compiledQuery, options)
+        return await connection.executeQuery(compiledQuery)
       }, options)
 
       return await this.#transformResult<R>(result, compiledQuery.queryId)
@@ -111,6 +112,27 @@ export abstract class QueryExecutorBase implements QueryExecutor {
         connection,
         release,
       )
+
+      if (inflightQueryAbortHandler && connection.collectSessionInfo) {
+        assertNotAborted(signal, 'before query execution', release)
+
+        const collectPromise = connection.collectSessionInfo()
+
+        const result = await Promise.race([abortPromise, collectPromise]).catch(
+          (error) => {
+            release()
+            throw error
+          },
+        )
+
+        if (result === ABORTED) {
+          void collectPromise
+            .catch(printBackgroundFail('collectSessionInfo'))
+            .finally(release)
+
+          throwReasonWithTiming(signal.reason, 'before query execution')
+        }
+      }
 
       const queryPromise = connection.executeQuery(compiledQuery, options)
 
