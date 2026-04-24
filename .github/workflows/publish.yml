@@ -29,19 +29,30 @@ jobs:
       - name: verify tag format and branch
         run: |
           # Validate ref_name format before assignment
-          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
             echo "Error: tag does not follow semver!"
             exit 1
           fi
 
           TAG="${{ github.ref_name }}"
 
-          # Check if tag points to a commit that exists on master branch
+          # Route stable tags to master/latest, RC tags to next/next
+          if [[ "$TAG" =~ -rc\.[0-9]+$ ]]; then
+            BRANCH=next
+            DIST_TAG=next
+          else
+            BRANCH=master
+            DIST_TAG=latest
+          fi
+
+          # Check if tag points to a commit that exists on the expected branch
           TAG_COMMIT=$(git rev-list -n 1 "$TAG")
-          if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/master; then
-            echo "Error: tag is not based on master branch"
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" "origin/$BRANCH"; then
+            echo "Error: tag is not based on $BRANCH branch"
             exit 1
           fi
+
+          echo "DIST_TAG=$DIST_TAG" >> "$GITHUB_ENV"
 
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
@@ -61,8 +72,8 @@ jobs:
           # Get version from package.json safely (parse as JSON, don't execute)
           PACKAGE_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('./package.json', 'utf8')).version")
 
-          # Validate version format: must be MAJOR.MINOR.PATCH
-          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          # Validate version format: must be MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-rc.N
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
             echo "Error: package.json version does not follow semver!"
             exit 1
           fi
@@ -77,7 +88,7 @@ jobs:
         run: npm i -g npm@^11.5.2 && pnpm i --frozen-lockfile --prefer-offline
 
       - name: Publish
-        run: pnpm publish --no-git-checks # the workflow runs in a detached head state, so git checks fail
+        run: pnpm publish --no-git-checks --tag "$DIST_TAG" # the workflow runs in a detached head state, so git checks fail
 
   jsr:
     needs: npm
