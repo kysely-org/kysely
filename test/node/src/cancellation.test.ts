@@ -189,9 +189,8 @@ for (const dialect of DIALECTS) {
         })
     })
 
-    // mssql hangs on abort because `cancelQuery` is not yet implemented in the database connection.
     // pglite doesn't support streaming.
-    if (variant !== 'mssql' && variant !== 'pglite') {
+    if (variant !== 'pglite') {
       it('should stream queries normally when not aborted', async () => {
         const abortController = new AbortController()
 
@@ -263,14 +262,14 @@ for (const dialect of DIALECTS) {
               .selectAll()
               .withPlugin({
                 transformQuery: (args) => args.node,
-                transformResult: async (result) => {
+                transformResult: async (args) => {
                   abortController.abort(reason)
-                  return result.result
+                  return args.result
                 },
               })
               .stream({
-                signal: abortController.signal,
                 chunkSize: 1,
+                signal: abortController.signal,
               })) {
               // noop
             }

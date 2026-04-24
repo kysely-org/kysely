@@ -163,9 +163,9 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    options?: AbortableQueryOptions,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
-    const { inflightQueryAbortStrategy, signal } = options || {}
+    const { signal } = options || {}
 
     if (!signal) {
       const { connection, release } = await provideControlledConnection(this)
@@ -203,47 +203,31 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     signal.addEventListener('abort', abortListener, { once: true })
 
     let asyncIterator: AsyncIterableIterator<QueryResult<R>> | undefined
+    let releasePrerequisite: Promise<unknown> | undefined
+
+    assertNotAborted(signal, 'before query streaming', release)
+
+    const { queryId } = compiledQuery
 
     try {
-      assertNotAborted(signal, 'before query streaming', release)
-
-      const inflightQueryAbortHandler = getInflightQueryAbortHandler(
-        inflightQueryAbortStrategy,
-        connection,
-        release,
-      )
-      const { queryId } = compiledQuery
-      const controlConnectionProvider = this.provideConnection.bind(this)
-
       asyncIterator = connection.streamQuery(compiledQuery, chunkSize, options)
 
       while (true) {
-        assertNotAborted(signal, 'during query streaming', release)
+        assertNotAborted(signal, 'during query streaming')
 
         const nextPromise = asyncIterator.next()
 
         const result = await Promise.race([abortPromise, nextPromise])
-          // only the iteration can error. in that case, we want to release immediately.
-          .catch((error) => {
-            release()
-            throw error
-          })
 
         if (result === ABORTED) {
-          void Promise.allSettled([
-            nextPromise.catch(printBackgroundFail('iterator.next')),
-            inflightQueryAbortHandler?.(controlConnectionProvider),
-          ])
-            // the abort handler might use the same connection that runs the query.
-            // we want to wait for both of them to finish before allowing other queries
-            // to run on that connection.
-            .finally(release)
+          releasePrerequisite = nextPromise.catch(
+            printBackgroundFail('iterator.next'),
+          )
 
           throwReasonWithTiming(signal.reason, 'during query streaming')
         }
 
         if (result.done) {
-          release()
           break
         }
 
@@ -257,25 +241,11 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           abortPromise,
           transformPromise,
         ])
-          // only the transformation can error. in that case, we want to release immediately.
-          .catch((reason) => {
-            release()
-            throw reason
-          })
 
         if (transformedResult === ABORTED) {
-          void Promise.allSettled([
-            transformPromise.catch(
-              printBackgroundFail('plugins.transformResult'),
-            ),
-            inflightQueryAbortHandler?.(controlConnectionProvider).catch(
-              printBackgroundFail('inflightQueryAbortHandler'),
-            ),
-          ])
-            // the abort handler might use the same connection that runs the query.
-            // we want to wait for both of them to finish before allowing other queries
-            // to run on that connection.
-            .finally(release)
+          releasePrerequisite = transformPromise.catch(
+            printBackgroundFail('plugins.transformResult'),
+          )
 
           throwReasonWithTiming(signal.reason, 'during result transformation')
         }
@@ -285,7 +255,14 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     } finally {
       resolve(ABORTED)
       signal.removeEventListener('abort', abortListener)
-      await asyncIterator?.return?.()
+
+      const cleanup = (asyncIterator?.return?.() || Promise.resolve())
+        .finally(() => releasePrerequisite)
+        .finally(release)
+
+      if (!releasePrerequisite) {
+        await cleanup
+      }
     }
   }
 
