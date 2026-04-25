@@ -582,16 +582,8 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
   direction: OrderByDirection | undefined,
   dialect: DialectDescriptor,
 ): (qb: QB) => QB {
-  return (qb) => {
-    if (dialect.sqlSpec === 'mssql') {
-      return qb.orderBy(
-        orderBy,
-        sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(
-          'offset 0 rows',
-        )}`,
-      ) as QB
-    }
-
-    return qb.orderBy(orderBy, direction) as QB
-  }
+  return (qb) =>
+    qb
+      .orderBy(orderBy, direction)
+      .$if(dialect.sqlSpec === 'mssql', (qb) => qb.offset(0)) as QB
 }
