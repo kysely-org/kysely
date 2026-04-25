@@ -118,7 +118,6 @@ class MssqlConnection implements DatabaseConnection {
   #hasSocketError: boolean
   readonly #tedious: Tedious
   #inflightRequest: MssqlRequest<any> | undefined
-  #sessionId: unknown
 
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection

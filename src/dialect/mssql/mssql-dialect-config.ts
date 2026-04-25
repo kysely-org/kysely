@@ -1,5 +1,3 @@
-import type { KyselyTypeError } from '../../util/type-error.js'
-
 export interface MssqlDialectConfig {
   /**
    * When `true`, connections are reset to their initial states when released

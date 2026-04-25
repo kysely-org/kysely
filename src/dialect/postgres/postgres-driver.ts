@@ -7,10 +7,7 @@ import type { Driver, TransactionSettings } from '../../driver/driver.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import type {
-  AbortableOperationOptions,
-  AbortableQueryOptions,
-} from '../../util/abort.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
