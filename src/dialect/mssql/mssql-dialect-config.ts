@@ -79,11 +79,6 @@ export interface Tedious {
   connectionFactory: () => TediousConnection | Promise<TediousConnection>
   ISOLATION_LEVEL: TediousIsolationLevel
   Request: TediousRequestClass
-  // TODO: remove in v0.29.0
-  /**
-   * @deprecated use {@link MssqlDialectConfig.resetConnectionsOnRelease} instead.
-   */
-  resetConnectionOnRelease?: KyselyTypeError<'deprecated: use `MssqlDialectConfig.resetConnectionsOnRelease` instead'>
   TYPES: TediousTypes
 }
 
@@ -180,13 +175,7 @@ export interface Tarn {
    * Tarn.js' pool options, excluding `create`, `destroy` and `validate` functions,
    * which must be implemented by this dialect.
    */
-  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
-    // TODO: remove in v0.29.0
-    /**
-     * @deprecated use {@link MssqlDialectConfig.validateConnections} instead.
-     */
-    validateConnections?: KyselyTypeError<'deprecated: use `MssqlDialectConfig.validateConnections` instead'>
-  }
+  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'>
 
   /**
    * Tarn.js' Pool class.

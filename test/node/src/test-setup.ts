@@ -216,16 +216,12 @@ export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
         options: {
           max: POOL_SIZE,
           min: 0,
-          // @ts-expect-error making sure people see the deprecation warning
-          validateConnections: true,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
-        // @ts-expect-error making sure people see the deprecation warning
-        resetConnectionOnRelease: true,
       },
       validateConnections: false,
     }),
