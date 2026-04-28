@@ -49,11 +49,7 @@ import { UpdateResult } from './update-result.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { WhereInterface } from './where-interface.js'
 import type { MultiTableReturningInterface } from './returning-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import type { Explainable, ExplainFormat } from '../util/explainable.js'
 import type { AliasedExpression, Expression } from '../expression/expression.js'
 import {

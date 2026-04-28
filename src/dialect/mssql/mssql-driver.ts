@@ -43,13 +43,9 @@ export class MssqlDriver implements Driver {
     this.#config = freeze({ ...config })
 
     const { tarn, tedious, validateConnections } = this.#config
-    const {
-      validateConnections: deprecatedValidateConnections,
-      ...poolOptions
-    } = tarn.options
 
     this.#pool = new tarn.Pool({
-      ...poolOptions,
+      ...tarn.options,
       create: async () => {
         const connection = await tedious.connectionFactory()
 
@@ -61,8 +57,7 @@ export class MssqlDriver implements Driver {
       // @ts-ignore `tarn` accepts a function that returns a promise here, but
       // the types are not aligned and it type errors.
       validate:
-        validateConnections === false ||
-        (deprecatedValidateConnections as any) === false
+        validateConnections === false
           ? undefined
           : (connection) => connection[PRIVATE_VALIDATE_METHOD](),
     })
@@ -106,10 +101,7 @@ export class MssqlDriver implements Driver {
   }
 
   async releaseConnection(connection: MssqlConnection): Promise<void> {
-    if (
-      this.#config.resetConnectionsOnRelease ||
-      this.#config.tedious.resetConnectionOnRelease
-    ) {
+    if (this.#config.resetConnectionsOnRelease) {
       await connection[PRIVATE_RESET_METHOD]()
     }
 
@@ -126,7 +118,6 @@ class MssqlConnection implements DatabaseConnection {
   #hasSocketError: boolean
   readonly #tedious: Tedious
   #inflightRequest: MssqlRequest<any> | undefined
-  #sessionId: unknown
 
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection

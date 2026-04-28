@@ -221,16 +221,12 @@ export const DB_CONFIGS: PerDialectVariant<KyselyConfig> = {
         options: {
           max: POOL_SIZE,
           min: 0,
-          // @ts-expect-error making sure people see the deprecation warning
-          validateConnections: true,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
-        // @ts-expect-error making sure people see the deprecation warning
-        resetConnectionOnRelease: true,
       },
       validateConnections: false,
     }),
@@ -591,18 +587,10 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
   direction: OrderByDirection | undefined,
   dialect: DialectDescriptor,
 ): (qb: QB) => QB {
-  return (qb) => {
-    if (dialect.sqlSpec === 'mssql') {
-      return qb.orderBy(
-        orderBy,
-        sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(
-          'offset 0 rows',
-        )}`,
-      ) as QB
-    }
-
-    return qb.orderBy(orderBy, direction) as QB
-  }
+  return (qb) =>
+    qb
+      .orderBy(orderBy, direction)
+      .$if(dialect.sqlSpec === 'mssql', (qb) => qb.offset(0)) as QB
 }
 
 export type JSONTestContext = Awaited<ReturnType<typeof initJSONTest>>

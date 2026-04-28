@@ -1,6 +1,5 @@
 import type {
   DatabaseIntrospector,
-  DatabaseMetadata,
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
@@ -95,14 +94,6 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     const rawColumns = await query.execute()
 
     return this.#parseTableMetadata(rawColumns)
-  }
-
-  async getMetadata(
-    options?: DatabaseMetadataOptions,
-  ): Promise<DatabaseMetadata> {
-    return {
-      tables: await this.getTables(options),
-    }
   }
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {

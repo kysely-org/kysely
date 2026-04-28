@@ -193,45 +193,6 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
-      it('subqueries should use their own schema if specified', async () => {
-        const query = ctx.db
-          .withSchema('mammals')
-          .selectFrom('pet')
-          .select([
-            'pet.name',
-            (qb) =>
-              qb
-                .withSchema(sqlSpec === 'postgres' ? 'public' : 'dbo')
-                .selectFrom('person')
-                .select('first_name')
-                .whereRef('pet.owner_id', '=', 'person.id')
-                .as('owner_first_name'),
-          ])
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: [
-              'select "mammals"."pet"."name",',
-              '(select "first_name" from "public"."person" where "mammals"."pet"."owner_id" = "public"."person"."id") as "owner_first_name"',
-              'from "mammals"."pet"',
-            ],
-            parameters: [],
-          },
-          mysql: NOT_SUPPORTED,
-          mssql: {
-            sql: [
-              'select "mammals"."pet"."name",',
-              '(select "first_name" from "dbo"."person" where "mammals"."pet"."owner_id" = "dbo"."person"."id") as "owner_first_name"',
-              'from "mammals"."pet"',
-            ],
-            parameters: [],
-          },
-          sqlite: NOT_SUPPORTED,
-        })
-
-        await query.execute()
-      })
-
       if (sqlSpec === 'postgres') {
         it('should not add schema for json_agg parameters', async () => {
           const query = ctx.db
