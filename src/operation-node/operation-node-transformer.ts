@@ -429,7 +429,6 @@ export class OperationNodeTransformer {
       onDuplicateKey: this.transformNode(node.onDuplicateKey, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       with: this.transformNode(node.with, queryId),
-      ignore: node.ignore,
       orAction: this.transformNode(node.orAction, queryId),
       replace: node.replace,
       explain: this.transformNode(node.explain, queryId),

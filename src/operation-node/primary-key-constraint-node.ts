@@ -51,10 +51,3 @@ export const PrimaryKeyConstraintNode: PrimaryKeyConstraintNodeFactory =
       return freeze({ ...node, ...props })
     },
   })
-
-/**
- * Backwards compatibility for a typo in the codebase.
- *
- * @deprecated Use {@link PrimaryKeyConstraintNode} instead.
- */
-export const PrimaryConstraintNode = PrimaryKeyConstraintNode
