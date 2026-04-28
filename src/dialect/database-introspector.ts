@@ -11,13 +11,6 @@ export interface DatabaseIntrospector {
    * Get tables and views metadata.
    */
   getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
-
-  /**
-   * Get the database metadata such as table and column names.
-   *
-   * @deprecated Use getTables() instead.
-   */
-  getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata>
 }
 
 export interface DatabaseMetadataOptions {
@@ -30,14 +23,6 @@ export interface DatabaseMetadataOptions {
 
 export interface SchemaMetadata {
   readonly name: string
-}
-
-export interface DatabaseMetadata {
-  /**
-   * The tables and views found in the database.
-   * The propery isView can be used to tell them apart.
-   */
-  readonly tables: TableMetadata[]
 }
 
 export interface TableMetadata {

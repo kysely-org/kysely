@@ -112,7 +112,6 @@ import type { TopNode } from '../operation-node/top-node.js'
 import type { OutputNode } from '../operation-node/output-node.js'
 import type { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import type { OrActionNode } from '../operation-node/or-action-node.js'
-import { logOnce } from '../util/log-once.js'
 import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
@@ -325,14 +324,6 @@ export class DefaultQueryCompiler
     }
 
     this.append(node.replace ? 'replace' : 'insert')
-
-    // TODO: remove in 0.29.
-    if (node.ignore) {
-      logOnce(
-        '`InsertQueryNode.ignore` is deprecated. Use `InsertQueryNode.orAction` instead.',
-      )
-      this.append(' ignore')
-    }
 
     if (node.orAction) {
       this.append(' ')

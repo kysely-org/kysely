@@ -8,7 +8,6 @@ import {
   type TableExpressionOrList,
   parseTable,
 } from '../parser/table-parser.js'
-import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
 import {
   createFunctionModule,
@@ -1144,13 +1143,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     expr: RE,
     dataType: DataTypeExpression,
   ): ExpressionWrapper<DB, TB, T>
-
-  /**
-   * See {@link QueryCreator.withSchema}
-   *
-   * @deprecated Will be removed in kysely 0.25.0.
-   */
-  withSchema(schema: string): ExpressionBuilder<DB, TB>
 }
 
 export function createExpressionBuilder<DB, TB extends keyof DB>(
@@ -1367,12 +1359,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
           parseReferenceExpression(expr),
           parseDataTypeExpression(dataType),
         ),
-      )
-    },
-
-    withSchema(schema: string): ExpressionBuilder<DB, TB> {
-      return createExpressionBuilder(
-        executor.withPluginAtFront(new WithSchemaPlugin(schema)),
       )
     },
   })
