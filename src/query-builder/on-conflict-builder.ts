@@ -15,7 +15,7 @@ import {
   type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import type { Updateable } from '../util/column-type.js'
+import type { Selectable, Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import type { AnyColumn, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
@@ -162,7 +162,7 @@ export class OnConflictBuilder<
    *
    * await db
    *   .insertInto('person')
-   *   .values({ first_name, id })
+   *   .values({ first_name, id })
    *   .onConflict((oc) => oc
    *     .column('id')
    *     .doNothing()
@@ -198,7 +198,7 @@ export class OnConflictBuilder<
    *
    * await db
    *   .insertInto('person')
-   *   .values({ first_name, id })
+   *   .values({ first_name, id })
    *   .onConflict((oc) => oc
    *     .column('id')
    *     .doUpdateSet({ first_name })
@@ -254,7 +254,7 @@ export class OnConflictBuilder<
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
-  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictWhereDatabase<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -280,6 +280,17 @@ export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
+/**
+ * Like {@link OnConflictDatabase} but maps columns through {@link Selectable}
+ * instead of {@link Updateable}. Used for the `where` clause of
+ * {@link OnConflictUpdateBuilder} so that columns with `UpdateType = never`
+ * (e.g. `ColumnType<Date, never, never>`) can still be referenced in
+ * conditions even though they cannot be set in the update.
+ */
+export type OnConflictWhereDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: Selectable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
 export type OnConflictTables<TB> = TB | 'excluded'
 
 export class OnConflictDoNothingBuilder<
@@ -297,8 +308,8 @@ export class OnConflictDoNothingBuilder<
   }
 }
 
-export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
-  implements WhereInterface<DB, TB>, OperationNodeSource
+export class OnConflictUpdateBuilder<DB, WDB, TB extends keyof DB & keyof WDB>
+  implements WhereInterface<WDB, TB>, OperationNodeSource
 {
   readonly #props: OnConflictBuilderProps
 
@@ -309,22 +320,26 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   /**
    * Specify a where condition for the update operation.
    *
+   * Columns with `UpdateType = never` (e.g. `ColumnType<Date, never, never>`)
+   * can be referenced here even though they cannot be set in the update —
+   * they are still valid for use in conditions.
+   *
    * See {@link WhereInterface.where} for more info.
    */
   where<
-    RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+    RE extends ReferenceExpression<WDB, TB>,
+    VE extends OperandValueExpressionOrList<WDB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: VE,
-  ): OnConflictUpdateBuilder<DB, TB>
+  ): OnConflictUpdateBuilder<DB, WDB, TB>
 
-  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+  where<E extends ExpressionOrFactory<WDB, TB, SqlBool>>(
     expression: E,
-  ): OnConflictUpdateBuilder<DB, TB>
+  ): OnConflictUpdateBuilder<DB, WDB, TB>
 
-  where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
+  where(...args: any[]): OnConflictUpdateBuilder<DB, WDB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
@@ -340,13 +355,13 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.whereRef} for more info.
    */
   whereRef<
-    LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>,
+    LRE extends ReferenceExpression<WDB, TB>,
+    RRE extends ReferenceExpression<WDB, TB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
     rhs: RRE,
-  ): OnConflictUpdateBuilder<DB, TB> {
+  ): OnConflictUpdateBuilder<DB, WDB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
@@ -356,7 +371,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
     })
   }
 
-  clearWhere(): OnConflictUpdateBuilder<DB, TB> {
+  clearWhere(): OnConflictUpdateBuilder<DB, WDB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
