@@ -54,12 +54,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select `website`->'$.url' as `website_url` from `person_metadata`",
+              sql: 'select `website`->\'$."url"\' as `website_url` from `person_metadata`',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select "website"->>'$.url' as "website_url" from "person_metadata"`,
+              sql: `select "website"->>'$."url"' as "website_url" from "person_metadata"`,
             },
           })
 
@@ -116,12 +116,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select `profile`->'$.auth.roles' as `roles` from `person_metadata`",
+              sql: 'select `profile`->\'$."auth"."roles"\' as `roles` from `person_metadata`',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
+              sql: `select "profile"->>'$."auth"."roles"' as "roles" from "person_metadata"`,
             },
           })
 
@@ -145,12 +145,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select `profile`->'$.tags[0]' as `main_tag` from `person_metadata`",
+              sql: 'select `profile`->\'$."tags"[0]\' as `main_tag` from `person_metadata`',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
+              sql: `select "profile"->>'$."tags"[0]' as "main_tag" from "person_metadata"`,
             },
           })
 
@@ -178,12 +178,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select `experience`->'$[0].establishment' as `establishment` from `person_metadata`",
+              sql: 'select `experience`->\'$[0]."establishment"\' as `establishment` from `person_metadata`',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
+              sql: `select "experience"->>'$[0]."establishment"' as "establishment" from "person_metadata"`,
             },
           })
 
@@ -331,12 +331,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [12],
-              sql: "select * from `person_metadata` where `profile`->'$.auth.login_count' = ?",
+              sql: `select * from \`person_metadata\` where \`profile\`->'$."auth"."login_count"' = ?`,
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [12],
-              sql: `select * from "person_metadata" where "profile"->>'$.auth.login_count' = ?`,
+              sql: `select * from "person_metadata" where "profile"->>'$."auth"."login_count"' = ?`,
             },
           })
 
@@ -360,12 +360,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
+              sql: 'select * from `person_metadata` order by `profile`->\'$."auth"."login_count"\' desc',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
+              sql: `select * from "person_metadata" order by "profile"->>'$."auth"."login_count"' desc`,
             },
           })
 
@@ -397,12 +397,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: ['Papa Johns', 911],
-              sql: "update `person_metadata` set `experience` = json_set(`experience`, '$[last].establishment', ?) where `person_id` = ?",
+              sql: 'update `person_metadata` set `experience` = json_set(`experience`, \'$[last]."establishment"\', ?) where `person_id` = ?',
             },
             mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: ['Papa Johns', 911],
-              sql: `update "person_metadata" set "experience" = json_set("experience", '$[#-1].establishment', ?) where "person_id" = ?`,
+              sql: `update "person_metadata" set "experience" = json_set("experience", '$[#-1]."establishment"', ?) where "person_id" = ?`,
             },
           })
 

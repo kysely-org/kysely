@@ -1,8 +1,9 @@
 import type { CreateIndexNode } from '../../operation-node/create-index-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
-const LITERAL_ESCAPE_REGEX = /\\|'/g
+const LITERAL_ESCAPE_REGEX = /[\\']/g
 const ID_WRAP_REGEX = /`/g
+const JSON_PATH_MEMBER_ESCAPE_REGEX = /[\\'"]/g
 
 export class MysqlQueryCompiler extends DefaultQueryCompiler {
   protected override getCurrentParameterPlaceholder(): string {
@@ -47,6 +48,12 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
   protected override sanitizeStringLiteral(value: string): string {
     return value.replace(LITERAL_ESCAPE_REGEX, (char) =>
       char === '\\' ? '\\\\' : "''",
+    )
+  }
+
+  protected override sanitizeJSONPathMemberValue(value: string): string {
+    return value.replace(JSON_PATH_MEMBER_ESCAPE_REGEX, (char) =>
+      char === '\\' ? '\\\\' : char === "'" ? "''" : '\\"',
     )
   }
 

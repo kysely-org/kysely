@@ -81,7 +81,7 @@ for (const dialect of DIALECTS) {
           .select((eb) => eb.ref('data', '->$').key(injection).as('first'))
 
         expect(query.compile().sql).to.equal(
-          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$.first'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
+          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$."first'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- "' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
         )
         await ctx.db.executeQuery(query)
         await assertDidNotDropTable(ctx, 'person')
@@ -105,14 +105,14 @@ for (const dialect of DIALECTS) {
           .select((eb) => eb.ref('data', '->$').key(injection).as('first'))
 
         expect(query.compile().sql).to.equal(
-          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$.first\\\\'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
+          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$."first\\\\'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- "' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
         )
         await ctx.db.executeQuery(query)
         await assertDidNotDropTable(ctx, 'person')
       })
 
       it('should not allow SQL injection via backslash escape in string literals', async () => {
-        const injection = `\\'; drop table ${identifierWrapper}person${identifierWrapper}; -- `
+        const injection = `"\\'; drop table ${identifierWrapper}person${identifierWrapper}; -- `
 
         const query = ctx.db
           .selectFrom('person')
@@ -120,7 +120,7 @@ for (const dialect of DIALECTS) {
           .selectAll()
 
         expect(query.compile().sql).to.equal(
-          `select * from ${identifierWrapper}person${identifierWrapper} where ${identifierWrapper}first_name${identifierWrapper} = '\\\\''; drop table ${identifierWrapper}person${identifierWrapper}; -- '`,
+          `select * from ${identifierWrapper}person${identifierWrapper} where ${identifierWrapper}first_name${identifierWrapper} = '"\\\\''; drop table ${identifierWrapper}person${identifierWrapper}; -- '`,
         )
         await ctx.db.executeQuery(query)
         await assertDidNotDropTable(ctx, 'person')

@@ -119,6 +119,7 @@ import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 
 const LIT_WRAP_REGEX = /'/g
+const JSON_PATH_MEMBER_WRAP_REGEX = /['"]/g
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1625,16 +1626,16 @@ export class DefaultQueryCompiler
   protected override visitJSONPathLeg(node: JSONPathLegNode): void {
     const isArrayLocation = node.type === 'ArrayLocation'
 
-    this.append(isArrayLocation ? '[' : '.')
-
-    this.append(
-      typeof node.value === 'string'
-        ? this.sanitizeStringLiteral(node.value)
-        : String(node.value),
-    )
+    const value = String(node.value)
 
     if (isArrayLocation) {
+      this.append('[')
+      this.append(value)
       this.append(']')
+    } else {
+      this.append('."')
+      this.append(this.sanitizeJSONPathMemberValue(value))
+      this.append('"')
     }
   }
 
@@ -1820,6 +1821,12 @@ export class DefaultQueryCompiler
 
   protected sanitizeStringLiteral(value: string): string {
     return value.replace(LIT_WRAP_REGEX, "''")
+  }
+
+  protected sanitizeJSONPathMemberValue(value: string): string {
+    return value.replace(JSON_PATH_MEMBER_WRAP_REGEX, (char) =>
+      char === "'" ? "''" : '\\"',
+    )
   }
 
   protected addParameter(parameter: unknown): void {
