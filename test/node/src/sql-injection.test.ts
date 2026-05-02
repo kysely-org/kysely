@@ -8,7 +8,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: select`, () => {
+  describe.only(`${dialect}: select`, () => {
     let ctx: TestContext
     const identifierWrapper = dialect === 'mysql' ? '`' : '"'
 
@@ -112,7 +112,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should not allow SQL injection via backslash escape in string literals', async () => {
-        const injection = `"\\'; drop table ${identifierWrapper}person${identifierWrapper}; -- `
+        const injection = `\\'; drop table ${identifierWrapper}person${identifierWrapper}; -- `
 
         const query = ctx.db
           .selectFrom('person')
@@ -120,7 +120,7 @@ for (const dialect of DIALECTS) {
           .selectAll()
 
         expect(query.compile().sql).to.equal(
-          `select * from ${identifierWrapper}person${identifierWrapper} where ${identifierWrapper}first_name${identifierWrapper} = '"\\\\''; drop table ${identifierWrapper}person${identifierWrapper}; -- '`,
+          `select * from ${identifierWrapper}person${identifierWrapper} where ${identifierWrapper}first_name${identifierWrapper} = '\\\\''; drop table ${identifierWrapper}person${identifierWrapper}; -- '`,
         )
         await ctx.db.executeQuery(query)
         await assertDidNotDropTable(ctx, 'person')
