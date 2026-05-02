@@ -1,23 +1,33 @@
 import { expect } from 'chai'
 import { sql } from '../../../dist/cjs/index.js'
 import {
-  destroyTest,
+  clearJSONDatabase,
+  destroyJSONTest,
   DIALECTS,
-  initTest,
-  type TestContext,
+  initJSONTest,
+  insertDefaultJSONDataSet,
+  type JSONTestContext,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe.only(`${dialect}: select`, () => {
-    let ctx: TestContext
+  describe(`${dialect}: select`, () => {
+    let ctx: JSONTestContext
     const identifierWrapper = dialect === 'mysql' ? '`' : '"'
 
     before(async function () {
-      ctx = await initTest(this, dialect)
+      ctx = await initJSONTest(this, dialect)
+    })
+
+    beforeEach(async () => {
+      await insertDefaultJSONDataSet(ctx)
+    })
+
+    afterEach(async () => {
+      await clearJSONDatabase(ctx)
     })
 
     after(async () => {
-      await destroyTest(ctx)
+      await destroyJSONTest(ctx)
     })
 
     it('should not allow SQL injection in table names', async () => {
@@ -89,7 +99,7 @@ for (const dialect of DIALECTS) {
 
       it('should not allow SQL injection via backslash escape in $.key JSON paths', async () => {
         const injection =
-          `first\\' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- ` as never
+          `first\\' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}pet${identifierWrapper} -- ` as never
 
         const query = ctx.db
           .with('people', () =>
@@ -105,10 +115,10 @@ for (const dialect of DIALECTS) {
           .select((eb) => eb.ref('data', '->$').key(injection).as('first'))
 
         expect(query.compile().sql).to.equal(
-          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$."first\\\\'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}person${identifierWrapper} -- "' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
+          `with ${identifierWrapper}people${identifierWrapper} as (select json_object('first', first_name) as ${identifierWrapper}data${identifierWrapper} from ${identifierWrapper}person${identifierWrapper}) select ${identifierWrapper}data${identifierWrapper}->'$."first\\\\\\\\'' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}; drop table ${identifierWrapper}pet${identifierWrapper} -- "' as ${identifierWrapper}first${identifierWrapper} from ${identifierWrapper}people${identifierWrapper}`,
         )
         await ctx.db.executeQuery(query)
-        await assertDidNotDropTable(ctx, 'person')
+        await assertDidNotDropTable(ctx, 'pet')
       })
 
       it('should not allow SQL injection via backslash escape in string literals', async () => {
@@ -129,7 +139,7 @@ for (const dialect of DIALECTS) {
   })
 }
 
-async function assertDidNotDropTable(ctx: TestContext, tableName: string) {
+async function assertDidNotDropTable(ctx: JSONTestContext, tableName: string) {
   const tables = await ctx.db.introspection.getTables()
 
   expect(tables.some((table) => table.name === tableName)).to.be.true

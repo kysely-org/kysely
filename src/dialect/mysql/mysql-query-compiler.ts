@@ -51,9 +51,14 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
     )
   }
 
+  /**
+   * Member values appear inside `"..."` in the JSON path, which itself sits
+   * inside a SQL string literal. They must therefore be escaped twice — once
+   * for the JSON path grammar, then again for MySQL's string literal parser.
+   */
   protected override sanitizeJSONPathMemberValue(value: string): string {
     return value.replace(JSON_PATH_MEMBER_ESCAPE_REGEX, (char) =>
-      char === '\\' ? '\\\\' : char === "'" ? "''" : '\\"',
+      char === '\\' ? '\\\\\\\\' : char === "'" ? "''" : '\\\\"',
     )
   }
 
