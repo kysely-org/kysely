@@ -135,6 +135,95 @@ for (const dialect of DIALECTS) {
         await ctx.db.executeQuery(query)
         await assertDidNotDropTable(ctx, 'person')
       })
+
+      it('should not allow exfiltration via dots in $.key JSON paths', async () => {
+        const exfiltration = 'auth.login_count'
+
+        const query = ctx.db.selectFrom('person_metadata').select((eb) =>
+          eb
+            .ref('profile', '->$')
+            .key(exfiltration as never)
+            .as('exfiltrated'),
+        )
+
+        expect(query.compile().sql).to.equal(
+          `select ${identifierWrapper}profile${identifierWrapper}->'$."${exfiltration}"' as ${identifierWrapper}exfiltrated${identifierWrapper} from ${identifierWrapper}person_metadata${identifierWrapper}`,
+        )
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.exfiltrated).to.be.null
+      })
+
+      it('should not allow exfiltration via dots and working around quotes in $.key JSON paths', async () => {
+        const exfiltration = 'auth"."login_count'
+
+        const query = ctx.db.selectFrom('person_metadata').select((eb) =>
+          eb
+            .ref('profile', '->$')
+            .key(exfiltration as never)
+            .as('exfiltrated'),
+        )
+
+        expect(query.compile().sql).to.equal(
+          `select ${identifierWrapper}profile${identifierWrapper}->'$."auth\\\\".\\\\"login_count"' as ${identifierWrapper}exfiltrated${identifierWrapper} from ${identifierWrapper}person_metadata${identifierWrapper}`,
+        )
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.exfiltrated).to.be.null
+      })
+
+      it('should not allow exfiltration via brackets in $.key JSON paths', async () => {
+        const exfiltration = 'tags[0]'
+
+        const query = ctx.db.selectFrom('person_metadata').select((eb) =>
+          eb
+            .ref('profile', '->$')
+            .key(exfiltration as never)
+            .as('exfiltrated'),
+        )
+
+        expect(query.compile().sql).to.equal(
+          `select ${identifierWrapper}profile${identifierWrapper}->'$."tags[0]"' as ${identifierWrapper}exfiltrated${identifierWrapper} from ${identifierWrapper}person_metadata${identifierWrapper}`,
+        )
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.exfiltrated).to.be.null
+      })
+
+      it('should not allow exfiltration via $.* in $.key JSON paths', async () => {
+        const exfiltration = '*'
+
+        const query = ctx.db.selectFrom('person_metadata').select((eb) =>
+          eb
+            .ref('profile', '->$')
+            .key(exfiltration as never)
+            .as('exfiltrated'),
+        )
+
+        expect(query.compile().sql).to.equal(
+          `select ${identifierWrapper}profile${identifierWrapper}->'$."*"' as ${identifierWrapper}exfiltrated${identifierWrapper} from ${identifierWrapper}person_metadata${identifierWrapper}`,
+        )
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.exfiltrated).to.be.null
+      })
+
+      it('should not allow exfiltration via $[*] in $.key JSON paths', async () => {
+        const exfiltration = '*'
+
+        expect(() =>
+          ctx.db.selectFrom('person_metadata').select((eb) =>
+            eb
+              .ref('profile', '->$')
+              .at(exfiltration as never)
+              .as('exfiltrated'),
+          ),
+        ).to.throw
+      })
     }
   })
 }

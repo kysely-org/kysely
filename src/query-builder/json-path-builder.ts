@@ -16,6 +16,8 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
 import type { OperationNode } from '../operation-node/operation-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 
+const HASH_NEGATIVE_INDEX_REGEX = /^#-\d+$/
+
 export class JSONPathBuilder<S, O = S> {
   readonly #node: JSONReferenceNode | JSONPathNode
 
@@ -96,6 +98,16 @@ export class JSONPathBuilder<S, O = S> {
   >(
     index: `${I}` extends `${any}.${any}` | `#--${any}` ? never : I,
   ): TraversedJSONPathBuilder<S, O2> {
+    if (
+      (typeof index !== 'number' && typeof index !== 'string') ||
+      (typeof index === 'number' && !Number.isInteger(index)) ||
+      (typeof index === 'string' &&
+        index !== 'last' &&
+        !HASH_NEGATIVE_INDEX_REGEX.test(index))
+    ) {
+      throw new Error(`Unexpected index value in .at(...): ${index}`)
+    }
+
     return this.#createBuilderWithPathLeg('ArrayLocation', index)
   }
 

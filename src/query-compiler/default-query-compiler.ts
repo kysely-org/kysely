@@ -1630,7 +1630,7 @@ export class DefaultQueryCompiler
 
     if (isArrayLocation) {
       this.append('[')
-      this.append(value)
+      this.append(this.sanitizeStringLiteral(value))
       this.append(']')
     } else {
       this.append('."')
