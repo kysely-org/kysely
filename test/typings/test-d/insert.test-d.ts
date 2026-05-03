@@ -110,6 +110,35 @@ async function testInsert(db: Kysely<Database>) {
       ),
   )
 
+  // Non-updateable columns (update type = never) can still be referenced in the
+  // WHERE clause of ON CONFLICT DO UPDATE. See: https://github.com/kysely-org/kysely/issues/1409
+  const r_conflict_where = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc
+        .column('id')
+        .doUpdateSet({ first_name: 'updated' })
+        // `modified_at` has ColumnType<Date, never, never> — not updateable,
+        // but must be referenceable in WHERE for filtering.
+        .where('person.modified_at', '<', new Date()),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r_conflict_where)
+
+  // Non-updateable columns must NOT appear in doUpdateSet
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc
+          .column('id')
+          .doUpdateSet({ modified_at: new Date() }),
+      ),
+  )
+
   // GeneratedAlways column is not allowed to be inserted
   expectError(db.insertInto('book').values({ id: 1, name: 'foo' }))
 
