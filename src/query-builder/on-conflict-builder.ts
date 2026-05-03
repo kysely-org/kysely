@@ -15,7 +15,7 @@ import {
   type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import type { Updateable } from '../util/column-type.js'
+import type { Selectable, Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import type { AnyColumn, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
@@ -254,7 +254,11 @@ export class OnConflictBuilder<
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
-  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+  ): OnConflictUpdateBuilder<
+    OnConflictDatabase<DB, TB>,
+    OnConflictTables<TB>,
+    OnConflictSelectDatabase<DB, TB>
+  > {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -280,6 +284,17 @@ export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
+/**
+ * Like {@link OnConflictDatabase} but maps all table columns to their selectable
+ * (read) types instead of updateable types. Used for the `where` clause of
+ * `ON CONFLICT DO UPDATE` so that non-updateable columns (e.g. generated/read-only
+ * columns typed as `ColumnType<T, never, never>`) can still be referenced in filter
+ * expressions.
+ */
+export type OnConflictSelectDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: Selectable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
 export type OnConflictTables<TB> = TB | 'excluded'
 
 export class OnConflictDoNothingBuilder<
@@ -297,8 +312,16 @@ export class OnConflictDoNothingBuilder<
   }
 }
 
-export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
-  implements WhereInterface<DB, TB>, OperationNodeSource
+/**
+ * `DB` is the updateable-only database (used by `doUpdateSet`).
+ * `TB` is the union of table names available in this context.
+ * `SDB` is the selectable database used for `where`/`whereRef` so that
+ * non-updateable columns (e.g. `GeneratedAlways`) can still be referenced
+ * in filter expressions. Defaults to `DB` for backward compatibility when
+ * the builder is constructed without an explicit select database.
+ */
+export class OnConflictUpdateBuilder<DB, TB extends keyof DB, SDB extends Record<TB & keyof SDB, any> = DB>
+  implements WhereInterface<SDB, TB & keyof SDB>, OperationNodeSource
 {
   readonly #props: OnConflictBuilderProps
 
@@ -312,19 +335,19 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.where} for more info.
    */
   where<
-    RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+    RE extends ReferenceExpression<SDB, TB & keyof SDB>,
+    VE extends OperandValueExpressionOrList<SDB, TB & keyof SDB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: VE,
-  ): OnConflictUpdateBuilder<DB, TB>
+  ): OnConflictUpdateBuilder<DB, TB, SDB>
 
-  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+  where<E extends ExpressionOrFactory<SDB, TB & keyof SDB, SqlBool>>(
     expression: E,
-  ): OnConflictUpdateBuilder<DB, TB>
+  ): OnConflictUpdateBuilder<DB, TB, SDB>
 
-  where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
+  where(...args: any[]): OnConflictUpdateBuilder<DB, TB, SDB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
@@ -340,13 +363,13 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.whereRef} for more info.
    */
   whereRef<
-    LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>,
+    LRE extends ReferenceExpression<SDB, TB & keyof SDB>,
+    RRE extends ReferenceExpression<SDB, TB & keyof SDB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
     rhs: RRE,
-  ): OnConflictUpdateBuilder<DB, TB> {
+  ): OnConflictUpdateBuilder<DB, TB, SDB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
@@ -356,7 +379,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
     })
   }
 
-  clearWhere(): OnConflictUpdateBuilder<DB, TB> {
+  clearWhere(): OnConflictUpdateBuilder<DB, TB, SDB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(

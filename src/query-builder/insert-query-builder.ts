@@ -49,6 +49,7 @@ import {
   OnConflictBuilder,
   type OnConflictDatabase,
   type OnConflictDoNothingBuilder,
+  type OnConflictSelectDatabase,
   type OnConflictTables,
   type OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
@@ -884,7 +885,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     ) =>
       | OnConflictUpdateBuilder<
           OnConflictDatabase<DB, TB>,
-          OnConflictTables<TB>
+          OnConflictTables<TB>,
+          OnConflictSelectDatabase<DB, TB>
         >
       | OnConflictDoNothingBuilder<DB, TB>,
   ): InsertQueryBuilder<DB, TB, O> {
