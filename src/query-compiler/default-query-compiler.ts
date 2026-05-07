@@ -119,6 +119,7 @@ import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
 
 const LIT_WRAP_REGEX = /'/g
+const JSON_PATH_MEMBER_WRAP_REGEX = /['"]/g
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -615,7 +616,7 @@ export class DefaultQueryCompiler
   protected override visitCreateTable(node: CreateTableNode): void {
     this.append('create ')
 
-    if (node.frontModifiers && node.frontModifiers.length > 0) {
+    if (node.frontModifiers?.length) {
       this.compileList(node.frontModifiers, ' ')
       this.append(' ')
     }
@@ -632,23 +633,25 @@ export class DefaultQueryCompiler
 
     this.visitNode(node.table)
 
-    if (node.selectQuery) {
-      this.append(' as ')
-      this.visitNode(node.selectQuery)
-    } else {
+    if (!node.selectQuery) {
       this.append(' (')
       this.compileList([...node.columns, ...(node.constraints ?? [])])
       this.append(')')
+    }
 
-      if (node.onCommit) {
-        this.append(' on commit ')
-        this.append(node.onCommit)
-      }
+    if (node.onCommit) {
+      this.append(' on commit ')
+      this.append(node.onCommit)
+    }
 
-      if (node.endModifiers && node.endModifiers.length > 0) {
-        this.append(' ')
-        this.compileList(node.endModifiers, ' ')
-      }
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
+    }
+
+    if (node.selectQuery) {
+      this.append(' as ')
+      this.visitNode(node.selectQuery)
     }
   }
 
@@ -1628,12 +1631,16 @@ export class DefaultQueryCompiler
   protected override visitJSONPathLeg(node: JSONPathLegNode): void {
     const isArrayLocation = node.type === 'ArrayLocation'
 
-    this.append(isArrayLocation ? '[' : '.')
-
-    this.append(String(node.value))
+    const value = String(node.value)
 
     if (isArrayLocation) {
+      this.append('[')
+      this.append(this.sanitizeStringLiteral(value))
       this.append(']')
+    } else {
+      this.append('."')
+      this.append(this.sanitizeJSONPathMemberValue(value))
+      this.append('"')
     }
   }
 
@@ -1819,6 +1826,12 @@ export class DefaultQueryCompiler
 
   protected sanitizeStringLiteral(value: string): string {
     return value.replace(LIT_WRAP_REGEX, "''")
+  }
+
+  protected sanitizeJSONPathMemberValue(value: string): string {
+    return value.replace(JSON_PATH_MEMBER_WRAP_REGEX, (char) =>
+      char === "'" ? "''" : '\\"',
+    )
   }
 
   protected addParameter(parameter: unknown): void {

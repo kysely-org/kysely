@@ -12,33 +12,36 @@ chai.use(chaiAsPromised)
 
 import {
   Kysely,
-  KyselyConfig,
-  KyselyPlugin,
-  Compilable,
-  RootOperationNode,
-  PluginTransformQueryArgs,
-  PluginTransformResultArgs,
-  QueryResult,
-  UnknownRow,
+  type KyselyConfig,
+  type KyselyPlugin,
+  type Compilable,
+  type RootOperationNode,
+  type PluginTransformQueryArgs,
+  type PluginTransformResultArgs,
+  type QueryResult,
+  type UnknownRow,
   OperationNodeTransformer,
   PostgresDialect,
   MysqlDialect,
-  SchemaModule,
-  InsertResult,
+  type SchemaModule,
+  type InsertResult,
   SqliteDialect,
-  InsertQueryBuilder,
-  Generated,
+  type InsertQueryBuilder,
+  type Generated,
   sql,
-  ColumnType,
-  InsertObject,
+  type ColumnType,
+  type InsertObject,
   MssqlDialect,
-  SelectQueryBuilder,
-} from '../../../'
-import {
-  OrderByDirection,
-  OrderByExpression,
-} from '../../../dist/cjs/parser/order-by-parser'
+  type SelectQueryBuilder,
+  type OrderByDirection,
+  type OrderByExpression,
+  type ColumnDefinitionBuilder,
+  ParseJSONResultsPlugin,
+  type JSONColumnType,
+  type SqlBool,
+} from '../../../dist/cjs/index.js'
 import type { ConnectionConfiguration } from 'tedious'
+import type { DataTypeExpression } from '../../../dist/cjs/parser/data-type-parser.js'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -138,6 +141,9 @@ const MYSQL_CONFIG: PoolOptions = {
   bigNumberStrings: true,
 
   connectionLimit: POOL_SIZE,
+
+  // used in sql injection tests.
+  multipleStatements: true,
 }
 
 const MSSQL_CONFIG: ConnectionConfiguration = {
@@ -543,4 +549,131 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
 
     return qb.orderBy(orderBy, direction) as QB
   }
+}
+
+export type JSONTestContext = Awaited<ReturnType<typeof initJSONTest>>
+
+export async function initJSONTest<D extends BuiltInDialect>(
+  ctx: Mocha.Context,
+  dialect: D,
+) {
+  const testContext = await initTest(ctx, dialect)
+
+  let db = testContext.db.withTables<{
+    person_metadata: {
+      person_id: number
+      website: JSONColumnType<{ url: string }>
+      nicknames: JSONColumnType<string[]>
+      profile: JSONColumnType<{
+        auth: {
+          roles: string[]
+          last_login?: { device: string }
+          is_verified: SqlBool
+          login_count: number
+        }
+        avatar: string | null
+        tags: string[]
+      }>
+      experience: JSONColumnType<
+        {
+          establishment: string
+        }[]
+      >
+      schedule: JSONColumnType<{ name: string; time: string }[][][]>
+    }
+  }>()
+
+  if (dialect === 'sqlite') {
+    db = db.withPlugin(new ParseJSONResultsPlugin())
+  }
+
+  const jsonColumnDataType = resolveJSONColumnDataType(dialect)
+  const notNull = (cb: ColumnDefinitionBuilder) => cb.notNull()
+
+  await db.schema
+    .createTable('person_metadata')
+    .addColumn('person_id', 'integer', (cb) =>
+      cb.primaryKey().references('person.id'),
+    )
+    .addColumn('website', jsonColumnDataType, notNull)
+    .addColumn('nicknames', jsonColumnDataType, notNull)
+    .addColumn('profile', jsonColumnDataType, notNull)
+    .addColumn('experience', jsonColumnDataType, notNull)
+    .addColumn('schedule', jsonColumnDataType, notNull)
+    .execute()
+
+  return { ...testContext, db }
+}
+
+export function resolveJSONColumnDataType(
+  dialect: BuiltInDialect,
+): DataTypeExpression {
+  switch (dialect) {
+    case 'postgres':
+      return 'jsonb'
+    case 'mysql':
+      return 'json'
+    case 'mssql':
+      return sql`nvarchar(max)`
+    case 'sqlite':
+      return 'text'
+  }
+}
+
+export async function insertDefaultJSONDataSet(
+  ctx: JSONTestContext,
+): Promise<void> {
+  await insertDefaultDataSet(ctx as any)
+
+  const people = await ctx.db
+    .selectFrom('person')
+    .select(['id', 'first_name', 'last_name'])
+    .execute()
+
+  await ctx.db
+    .insertInto('person_metadata')
+    .values(
+      people
+        .filter((person) => person.first_name && person.last_name)
+        .map((person, index) => ({
+          person_id: person.id,
+          website: JSON.stringify({
+            url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
+          }),
+          nicknames: JSON.stringify([
+            `${person.first_name![0]}.${person.last_name![0]}.`,
+            `${person.first_name} the Great`,
+            `${person.last_name} the Magnificent`,
+          ]),
+          profile: JSON.stringify({
+            tags: ['awesome'],
+            auth: {
+              roles: ['contributor', 'moderator'],
+              last_login: {
+                device: 'android',
+              },
+              login_count: 12 + index,
+              is_verified: true,
+            },
+            avatar: null,
+          }),
+          experience: JSON.stringify([
+            {
+              establishment: 'The University of Life',
+            },
+          ]),
+          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
+        })),
+    )
+    .execute()
+}
+
+export async function clearJSONDatabase(ctx: JSONTestContext): Promise<void> {
+  await ctx.db.deleteFrom('person_metadata').execute()
+  await clearDatabase(ctx as any)
+}
+
+export async function destroyJSONTest(ctx: JSONTestContext): Promise<void> {
+  await ctx.db.schema.dropTable('person_metadata').execute()
+  await destroyTest(ctx as any)
 }

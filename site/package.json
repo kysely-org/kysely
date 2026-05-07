@@ -1,6 +1,6 @@
 {
   "name": "kysely-site",
-  "version": "0.28.11",
+  "version": "0.28.17",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -15,26 +15,26 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.9.2",
-    "@docusaurus/plugin-vercel-analytics": "^3.9.2",
-    "@docusaurus/preset-classic": "^3.9.2",
-    "@docusaurus/theme-common": "^3.9.2",
-    "@docusaurus/theme-mermaid": "^3.9.2",
-    "@mdx-js/react": "^3.1.1",
-    "@radix-ui/colors": "^3.0.0",
-    "clsx": "^2.1.1",
-    "prism-react-renderer": "^2.3.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/plugin-vercel-analytics": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
+    "@docusaurus/theme-common": "3.10.0",
+    "@docusaurus/theme-mermaid": "3.10.0",
+    "@mdx-js/react": "3.1.1",
+    "@radix-ui/colors": "3.0.0",
+    "clsx": "2.1.1",
+    "prism-react-renderer": "2.4.1",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.9.2",
-    "@docusaurus/tsconfig": "^3.9.2",
-    "@docusaurus/types": "^3.9.2",
-    "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
-    "@types/react": "^19.2.10",
-    "mermaid": "^11.12.2",
-    "typescript": "^5.9.3"
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
+    "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
+    "@types/react": "19.2.14",
+    "mermaid": "11.14.0",
+    "typescript": "6.0.2"
   },
   "browserslist": {
     "production": [
@@ -51,5 +51,5 @@
   "engines": {
     "node": ">=20.0"
   },
-  "packageManager": "pnpm@10.16.1+sha512.0e155aa2629db8672b49e8475da6226aa4bdea85fdcdfdc15350874946d4f3c91faaf64cbdc4a5d1ab8002f473d5c3fcedcd197989cf0390f9badd3c04678706"
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

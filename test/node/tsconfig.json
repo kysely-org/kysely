@@ -2,11 +2,10 @@
   "extends": "../../tsconfig-base.json",
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ESNext"],
-    "module": "CommonJS",
+    "esModuleInterop": true,
+    "lib": ["esnext"],
     "outDir": "dist",
-    "skipLibCheck": true,
-    "esModuleInterop": true
+    "rootDir": "./src",
+    "types": ["mocha", "node"],
   }
 }

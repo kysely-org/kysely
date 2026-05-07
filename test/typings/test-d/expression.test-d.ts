@@ -13,9 +13,9 @@ import {
   type SqlBool,
   expressionBuilder,
   sql,
-} from '..'
-import type { KyselyTypeError } from '../../../dist/cjs/util/type-error'
-import type { Database } from '../shared'
+} from '../index.js'
+import type { KyselyTypeError } from '../../../dist/cjs/util/type-error.js'
+import type { Database } from '../shared.js'
 
 function testExpression(db: Kysely<Database>) {
   const e1: Expression<number> = undefined!
@@ -310,4 +310,16 @@ function testExpressionBuilderConstructor(db: Kysely<Database>) {
     db.selectFrom('action').innerJoin('pet', (join) => join.onTrue()),
   )
   expectType<ExpressionBuilder<Database, 'action' | 'pet'>>(eb3)
+}
+
+// See: https://github.com/kysely-org/kysely/issues/1783
+function testTablelessExpressionBuilder(
+  eb: ExpressionBuilder<Database, never>,
+) {
+  eb.and([eb.or([])])
+  eb.or([eb.and([])])
+  expectError(eb.and({}))
+  expectError(eb.or({}))
+  expectError(eb.and(eb.or([])))
+  expectError(eb.or(eb.and([])))
 }

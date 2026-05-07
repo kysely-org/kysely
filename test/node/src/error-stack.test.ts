@@ -1,6 +1,6 @@
+import { fileURLToPath } from 'node:url'
 import { Assertion } from 'chai'
-import { sql } from '../../../'
-
+import { sql } from '../../../dist/cjs/index.js'
 import {
   destroyTest,
   initTest,
@@ -8,6 +8,8 @@ import {
   expect,
   DIALECTS,
 } from './test-setup.js'
+
+const __filename = fileURLToPath(import.meta.url)
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: error stack`, () => {

@@ -454,7 +454,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @remarks This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
    */
   orderBy<OE extends OrderByExpression<DB, TB, {}>>(
     expr: OE,
@@ -463,7 +463,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   // TODO: remove in v0.29
   /**
-   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @remarks This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
    * @deprecated It does ~2-2.6x more compile-time instantiations compared to multiple chained `orderBy(expr, modifiers?)` calls (in `order by` clauses with reasonable item counts), and has broken autocompletion.
    */
   orderBy<
@@ -474,7 +474,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   // TODO: remove in v0.29
   /**
-   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @remarks This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
    * @deprecated It does ~2.9x more compile-time instantiations compared to a `orderBy(expr, direction)` call.
    */
   orderBy<OE extends DirectedOrderByStringReference<DB, TB, {}>>(
@@ -483,7 +483,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   // TODO: remove in v0.29
   /**
-   * @description This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
+   * @remarks This is only supported by some dialects like MySQL or SQLite with `SQLITE_ENABLE_UPDATE_DELETE_LIMIT`.
    * @deprecated Use `orderBy(expr, (ob) => ...)` instead.
    */
   orderBy<OE extends OrderByExpression<DB, TB, {}>>(

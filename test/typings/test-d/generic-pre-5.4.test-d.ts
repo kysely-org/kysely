@@ -5,10 +5,10 @@ import type {
   Generated,
   Nullable,
   SelectType,
-} from '..'
+} from '../index.js'
 
 import { expectAssignable, expectType } from 'tsd'
-import type { Database } from '../shared'
+import type { Database } from '../shared.js'
 
 // TODO: type-checking this is crazy slow. Figure out the cause.
 function testSelectQueryBuilderExtends() {

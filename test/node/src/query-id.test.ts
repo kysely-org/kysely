@@ -8,8 +8,8 @@ import {
   PostgresQueryCompiler,
   RootOperationNode,
   QueryId,
-} from '../../..'
-import { Database } from './test-setup'
+} from '../../../dist/cjs/index.js'
+import { Database } from './test-setup.js'
 
 describe('queryId', () => {
   const visits = new Map()

@@ -1,5 +1,5 @@
 import { SinonSandbox, SinonSpy, createSandbox } from 'sinon'
-import { Database, expect } from './test-setup'
+import { Database, expect } from './test-setup.js'
 import {
   DatabaseConnection,
   Driver,
@@ -7,7 +7,7 @@ import {
   Kysely,
   LogConfig,
   PostgresDialect,
-} from '../../..'
+} from '../../../dist/cjs/index.js'
 
 describe('logging', () => {
   let sandbox: SinonSandbox

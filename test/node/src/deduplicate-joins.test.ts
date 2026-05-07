@@ -1,4 +1,4 @@
-import { DeduplicateJoinsPlugin } from '../../..'
+import { DeduplicateJoinsPlugin } from '../../../dist/cjs/index.js'
 
 import {
   clearDatabase,

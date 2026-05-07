@@ -6,7 +6,7 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
-const forEachFile = require('./util/for-each-file')
+const forEachFile = require('./util/for-each-file.cjs')
 
 let errorsFound = false
 

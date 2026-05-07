@@ -1,3 +1,8 @@
+/**
+ * @module
+ * @mergeModuleWith <project>
+ */
+
 export * from './kysely.js'
 export * from './query-creator.js'
 

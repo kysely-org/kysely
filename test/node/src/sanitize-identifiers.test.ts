@@ -1,4 +1,4 @@
-import { Updateable } from '../../../dist/cjs'
+import { Updateable } from '../../../dist/cjs/index.js'
 
 import {
   destroyTest,
@@ -6,7 +6,6 @@ import {
   TestContext,
   Person,
   testSql,
-  NOT_SUPPORTED,
   DIALECTS,
 } from './test-setup.js'
 

@@ -1,6 +1,11 @@
 import { expectError, expectType } from 'tsd'
-import { type InsertResult, type Kysely, sql } from '..'
-import type { Database } from '../shared'
+import {
+  type Insertable,
+  type InsertResult,
+  type Kysely,
+  sql,
+} from '../index.js'
+import type { Database } from '../shared.js'
 
 async function testInsert(db: Kysely<Database>) {
   const person = {
@@ -267,4 +272,25 @@ async function testOutput(db: Kysely<Database>) {
   // Wrong prefix
   expectError(db.insertInto('person').output('deleted.age').values(person))
   expectError(db.insertInto('person').outputAll('deleted').values(person))
+}
+
+function testInsertable() {
+  function foo(
+    _bar: Insertable<// no required columns!
+    {
+      optional: number | null
+    }>,
+  ) {}
+
+  foo({})
+  foo({ optional: 3 })
+  foo({ optional: null })
+
+  // bad column values.
+  expectError(foo({ optional: '' }))
+  expectError(foo({ optional: Symbol.for('thing') }))
+
+  // non-object as argument.
+  expectError(foo(3))
+  expectError(foo(Symbol.for('thing')))
 }

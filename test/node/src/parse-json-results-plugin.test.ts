@@ -1,4 +1,4 @@
-import { ParseJSONResultsPlugin } from '../../..'
+import { ParseJSONResultsPlugin } from '../../../dist/cjs/index.js'
 import { createQueryId } from '../../../dist/cjs/util/query-id.js'
 
 describe('ParseJSONResultsPlugin', () => {

@@ -1,0 +1,11 @@
+[env]
+# don't automatically load `.env` files.
+file = false
+
+[install]
+# never auto-install dependencies.
+auto = "disable"
+# whether to set an exact version in `package.json`.
+exact = true
+# only install package versions published at least 1 days ago (in seconds).
+minimumReleaseAge = 86400
