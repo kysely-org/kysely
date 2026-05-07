@@ -43,7 +43,7 @@ import {
   PGliteDialect,
 } from '../../../dist/index.js'
 import type { ConnectionConfiguration } from 'tedious'
-import type { DataTypeExpression } from '../../../dist/cjs/parser/data-type-parser.js'
+import type { DataTypeExpression } from '../../../dist/parser/data-type-parser.js'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -595,7 +595,7 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
 
 export type JSONTestContext = Awaited<ReturnType<typeof initJSONTest>>
 
-export async function initJSONTest<D extends BuiltInDialect>(
+export async function initJSONTest<D extends DialectDescriptor>(
   ctx: Mocha.Context,
   dialect: D,
 ) {
@@ -625,7 +625,7 @@ export async function initJSONTest<D extends BuiltInDialect>(
     }
   }>()
 
-  if (dialect === 'sqlite') {
+  if (dialect.sqlSpec === 'sqlite') {
     db = db.withPlugin(new ParseJSONResultsPlugin())
   }
 
@@ -648,9 +648,9 @@ export async function initJSONTest<D extends BuiltInDialect>(
 }
 
 export function resolveJSONColumnDataType(
-  dialect: BuiltInDialect,
+  dialect: DialectDescriptor,
 ): DataTypeExpression {
-  switch (dialect) {
+  switch (dialect.sqlSpec) {
     case 'postgres':
       return 'jsonb'
     case 'mysql':

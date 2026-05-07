@@ -1,14 +1,5 @@
 import {
-  ColumnDefinitionBuilder,
-  type JSONColumnType,
-  ParseJSONResultsPlugin,
-  type SqlBool,
-  sql,
-} from '../../../dist/index.js'
-import {
-  type DialectDescriptor,
   DIALECTS,
-  type JSONTestContext,
   NOT_SUPPORTED,
   clearJSONDatabase,
   destroyJSONTest,
@@ -58,12 +49,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [],
-                sql: "select `website`->'$.url' as `website_url` from `person_metadata`",
+                sql: 'select `website`->\'$."url"\' as `website_url` from `person_metadata`',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
-                sql: `select "website"->>'$.url' as "website_url" from "person_metadata"`,
+                sql: `select "website"->>'$."url"' as "website_url" from "person_metadata"`,
               },
             })
 
@@ -120,12 +111,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [],
-                sql: "select `profile`->'$.auth.roles' as `roles` from `person_metadata`",
+                sql: 'select `profile`->\'$."auth"."roles"\' as `roles` from `person_metadata`',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
-                sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
+                sql: `select "profile"->>'$."auth"."roles"' as "roles" from "person_metadata"`,
               },
             })
 
@@ -153,12 +144,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [],
-                sql: "select `profile`->'$.tags[0]' as `main_tag` from `person_metadata`",
+                sql: 'select `profile`->\'$."tags"[0]\' as `main_tag` from `person_metadata`',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
-                sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
+                sql: `select "profile"->>'$."tags"[0]' as "main_tag" from "person_metadata"`,
               },
             })
 
@@ -186,12 +177,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [],
-                sql: "select `experience`->'$[0].establishment' as `establishment` from `person_metadata`",
+                sql: 'select `experience`->\'$[0]."establishment"\' as `establishment` from `person_metadata`',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
-                sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
+                sql: `select "experience"->>'$[0]."establishment"' as "establishment" from "person_metadata"`,
               },
             })
 
@@ -342,12 +333,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [12],
-                sql: "select * from `person_metadata` where `profile`->'$.auth.login_count' = ?",
+                sql: 'select * from `person_metadata` where `profile`->\'$."auth"."login_count"\' = ?',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [12],
-                sql: `select * from "person_metadata" where "profile"->>'$.auth.login_count' = ?`,
+                sql: `select * from "person_metadata" where "profile"->>'$."auth"."login_count"' = ?`,
               },
             })
 
@@ -374,12 +365,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: [],
-                sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
+                sql: 'select * from `person_metadata` order by `profile`->\'$."auth"."login_count"\' desc',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
-                sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
+                sql: `select * from "person_metadata" order by "profile"->>'$."auth"."login_count"' desc`,
               },
             })
 
@@ -411,12 +402,12 @@ for (const dialect of DIALECTS) {
               postgres: NOT_SUPPORTED,
               mysql: {
                 parameters: ['Papa Johns', 911],
-                sql: "update `person_metadata` set `experience` = json_set(`experience`, '$[last].establishment', ?) where `person_id` = ?",
+                sql: 'update `person_metadata` set `experience` = json_set(`experience`, \'$[last]."establishment"\', ?) where `person_id` = ?',
               },
               mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: ['Papa Johns', 911],
-                sql: `update "person_metadata" set "experience" = json_set("experience", '$[#-1].establishment', ?) where "person_id" = ?`,
+                sql: `update "person_metadata" set "experience" = json_set("experience", '$[#-1]."establishment"', ?) where "person_id" = ?`,
               },
             })
 
@@ -746,124 +737,4 @@ for (const dialect of DIALECTS) {
       }
     })
   }
-}
-async function initJSONTest<D extends DialectDescriptor>(
-  ctx: Mocha.Context,
-  dialect: D,
-) {
-  const testContext = await initTest(ctx, dialect)
-
-  let db = testContext.db.withTables<{
-    person_metadata: {
-      person_id: number
-      website: JSONColumnType<{ url: string }>
-      nicknames: JSONColumnType<string[]>
-      profile: JSONColumnType<{
-        auth: {
-          roles: string[]
-          last_login?: { device: string }
-          is_verified: SqlBool
-          login_count: number
-        }
-        avatar: string | null
-        tags: string[]
-      }>
-      experience: JSONColumnType<
-        {
-          establishment: string
-        }[]
-      >
-      schedule: JSONColumnType<{ name: string; time: string }[][][]>
-    }
-  }>()
-
-  if (dialect.sqlSpec === 'sqlite') {
-    db = db.withPlugin(new ParseJSONResultsPlugin())
-  }
-
-  const jsonColumnDataType = resolveJSONColumnDataType(dialect)
-  const notNull = (cb: ColumnDefinitionBuilder) => cb.notNull()
-
-  await db.schema
-    .createTable('person_metadata')
-    .addColumn('person_id', 'integer', (cb) =>
-      cb.primaryKey().references('person.id'),
-    )
-    .addColumn('website', jsonColumnDataType, notNull)
-    .addColumn('nicknames', jsonColumnDataType, notNull)
-    .addColumn('profile', jsonColumnDataType, notNull)
-    .addColumn('experience', jsonColumnDataType, notNull)
-    .addColumn('schedule', jsonColumnDataType, notNull)
-    .execute()
-
-  return { ...testContext, db }
-}
-
-function resolveJSONColumnDataType(dialect: DialectDescriptor) {
-  switch (dialect.sqlSpec) {
-    case 'postgres':
-      return 'jsonb'
-    case 'mysql':
-      return 'json'
-    case 'mssql':
-      return sql`nvarchar(max)`
-    case 'sqlite':
-      return 'text'
-  }
-}
-
-async function insertDefaultJSONDataSet(ctx: TestContext) {
-  await insertDefaultDataSet(ctx as any)
-
-  const people = await ctx.db
-    .selectFrom('person')
-    .select(['id', 'first_name', 'last_name'])
-    .execute()
-
-  await ctx.db
-    .insertInto('person_metadata')
-    .values(
-      people
-        .filter((person) => person.first_name && person.last_name)
-        .map((person, index) => ({
-          person_id: person.id,
-          website: JSON.stringify({
-            url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
-          }),
-          nicknames: JSON.stringify([
-            `${person.first_name![0]}.${person.last_name![0]}.`,
-            `${person.first_name} the Great`,
-            `${person.last_name} the Magnificent`,
-          ]),
-          profile: JSON.stringify({
-            tags: ['awesome'],
-            auth: {
-              roles: ['contributor', 'moderator'],
-              last_login: {
-                device: 'android',
-              },
-              login_count: 12 + index,
-              is_verified: true,
-            },
-            avatar: null,
-          }),
-          experience: JSON.stringify([
-            {
-              establishment: 'The University of Life',
-            },
-          ]),
-          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
-        })),
-    )
-    .execute()
-}
-
-async function clearJSONDatabase(ctx: TestContext) {
-  await ctx.db.deleteFrom('person_metadata').execute()
-  await clearDatabase(ctx as any)
-}
-
-async function destroyJSONTest(ctx: TestContext) {
-  await ctx.db.schema.dropTable('person_metadata').execute()
-  await destroyTest(ctx as any)
 }
