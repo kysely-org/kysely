@@ -15,7 +15,7 @@ for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
 
   describe(`${variant}: select`, () => {
-    let ctx: TestContext
+    let ctx: JSONTestContext
     const identifierWrapper = sqlSpec === 'mysql' ? '`' : '"'
 
     before(async function () {
