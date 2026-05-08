@@ -18,12 +18,6 @@ auditConfig:
   ignoreGhsas:
     - GHSA-h726-x36v-rx45 # prototype-pollution-vulnerable-lodash.merge-dont-upgrade
 
-# All transitive dependencies must be resolved from a trusted source.
-# Packages from trusted sources are considered safer, as they are typically subject
-# to more reliable verification and scanning for malware and vulnerabilities.
-# https://pnpm.io/settings#blockexoticsubdeps
-blockExoticSubdeps: true
-
 # Deduplicate peer dependencies.
 # see: https://github.com/pnpm/pnpm/issues/11070
 dedupePeers: true
@@ -32,23 +26,16 @@ dedupePeers: true
 # https://pnpm.io/settings#enginestrict
 engineStrict: true
 
-# The minimum number of minutes that must pass after a version is published before
-# pnpm will install it.
-# https://pnpm.io/settings#minimumreleaseage
-minimumReleaseAge: 1440 # 1 day old in minutes.
+# avoid having to use `-w` when installing packages at project root.
+ignoreWorkspaceRootCheck: true
 
-# Make repeat `pnpm install`s much faster by performing a cheap check before.
-# https://pnpm.io/settings#optimisticrepeatinstall
-optimisticRepeatInstall: true
+# fail and don't fallback to "too new" version of packages when none of their other 
+# versions match minimumReleaseAge (default is 1 day) range.
+# https://pnpm.io/settings#minimumreleaseagestrict
+minimumReleaseAgeStrict: true
 
-# Override dependency versions across the workspace.
-# https://pnpm.io/settings#overrides
-overrides:
-  webpack: 5.101.3 # newer versions currently break docusaurus build.
-
-# Fail when a dependency tries running a script and it is not in `allowBuilds`.
-# https://pnpm.io/settings#strictdepbuilds
-strictDepBuilds: true
+# how versions get prefixed in `package.json`.
+savePrefix: ''
 
 # Fail if a package's trust level has decreased compared to previous releases.
 # https://pnpm.io/settings#trustpolicy
