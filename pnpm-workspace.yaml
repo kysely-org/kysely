@@ -45,7 +45,8 @@ trustPolicy: no-downgrade
 # A list of package selectors that should be excluded from the trust policy check.
 # https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
-  - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
+  - '@octokit/plugin-paginate-reset@9.2.2' # pkg-pr-new@0.0.61 dependency - https://socket.dev/npm/package/@octokit/plugin-paginate-rest/overview/9.2.2
+  - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 dependency - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
 
 updateConfig:
   # Don't show in `pnpm outdated` or update in `pnpm update`.
