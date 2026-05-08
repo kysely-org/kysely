@@ -72,7 +72,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install && pnpm rebuild better-sqlite3
 
       - name: Run node tests
         run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
