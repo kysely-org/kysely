@@ -57,5 +57,4 @@ jobs:
         run: pnpm with latest-10 build
 
       - name: Release preview version
-        run: >-
-          pnpm with latest-10 dlx pkg-pr-new@0.0.71 publish --template './example'
+        run: pnpm with latest-10 dlx pkg-pr-new@0.0.71 publish --template './example'
