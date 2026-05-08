@@ -25,7 +25,7 @@
     "plugins"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -93,40 +93,39 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
     "@ark/attest": "0.56.0",
-    "@electric-sql/pglite": "0.4.4",
+    "@electric-sql/pglite": "0.4.5",
     "@types/better-sqlite3": "7.6.13",
     "@types/chai": "5.2.3",
     "@types/chai-as-promised": "8.0.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "25.5.2",
+    "@types/node": "25.6.0",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
     "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/semver": "7.7.1",
     "@types/sinon": "21.0.1",
-    "better-sqlite3": "12.8.0",
+    "better-sqlite3": "12.9.0",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
     "esbuild": "0.28.0",
     "jsr": "0.14.3",
     "lodash": "4.18.1",
     "mocha": "11.7.5",
-    "mysql2": "3.21.0",
+    "mysql2": "3.22.3",
     "pathe": "2.0.3",
     "pg": "8.20.0",
     "pg-cursor": "2.19.0",
-    "pkg-types": "2.3.0",
     "playwright": "1.59.1",
-    "prettier": "3.8.1",
+    "prettier": "3.8.3",
     "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
     "semver": "7.7.4",
-    "sinon": "21.0.3",
-    "std-env": "4.0.0",
+    "sinon": "22.0.0",
+    "std-env": "4.1.0",
     "tarn": "3.0.2",
     "tedious": "19.2.1",
     "tsd": "0.33.0",
     "tsx": "4.21.0",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

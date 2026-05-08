@@ -1,6 +1,6 @@
 {
   "imports": {
-    "mysql2": "npm:mysql2@3.21.1",
+    "mysql2": "npm:mysql2@3.22.3",
     "pg": "npm:pg@8.20.0",
     "pg-pool": "npm:pg-pool@3.13.0"
   }
