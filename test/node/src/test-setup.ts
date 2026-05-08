@@ -256,7 +256,7 @@ export async function initTest(
   const config = DB_CONFIGS[dialect.variant]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
-  const db = await connect({ ...config, ...overrides })
+  const db = await connect(dialect, { ...config, ...overrides })
 
   await createDatabase(db, dialect)
   return { config, db, dialect }
@@ -459,7 +459,7 @@ export function createTableWithId(
   })
 }
 
-async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
+async function connect(dialect: DialectDescriptor, config: KyselyConfig): Promise<Kysely<Database>> {
   for (let i = 0; i < TEST_INIT_TIMEOUT; i += 1000) {
     let db: Kysely<Database> | undefined
 
@@ -472,6 +472,11 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
 
       if (db) {
         await db.destroy().catch((error) => error)
+      }
+
+      // these either succeed first try or will forever fail and keep the process running forever.
+      if (dialect.variant === 'sqlite' || dialect.variant === 'pglite') {
+        throw error
       }
 
       console.log(

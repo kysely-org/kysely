@@ -56,11 +56,12 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+        with:
+          cache: true
 
       - name: Use Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          cache: pnpm
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
 
@@ -105,11 +106,12 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+        with:
+          cache: true
 
       - name: Use Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          cache: 'pnpm'
           node-version: lts/*
 
       - name: Install dependencies
