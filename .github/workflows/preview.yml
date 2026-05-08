@@ -51,11 +51,11 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm with 10.38.0 install
+        run: pnpm with latest-10 install
 
       - name: Build
         run: pnpm build
 
       - name: Release preview version
         run: >-
-          pnpm with 10.38.0 dlx pkg-pr-new@0.0.61 publish --template './example'
+          pnpm with latest-10 dlx pkg-pr-new@0.0.61 publish --template './example'
