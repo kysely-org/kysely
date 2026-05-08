@@ -43,8 +43,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
-        with:
-          version: 10
 
       - name: Use Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -53,11 +51,11 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm with 10.38.0 install
 
       - name: Build
         run: pnpm build
 
       - name: Release preview version
         run: >-
-          pnpx pkg-pr-new@0.0.61 publish --template './example'
+          pnpm with 10.38.0 dlx pkg-pr-new@0.0.61 publish --template './example'
