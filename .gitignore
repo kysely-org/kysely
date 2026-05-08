@@ -1,7 +1,4 @@
 dist
-/helpers
-migration.*
-/readonly.*
 /test/browser/bundle.js
 node_modules
 .vscode

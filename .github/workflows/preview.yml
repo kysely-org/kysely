@@ -57,4 +57,4 @@ jobs:
         run: pnpm build
 
       - name: Release preview version
-        run: pnx pkg-pr-new@0.0.61 publish --template './example'
+        run: pnpm_config_trust_policy_exclude='["@octokit/plugin-paginate-reset@9.2.2"]' pnx pkg-pr-new@0.0.61 publish --template './example'
