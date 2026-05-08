@@ -31,7 +31,7 @@ engineStrict: true
 ignoreWorkspaceRootCheck: true
 
 # fail and don't fallback to "too new" version of packages when none of their other 
-# versions match minimumReleaseAge (default is 1 day) range.
+# versions match `minimumReleaseAge` range (default is 1 day).
 # https://pnpm.io/settings#minimumreleaseagestrict
 minimumReleaseAgeStrict: true
 
