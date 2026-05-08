@@ -163,7 +163,7 @@ for all cases, are best left for consumers to implement.
 
 1. run `corepack install` in your terminal to install the exact package manager and version used in this project.
 
-1. run `pnpm i` in your terminal to install dependencies. if `pnpm` tells you it ignored a `postinstall` script from some package - tells us immediately via issue or Discord - this is a security concern!
+1. run `pnpm i` in your terminal to install dependencies.
 
 1. create a branch (we don't care about naming).
 
