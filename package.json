@@ -104,7 +104,7 @@
     "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/semver": "7.7.1",
     "@types/sinon": "21.0.1",
-    "better-sqlite3": "12.9.0",
+    "better-sqlite3": "12.8.0",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
     "esbuild": "0.28.0",
