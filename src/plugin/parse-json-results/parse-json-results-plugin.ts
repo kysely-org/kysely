@@ -15,10 +15,10 @@ export interface ParseJSONResultsPluginOptions {
    * Defaults to a function that checks if the string starts and ends with `{}` or `[]` - meaning anything that might be a JSON string, is attempted to be parsed - and if fails, proceeds.
    *
    * @param value - The string value to check.
-   * @param path - The JSON path leading to this value. e.g. `$[0].users[0].profile`
+   * @param jsonPath - The JSON path leading to this value. e.g. `$[0]."users"[0]."profile"`
    * @return `true` if the string should be JSON parsed.
    */
-  shouldParse?: (value: string, path: string) => boolean
+  shouldParse?: (value: string, jsonPath: string) => boolean
 
   /**
    * When `'in-place'`, arrays' and objects' values are parsed in-place. This is
@@ -101,8 +101,8 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
       objectStrategy: options.objectStrategy || 'in-place',
       reviver: options.reviver || ((_, value) => value),
       shouldParse: shouldParse
-        ? (value: string, path: string) =>
-            maybeJson(value) && shouldParse(value, path)
+        ? (value: string, jsonPath: string) =>
+            maybeJson(value) && shouldParse(value, jsonPath)
         : maybeJson,
     })
   }
@@ -124,14 +124,14 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
 
 function parseArray<T>(
   arr: T[],
-  path: string,
+  jsonPath: string,
   options: ProcessedParseJSONResultsPluginOptions,
 ): T[] {
   const target =
     options.objectStrategy === 'create' ? new Array(arr.length) : arr
 
   for (let i = 0; i < arr.length; ++i) {
-    target[i] = parse(arr[i], `${path}[${i}]`, options) as T
+    target[i] = parse(arr[i], `${jsonPath}[${i}]`, options) as T
   }
 
   return target
@@ -139,19 +139,19 @@ function parseArray<T>(
 
 function parse(
   value: unknown,
-  path: string,
+  jsonPath: string,
   options: ProcessedParseJSONResultsPluginOptions,
 ): unknown {
   if (isString(value)) {
-    return parseString(value, path, options)
+    return parseString(value, jsonPath, options)
   }
 
   if (Array.isArray(value)) {
-    return parseArray(value, path, options)
+    return parseArray(value, jsonPath, options)
   }
 
   if (isPlainObject(value)) {
-    return parseObject(value, path, options)
+    return parseObject(value, jsonPath, options)
   }
 
   return value
@@ -159,12 +159,12 @@ function parse(
 
 function parseString(
   str: string,
-  path: string,
+  jsonPath: string,
   options: ProcessedParseJSONResultsPluginOptions,
 ): unknown {
   const { shouldParse } = options
 
-  if (!shouldParse(str, path)) {
+  if (!shouldParse(str, jsonPath)) {
     return str
   }
 
@@ -187,7 +187,7 @@ function parseString(
 
         return options.reviver(key, value, ...otherArgs)
       }),
-      path,
+      jsonPath,
       { ...options, objectStrategy: 'in-place' },
     )
   } catch (error) {
@@ -212,7 +212,7 @@ function maybeJson(value: string): boolean {
 
 function parseObject(
   obj: Record<string, unknown>,
-  path: string,
+  jsonPath: string,
   options: ProcessedParseJSONResultsPluginOptions,
 ): Record<string, unknown> {
   const { objectStrategy } = options
@@ -225,7 +225,7 @@ function parseObject(
       continue
     }
 
-    const parsed = parse(obj[key], `${path}.${key}`, options)
+    const parsed = parse(obj[key], `${jsonPath}."${key}"`, options)
 
     // prevent prototype pollution
     if (
