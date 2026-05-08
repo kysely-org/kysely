@@ -342,7 +342,7 @@ jobs:
         run: pnpm build
 
       - name: Run TypeScript Native tests
-        run: pnpx @typescript/native-preview --project ./test/node/tsconfig.json
+        run: pnx @typescript/native-preview --project ./test/node/tsconfig.json
 
   typescript-composite:
     name: TypeScript Composite
