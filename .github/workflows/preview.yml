@@ -57,4 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Release preview version
-        run: pnpm_config_trust_policy= pnx pkg-pr-new@0.0.61 publish --template './example'
+        run: >-
+          npm_config_trust_policy=
+          pnpm_config_trust_policy=
+          pnx pkg-pr-new@0.0.61 publish --template './example'
