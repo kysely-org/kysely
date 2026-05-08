@@ -161,8 +161,8 @@ importers:
         specifier: 3.10.0
         version: 3.10.0
       '@docusaurus/types':
-        specifier: 3.10.0
-        version: 3.10.0(acorn@8.16.0)(esbuild@0.28.0)(react-dom@19.2.5)(react@19.2.5)
+        specifier: 3.10.1
+        version: 3.10.1(acorn@8.16.0)(esbuild@0.28.0)(react-dom@19.2.5)(react@19.2.5)
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.0)
@@ -1479,6 +1479,12 @@ packages:
 
   '@docusaurus/types@3.10.0':
     resolution: {integrity: sha512-F0dOt3FOoO20rRaFK7whGFQZ3ggyrWEdQc/c8/UiRuzhtg4y1w9FspXH5zpCT07uMnJKBPGh+qNazbNlCQqvSw==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+
+  '@docusaurus/types@3.10.1':
+    resolution: {integrity: sha512-XYMK8k1szDCFMw2V+Xyen0g7Kee1sP3dtFnl7vkGkZOkeAJ/oPDQPL8iz4HBKOo/cwU8QeV6onVjMqtP+tFzsw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -9338,6 +9344,28 @@ snapshots:
   '@docusaurus/tsconfig@3.10.0': {}
 
   '@docusaurus/types@3.10.0(acorn@8.16.0)(esbuild@0.28.0)(react-dom@19.2.5)(react@19.2.5)':
+    dependencies:
+      '@mdx-js/mdx': 3.1.0(acorn@8.16.0)
+      '@types/history': 4.7.11
+      '@types/mdast': 4.0.4
+      '@types/react': 19.2.14
+      commander: 5.1.0
+      joi: 17.13.3
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      react-helmet-async: '@slorber/react-helmet-async@1.3.0(react-dom@19.2.5)(react@19.2.5)'
+      utility-types: 3.11.0
+      webpack: 5.101.3(esbuild@0.28.0)
+      webpack-merge: 5.10.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - acorn
+      - esbuild
+      - supports-color
+      - uglify-js
+      - webpack-cli
+
+  '@docusaurus/types@3.10.1(acorn@8.16.0)(esbuild@0.28.0)(react-dom@19.2.5)(react@19.2.5)':
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.16.0)
       '@types/history': 4.7.11
