@@ -27,6 +27,7 @@ dedupePeers: true
 engineStrict: true
 
 # avoid having to use `-w` when installing packages at project root.
+# https://pnpm.io/settings#ignoreworkspacerootcheck
 ignoreWorkspaceRootCheck: true
 
 # fail and don't fallback to "too new" version of packages when none of their other 
