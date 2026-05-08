@@ -60,4 +60,5 @@ jobs:
         run: >-
           npm_config_trust_policy=
           pnpm_config_trust_policy=
-          pnx pkg-pr-new@0.0.61 publish --template './example'
+          pnpm with 10.38.0
+          dlx pkg-pr-new@0.0.61 publish --template './example'
