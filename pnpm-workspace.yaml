@@ -35,6 +35,7 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeStrict: true
 
 # how versions get prefixed in `package.json`.
+# https://pnpm.io/settings#saveprefix
 savePrefix: ''
 
 # Fail if a package's trust level has decreased compared to previous releases.
