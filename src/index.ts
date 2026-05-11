@@ -127,6 +127,7 @@ export * from './plugin/with-schema/with-schema-plugin.js'
 export * from './plugin/parse-json-results/parse-json-results-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists.js'
+export * from './plugin/handle-empty-insert-values/handle-empty-insert-values-plugin.js'
 export * from './plugin/safe-null-comparison/safe-null-comparison-plugin.js'
 
 export * from './operation-node/add-column-node.js'
