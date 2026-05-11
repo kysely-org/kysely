@@ -9,12 +9,11 @@ import { HandleEmptyInsertValuesTransformer } from './handle-empty-insert-values
 import type { RootOperationNode } from '../../operation-node/root-operation-node.js'
 
 /**
- * A plugin that handles empty `insert into t values ()` queries.
+ * A plugin that handles empty array inserts (`.values([])`).
  *
- * An insert with no columns and no values is invalid SQL syntax in many databases
+ * Passing an empty array to `.values()` produces invalid SQL in most databases
  * and results in a runtime error. This can happen when dynamically building insert
- * queries and passing an empty object or an array of objects that all have no
- * defined columns.
+ * queries from a filtered list that turns out to be empty.
  *
  * The empty insert is replaced with `insert into t select * from t where 1 = 0`,
  * which inserts no rows.
@@ -37,7 +36,7 @@ import type { RootOperationNode } from '../../operation-node/root-operation-node
  *
  * const result = await db
  *   .insertInto('person')
- *   .values({})
+ *   .values([])
  *   .execute()
  * ```
  *

@@ -13,8 +13,7 @@ import type { QueryId } from '../../util/query-id.js'
 
 type EmptyInsertValuesNode = InsertQueryNode & {
   into: TableNode
-  columns: Readonly<[]>
-  values: ValuesNode
+  values: ValuesNode & { values: Readonly<[]> }
 }
 
 let _eq: OperatorNode
@@ -61,6 +60,6 @@ export class HandleEmptyInsertValuesTransformer extends OperationNodeTransformer
   #isEmptyInsertValuesNode(
     node: InsertQueryNode,
   ): node is EmptyInsertValuesNode {
-    return node.columns?.length === 0 && node.values !== undefined && ValuesNode.is(node.values)
+    return node.values !== undefined && ValuesNode.is(node.values) && node.values.values.length === 0
   }
 }

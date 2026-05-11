@@ -34,35 +34,8 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should handle `insert into t values ()` via .values({})', async () => {
-      const query = ctx.db.insertInto('person').values({} as any)
-
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'insert into "person" select * from "person" where 1 = 0',
-          parameters: [],
-        },
-        mysql: {
-          sql: 'insert into `person` select * from `person` where 1 = 0',
-          parameters: [],
-        },
-        mssql: {
-          sql: 'insert into "person" select * from "person" where 1 = 0',
-          parameters: [],
-        },
-        sqlite: {
-          sql: 'insert into "person" select * from "person" where 1 = 0',
-          parameters: [],
-        },
-      })
-
-      const result = await query.executeTakeFirstOrThrow()
-
-      expect(result.numInsertedOrUpdatedRows).to.equal(0n)
-    })
-
-    it('should handle `insert into t values ()` via .values([{}, {}])', async () => {
-      const query = ctx.db.insertInto('person').values([{}, {}] as any)
+    it('should handle `insert into t values ()` via .values([])', async () => {
+      const query = ctx.db.insertInto('person').values([] as any)
 
       testSql(query, dialect, {
         postgres: {
