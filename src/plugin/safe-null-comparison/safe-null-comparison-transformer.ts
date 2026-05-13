@@ -27,7 +27,18 @@ export class SafeNullComparisonTransformer extends OperationNodeTransformer {
     return BinaryOperationNode.create(
       leftOperand,
       OperatorNode.create(op === '=' ? 'is' : 'is not'),
-      rightOperand,
+      // Emit the null operand inline as the SQL keyword `null` rather
+      // than preserving the parameterised `ValueNode`. The compiled
+      // shape `... IS <placeholder>` is non-standard SQL — strict-ANSI
+      // parsers (PostgreSQL, Microsoft SQL Server) reject it at parse
+      // time. `createImmediate(null)` routes through `appendImmediateValue`
+      // in the default query compiler, which writes the literal `null`
+      // keyword. Resulting `... IS NULL` / `... IS NOT NULL` is the
+      // ANSI-standard null-predicate form and is valid across every
+      // dialect Kysely supports.
+      //
+      // Fixes #1830.
+      ValueNode.createImmediate(null),
     )
   }
 }

@@ -38,20 +38,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select from "person" where "first_name" is $1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is null',
+          parameters: [],
         },
         mysql: {
-          sql: 'select from `person` where `first_name` is ?',
-          parameters: [null],
+          sql: 'select from `person` where `first_name` is null',
+          parameters: [],
         },
         mssql: {
-          sql: 'select from "person" where "first_name" is @1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is null',
+          parameters: [],
         },
         sqlite: {
-          sql: 'select from "person" where "first_name" is ?',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is null',
+          parameters: [],
         },
       })
     })
@@ -90,20 +90,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select from "person" where "first_name" is not $1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
         mysql: {
-          sql: 'select from `person` where `first_name` is not ?',
-          parameters: [null],
+          sql: 'select from `person` where `first_name` is not null',
+          parameters: [],
         },
         mssql: {
-          sql: 'select from "person" where "first_name" is not @1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
         sqlite: {
-          sql: 'select from "person" where "first_name" is not ?',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
       })
     })
@@ -142,20 +142,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select from "person" where "first_name" is not $1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
         mysql: {
-          sql: 'select from `person` where `first_name` is not ?',
-          parameters: [null],
+          sql: 'select from `person` where `first_name` is not null',
+          parameters: [],
         },
         mssql: {
-          sql: 'select from "person" where "first_name" is not @1',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
         sqlite: {
-          sql: 'select from "person" where "first_name" is not ?',
-          parameters: [null],
+          sql: 'select from "person" where "first_name" is not null',
+          parameters: [],
         },
       })
     })
@@ -195,20 +195,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select from "person" where "first_name" is $1 and "last_name" is $2',
-          parameters: [null, null],
+          sql: 'select from "person" where "first_name" is null and "last_name" is null',
+          parameters: [],
         },
         mysql: {
-          sql: 'select from `person` where `first_name` is ? and `last_name` is ?',
-          parameters: [null, null],
+          sql: 'select from `person` where `first_name` is null and `last_name` is null',
+          parameters: [],
         },
         mssql: {
-          sql: 'select from "person" where "first_name" is @1 and "last_name" is @2',
-          parameters: [null, null],
+          sql: 'select from "person" where "first_name" is null and "last_name" is null',
+          parameters: [],
         },
         sqlite: {
-          sql: 'select from "person" where "first_name" is ? and "last_name" is ?',
-          parameters: [null, null],
+          sql: 'select from "person" where "first_name" is null and "last_name" is null',
+          parameters: [],
         },
       })
     })
@@ -223,20 +223,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select from "person" where "first_name" is $1 and "last_name" is not $2 and "last_name" = $3',
-          parameters: [null, null, 'Foo'],
+          sql: 'select from "person" where "first_name" is null and "last_name" is not null and "last_name" = $1',
+          parameters: ['Foo'],
         },
         mysql: {
-          sql: 'select from `person` where `first_name` is ? and `last_name` is not ? and `last_name` = ?',
-          parameters: [null, null, 'Foo'],
+          sql: 'select from `person` where `first_name` is null and `last_name` is not null and `last_name` = ?',
+          parameters: ['Foo'],
         },
         mssql: {
-          sql: 'select from "person" where "first_name" is @1 and "last_name" is not @2 and "last_name" = @3',
-          parameters: [null, null, 'Foo'],
+          sql: 'select from "person" where "first_name" is null and "last_name" is not null and "last_name" = @1',
+          parameters: ['Foo'],
         },
         sqlite: {
-          sql: 'select from "person" where "first_name" is ? and "last_name" is not ? and "last_name" = ?',
-          parameters: [null, null, 'Foo'],
+          sql: 'select from "person" where "first_name" is null and "last_name" is not null and "last_name" = ?',
+          parameters: ['Foo'],
         },
       })
     })
