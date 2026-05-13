@@ -33,7 +33,7 @@
     "@docusaurus/types": "3.10.1",
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
     "@types/react": "19.2.14",
-    "mermaid": "11.14.0",
+    "mermaid": "11.15.0",
     "typescript": "6.0.3"
   },
   "browserslist": {
