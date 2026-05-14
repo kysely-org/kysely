@@ -302,13 +302,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     queryId: QueryId,
     options?: AbortableOperationOptions | undefined,
   ): Promise<QueryResult<T>> {
-    const args = freeze({
-      queryId,
-      result,
-      signal: options?.signal,
-    } satisfies PluginTransformResultArgs)
-
     for (const plugin of this.#plugins) {
+      const args = freeze({
+        queryId,
+        result,
+        signal: options?.signal,
+      } satisfies PluginTransformResultArgs)
+
       result = await plugin.transformResult(args)
     }
 
