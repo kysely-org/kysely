@@ -62,7 +62,8 @@ jobs:
           persist-credentials: false
 
       - name: Run docker compose
-        run: docker compose up -d
+        if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
+        run: docker compose up -d ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
