@@ -24,6 +24,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -61,6 +63,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -76,10 +80,16 @@ jobs:
         run: pnpm install
 
       - name: Checkout target branch and build
+        env:
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref || 'master' }}
         run: |
-          TARGET_BRANCH=${{ github.event.pull_request.base.ref || 'master' }}
-          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-          git checkout $TARGET_BRANCH
+          # Validate branch name format before using it
+          if [[ ! "$TARGET_BRANCH" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+            echo "Error: invalid target branch name"
+            exit 1
+          fi
+          git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
           pnpm install
           cd site && pnpm build
 

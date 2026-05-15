@@ -8,10 +8,7 @@ updates:
   - package-ecosystem: npm
     cooldown:
       default-days: 1
-    directories: 
-      - /
-      - /site
-      - /test/cloudflare-workers
+    directory: /
     rebase-strategy: disabled
     reviewers:
       - igalklebanov
@@ -29,6 +26,8 @@ updates:
       interval: daily
 
   - package-ecosystem: github-actions
+    cooldown:
+      default-days: 1
     directory: /
     rebase-strategy: disabled
     reviewers:
