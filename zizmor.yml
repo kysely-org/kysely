@@ -1,0 +1,4 @@
+rules:
+  use-trusted-publishing:
+    ignore:
+      - preview.yml # preview releases using pkg-pr-new are getting falsly flagged for this.
