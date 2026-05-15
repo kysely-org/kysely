@@ -45,10 +45,11 @@ jobs:
       matrix:
         # https://endoflife.date/nodejs
         node-version: [22.x, 24.x, 26.x]
+        variant: ['postgres', 'mysql', 'mssql', 'sqlite', 'pglite']
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
-    name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
+    name: ${{ matrix.variant }} on Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
       - name: Harden Runner
@@ -61,7 +62,8 @@ jobs:
           persist-credentials: false
 
       - name: Run docker compose
-        run: docker compose up -d
+        if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
+        run: docker compose up -d ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -76,8 +78,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install && pnpm rebuild better-sqlite3
 
-      - name: Run node tests
-        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
+      - name: Run ${{ matrix.variant }} tests
+        run: DIALECTS=${{ matrix.variant }} ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
