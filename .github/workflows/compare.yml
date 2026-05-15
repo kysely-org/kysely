@@ -76,10 +76,16 @@ jobs:
         run: pnpm install
 
       - name: Checkout target branch and build
+        env:
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref || 'master' }}
         run: |
-          TARGET_BRANCH=${{ github.event.pull_request.base.ref || 'master' }}
-          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
-          git checkout $TARGET_BRANCH
+          # Validate branch name format before using it
+          if [[ ! "$TARGET_BRANCH" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+            echo "Error: invalid target branch name"
+            exit 1
+          fi
+          git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
           pnpm install
           cd site && pnpm build
 
