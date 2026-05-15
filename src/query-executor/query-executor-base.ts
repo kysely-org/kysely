@@ -4,10 +4,7 @@ import type {
   QueryResult,
 } from '../driver/database-connection.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
-import type {
-  KyselyPlugin,
-  PluginTransformResultArgs,
-} from '../plugin/kysely-plugin.js'
+import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type { DialectAdapter } from '../dialect/dialect-adapter.js'
@@ -302,14 +299,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     queryId: QueryId,
     options?: AbortableOperationOptions | undefined,
   ): Promise<QueryResult<T>> {
-    const args = freeze({
-      queryId,
-      result,
-      signal: options?.signal,
-    } satisfies PluginTransformResultArgs)
+    const { signal } = options || {}
 
     for (const plugin of this.#plugins) {
-      result = await plugin.transformResult(args)
+      result = await plugin.transformResult(freeze({ queryId, result, signal }))
     }
 
     return result
