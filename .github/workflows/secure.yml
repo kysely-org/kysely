@@ -1,4 +1,4 @@
-name: GitHub Actions Security Analysis
+name: secure
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions: {}
 
 jobs:
   zizmor:
-    name: Run zizmor
+    name: zizmor github actions scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
