@@ -1,3 +1,4 @@
+# See https://docs.zizmor.sh/configuration/
 rules:
   use-trusted-publishing:
     ignore:
