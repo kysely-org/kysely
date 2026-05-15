@@ -1,5 +1,12 @@
 # See https://docs.zizmor.sh/configuration/
 rules:
+  # See https://docs.zizmor.sh/audits/#dependabot-cooldown
+  dependabot-cooldown:
+    config:
+      # See https://docs.zizmor.sh/audits/#rulesdependabot-cooldownconfigdays
+      days: 1
+  # See https://docs.zizmor.sh/audits/#use-trusted-publishing
   use-trusted-publishing:
+    # See https://docs.zizmor.sh/configuration/#rules-id-ignore
     ignore:
       - preview.yml # preview releases using pkg-pr-new are getting falsly flagged for this.
