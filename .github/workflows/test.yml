@@ -45,6 +45,7 @@ jobs:
       matrix:
         # https://endoflife.date/nodejs
         node-version: [22.x, 24.x, 26.x]
+        variant: ['postgres', 'mysql', 'mssql', 'sqlite', 'pglite']
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
@@ -76,8 +77,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install && pnpm rebuild better-sqlite3
 
-      - name: Run node tests
-        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
+      - name: Run ${{ matrix.variant }} tests
+        run: DIALECTS=${{ matrix.variant }} ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
