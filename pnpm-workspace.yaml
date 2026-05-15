@@ -5,7 +5,7 @@ packages:
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
 allowBuilds:
-  better-sqlite3@12.9.0: true
+  better-sqlite3@12.10.0: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
   esbuild@0.27.3 || 0.28.0: true # tsx@4.21.0 dependency || direct.
@@ -30,7 +30,7 @@ engineStrict: true
 # https://pnpm.io/settings#ignoreworkspacerootcheck
 ignoreWorkspaceRootCheck: true
 
-# fail and don't fallback to "too new" version of packages when none of their other 
+# fail and don't fallback to "too new" version of packages when none of their other
 # versions match `minimumReleaseAge` range (default is 1 day).
 # https://pnpm.io/settings#minimumreleaseagestrict
 minimumReleaseAgeStrict: true
