@@ -6,14 +6,13 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-  id-token: write # Required for OIDC
-
 jobs:
   npm:
     if: github.repository == 'kysely-org/kysely'
     environment: release
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC
     runs-on: ubuntu-latest
 
     steps:
@@ -27,14 +26,16 @@ jobs:
           fetch-depth: 0 # Need full history to check branch ancestry
 
       - name: verify tag format and branch
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          # Validate ref_name format before assignment
-          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+          # Validate ref_name format before using it
+          if [[ ! "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
             echo "Error: tag does not follow semver!"
             exit 1
           fi
 
-          TAG="${{ github.ref_name }}"
+          TAG="$REF_NAME"
 
           # Route stable tags to master/latest, RC tags to next/next
           if [[ "$TAG" =~ -rc\.[0-9]+$ ]]; then
@@ -52,6 +53,7 @@ jobs:
             exit 1
           fi
 
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
           echo "DIST_TAG=$DIST_TAG" >> "$GITHUB_ENV"
 
       - name: Install pnpm
@@ -68,7 +70,7 @@ jobs:
 
       - name: verify package version
         run: |
-          TAG="${{ github.ref_name }}"
+          # TAG was validated and set in the previous step via $GITHUB_ENV
           VERSION="${TAG#v}"
 
           # Get version from package.json safely (parse as JSON, don't execute)
@@ -95,6 +97,9 @@ jobs:
   jsr:
     needs: npm
     environment: release
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC
     runs-on: ubuntu-latest
 
     steps:
