@@ -49,7 +49,7 @@ jobs:
         with-transformer: [false, true]
     runs-on: ubuntu-latest
 
-    name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
+    name: ${{ matrix.variant }} on Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
       - name: Harden Runner
