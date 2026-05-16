@@ -159,10 +159,10 @@ export type NarrowPartial<O, T> = T extends object
       [K in keyof O & string]: K extends keyof T
         ? T[K] extends NotNull
           ? Exclude<O[K], null>
-          : T[K] extends object
-            ? SimplifyDeep<O[K] & NarrowPartial<O[K], T[K]>>
-            : T[K] extends O[K]
-              ? T[K]
+          : T[K] extends O[K]
+            ? T[K]
+            : T[K] extends object
+              ? SimplifyDeep<O[K] & NarrowPartial<O[K], T[K]>>
               : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
         : O[K]
     }>

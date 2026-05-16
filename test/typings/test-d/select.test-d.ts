@@ -11,6 +11,8 @@ import {
 } from '../index.js'
 import type { Database, Person } from '../shared.js'
 
+declare const $brand: unique symbol
+
 async function testSelectSingle(db: Kysely<Database>) {
   const qb = db.selectFrom('person')
 
@@ -152,6 +154,50 @@ async function testSelectSingle(db: Kysely<Database>) {
       tags: string[]
     }
   }>(r18)
+
+  const [r19] = await db
+    .$extendTables<{
+      organization: {
+        companyId: string & {
+          [$brand]: { CompanyNanoId: true }
+        }
+        headCount: number
+        metadata: {
+          createdAt: Date & {
+            [$brand]: { PastDate: true }
+          }
+          updatedAt: Date
+        }
+      }
+    }>()
+    .selectFrom('organization')
+    .selectAll()
+    .$narrowType<{
+      headCount: number & { [$brand]: { HeadCount: true } }
+      metadata: {
+        updatedAt: Date & {
+          [$brand]: {
+            PastDate: true
+          }
+        }
+      }
+    }>()
+    .execute()
+
+  expectType<{
+    companyId: string & {
+      [$brand]: { CompanyNanoId: true }
+    }
+    headCount: number & { [$brand]: { HeadCount: true } }
+    metadata: {
+      createdAt: Date & {
+        [$brand]: { PastDate: true }
+      }
+      updatedAt: Date & {
+        [$brand]: { PastDate: true }
+      }
+    }
+  }>(r19)
 
   const expr1 = db.selectFrom('person').select('first_name').$asScalar()
   expectType<ExpressionWrapper<Database, 'person', string>>(expr1)
