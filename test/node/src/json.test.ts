@@ -72,6 +72,10 @@ const jsonFunctions = {
     jsonArrayFrom: sqlite_jsonArrayFrom,
     jsonObjectFrom: sqlite_jsonObjectFrom,
     jsonBuildObject: sqlite_jsonBuildObject,
+  } as never as {
+    jsonArrayFrom: typeof pg_jsonArrayFrom
+    jsonObjectFrom: typeof pg_jsonObjectFrom
+    jsonBuildObject: typeof pg_jsonBuildObject
   },
 } as const
 
