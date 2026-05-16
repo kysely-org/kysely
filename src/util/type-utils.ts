@@ -277,17 +277,3 @@ export type NumericString = `${number}`
  * Unlike `Required<T>`, this does not strip `undefined` from property types.
  */
 export type AllProps<T> = T & { [P in keyof T]-?: unknown }
-
-/**
- * Evaluates to `true` if type `T` is assignable to `Uint8Array`.
- */
-export type HasUint8Array<T> = T extends Uint8Array ? true : false
-
-/**
- * Evaluates to `true` if any property in object type `O` contains `Uint8Array`.
- */
-export type ObjectHasUint8ArrayProperty<O> = true extends {
-  [K in keyof O]: HasUint8Array<O[K]>
-}[keyof O]
-  ? true
-  : false

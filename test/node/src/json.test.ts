@@ -72,6 +72,10 @@ const jsonFunctions = {
     jsonArrayFrom: sqlite_jsonArrayFrom,
     jsonObjectFrom: sqlite_jsonObjectFrom,
     jsonBuildObject: sqlite_jsonBuildObject,
+  } as never as {
+    jsonArrayFrom: typeof pg_jsonArrayFrom
+    jsonObjectFrom: typeof pg_jsonObjectFrom
+    jsonBuildObject: typeof pg_jsonBuildObject
   },
 } as const
 
@@ -421,7 +425,7 @@ for (const dialect of DIALECTS) {
           first: eb.ref('first_name'),
           last: eb.ref('last_name'),
           full:
-            dialect === 'sqlite'
+            sqlSpec === 'sqlite'
               ? sql<string>`first_name || ' ' || last_name`
               : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
         }).as('name'),
@@ -574,17 +578,14 @@ for (const dialect of DIALECTS) {
       const result = await db
         .selectNoFrom([
           buffer,
-          // Type assertion needed due to union of dialect helper types
-          (
-            jsonObjectFrom(
-              db.selectNoFrom([
-                dialect === 'sqlite'
-                  ? expressionBuilder()
-                      .cast<string>(buffer.expression, 'text')
-                      .as('buffer')
-                  : buffer,
-              ]),
-            ) as RawBuilder<{ buffer: string } | null>
+          jsonObjectFrom(
+            db.selectNoFrom(
+              sqlSpec === 'sqlite'
+                ? expressionBuilder()
+                    .cast<string>(buffer.expression, 'text')
+                    .as('buffer')
+                : buffer,
+            ),
           )
             .$notNull()
             .as('dehydrated'),
