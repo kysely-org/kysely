@@ -579,13 +579,13 @@ for (const dialect of DIALECTS) {
         .selectNoFrom([
           buffer,
           jsonObjectFrom(
-            db.selectNoFrom(
+            db.selectNoFrom([
               sqlSpec === 'sqlite'
                 ? expressionBuilder()
                     .cast<string>(buffer.expression, 'text')
                     .as('buffer')
                 : buffer,
-            ),
+            ]),
           )
             .$notNull()
             .as('dehydrated'),
