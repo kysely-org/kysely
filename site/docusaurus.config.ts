@@ -46,7 +46,7 @@ export default {
             '.code-example',
           ],
           enableLlmsFullTxt: true,
-          includeGeneratedIndex: false,
+          includeGeneratedIndex: true,
           includePages: true,
           includeVersionedDocs: false,
           relativePaths: false,
