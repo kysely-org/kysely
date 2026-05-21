@@ -6,6 +6,8 @@ on:
     tags:
       - 'v*'
 
+permissions: {}
+
 jobs:
   npm:
     if: github.repository == 'kysely-org/kysely'
