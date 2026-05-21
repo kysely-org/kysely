@@ -98,7 +98,7 @@
     "@types/chai": "5.2.3",
     "@types/chai-as-promised": "8.0.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "25.9.0",
+    "@types/node": "25.9.1",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
     "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
