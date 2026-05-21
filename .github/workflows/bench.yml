@@ -1,7 +1,6 @@
 name: bench
 
 permissions: {}
-  # contents: read
 
 on:
   push:
@@ -51,7 +50,7 @@ jobs:
 
     name: TypeScript Benchmarks
     permissions:
-      pull-requests: write
+      pull-requests: write # required for PR comment.
     runs-on: ubuntu-latest
 
     steps:
