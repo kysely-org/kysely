@@ -1,7 +1,7 @@
 name: bench
 
-permissions:
-  contents: read
+permissions: {}
+  # contents: read
 
 on:
   push:
