@@ -66,6 +66,74 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r5)
 
+  // A column whose update type is `never` (e.g. `modified_at` is
+  // `ColumnType<Date, never, never>`) should still be referenceable in the
+  // `onConflict` `where` clause, since `where` is a read-only context.
+  const r5b = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc
+        .column('id')
+        .doUpdateSet({ first_name: 'foo' })
+        .where('modified_at', '>', new Date()),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r5b)
+
+  // A `GeneratedAlways` column (also `ColumnType<T, never, never>`) should be
+  // referenceable in the `onConflict` `where` clause.
+  const r5c = await db
+    .insertInto('book')
+    .values({ name: 'foo' })
+    .onConflict((oc) =>
+      oc.column('id').doUpdateSet({ name: 'bar' }).where('id', '=', 1),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r5c)
+
+  // The `excluded` virtual table should also expose `never`-update columns in
+  // the `onConflict` `where` clause.
+  const r5d = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc
+        .column('id')
+        .doUpdateSet({ first_name: 'foo' })
+        .whereRef('modified_at', '<', 'excluded.modified_at'),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r5d)
+
+  // A `never`-update column must still be rejected in the `onConflict`
+  // `doUpdateSet` call, since it cannot be updated.
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({ modified_at: new Date() }),
+      ),
+  )
+
+  // A non-existent column must still be rejected in the `onConflict` `where`
+  // clause.
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc
+          .column('id')
+          .doUpdateSet({ first_name: 'foo' })
+          .where('doesnt_exist', '=', 1),
+      ),
+  )
+
   const r6 = await db
     .insertInto('person')
     .values((eb) => ({
