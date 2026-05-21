@@ -3,7 +3,7 @@ export const simpleSelects = `const result = await db
   // persons named 'Jennifer'.
   .with(
     'jennifers',
-    db
+    (db) => db
       .selectFrom('person')
       .where('first_name', '=', 'Jennifer')
       .select(['id', 'age']),
