@@ -12,6 +12,10 @@ on:
 
 jobs:
   build-current:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+
     name: Build current branch
     runs-on: ubuntu-latest
     outputs:
