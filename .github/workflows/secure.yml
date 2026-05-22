@@ -10,6 +10,10 @@ permissions: {}
 
 jobs:
   zizmor:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+
     name: zizmor github actions scan
     runs-on: ubuntu-latest
 
