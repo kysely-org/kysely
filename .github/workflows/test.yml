@@ -1,8 +1,5 @@
 name: test
 
-permissions:
-  contents: read
-
 on:
   push:
     branches:
@@ -37,6 +34,8 @@ on:
       - '!*.md'
       - '!LICENSE'
   workflow_dispatch:
+
+permissions: {}
 
 jobs:
   node:
