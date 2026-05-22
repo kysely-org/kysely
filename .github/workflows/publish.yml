@@ -12,6 +12,7 @@ jobs:
   npm:
     if: github.repository == 'kysely-org/kysely'
     environment: release
+    name: publish to npm
     permissions:
       contents: read
       id-token: write # Required for OIDC
@@ -100,6 +101,7 @@ jobs:
   jsr:
     needs: npm
     environment: release
+    name: publish to jsr
     permissions:
       contents: read
       id-token: write # Required for OIDC
