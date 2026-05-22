@@ -1,7 +1,6 @@
 name: bench
 
-permissions:
-  contents: read
+permissions: {}
 
 on:
   push:
@@ -42,13 +41,16 @@ on:
       - 'jsr*'
       - 'LICENSE'
       - 'outdated-typescript.d.ts'
-  workflow_dispatch:
 
 jobs:
   typescript:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+
     name: TypeScript Benchmarks
     permissions:
-      pull-requests: write
+      pull-requests: write # required for PR comment.
     runs-on: ubuntu-latest
 
     steps:
