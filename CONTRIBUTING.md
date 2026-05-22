@@ -40,7 +40,7 @@ issue is only somewhat relevant, please submit a new issue and reference the old
 on the existing one. Let us label your new issue as `duplicate` if it is the same thing - it's fine! If it's not 
 the same thing and you commented on another issue, it makes it harder to track on our end.
 
-If possible/relevant, please provide a [playground link](https://kyse.link), Stackblitz OR a public git repository that 
+If possible/relevant, please provide a [playground link](https://play.kysely.dev), Stackblitz OR a public git repository that 
 reproduces the issue.
 
 Please provide the exact error/warning texts you're getting. "this doesn't work" or "this throws an error"
