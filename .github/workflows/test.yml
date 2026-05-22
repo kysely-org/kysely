@@ -266,7 +266,7 @@ jobs:
   older-typescript-version:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-older-typescript-version-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-older-typescript-version-${{ matrix.typescript-version }}-${{ github.event.pull_request.number || github.sha }}
 
     name: Older TypeScript version
     runs-on: ubuntu-latest
