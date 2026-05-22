@@ -66,7 +66,9 @@ jobs:
 
       - name: spin up database
         if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
-        run: docker compose up -d ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
+        env:
+          SERVICES: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
+        run: docker compose up -d $SERVICES
 
       - name: install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -82,7 +84,10 @@ jobs:
         run: pnpm install && pnpm rebuild better-sqlite3
 
       - name: Run ${{ matrix.variant }} tests
-        run: DIALECTS=${{ matrix.variant }} ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
+        env:
+          DIALECTS: ${{ matrix.variant }}
+          TEST_TRANSFORMER: ${{ matrix.with-transformer && '1' || '' }}
+        run: pnpm test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
@@ -307,8 +312,9 @@ jobs:
         run: pnpm build
 
       - name: set typeScript and tsd versions
+        env:
+          TS_VERSION: ${{ matrix.typescript-version }}
         run: |
-          TS_VERSION="${{ matrix.typescript-version }}"
           echo "TS_VERSION=$TS_VERSION" >> $GITHUB_ENV
           TSD_VERSION=$(echo '{"~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
           echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
