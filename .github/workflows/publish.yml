@@ -10,8 +10,12 @@ permissions: {}
 
 jobs:
   npm:
-    if: github.repository == 'kysely-org/kysely'
+    concurrency:
+      cancel-in-progress: false
+      group: ${{ github.workflow }}-npm
+
     environment: release
+    if: github.repository == 'kysely-org/kysely'
     name: publish to npm
     permissions:
       contents: read
@@ -99,8 +103,12 @@ jobs:
         run: pnpm publish --no-git-checks --tag "$DIST_TAG" # the workflow runs in a detached head state, so git checks fail
 
   jsr:
-    needs: npm
+    concurrency:
+      cancel-in-progress: false
+      group: ${{ github.workflow }}-jsr
+
     environment: release
+    needs: npm
     name: publish to jsr
     permissions:
       contents: read
