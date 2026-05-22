@@ -41,7 +41,7 @@ jobs:
   node:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-node-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-${{ matrix.variant }}-node-${{ matrix.node-version }}-with-transformer-${{ matrix.with-transformer }}-${{ github.event.pull_request.number || github.sha }}
 
     name: ${{ matrix.variant }} on Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
     runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
   deno:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-deno-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-deno-${{ matrix.deno-version }}-${{ github.event.pull_request.number || github.sha }}
 
     name: Deno
     runs-on: ubuntu-latest
@@ -145,7 +145,7 @@ jobs:
   bun:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-bun-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-bun-${{ matrix.bun-version }}-${{ github.event.pull_request.number || github.sha }}
 
     name: Bun
     runs-on: ubuntu-latest
