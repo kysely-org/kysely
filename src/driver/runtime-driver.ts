@@ -109,9 +109,11 @@ export class RuntimeDriver implements Driver {
     connection: DatabaseConnection,
     options?: AbortableOperationOptions,
   ): Promise<void> {
-    await this.#driver.releaseConnection(connection, options)
-
-    this.#connectionMutex?.releaseLock()
+    try {
+      await this.#driver.releaseConnection(connection, options)
+    } finally {
+      this.#connectionMutex?.releaseLock()
+    }
   }
 
   async beginTransaction(
