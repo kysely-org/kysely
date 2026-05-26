@@ -48,6 +48,8 @@ are not helping us help you.
 
 Don't be an asshole. Don't demand support/service from us.
 
+Please write in your own human voice. LLM-generated walls of text hide the actual signal and waste our time. Three rough sentences from you beat three paragraphs of AI slop.
+
 ## ⌨️ With Code!
 
 ### 📘 Documentation Code Contributions
@@ -115,6 +117,8 @@ assigned to the issue.
 We will close pull requests where the changes are too far from acceptable. Such cases are a waste of time for us to
 even begin to comment on. You can ask for quick informal feedback on Discord in such cases and submit another pull
 request with better changes later.
+
+Please write in your own human voice. LLM-generated walls of text in PR descriptions, reviews, or comments hide the actual signal and waste our time. Three rough sentences from you beat three paragraphs of AI slop.
 
 #### Style/Design Philosophy
 
