@@ -33,7 +33,7 @@ jobs:
           node-version: lts/*
 
       - name: audit dependencies
-        run: pnpm audit --audit-level moderate
+        run: pnpm audit
 
   zizmor:
     concurrency:
