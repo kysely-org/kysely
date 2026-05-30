@@ -9,6 +9,9 @@ the inserted row's columns (or any other expression) as the return value. `retur
 works just like `select`. Refer to `select` method's examples and documentation for
 more info.
 
+MS SQL Server (MSSQL) does not support `returning`. Use the `output` method
+instead, e.g. `.output(['inserted.id', 'inserted.first_name as name'])`.
+
 import { Playground } from '../../../src/components/Playground'
 
 import {

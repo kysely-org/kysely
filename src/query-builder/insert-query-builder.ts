@@ -170,6 +170,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
    * works just like `select`. Refer to `select` method's examples and documentation for
    * more info.
    *
+   * MS SQL Server (MSSQL) does not support `returning`. Use the `output` method
+   * instead, e.g. `.output(['inserted.id', 'inserted.first_name as name'])`.
+   *
    * ```ts
    * const result = await db
    *   .insertInto('person')
