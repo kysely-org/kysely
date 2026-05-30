@@ -1,4 +1,5 @@
 import { freeze } from '../util/object-utils.js'
+import type { AliasNode } from './alias-node.js'
 import type { ColumnNode } from './column-node.js'
 import type { ExplainNode } from './explain-node.js'
 import type { OnConflictNode } from './on-conflict-node.js'
@@ -15,7 +16,7 @@ export type InsertQueryNodeProps = Omit<InsertQueryNode, 'kind' | 'into'>
 
 export interface InsertQueryNode extends OperationNode {
   readonly kind: 'InsertQueryNode'
-  readonly into?: TableNode
+  readonly into?: TableNode | AliasNode
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly values?: OperationNode
   readonly returning?: ReturningNode
@@ -34,7 +35,7 @@ export interface InsertQueryNode extends OperationNode {
 type InsertQueryNodeFactory = Readonly<{
   is(node: OperationNode): node is InsertQueryNode
   create(
-    into: TableNode,
+    into: TableNode | AliasNode,
     withNode?: WithNode,
     replace?: boolean,
   ): Readonly<InsertQueryNode>
@@ -42,6 +43,10 @@ type InsertQueryNodeFactory = Readonly<{
   cloneWith(
     insertQuery: InsertQueryNode,
     props: InsertQueryNodeProps,
+  ): Readonly<InsertQueryNode>
+  cloneWithInto(
+    insertQuery: InsertQueryNode,
+    into: TableNode | AliasNode,
   ): Readonly<InsertQueryNode>
 }>
 
@@ -73,6 +78,13 @@ export const InsertQueryNode: InsertQueryNodeFactory =
       return freeze({
         ...insertQuery,
         ...props,
+      })
+    },
+
+    cloneWithInto(insertQuery, into) {
+      return freeze({
+        ...insertQuery,
+        into,
       })
     },
   })
