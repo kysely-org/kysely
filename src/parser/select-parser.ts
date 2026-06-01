@@ -26,7 +26,19 @@ import {
   type ExpressionBuilder,
 } from '../expression/expression-builder.js'
 
+type Postgres18Column<DB, TB extends keyof DB> = Extract<keyof DB[TB], string>
+
+type AnyPostgres18Column<DB, TB extends keyof DB> =
+  | `old.${Postgres18Column<DB, TB>}`
+  | `new.${Postgres18Column<DB, TB>}`
+
+type AnyAliasedPostgres18Column<DB, TB extends keyof DB> =
+  | `old.${Postgres18Column<DB, TB>} as ${string}`
+  | `new.${Postgres18Column<DB, TB>} as ${string}`
+
 export type SelectExpression<DB, TB extends keyof DB> =
+  | AnyPostgres18Column<DB, TB>
+  | AnyAliasedPostgres18Column<DB, TB>
   | AnyAliasedColumnWithTable<DB, TB>
   | AnyAliasedColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
@@ -89,17 +101,25 @@ type ExtractAliasFromSelectExpression<SE> = SE extends string
         : never
 
 type ExtractAliasFromStringSelectExpression<SE extends string> =
-  SE extends `${string}.${string}.${string} as ${infer A}`
+  SE extends `old.${string} as ${infer A}`
     ? A
-    : SE extends `${string}.${string} as ${infer A}`
+    : SE extends `new.${string} as ${infer A}`
       ? A
-      : SE extends `${string} as ${infer A}`
-        ? A
-        : SE extends `${string}.${string}.${infer C}`
-          ? C
-          : SE extends `${string}.${infer C}`
-            ? C
-            : SE
+      : SE extends `old.${infer C}`
+        ? `old.${C}`
+        : SE extends `new.${infer C}`
+          ? `new.${C}`
+          : SE extends `${string}.${string}.${string} as ${infer A}`
+            ? A
+            : SE extends `${string}.${string} as ${infer A}`
+              ? A
+              : SE extends `${string} as ${infer A}`
+                ? A
+                : SE extends `${string}.${string}.${infer C}`
+                  ? C
+                  : SE extends `${string}.${infer C}`
+                    ? C
+                    : SE
 
 type ExtractTypeFromSelectExpression<
   DB,
@@ -123,37 +143,53 @@ type ExtractTypeFromStringSelectExpression<
   DB,
   TB extends keyof DB,
   SE extends string,
-> = SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
-  ? `${SC}.${T}` extends TB
-    ? C extends keyof DB[`${SC}.${T}`]
-      ? DB[`${SC}.${T}`][C]
-      : never
+> = SE extends `old.${infer C} as ${string}`
+  ? C extends AnyColumn<DB, TB>
+    ? ExtractColumnType<DB, TB, C>
     : never
-  : SE extends `${infer T}.${infer C} as ${string}`
-    ? T extends TB
-      ? C extends keyof DB[T]
-        ? DB[T][C]
-        : never
+  : SE extends `new.${infer C} as ${string}`
+    ? C extends AnyColumn<DB, TB>
+      ? ExtractColumnType<DB, TB, C>
       : never
-    : SE extends `${infer C} as ${string}`
+    : SE extends `old.${infer C}`
       ? C extends AnyColumn<DB, TB>
         ? ExtractColumnType<DB, TB, C>
         : never
-      : SE extends `${infer SC}.${infer T}.${infer C}`
-        ? `${SC}.${T}` extends TB
-          ? C extends keyof DB[`${SC}.${T}`]
-            ? DB[`${SC}.${T}`][C]
-            : never
+      : SE extends `new.${infer C}`
+        ? C extends AnyColumn<DB, TB>
+          ? ExtractColumnType<DB, TB, C>
           : never
-        : SE extends `${infer T}.${infer C}`
-          ? T extends TB
-            ? C extends keyof DB[T]
-              ? DB[T][C]
+        : SE extends `${infer SC}.${infer T}.${infer C} as ${string}`
+          ? `${SC}.${T}` extends TB
+            ? C extends keyof DB[`${SC}.${T}`]
+              ? DB[`${SC}.${T}`][C]
               : never
             : never
-          : SE extends AnyColumn<DB, TB>
-            ? ExtractColumnType<DB, TB, SE>
-            : never
+          : SE extends `${infer T}.${infer C} as ${string}`
+            ? T extends TB
+              ? C extends keyof DB[T]
+                ? DB[T][C]
+                : never
+              : never
+            : SE extends `${infer C} as ${string}`
+              ? C extends AnyColumn<DB, TB>
+                ? ExtractColumnType<DB, TB, C>
+                : never
+              : SE extends `${infer SC}.${infer T}.${infer C}`
+                ? `${SC}.${T}` extends TB
+                  ? C extends keyof DB[`${SC}.${T}`]
+                    ? DB[`${SC}.${T}`][C]
+                    : never
+                  : never
+                : SE extends `${infer T}.${infer C}`
+                  ? T extends TB
+                    ? C extends keyof DB[T]
+                      ? DB[T][C]
+                      : never
+                    : never
+                  : SE extends AnyColumn<DB, TB>
+                    ? ExtractColumnType<DB, TB, SE>
+                    : never
 
 export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<{
   [C in AnyColumn<DB, TB>]: {

@@ -1,4 +1,4 @@
-import { UpdateResult, sql } from '../../../dist/index.js'
+import { UpdateQueryBuilder, UpdateResult, sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,
@@ -225,6 +225,44 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (sqlSpec === 'postgres') {
+      it.only('should support postgres 18 old and new returning syntax', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ first_name: 'Mark' })
+          .where('first_name', '=', 'Jennifer')
+          .returning([
+            'old.first_name as old_name',
+            'new.first_name as new_name',
+          ])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "first_name" = $1 where "first_name" = $2 returning "old"."first_name" as "old_name", "new"."first_name" as "new_name"',
+            parameters: ['Mark', 'Jennifer'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        type Postgres18ResultRow =
+          typeof query extends UpdateQueryBuilder<any, any, any, infer O>
+            ? O
+            : never
+
+        const simulatedResult: Postgres18ResultRow = {
+          old_name: 'Jennifer',
+          new_name: 'Mark',
+        }
+
+        expect(simulatedResult).to.containSubset({
+          old_name: 'Jennifer',
+          new_name: 'Mark',
+        })
+      })
+    }
+
     it('should update one row using a subquery', async () => {
       const query = ctx.db
         .updateTable('person')
@@ -255,7 +293,7 @@ for (const dialect of DIALECTS) {
         },
       })
 
-      const result = await query.executeTakeFirst()
+      const result = await query.executeTakeFirstOrThrow()
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
