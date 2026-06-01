@@ -226,7 +226,7 @@ for (const dialect of DIALECTS) {
     }
 
     if (sqlSpec === 'postgres') {
-      it.only('should support postgres 18 old and new returning syntax', async () => {
+      it('should support postgres 18 old and new returning syntax', async () => {
         const query = ctx.db
           .updateTable('person')
           .set({ first_name: 'Mark' })
