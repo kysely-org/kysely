@@ -91,7 +91,7 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.18.2",
+    "@arethetypeswrong/cli": "0.18.3",
     "@ark/attest": "0.56.0",
     "@electric-sql/pglite": "0.4.6",
     "@types/better-sqlite3": "7.6.13",
