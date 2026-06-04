@@ -36,6 +36,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | Fetch driver                  | https://github.com/andersgee/kysely-fetch-driver                            |
 | SQLite WASM                   | https://github.com/DallasHoff/sqlocal                                       |
 | Deno SQLite                   | https://gitlab.com/soapbox-pub/kysely-deno-sqlite                           |
+| Deno SQLite3                  | https://github.com/marshift/kysely-deno-sqlite3                             |
 | Node SQLite                   | https://github.com/wolfie/kysely-node-native-sqlite                         |
 | TiDB Cloud Serverless Driver  | https://github.com/tidbcloud/kysely                                         |
 | Capacitor SQLite Kysely       | https://github.com/DawidWetzler/capacitor-sqlite-kysely                     |
