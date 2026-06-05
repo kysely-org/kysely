@@ -118,8 +118,8 @@ importers:
         specifier: 2.34.1
         version: 2.34.1
       semver:
-        specifier: 7.8.0
-        version: 7.8.0
+        specifier: 7.8.1
+        version: 7.8.1
       sinon:
         specifier: 22.0.0
         version: 22.0.0
@@ -6447,8 +6447,8 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.8.0:
-    resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
+  semver@7.8.1:
+    resolution: {integrity: sha512-rkVq3IXh+4FDGch+KwzX3aV9W3kO54GyEgpvBzSyctDA6Xtd7RJQV1xmXbeQp5v7+VzLOfVqiutSE6GICgPFvg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -7475,7 +7475,7 @@ snapshots:
       commander: 10.0.1
       marked: 9.1.6
       marked-terminal: 7.3.0(marked@9.1.6)
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@arethetypeswrong/core@0.18.3':
     dependencies:
@@ -7484,7 +7484,7 @@ snapshots:
       cjs-module-lexer: 1.4.3
       fflate: 0.8.3
       lru-cache: 11.5.1
-      semver: 7.8.0
+      semver: 7.8.1
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
@@ -8902,7 +8902,7 @@ snapshots:
       react-router: 5.3.4(react@19.2.6)
       react-router-config: 5.1.1(react-router@5.3.4)(react@19.2.6)
       react-router-dom: 5.3.4(react@19.2.6)
-      semver: 7.8.0
+      semver: 7.8.1
       serve-handler: 6.1.7
       tinypool: 1.1.1
       tslib: 2.8.1
@@ -11625,7 +11625,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.10)
       postcss-modules-values: 4.0.0(postcss@8.5.10)
       postcss-value-parser: 4.2.0
-      semver: 7.8.0
+      semver: 7.8.1
     optionalDependencies:
       webpack: 5.104.1(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.0)(html-minifier-terser@7.2.0)(postcss@8.5.10)
 
@@ -13216,7 +13216,7 @@ snapshots:
       lodash.isstring: 4.0.1
       lodash.once: 4.1.1
       ms: 2.1.3
-      semver: 7.8.0
+      semver: 7.8.1
 
   jsr@0.14.3:
     dependencies:
@@ -14069,7 +14069,7 @@ snapshots:
 
   node-abi@3.75.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   node-emoji@2.2.0:
     dependencies:
@@ -14093,7 +14093,7 @@ snapshots:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.16.1
-      semver: 7.8.0
+      semver: 7.8.1
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -14222,7 +14222,7 @@ snapshots:
       got: 12.6.1
       registry-auth-token: 5.1.0
       registry-url: 6.0.1
-      semver: 7.8.0
+      semver: 7.8.1
 
   package-manager-detector@1.6.0: {}
 
@@ -14533,7 +14533,7 @@ snapshots:
       cosmiconfig: 8.3.6(typescript@6.0.3)
       jiti: 1.21.7
       postcss: 8.5.10
-      semver: 7.8.0
+      semver: 7.8.1
       webpack: 5.104.1(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.0)(html-minifier-terser@7.2.0)(postcss@8.5.10)
     transitivePeerDependencies:
       - typescript
@@ -15318,13 +15318,13 @@ snapshots:
 
   semver-diff@4.0.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   semver@5.7.2: {}
 
   semver@6.3.1: {}
 
-  semver@7.8.0: {}
+  semver@7.8.1: {}
 
   send@0.19.0:
     dependencies:
@@ -15400,7 +15400,7 @@ snapshots:
     dependencies:
       '@img/colour': 1.0.0
       detect-libc: 2.1.2
-      semver: 7.8.0
+      semver: 7.8.1
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
@@ -15960,7 +15960,7 @@ snapshots:
       is-yarn-global: 0.4.1
       latest-version: 7.0.0
       pupa: 3.1.0
-      semver: 7.8.0
+      semver: 7.8.1
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
 
