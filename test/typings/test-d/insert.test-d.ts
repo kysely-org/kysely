@@ -98,6 +98,38 @@ async function testInsert(db: Kysely<Database>) {
   // Explicitly excluded column
   expectError(db.insertInto('person').values({ modified_at: new Date() }))
 
+  // ON CONFLICT DO UPDATE WHERE should allow referencing columns whose UpdateType
+  // is `never` (read-only columns) because the WHERE clause filters rows to
+  // update, it does not update those columns. See #1189.
+  const r7 = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc.column('id').doUpdateSet({ first_name: 'Jennifer' }).where(
+        // `modified_at` has ColumnType<Date, never, never> — UpdateType is never,
+        // but referencing it in WHERE should be allowed (SelectType is Date).
+        'person.modified_at',
+        '<',
+        new Date(),
+      ),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r7)
+
+  // ON CONFLICT DO UPDATE WHERE should still reject non-existent columns.
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc
+          .column('id')
+          .doUpdateSet({ first_name: 'Jennifer' })
+          .where('person.doesnt_exist', '=', 1),
+      ),
+  )
+
   // Non-existent column in a `doUpdateSet` call.
   expectError(
     db

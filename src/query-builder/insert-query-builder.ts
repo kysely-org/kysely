@@ -47,6 +47,7 @@ import {
   type OnConflictDoNothingBuilder,
   type OnConflictTables,
   type OnConflictUpdateBuilder,
+  type OnConflictUpdateWhereDatabase,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import type { Selectable } from '../util/column-type.js'
@@ -886,7 +887,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     ) =>
       | OnConflictUpdateBuilder<
           OnConflictDatabase<DB, TB>,
-          OnConflictTables<TB>
+          OnConflictTables<TB>,
+          OnConflictUpdateWhereDatabase<DB, TB>
         >
       | OnConflictDoNothingBuilder<DB, TB>,
   ): InsertQueryBuilder<DB, TB, O> {
