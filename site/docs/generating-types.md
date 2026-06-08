@@ -9,9 +9,11 @@ database schema, by automatically generating the database schema type definition
 
 There are several ways to do this using third-party libraries:
 
-- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This library 
-generates Kysely database schema type definitions by connecting to and introspecting 
+- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This CLI tool
+generates Kysely database schema type definitions by connecting to and introspecting
 your database. This library works with all built-in dialects.
+
+- [kysely-typegen](https://github.com/theoludwig/kysely-typegen) - This library generates Kysely database schema type definitions by connecting to and introspecting your database. Lightweight (no runtime dependencies) and easily extendable (to support more dialects or features). You're in control of how to save the generated types, how to connect to the database, etc.
 
 - [prisma-kysely](https://github.com/valtyr/prisma-kysely) - This library generates 
 Kysely database schema type definitions from your existing Prisma schemas.

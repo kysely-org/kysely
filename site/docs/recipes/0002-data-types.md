@@ -75,6 +75,6 @@ export const db = new Kysely<Database>({
 
 ## Type generators
 
-There are third-party type generators such as [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) and [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html) that automatically generate TypeScript types based on the database schema. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
+There are third-party type generators such as [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen), [kysely-typegen](https://github.com/theoludwig/kysely-typegen) and [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html) that automatically generate TypeScript types based on the database schema. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
 
 If these tools generate a type that doesn't match the runtime type you observe, please refer to their documentation or open an issue in their github. Kysely has no control over these libraries.
