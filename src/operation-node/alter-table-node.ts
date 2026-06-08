@@ -15,6 +15,7 @@ import type { RenameConstraintNode } from './rename-constraint-node.js'
 
 export type AlterTableNodeTableProps = Pick<
   AlterTableNode,
+  | 'ifExists'
   | 'renameTo'
   | 'setSchema'
   | 'addConstraint'
@@ -34,6 +35,7 @@ export type AlterTableColumnAlterationNode =
 export interface AlterTableNode extends OperationNode {
   readonly kind: 'AlterTableNode'
   readonly table: TableNode
+  readonly ifExists?: boolean
   readonly renameTo?: TableNode
   readonly setSchema?: IdentifierNode
   readonly columnAlterations?: ReadonlyArray<AlterTableColumnAlterationNode>
