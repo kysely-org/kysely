@@ -6,6 +6,9 @@
     "type": "git",
     "url": "git+https://github.com/kysely-org/kysely.git"
   },
+  "bugs": {
+    "url": "https://github.com/kysely-org/kysely/issues"
+  },
   "homepage": "https://kysely.dev",
   "keywords": [
     "query",
