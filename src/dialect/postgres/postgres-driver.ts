@@ -198,6 +198,11 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    const getRowCount = (
+      command: string,
+      rowCount: number,
+    ): bigint | undefined =>
+      ['INSERT', 'UPDATE', 'DELETE', 'MERGE'].includes(command) ? BigInt(rowCount) : undefined
     try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
@@ -207,17 +212,31 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.parameters,
       )
 
-      const { command, rowCount, rows } = result
+      if (!Array.isArray(result)) {
+        const { command, rowCount, rows } = result
 
+        return {
+          numAffectedRows: getRowCount(command, rowCount),
+          rows: rows ?? [],
+        }
+      }
+
+      let numAffectedRows: bigint | undefined
+      const rows: O[] = []
+      for (const { command, rowCount, rows: nxtRows } of result) {
+        const affectedRows = getRowCount(command, rowCount)
+        if (typeof affectedRows === 'bigint') {
+          if (typeof numAffectedRows === 'bigint') {
+            numAffectedRows = numAffectedRows + affectedRows
+          } else {
+            numAffectedRows = affectedRows
+          }
+        }
+        rows.push(...nxtRows)
+      }
       return {
-        numAffectedRows:
-          command === 'INSERT' ||
-          command === 'UPDATE' ||
-          command === 'DELETE' ||
-          command === 'MERGE'
-            ? BigInt(rowCount)
-            : undefined,
-        rows: rows ?? [],
+        numAffectedRows,
+        rows,
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())

@@ -93,7 +93,7 @@ export interface PostgresClient {
   query<R>(
     sql: string,
     parameters: ReadonlyArray<unknown>,
-  ): Promise<PostgresQueryResult<R>>
+  ): Promise<PostgresQueryResult<R> | PostgresQueryResult<R>[]>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
 }
 
