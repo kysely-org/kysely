@@ -44,6 +44,7 @@ import type { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
   type OnConflictDatabase,
+  type OnConflictDatabaseForWhere,
   type OnConflictDoNothingBuilder,
   type OnConflictTables,
   type OnConflictUpdateBuilder,
@@ -885,7 +886,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
       builder: OnConflictBuilder<DB, TB>,
     ) =>
       | OnConflictUpdateBuilder<
-          OnConflictDatabase<DB, TB>,
+          OnConflictDatabaseForWhere<DB, TB>,
           OnConflictTables<TB>
         >
       | OnConflictDoNothingBuilder<DB, TB>,
