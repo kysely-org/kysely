@@ -7,7 +7,7 @@ import type { OperationNodeSource } from '../operation-node/operation-node-sourc
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { Compilable } from '../util/compilable.js'
-import { freeze, noop } from '../util/object-utils.js'
+import { freeze, isString, noop } from '../util/object-utils.js'
 import {
   ColumnDefinitionBuilder,
   type ColumnDefinitionBuilderCallback,
@@ -55,6 +55,15 @@ import {
   type CheckConstraintBuilderCallback,
 } from './check-constraint-builder.js'
 import { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import {
+  type ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
+import {
+  DropColumnBuilder,
+  type DropColumnBuilderCallback,
+} from './drop-column-builder.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -99,12 +108,19 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
-  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+  dropColumn(
+    column: string,
+    build: DropColumnBuilderCallback = noop,
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new DropColumnBuilder({ node: DropColumnNode.create(column) }),
+    )
+
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithColumnAlteration(
         this.#props.node,
-        DropColumnNode.create(column),
+        builder.toOperationNode(),
       ),
     })
   }
@@ -173,12 +189,19 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: string[],
+    columns: (string | ExpressionOrFactory<any, any, any>)[],
     build: UniqueConstraintNodeBuilderCallback = noop,
   ): AlterTableExecutor {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName),
+        UniqueConstraintNode.create(
+          columns.map((column) =>
+            isString(column)
+              ? ColumnNode.create(column)
+              : parseExpression(column),
+          ),
+          constraintName,
+        ),
       ),
     )
 
@@ -360,9 +383,9 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
 }
 
 export interface AlterTableBuilderProps {
-  readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly node: AlterTableNode
+  readonly queryId: QueryId
 }
 
 export interface ColumnAlteringInterface {
@@ -420,12 +443,19 @@ export class AlterTableColumnAlteringBuilder
     })
   }
 
-  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+  dropColumn(
+    column: string,
+    build: DropColumnBuilderCallback = noop,
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new DropColumnBuilder({ node: DropColumnNode.create(column) }),
+    )
+
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithColumnAlteration(
         this.#props.node,
-        DropColumnNode.create(column),
+        builder.toOperationNode(),
       ),
     })
   }
@@ -503,8 +533,8 @@ export class AlterTableColumnAlteringBuilder
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableQueryOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

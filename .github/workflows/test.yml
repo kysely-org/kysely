@@ -1,8 +1,5 @@
 name: test
 
-permissions:
-  contents: read
-
 on:
   push:
     branches:
@@ -38,49 +35,69 @@ on:
       - '!LICENSE'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   node:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-${{ matrix.variant }}-node-${{ matrix.node-version }}-with-transformer-${{ matrix.with-transformer }}-${{ github.event.pull_request.number || github.sha }}
+
+    name: ${{ matrix.variant }} on Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
+    runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
         # https://endoflife.date/nodejs
-        node-version: [20.x, 22.x, 24.x, 25.x]
+        node-version: [22.x, 24.x, 26.x]
+        variant: ['postgres', 'mysql', 'mssql', 'sqlite', 'pglite']
         with-transformer: [false, true]
-    runs-on: ubuntu-latest
-
-    name: Node.js (${{ matrix.node-version }})${{ matrix.with-transformer && ' /w transformer' || '' }}
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: spin up database
+        if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
+        env:
+          SERVICES: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
+        run: docker compose up -d $SERVICES
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: install dependencies
+        run: pnpm install && pnpm rebuild better-sqlite3
 
-      - name: Run docker compose
-        run: docker compose up -d
-
-      - name: Run node tests
-        run: ${{ matrix.with-transformer && 'TEST_TRANSFORMER=1 ' || '' }}pnpm test
+      - name: Run ${{ matrix.variant }} tests
+        env:
+          DIALECTS: ${{ matrix.variant }}
+          TEST_TRANSFORMER: ${{ matrix.with-transformer && '1' || '' }}
+        run: pnpm test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
         run: pnpm test:esbuild
 
   deno:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-deno-${{ matrix.deno-version }}-${{ github.event.pull_request.number || github.sha }}
+
     name: Deno
     runs-on: ubuntu-latest
 
@@ -91,43 +108,50 @@ jobs:
         deno-version: [2.5.x, 2.7.x]
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: spin up databases
+        run: docker compose up -d
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Use Deno ${{ matrix.deno-version }}
+      - name: use deno ${{ matrix.deno-version }}
         uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
           deno-version: ${{ matrix.deno-version }}
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Run docker compose
-        run: docker compose up -d
-
-      - name: Build
+      - name: build
         run: pnpm build
 
-      - name: Run deno tests
+      - name: run deno tests
         run: pnpm test:deno
 
-      - name: Lint for Deno/JSR
+      - name: lint for deno/jsr
         run: pnpm lint:deno
 
   bun:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-bun-${{ matrix.bun-version }}-${{ github.event.pull_request.number || github.sha }}
+
     name: Bun
     runs-on: ubuntu-latest
 
@@ -137,97 +161,118 @@ jobs:
         bun-version: [1.1.44, 1.2.23, 1.3]
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: spin up databases
+        run: docker compose up -d
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Use Bun ${{ matrix.bun-version }}
+      - name: use bun ${{ matrix.bun-version }}
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ matrix.bun-version }}
 
-      - name: Run docker compose
-        run: docker compose up -d
-
-      - name: Run bun tests
+      - name: run bun tests
         run: pnpm test:bun
 
   browser:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-browser-${{ github.event.pull_request.number || github.sha }}
+
     name: Browser
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Install playwright
+      - name: install playwright
         run: pnpm playwright install chromium
 
-      - name: Run browser tests
+      - name: run browser tests
         run: pnpm test:browser
 
   cloudflare-workers:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-cloudflare-workers-${{ github.event.pull_request.number || github.sha }}
+
     name: Cloudflare Workers
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Run docker compose
+      - name: spin up databases
         run: docker compose up -d
 
-      - name: Run cloudflare workers test
+      - name: run cloudflare workers test
         run: pnpm test:cloudflare-workers
 
   older-typescript-version:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-older-typescript-version-${{ matrix.typescript-version }}-${{ github.event.pull_request.number || github.sha }}
+
     name: Older TypeScript version
     runs-on: ubuntu-latest
 
@@ -235,176 +280,201 @@ jobs:
       fail-fast: false
       matrix:
         typescript-version: [
-            ~4.6.0, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
-            ~4.7.0, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
-            ~4.8.0, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
-            ~4.9.0, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
-            ~5.0.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
-            ~5.2.0, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
-            ~5.3.0, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
             ~5.4.0, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
             ~5.8.0, # 28.2.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/
             ~5.9.0, # 1.8.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/
           ]
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Run build with newer TypeScript
+      - name: run build with newer typescript
         run: pnpm build
 
-      - name: Set TypeScript and TSD versions
+      - name: set typeScript and tsd versions
+        env:
+          TS_VERSION: ${{ matrix.typescript-version }}
         run: |
-          TS_VERSION="${{ matrix.typescript-version }}"
           echo "TS_VERSION=$TS_VERSION" >> $GITHUB_ENV
-          TSD_VERSION=$(echo '{"~4.6.0":"0.20.0", "~4.7.0":"0.22.0", "~4.8.0":"0.24.1", "~4.9.0":"0.27.0", "~5.0.0":"0.28.1", "~5.2.0":"0.29.0", "~5.3.0":"0.30.7", "~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
+          TSD_VERSION=$(echo '{"~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
           echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
 
-      - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
-        run: pnpm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
+      - name: install typescript (${{ env.TS_VERSION }}) and tsd (${{ env.TSD_VERSION }})
+        run: pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
 
-      - name: Exclude non-backward compatible tests
-        run: pnpm script:exclude-test-files-for-backwards-compat
+      - name: make `tsconfig` backwards compatible
+        run: pnpm script:override-tsconfig-target
 
-      - name: Run tests with older TypeScript version
-        run: pnpm test:typings${{ env.TS_VERSION != '~4.6.0' && env.TS_VERSION != '~4.7.0' && ' && pnpm test:node:build' || '' }}
+      - name: run tests with older typescript version
+        run: pnpm test:typings && pnpm test:node:build
 
   jsdocs:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-jsdocs-${{ github.event.pull_request.number || github.sha }}
+
     name: JSDocs
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Use Deno
+      - name: use deno
         uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
           deno-version: 2.x
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm install
 
-      - name: Build
+      - name: build
         run: pnpm build
 
-      - name: Type-check JSDocs code blocks
+      - name: type-check jsdocs code blocks
         run: pnpm test:jsdocs
 
   typescript-native:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-typescript-native-${{ github.event.pull_request.number || github.sha }}
+
     name: TypeScript Native
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm i
 
-      - name: Build
+      - name: build
         run: pnpm build
 
-      - name: Run TypeScript Native tests
-        run: pnpx @typescript/native-preview --project ./test/node/tsconfig.json
+      - name: run typescript native tests
+        run: pnx @typescript/native-preview --project ./test/node/tsconfig.json
 
   typescript-composite:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-typescript-composite-${{ github.event.pull_request.number || github.sha }}
+
     name: TypeScript Composite
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm i
 
-      - name: Test
+      - name: test
         working-directory: test/composite-ts
         run: npm i && npm run check:types
 
   jsr:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-jsr-${{ github.event.pull_request.number || github.sha }}
+
     name: JSR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - name: harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Use Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          cache: 'pnpm'
+          persist-credentials: false
+
+      - name: install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          cache: true
+
+      - name: use node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
           node-version: lts/*
 
-      - name: Install dependencies
+      - name: install dependencies
         run: pnpm i
 
-      - name: Prepare for publish
+      - name: prepare for publish
         run: pnpm script:remove-global-augmentations
 
-      - name: Dry-run jsr publish
+      - name: dry-run jsr publish
         run: pnpm jsr publish --allow-dirty --dry-run

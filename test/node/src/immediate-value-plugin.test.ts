@@ -4,9 +4,9 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from '../../../dist/cjs/index.js'
-import { ImmediateValuePlugin } from '../../../dist/cjs/plugin/immediate-value/immediate-value-plugin.js'
-import { Database, NOT_SUPPORTED, testSql } from './test-setup.js'
+} from '../../../dist/index.js'
+import { ImmediateValuePlugin } from '../../../dist/plugin/immediate-value/immediate-value-plugin.js'
+import { type Database, NOT_SUPPORTED, testSql } from './test-setup.js'
 
 describe('ImmediateValuePlugin', () => {
   let db: Kysely<Database>
@@ -30,14 +30,18 @@ describe('ImmediateValuePlugin', () => {
       .where('gender', 'in', ['male', 'other'])
       .selectAll()
 
-    testSql(query, 'postgres', {
-      postgres: {
-        parameters: [],
-        sql: `select * from "person" where "first_name" = 'Sylvester' and "gender" in ('male', 'other')`,
+    testSql(
+      query,
+      { sqlSpec: 'postgres', variant: 'postgres' },
+      {
+        postgres: {
+          parameters: [],
+          sql: `select * from "person" where "first_name" = 'Sylvester' and "gender" in ('male', 'other')`,
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: NOT_SUPPORTED,
+        sqlite: NOT_SUPPORTED,
       },
-      mysql: NOT_SUPPORTED,
-      mssql: NOT_SUPPORTED,
-      sqlite: NOT_SUPPORTED,
-    })
+    )
   })
 })

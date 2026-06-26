@@ -15,7 +15,7 @@ import {
   isExpressionOrFactory,
 } from './expression-parser.js'
 import type { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import type { SelectType, UpdateType } from '../util/column-type.js'
+import type { SelectType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import type { OperationNode } from '../operation-node/operation-node.js'
 import type { Expression } from '../expression/expression.js'
@@ -143,21 +143,17 @@ export function parseJSONReference(
   ref: string,
   op: JSONOperatorWith$,
 ): JSONReferenceNode {
-  const referenceNode = parseStringReference(ref)
-
   if (isJSONOperator(op)) {
     return JSONReferenceNode.create(
-      referenceNode,
+      parseStringReference(ref),
       JSONOperatorChainNode.create(OperatorNode.create(op)),
     )
   }
 
-  const opWithoutLastChar = op.slice(0, -1)
-
-  if (isJSONOperator(opWithoutLastChar)) {
+  if (op === '->$' || op === '->>$') {
     return JSONReferenceNode.create(
-      referenceNode,
-      JSONPathNode.create(OperatorNode.create(opWithoutLastChar)),
+      parseStringReference(ref),
+      JSONPathNode.create(OperatorNode.create(op.slice(0, -1) as never)),
     )
   }
 

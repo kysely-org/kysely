@@ -1,6 +1,5 @@
 import type {
   DatabaseIntrospector,
-  DatabaseMetadata,
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
@@ -47,6 +46,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.TABLE_NAME',
         'columns.TABLE_SCHEMA',
         'tables.TABLE_TYPE',
+        'tables.ENGINE',
         'columns.IS_NULLABLE',
         'columns.DATA_TYPE',
         'columns.EXTRA',
@@ -67,14 +67,6 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     return this.#parseTableMetadata(rawColumns)
   }
 
-  async getMetadata(
-    options?: DatabaseMetadataOptions,
-  ): Promise<DatabaseMetadata> {
-    return {
-      tables: await this.getTables(options),
-    }
-  }
-
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
       let table = tables.find((tbl) => tbl.name === it.TABLE_NAME)
@@ -83,6 +75,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         table = freeze({
           name: it.TABLE_NAME,
           isView: it.TABLE_TYPE === 'VIEW',
+          isForeign: it.ENGINE === 'FEDERATED',
           schema: it.TABLE_SCHEMA,
           columns: [],
         })
@@ -116,6 +109,7 @@ interface RawColumnMetadata {
   TABLE_NAME: string
   TABLE_SCHEMA: string
   TABLE_TYPE: string
+  ENGINE: string
   IS_NULLABLE: 'YES' | 'NO'
   DATA_TYPE: string
   EXTRA: string

@@ -1,5 +1,4 @@
 import type { QueryResult } from '../../driver/database-connection.js'
-import type { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { WithSchemaTransformer } from './with-schema-transformer.js'
 import type {
   KyselyPlugin,
@@ -7,6 +6,7 @@ import type {
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
 import type { UnknownRow } from '../../util/type-utils.js'
+import type { RootOperationNode } from '../../operation-node/root-operation-node.js'
 
 export class WithSchemaPlugin implements KyselyPlugin {
   readonly #transformer: WithSchemaTransformer

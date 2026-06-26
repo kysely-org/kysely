@@ -1,6 +1,7 @@
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { ArrayItemType } from '../util/type-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * A Driver creates and releases {@link DatabaseConnection | database connections}
@@ -13,12 +14,14 @@ export interface Driver {
    * After calling this method the driver should be usable and `acquireConnection` etc.
    * methods should be callable.
    */
-  init(): Promise<void>
+  init(options?: AbortableOperationOptions): Promise<void>
 
   /**
    * Acquires a new connection from the pool.
    */
-  acquireConnection(): Promise<DatabaseConnection>
+  acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<DatabaseConnection>
 
   /**
    * Begins a transaction.
@@ -68,12 +71,15 @@ export interface Driver {
   /**
    * Releases a connection back to the pool.
    */
-  releaseConnection(connection: DatabaseConnection): Promise<void>
+  releaseConnection(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void>
 
   /**
    * Destroys the driver and releases all resources.
    */
-  destroy(): Promise<void>
+  destroy(options?: AbortableOperationOptions): Promise<void>
 }
 
 export interface TransactionSettings {

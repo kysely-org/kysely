@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { Assertion } from 'chai'
-import { sql } from '../../../dist/cjs/index.js'
+import { sql } from '../../../dist/index.js'
 import {
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   expect,
   DIALECTS,
 } from './test-setup.js'
@@ -12,7 +12,9 @@ import {
 const __filename = fileURLToPath(import.meta.url)
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: error stack`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: error stack`, () => {
     let ctx: TestContext
 
     before(async function () {

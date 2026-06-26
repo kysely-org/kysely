@@ -5,12 +5,27 @@ import type { Compilable } from '../util/compilable.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 export class DropTableBuilder implements OperationNodeSource, Compilable {
   readonly #props: DropTableBuilderProps
 
   constructor(props: DropTableBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * Adds the "temporary" modifier.
+   *
+   * This is only supported by some dialects like MySQL.
+   */
+  temporary(): DropTableBuilder {
+    return new DropTableBuilder({
+      ...this.#props,
+      node: DropTableNode.cloneWith(this.#props.node, {
+        temporary: true,
+      }),
+    })
   }
 
   ifExists(): DropTableBuilder {
@@ -53,8 +68,8 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile())
+  async execute(options?: AbortableQueryOptions): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), options)
   }
 }
 

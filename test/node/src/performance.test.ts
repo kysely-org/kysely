@@ -1,20 +1,22 @@
-import { sql } from '../../../dist/cjs/index.js'
+import { sql } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   insertDefaultDataSet,
   DIALECTS,
 } from './test-setup.js'
 
-if (DIALECTS.includes('postgres')) {
-  describe.skip(`query builder performance`, () => {
+for (const dialect of DIALECTS) {
+  const { variant } = dialect
+
+  describe.skip(`${variant}: query builder performance`, () => {
     let ctx: TestContext
 
     before(async function () {
-      ctx = await initTest(this, 'postgres')
+      ctx = await initTest(this, dialect)
     })
 
     beforeEach(async () => {

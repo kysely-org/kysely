@@ -1,4 +1,5 @@
 import type { DatabaseConnection } from '../../driver/database-connection.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 
 /**
  * Config for the SQLite dialect.
@@ -11,14 +12,19 @@ export interface SqliteDialectConfig {
    *
    * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
    */
-  database: SqliteDatabase | (() => Promise<SqliteDatabase>)
+  database:
+    | SqliteDatabase
+    | ((options?: AbortableOperationOptions) => Promise<SqliteDatabase>)
 
   /**
    * Called once when the first query is executed.
    *
    * This is a Kysely specific feature and does not come from the `better-sqlite3` module.
    */
-  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+  onCreateConnection?: (
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ) => Promise<void>
 }
 
 /**

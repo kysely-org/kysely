@@ -3,6 +3,7 @@ import type { OrActionNode } from '../../operation-node/or-action-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /"/g
+const JSON_PATH_MEMBER_ESCAPE_REGEX = /[\\'"]/g
 
 export class SqliteQueryCompiler extends DefaultQueryCompiler {
   protected override visitOrAction(node: OrActionNode): void {
@@ -36,6 +37,12 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
 
   protected override sanitizeIdentifier(identifier: string): string {
     return identifier.replace(ID_WRAP_REGEX, '""')
+  }
+
+  protected override sanitizeJSONPathMemberValue(value: string): string {
+    return value.replace(JSON_PATH_MEMBER_ESCAPE_REGEX, (char) =>
+      char === '\\' ? '\\\\' : char === "'" ? "''" : '\\"',
+    )
   }
 
   protected override visitDefaultInsertValue(_: DefaultInsertValueNode): void {

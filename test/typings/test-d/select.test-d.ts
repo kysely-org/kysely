@@ -1,3 +1,4 @@
+import { expectError, expectType } from 'tsd'
 import {
   type Expression,
   type ExpressionWrapper,
@@ -9,7 +10,8 @@ import {
   sql,
 } from '../index.js'
 import type { Database, Person } from '../shared.js'
-import { expectType, expectError } from 'tsd'
+
+declare const $brand: unique symbol
 
 async function testSelectSingle(db: Kysely<Database>) {
   const qb = db.selectFrom('person')
@@ -115,6 +117,11 @@ async function testSelectSingle(db: Kysely<Database>) {
     .$narrowType<NarrowTarget>()
     .execute()
 
+  expectType<
+    | { callback_url: string; queue_id: null }
+    | { callback_url: null; queue_id: string }
+  >(r15)
+
   // Narrow not null
   const [r16] = await db
     .selectFrom('action')
@@ -133,6 +140,64 @@ async function testSelectSingle(db: Kysely<Database>) {
 
   expectType<string>(r17.callback_url)
   expectType<string>(r17.queue_id)
+
+  // Narrow discriminated union
+  const [r18] = await db
+    .selectFrom('person_metadata')
+    .select(['discriminatedUnionProfile'])
+    .$narrowType<{ discriminatedUnionProfile: { auth: { type: 'token' } } }>()
+    .execute()
+
+  expectType<{
+    discriminatedUnionProfile: {
+      auth: { type: 'token'; token: string }
+      tags: string[]
+    }
+  }>(r18)
+
+  const [r19] = await db
+    .$extendTables<{
+      organization: {
+        companyId: string & {
+          [$brand]: { CompanyNanoId: true }
+        }
+        headCount: number
+        metadata: {
+          createdAt: Date & {
+            [$brand]: { PastDate: true }
+          }
+          updatedAt: Date
+        }
+      }
+    }>()
+    .selectFrom('organization')
+    .selectAll()
+    .$narrowType<{
+      headCount: number & { [$brand]: { HeadCount: true } }
+      metadata: {
+        updatedAt: Date & {
+          [$brand]: {
+            PastDate: true
+          }
+        }
+      }
+    }>()
+    .execute()
+
+  expectType<{
+    companyId: string & {
+      [$brand]: { CompanyNanoId: true }
+    }
+    headCount: number & { [$brand]: { HeadCount: true } }
+    metadata: {
+      createdAt: Date & {
+        [$brand]: { PastDate: true }
+      }
+      updatedAt: Date & {
+        [$brand]: { PastDate: true }
+      }
+    }
+  }>(r19)
 
   const expr1 = db.selectFrom('person').select('first_name').$asScalar()
   expectType<ExpressionWrapper<Database, 'person', string>>(expr1)

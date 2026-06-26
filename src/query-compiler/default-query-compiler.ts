@@ -53,7 +53,7 @@ import {
   isBigInt,
 } from '../util/object-utils.js'
 import type { CompiledQuery } from './compiled-query.js'
-import type { RootOperationNode, QueryCompiler } from './query-compiler.js'
+import type { QueryCompiler } from './query-compiler.js'
 import type { HavingNode } from '../operation-node/having-node.js'
 import type { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import type { DropSchemaNode } from '../operation-node/drop-schema-node.js'
@@ -112,11 +112,16 @@ import type { TopNode } from '../operation-node/top-node.js'
 import type { OutputNode } from '../operation-node/output-node.js'
 import type { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import type { OrActionNode } from '../operation-node/or-action-node.js'
-import { logOnce } from '../util/log-once.js'
 import type { CollateNode } from '../operation-node/collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from '../operation-node/rename-constraint-node.js'
+import type { RootOperationNode } from '../operation-node/root-operation-node.js'
+import type { AddValueNode } from '../operation-node/add-value-node.js'
+import type { AlterTypeNode } from '../operation-node/alter-type-node.js'
+import type { RenameValueNode } from '../operation-node/rename-value-node.js'
+
 const LIT_WRAP_REGEX = /'/g
+const JSON_PATH_MEMBER_WRAP_REGEX = /['"]/g
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -245,7 +250,7 @@ export class DefaultQueryCompiler
 
     if (node.endModifiers?.length) {
       this.append(' ')
-      this.compileList(this.sortSelectModifiers([...node.endModifiers]), ' ')
+      this.compileList(this.sortSelectModifiers(node.endModifiers), ' ')
     }
 
     if (wrapInParens) {
@@ -319,14 +324,6 @@ export class DefaultQueryCompiler
     }
 
     this.append(node.replace ? 'replace' : 'insert')
-
-    // TODO: remove in 0.29.
-    if (node.ignore) {
-      logOnce(
-        '`InsertQueryNode.ignore` is deprecated. Use `InsertQueryNode.orAction` instead.',
-      )
-      this.append(' ignore')
-    }
 
     if (node.orAction) {
       this.append(' ')
@@ -632,7 +629,11 @@ export class DefaultQueryCompiler
 
     if (!node.selectQuery) {
       this.append(' (')
-      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.compileList([
+        ...node.columns,
+        ...(node.constraints ?? []),
+        ...(node.indexes ?? []),
+      ])
       this.append(')')
     }
 
@@ -745,7 +746,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDropTable(node: DropTableNode): void {
-    this.append('drop table ')
+    this.append('drop ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    this.append('table ')
 
     if (node.ifExists) {
       this.append('if exists ')
@@ -1223,9 +1230,13 @@ export class DefaultQueryCompiler
 
   protected override visitDropColumn(node: DropColumnNode): void {
     this.append('drop column ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
     this.visitNode(node.column)
   }
-
   protected override visitAlterColumn(node: AlterColumnNode): void {
     this.append('alter column ')
     this.visitNode(node.column)
@@ -1444,6 +1455,55 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.additionalNames?.length) {
+      this.append(', ')
+      this.compileList(node.additionalNames)
+    }
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
+  }
+
+  protected override visitAlterType(node: AlterTypeNode): void {
+    this.append('alter type ')
+    this.visitNode(node.name)
+    this.append(' ')
+
+    if (node.addValue) {
+      this.visitNode(node.addValue)
+    } else if (node.renameTo) {
+      this.append('rename to ')
+      this.visitNode(node.renameTo)
+    } else if (node.renameValue) {
+      this.visitNode(node.renameValue)
+    } else if (node.setSchema) {
+      this.append('set schema ')
+      this.visitNode(node.setSchema)
+    }
+  }
+
+  protected override visitAddValue(node: AddValueNode): void {
+    this.append('add value ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
+    this.visitNode(node.value)
+
+    if (node.neighborValue) {
+      this.append(node.isBefore ? ' before ' : ' after ')
+      this.visitNode(node.neighborValue)
+    }
+  }
+
+  protected override visitRenameValue(node: RenameValueNode): void {
+    this.append('rename value ')
+    this.visitNode(node.oldValue)
+    this.append(' to ')
+    this.visitNode(node.newValue)
   }
 
   protected override visitExplain(node: ExplainNode): void {
@@ -1629,16 +1689,16 @@ export class DefaultQueryCompiler
   protected override visitJSONPathLeg(node: JSONPathLegNode): void {
     const isArrayLocation = node.type === 'ArrayLocation'
 
-    this.append(isArrayLocation ? '[' : '.')
-
-    this.append(
-      typeof node.value === 'string'
-        ? this.sanitizeStringLiteral(node.value)
-        : String(node.value),
-    )
+    const value = String(node.value)
 
     if (isArrayLocation) {
+      this.append('[')
+      this.append(this.sanitizeStringLiteral(value))
       this.append(']')
+    } else {
+      this.append('."')
+      this.append(this.sanitizeJSONPathMemberValue(value))
+      this.append('"')
     }
   }
 
@@ -1709,7 +1769,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitAddIndex(node: AddIndexNode): void {
-    this.append('add ')
+    if (!this.parentNode || !CreateTableNode.is(this.parentNode)) {
+      this.append('add ')
+    }
 
     if (node.unique) {
       this.append('unique ')
@@ -1826,6 +1888,12 @@ export class DefaultQueryCompiler
     return value.replace(LIT_WRAP_REGEX, "''")
   }
 
+  protected sanitizeJSONPathMemberValue(value: string): string {
+    return value.replace(JSON_PATH_MEMBER_WRAP_REGEX, (char) =>
+      char === "'" ? "''" : '\\"',
+    )
+  }
+
   protected addParameter(parameter: unknown): void {
     this.#parameters.push(parameter)
   }
@@ -1851,16 +1919,16 @@ export class DefaultQueryCompiler
   }
 
   protected sortSelectModifiers(
-    arr: SelectModifierNode[],
+    arr: readonly SelectModifierNode[],
   ): ReadonlyArray<SelectModifierNode> {
-    arr.sort((left, right) =>
-      left.modifier && right.modifier
-        ? SELECT_MODIFIER_PRIORITY[left.modifier] -
-          SELECT_MODIFIER_PRIORITY[right.modifier]
-        : 1,
+    return freeze(
+      arr.toSorted((left, right) =>
+        left.modifier && right.modifier
+          ? SELECT_MODIFIER_PRIORITY[left.modifier] -
+            SELECT_MODIFIER_PRIORITY[right.modifier]
+          : 1,
+      ),
     )
-
-    return freeze(arr)
   }
 
   protected compileColumnAlterations(
@@ -1878,7 +1946,7 @@ export class DefaultQueryCompiler
   }
 }
 
-const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
+const SELECT_MODIFIER_SQL = freeze({
   ForKeyShare: 'for key share',
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',
@@ -1886,20 +1954,19 @@ const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
   NoWait: 'nowait',
   SkipLocked: 'skip locked',
   Distinct: 'distinct',
-})
+} as const) satisfies Record<SelectModifier, string>
 
-const SELECT_MODIFIER_PRIORITY: Readonly<Record<SelectModifier, number>> =
-  freeze({
-    ForKeyShare: 1,
-    ForNoKeyUpdate: 1,
-    ForUpdate: 1,
-    ForShare: 1,
-    NoWait: 2,
-    SkipLocked: 2,
-    Distinct: 0,
-  })
+const SELECT_MODIFIER_PRIORITY = freeze({
+  ForKeyShare: 1,
+  ForNoKeyUpdate: 1,
+  ForUpdate: 1,
+  ForShare: 1,
+  NoWait: 2,
+  SkipLocked: 2,
+  Distinct: 0,
+} as const) satisfies Record<SelectModifier, number>
 
-const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
+const JOIN_TYPE_SQL = freeze({
   InnerJoin: 'inner join',
   LeftJoin: 'left join',
   RightJoin: 'right join',
@@ -1911,4 +1978,4 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   OuterApply: 'outer apply',
   CrossApply: 'cross apply',
   Using: 'using',
-})
+} as const) satisfies Record<JoinType, string>

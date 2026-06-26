@@ -1,6 +1,5 @@
 import type {
   DatabaseIntrospector,
-  DatabaseMetadata,
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
@@ -53,14 +52,6 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     return await this.#getTableMetadata(options)
-  }
-
-  async getMetadata(
-    options?: DatabaseMetadataOptions,
-  ): Promise<DatabaseMetadata> {
-    return {
-      tables: await this.getTables(options),
-    }
   }
 
   #tablesQuery(
@@ -135,6 +126,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       return {
         name: name,
         isView: type === 'view',
+        isForeign: false,
         columns: columns.map((col) => ({
           name: col.name,
           dataType: col.type,

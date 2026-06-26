@@ -1,12 +1,17 @@
-import { Kysely, MssqlDialect, sql } from '../../../dist/cjs/index.js'
-import { DIALECTS, DIALECT_CONFIGS, Database, expect } from './test-setup.js'
+import { Kysely, MssqlDialect, sql } from '../../../dist/index.js'
+import {
+  DIALECTS,
+  DIALECT_CONFIGS,
+  type Database,
+  expect,
+} from './test-setup.js'
 import * as tarn from 'tarn'
 import * as tedious from 'tedious'
 
-const dialect = 'mssql'
+const VARIANT = 'mssql'
 
-if (DIALECTS.includes(dialect)) {
-  describe(`${dialect}: disconnects`, () => {
+if (DIALECTS.some((d) => d.variant === VARIANT)) {
+  describe(`${VARIANT}: disconnects`, () => {
     let connection: tedious.Connection
     let connectionFactoryTimesCalled = 0
     let db: Kysely<Database>
@@ -27,7 +32,7 @@ if (DIALECTS.includes(dialect)) {
               connectionFactoryTimesCalled++
 
               return (connection = new tedious.Connection(
-                DIALECT_CONFIGS[dialect],
+                DIALECT_CONFIGS[VARIANT],
               ))
             },
           },

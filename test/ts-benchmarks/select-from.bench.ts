@@ -1,6 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import type { Kysely } from '../../dist/esm/index.js'
+import type { Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -59,7 +59,22 @@ bench('kysely.selectFrom([table as alias, table as alias])', () => {
 
 bench('kysely.selectFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.selectFrom(kysely.selectFrom('my_table').as('t'))
-}).types([1230, 'instantiations'])
+}).types([1224, 'instantiations'])
+
+bench('kysely.$pickTables<tables>.selectFrom(table)', () => {
+  return kysely
+    .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
+    .selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
+}).types([116, 'instantiations'])
+
+bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
+  return (
+    kysely
+      .$pickTables<'my_table'>()
+      // @ts-expect-error
+      .selectFrom('my_table2')
+  )
+}).types([209, 'instantiations'])
 
 bench('kyselyAny.selectFrom(table)', () => {
   return kyselyAny.selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')

@@ -7,6 +7,7 @@ import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import type { AbortableOperationOptions } from '../../util/abort.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import type {
@@ -16,7 +17,6 @@ import type {
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
-  readonly #connectionMutex = new ConnectionMutex()
 
   #db?: SqliteDatabase
   #connection?: DatabaseConnection
@@ -25,22 +25,19 @@ export class SqliteDriver implements Driver {
     this.#config = freeze({ ...config })
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     this.#db = isFunction(this.#config.database)
-      ? await this.#config.database()
+      ? await this.#config.database(options)
       : this.#config.database
 
     this.#connection = new SqliteConnection(this.#db)
 
     if (this.#config.onCreateConnection) {
-      await this.#config.onCreateConnection(this.#connection)
+      await this.#config.onCreateConnection(this.#connection, options)
     }
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    // SQLite only has one single connection. We use a mutex here to wait
-    // until the single connection has been released.
-    await this.#connectionMutex.lock()
     return this.#connection!
   }
 
@@ -96,7 +93,7 @@ export class SqliteDriver implements Driver {
   }
 
   async releaseConnection(): Promise<void> {
-    this.#connectionMutex.unlock()
+    // noop
   }
 
   async destroy(): Promise<void> {
@@ -111,27 +108,23 @@ class SqliteConnection implements DatabaseConnection {
     this.#db = db
   }
 
-  executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 
     if (stmt.reader) {
-      return Promise.resolve({
+      return {
         rows: stmt.all(parameters) as O[],
-      })
+      }
     }
 
     const { changes, lastInsertRowid } = stmt.run(parameters)
 
-    return Promise.resolve({
-      numAffectedRows:
-        changes !== undefined && changes !== null ? BigInt(changes) : undefined,
-      insertId:
-        lastInsertRowid !== undefined && lastInsertRowid !== null
-          ? BigInt(lastInsertRowid)
-          : undefined,
+    return {
+      insertId: lastInsertRowid != null ? BigInt(lastInsertRowid) : undefined,
+      numAffectedRows: changes != null ? BigInt(changes) : undefined,
       rows: [],
-    })
+    }
   }
 
   async *streamQuery<R>(
@@ -139,40 +132,19 @@ class SqliteConnection implements DatabaseConnection {
     _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters, query } = compiledQuery
+
     const stmt = this.#db.prepare(sql)
-    if (SelectQueryNode.is(query)) {
-      const iter = stmt.iterate(parameters) as IterableIterator<R>
-      for (const row of iter) {
-        yield {
-          rows: [row],
-        }
-      }
-    } else {
+
+    if (!SelectQueryNode.is(query)) {
       throw new Error('Sqlite driver only supports streaming of select queries')
     }
-  }
-}
 
-class ConnectionMutex {
-  #promise?: Promise<void>
-  #resolve?: () => void
+    const iter = stmt.iterate(parameters)
 
-  async lock(): Promise<void> {
-    while (this.#promise) {
-      await this.#promise
+    for (const row of iter) {
+      yield {
+        rows: [row as R],
+      }
     }
-
-    this.#promise = new Promise((resolve) => {
-      this.#resolve = resolve
-    })
-  }
-
-  unlock(): void {
-    const resolve = this.#resolve
-
-    this.#promise = undefined
-    this.#resolve = undefined
-
-    resolve?.()
   }
 }

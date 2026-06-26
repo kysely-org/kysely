@@ -34,11 +34,7 @@ import type {
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import {
   type ExpressionOrFactory,
   parseExpression,
@@ -57,7 +53,7 @@ import type { Selectable } from '../util/column-type.js'
 import type { Explainable, ExplainFormat } from '../util/explainable.js'
 import type { Expression } from '../expression/expression.js'
 import type { KyselyTypeError } from '../util/type-error.js'
-import type { Streamable } from '../util/streamable.js'
+import type { Streamable, StreamOptions } from '../util/streamable.js'
 import { parseTop } from '../parser/top-parser.js'
 import type {
   OutputCallback,
@@ -67,13 +63,19 @@ import type {
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
+import type {
+  Executable,
+  ExecuteTakeFirstOrThrowOptions,
+} from '../util/executable.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
-export class InsertQueryBuilder<DB, TB extends keyof DB, O>
+export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
   implements
     ReturningInterface<DB, TB, O>,
     OutputInterface<DB, TB, O, 'inserted'>,
     OperationNodeSource,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O>
 {
@@ -949,7 +951,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning<CB extends SelectCallback<DB, TB>>(
+  returning<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
@@ -987,7 +989,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<CB extends OutputCallback<DB, TB, 'inserted'>>(
+  output<const CB extends OutputCallback<DB, TB, 'inserted'>>(
     callback: CB,
   ): InsertQueryBuilder<
     DB,
@@ -1284,15 +1286,13 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  async execute(): Promise<SimplifyResult<O>[]> {
+  async execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
     const { adapter } = this.#props.executor
     const query = compiledQuery.query as InsertQueryNode
@@ -1301,42 +1301,42 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       (query.returning && adapter.supportsReturning) ||
       (query.output && adapter.supportsOutput)
     ) {
-      return result.rows as any
+      return result.rows as never
     }
 
     return [
       new InsertResult(
         result.insertId,
         result.numAffectedRows ?? BigInt(0),
-      ) as any,
+      ) as never,
     ]
   }
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: AbortableQueryOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
-   */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
+    errorConstructorOrOptions?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
   ): Promise<SimplifyResult<O>> {
-    const result = await this.executeTakeFirst()
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -1344,13 +1344,25 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       throw error
     }
 
-    return result as SimplifyResult<O>
+    return result as never
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
 
     for await (const item of stream) {
       yield* item.rows

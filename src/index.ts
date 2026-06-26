@@ -3,8 +3,11 @@
  * @mergeModuleWith <project>
  */
 
+import type { KyselyTypeError } from './util/type-error.js'
+
 export * from './kysely.js'
 export * from './query-creator.js'
+export * from './query-finalizer.js'
 
 export * from './expression/expression.js'
 export {
@@ -13,11 +16,11 @@ export {
 } from './expression/expression-builder.js'
 export * from './expression/expression-wrapper.js'
 
-export * from './query-builder/where-interface.js'
-export * from './query-builder/returning-interface.js'
-export * from './query-builder/output-interface.js'
-export * from './query-builder/having-interface.js'
-export * from './query-builder/order-by-interface.js'
+export type * from './query-builder/where-interface.js'
+export type * from './query-builder/returning-interface.js'
+export type * from './query-builder/output-interface.js'
+export type * from './query-builder/having-interface.js'
+export type * from './query-builder/order-by-interface.js'
 export * from './query-builder/select-query-builder.js'
 export * from './query-builder/insert-query-builder.js'
 export * from './query-builder/update-query-builder.js'
@@ -39,15 +42,15 @@ export * from './query-builder/order-by-item-builder.js'
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
 
-export * from './query-executor/query-executor.js'
+export type * from './query-executor/query-executor.js'
 export * from './query-executor/default-query-executor.js'
 export * from './query-executor/noop-query-executor.js'
-export * from './query-executor/query-executor-provider.js'
+export type * from './query-executor/query-executor-provider.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/compiled-query.js'
 
-export * from './schema/schema.js'
+export * from './schema/schema-module.js'
 export * from './schema/create-table-builder.js'
 export * from './schema/create-type-builder.js'
 export * from './schema/drop-table-builder.js'
@@ -63,64 +66,68 @@ export * from './schema/create-view-builder.js'
 export * from './schema/refresh-materialized-view-builder.js'
 export * from './schema/drop-view-builder.js'
 export * from './schema/alter-column-builder.js'
+export * from './schema/drop-column-builder.js'
 
 export * from './dynamic/dynamic.js'
 export * from './dynamic/dynamic-reference-builder.js'
 export * from './dynamic/dynamic-table-builder.js'
 
 export * from './driver/driver.js'
-export * from './driver/database-connection.js'
-export * from './driver/connection-provider.js'
+export type * from './driver/database-connection.js'
+export type * from './driver/connection-provider.js'
 export * from './driver/default-connection-provider.js'
 export * from './driver/single-connection-provider.js'
 export * from './driver/dummy-driver.js'
 
-export * from './dialect/dialect.js'
-export * from './dialect/dialect-adapter.js'
+export type * from './dialect/dialect.js'
+export type * from './dialect/dialect-adapter.js'
 export * from './dialect/dialect-adapter-base.js'
-export * from './dialect/database-introspector.js'
+export type * from './dialect/database-introspector.js'
 
 export * from './dialect/sqlite/sqlite-dialect.js'
-export * from './dialect/sqlite/sqlite-dialect-config.js'
+export type * from './dialect/sqlite/sqlite-dialect-config.js'
 export * from './dialect/sqlite/sqlite-driver.js'
-export * from './dialect/postgres/postgres-query-compiler.js'
-export * from './dialect/postgres/postgres-introspector.js'
-export * from './dialect/postgres/postgres-adapter.js'
+export * from './dialect/sqlite/sqlite-query-compiler.js'
+export * from './dialect/sqlite/sqlite-introspector.js'
+export * from './dialect/sqlite/sqlite-adapter.js'
 
 export * from './dialect/mysql/mysql-dialect.js'
-export * from './dialect/mysql/mysql-dialect-config.js'
+export type * from './dialect/mysql/mysql-dialect-config.js'
 export * from './dialect/mysql/mysql-driver.js'
 export * from './dialect/mysql/mysql-query-compiler.js'
 export * from './dialect/mysql/mysql-introspector.js'
 export * from './dialect/mysql/mysql-adapter.js'
 
 export * from './dialect/postgres/postgres-driver.js'
-export * from './dialect/postgres/postgres-dialect-config.js'
+export type * from './dialect/postgres/postgres-dialect-config.js'
 export * from './dialect/postgres/postgres-dialect.js'
-export * from './dialect/sqlite/sqlite-query-compiler.js'
-export * from './dialect/sqlite/sqlite-introspector.js'
-export * from './dialect/sqlite/sqlite-adapter.js'
+export * from './dialect/postgres/postgres-query-compiler.js'
+export * from './dialect/postgres/postgres-introspector.js'
+export * from './dialect/postgres/postgres-adapter.js'
 
 export * from './dialect/mssql/mssql-adapter.js'
-export * from './dialect/mssql/mssql-dialect-config.js'
+export type * from './dialect/mssql/mssql-dialect-config.js'
 export * from './dialect/mssql/mssql-dialect.js'
 export * from './dialect/mssql/mssql-driver.js'
 export * from './dialect/mssql/mssql-introspector.js'
 export * from './dialect/mssql/mssql-query-compiler.js'
 
+export * from './dialect/pglite/pglite-adapter.js'
+export * from './dialect/pglite/pglite-driver.js'
+export * from './dialect/pglite/pglite-dialect.js'
+export type * from './dialect/pglite/pglite-dialect-config.js'
+
 export * from './query-compiler/default-query-compiler.js'
-export * from './query-compiler/query-compiler.js'
+export type * from './query-compiler/query-compiler.js'
 
-export * from './migration/migrator.js'
-export * from './migration/file-migration-provider.js'
-
-export * from './plugin/kysely-plugin.js'
+export type * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
 export * from './plugin/deduplicate-joins/deduplicate-joins-plugin.js'
 export * from './plugin/with-schema/with-schema-plugin.js'
 export * from './plugin/parse-json-results/parse-json-results-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists-plugin.js'
 export * from './plugin/handle-empty-in-lists/handle-empty-in-lists.js'
+export * from './plugin/safe-null-comparison/safe-null-comparison-plugin.js'
 
 export * from './operation-node/add-column-node.js'
 export * from './operation-node/add-constraint-node.js'
@@ -186,7 +193,10 @@ export * from './operation-node/on-node.js'
 export * from './operation-node/operation-node-source.js'
 export * from './operation-node/operation-node-transformer.js'
 export * from './operation-node/operation-node-visitor.js'
-export * from './operation-node/operation-node.js'
+export type {
+  OperationNode,
+  OperationNodeKind,
+} from './operation-node/operation-node.js'
 export * from './operation-node/operator-node.js'
 export * from './operation-node/or-action-node.js'
 export * from './operation-node/or-node.js'
@@ -206,6 +216,7 @@ export * from './operation-node/references-node.js'
 export * from './operation-node/rename-column-node.js'
 export * from './operation-node/rename-constraint-node.js'
 export * from './operation-node/returning-node.js'
+export type { RootOperationNode } from './operation-node/root-operation-node.js'
 export * from './operation-node/schemable-identifier-node.js'
 export * from './operation-node/select-all-node.js'
 export * from './operation-node/select-modifier-node.js'
@@ -226,11 +237,15 @@ export * from './operation-node/values-node.js'
 export * from './operation-node/when-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
+export * from './operation-node/alter-type-node.js'
+export * from './operation-node/add-value-node.js'
+export * from './operation-node/rename-value-node.js'
 
-export * from './util/column-type.js'
+export type * from './util/column-type.js'
 export * from './util/compilable.js'
-export * from './util/explainable.js'
-export * from './util/streamable.js'
+export type * from './util/explainable.js'
+export type * from './util/streamable.js'
+export type * from './util/executable.js'
 export * from './util/log.js'
 export type {
   AnyAliasedColumn,
@@ -240,23 +255,30 @@ export type {
   DrainOuterGeneric,
   Equals,
   ExtractColumnType,
-  UnknownRow,
-  Simplify,
-  SqlBool,
+  NarrowPartial,
+  NotNull,
   Nullable,
   NumbersWhenDataTypeNotAvailable,
-  NotNull,
   NumericString,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
+  Simplify,
+  SimplifyDeep,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
   StringsWhenDataTypeNotAvailable,
+  UnknownRow,
 } from './util/type-utils.js'
-export * from './util/infer-result.js'
+export type * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 export { createQueryId, type QueryId } from './util/query-id.js'
 export type { KyselyTypeError } from './util/type-error.js'
+export type {
+  AbortableOperationOptions,
+  AbortableQueryOptions,
+  InflightQueryAbortStrategy,
+} from './util/abort.js'
 
 export type {
   SelectExpression,
@@ -307,4 +329,96 @@ export type {
   ExpressionOrFactory,
 } from './parser/expression-parser.js'
 export type { Collation } from './parser/collate-parser.js'
-export type { QueryCreatorWithCommonTableExpression } from './parser/with-parser.js'
+export type {
+  CommonTableExpression,
+  CommonTableExpressionOutput,
+  CommonTableExpressionFactory,
+  RecursiveCommonTableExpression,
+  QueryCreatorWithCommonTableExpression,
+} from './parser/with-parser.js'
+
+// deprecated exports
+
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_ALLOW_UNORDERED_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_LOCK_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const DEFAULT_MIGRATION_TABLE: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const MIGRATION_LOCK_ID: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrateOptions =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type Migration =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationInfo =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationProvider =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResult =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigrationResultSet =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const Migrator: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type MigratorProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const NO_MIGRATIONS: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type NoMigrations =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export declare const FileMigrationProvider: KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderFS =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderPath =
+  KyselyTypeError<"import from 'kysely/migration' instead">
+/**
+ * @deprecated import from 'kysely/migration' instead.
+ */
+export type FileMigrationProviderProps =
+  KyselyTypeError<"import from 'kysely/migration' instead">

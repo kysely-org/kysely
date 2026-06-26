@@ -30,6 +30,7 @@ import type {
   Nullable,
   ShallowRecord,
   Simplify,
+  SimplifyResult,
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
@@ -48,11 +49,7 @@ import { asArray, freeze } from '../util/object-utils.js'
 import { type GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import type { WhereInterface } from './where-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  type NoResultErrorConstructor,
-} from './no-result-error.js'
+import { isNoResultErrorConstructor, NoResultError } from './no-result-error.js'
 import type { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import type { Explainable, ExplainFormat } from '../util/explainable.js'
@@ -69,7 +66,7 @@ import {
 } from '../parser/binary-operation-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 import type { Selectable } from '../util/column-type.js'
-import type { Streamable } from '../util/streamable.js'
+import type { Streamable, StreamOptions } from '../util/streamable.js'
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import type { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
@@ -83,6 +80,11 @@ import type { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 import type { JoinType } from '../operation-node/join-node.js'
 import type { OrderByInterface } from './order-by-interface.js'
+import type {
+  Executable,
+  ExecuteTakeFirstOrThrowOptions,
+} from '../util/executable.js'
+import type { AbortableQueryOptions } from '../util/abort.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends
@@ -91,6 +93,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     OrderByInterface<DB, TB, O>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
+    Executable<O>,
     Explainable,
     Streamable<O> {
   where<
@@ -374,7 +377,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>,
   ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
-  select<CB extends SelectCallback<DB, TB>>(
+  select<const CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>
 
@@ -717,7 +720,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -738,7 +741,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -759,7 +762,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -782,7 +785,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -842,7 +845,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -895,7 +898,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   leftJoinLateral<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
   >(
     table: TE,
     callback: FN,
@@ -2118,32 +2121,23 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   compile(): CompiledQuery<Simplify<O>>
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
-  execute(): Promise<Simplify<O>[]>
+  execute(
+    options?: AbortableQueryOptions,
+  ): Promise<NonNullable<SimplifyResult<O>>[]>
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
-  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+  executeTakeFirst(
+    options?: AbortableQueryOptions,
+  ): Promise<SimplifySingleResult<O>>
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback to throw a different
-   * error.
-   */
   executeTakeFirstOrThrow(
-    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error),
-  ): Promise<Simplify<O>>
+    options?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
+  ): Promise<SimplifyResult<O>>
 
-  stream(chunkSize?: number): AsyncIterableIterator<O>
+  stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O>
 
   explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
@@ -2650,27 +2644,42 @@ class SelectQueryBuilderImpl<
     )
   }
 
-  async execute(): Promise<Simplify<O>[]> {
+  async execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
 
-    const result = await this.#props.executor.executeQuery<O>(compiledQuery)
+    const result = await this.#props.executor.executeQuery<O>(
+      compiledQuery,
+      options,
+    )
 
-    return result.rows
+    return result.rows as never
   }
 
-  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
-    const [result] = await this.execute()
-    return result as SimplifySingleResult<O>
+  async executeTakeFirst(
+    options?: AbortableQueryOptions,
+  ): Promise<SimplifySingleResult<O>> {
+    const [result] = await this.execute(options)
+
+    return result
   }
 
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError,
-  ): Promise<Simplify<O>> {
-    const result = await this.executeTakeFirst()
+    errorConstructorOrOptions?:
+      | ExecuteTakeFirstOrThrowOptions
+      | ExecuteTakeFirstOrThrowOptions['errorConstructor'],
+  ): Promise<SimplifyResult<O>> {
+    if (typeof errorConstructorOrOptions === 'function') {
+      errorConstructorOrOptions = {
+        errorConstructor: errorConstructorOrOptions,
+      }
+    }
+
+    const result = await this.executeTakeFirst(errorConstructorOrOptions)
 
     if (result === undefined) {
+      const errorConstructor =
+        errorConstructorOrOptions?.errorConstructor ?? NoResultError
+
       const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
         : errorConstructor(this.toOperationNode())
@@ -2678,13 +2687,25 @@ class SelectQueryBuilderImpl<
       throw error
     }
 
-    return result as O
+    return result as never
   }
 
-  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+  async *stream(
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
     const compiledQuery = this.compile()
 
-    const stream = this.#props.executor.stream<O>(compiledQuery, chunkSize)
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
 
     for await (const item of stream) {
       yield* item.rows
@@ -2721,8 +2742,8 @@ export interface SelectQueryBuilderProps {
 }
 
 export interface AliasedSelectQueryBuilder<
-  O = undefined,
-  A extends string = never,
+  out O = undefined,
+  out A extends string = never,
 > extends AliasedExpression<O, A> {
   get isAliasedSelectQueryBuilder(): true
 }

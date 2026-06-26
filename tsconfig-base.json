@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "lib": ["es2023"],
     "moduleResolution": "node16",
     "module": "node16",
     "noImplicitAny": true,
     "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2022",
-    "types": ["node"]
+    "target": "es2023",
+    "types": ["node"],
+    "verbatimModuleSyntax": true
   }
 }

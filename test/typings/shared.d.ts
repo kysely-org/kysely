@@ -1,9 +1,9 @@
-import {
+import type {
   ColumnType,
   Generated,
   GeneratedAlways,
   JSONColumnType,
-} from '../../dist/cjs/index.js'
+} from '../../dist/index.js'
 
 export interface Pet {
   id: Generated<string>
@@ -78,6 +78,12 @@ export interface PersonMetadata {
       roles: string[]
       last_login?: { device: string }
     }
+    tags: string[]
+  }>
+  discriminatedUnionProfile: JSONColumnType<{
+    auth:
+      | { type: 'token'; token: string }
+      | { type: 'session'; session_id: string }
     tags: string[]
   }>
   experience: JSONColumnType<

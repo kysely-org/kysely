@@ -1,7 +1,7 @@
-import { sql } from '../../../dist/cjs/index.js'
+import { sql } from '../../../dist/index.js'
 import {
   DIALECTS,
-  TestContext,
+  type TestContext,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,7 +10,9 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: case`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: case`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -52,6 +54,40 @@ for (const dialect of DIALECTS) {
         sqlite: {
           sql: `select case when "gender" = ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...when...thenRef...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .when('gender', '=', 'male')
+            .thenRef('first_name')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "gender" = $1 then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
+        },
+        mysql: {
+          sql: 'select case when `gender` = ? then `first_name` end as `title` from `person`',
+          parameters: ['male'],
+        },
+        mssql: {
+          sql: `select case when "gender" = @1 then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
+        },
+        sqlite: {
+          sql: `select case when "gender" = ? then "first_name" end as "title" from "person"`,
+          parameters: ['male'],
         },
       })
 
@@ -310,6 +346,76 @@ for (const dialect of DIALECTS) {
             'end as "title" from "person"',
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('match')
+            .else('no')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "first_name" = "last_name" then $1 else $2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        mysql: {
+          sql: 'select case when `first_name` = `last_name` then ? else ? end as `title` from `person`',
+          parameters: ['match', 'no'],
+        },
+        mssql: {
+          sql: `select case when "first_name" = "last_name" then @1 else @2 end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+        sqlite: {
+          sql: `select case when "first_name" = "last_name" then ? else ? end as "title" from "person"`,
+          parameters: ['match', 'no'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...whenRef...then...elseRef...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .whenRef('first_name', '=', 'last_name')
+            .then('match')
+            .elseRef('gender')
+            .end()
+            .as('title'),
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select case when "first_name" = "last_name" then $1 else "gender" end as "title" from "person"`,
+          parameters: ['match'],
+        },
+        mysql: {
+          sql: 'select case when `first_name` = `last_name` then ? else `gender` end as `title` from `person`',
+          parameters: ['match'],
+        },
+        mssql: {
+          sql: `select case when "first_name" = "last_name" then @1 else "gender" end as "title" from "person"`,
+          parameters: ['match'],
+        },
+        sqlite: {
+          sql: `select case when "first_name" = "last_name" then ? else "gender" end as "title" from "person"`,
+          parameters: ['match'],
         },
       })
 

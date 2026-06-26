@@ -37,6 +37,8 @@ There is also an `allowUnorderedMigrations` option. This option will allow new m
 To allow unordered migrations, pass the `allowUnorderedMigrations` option to Migrator:
 
 ```ts
+import { FileMigrationProvider, Migrator } from 'kysely/migration'
+
 const migrator = new Migrator({
   db,
   provider: new FileMigrationProvider(...),
@@ -140,6 +142,8 @@ For more information, visit https://github.com/kysely-org/kysely-ctl.
 You can then use:
 
 ```ts
+import { Migrator } from 'kysely/migration'
+
 const migrator = new Migrator(migratorConfig)
 await migrator.migrateToLatest()
 ```
@@ -152,12 +156,8 @@ You will probably want to add a simple migration script to your projects like th
 import * as path from 'path'
 import { Pool } from 'pg'
 import { promises as fs } from 'fs'
-import {
-  Kysely,
-  Migrator,
-  PostgresDialect,
-  FileMigrationProvider,
-} from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
+import { FileMigrationProvider, Migrator } from 'kysely/migration'
 import { Database } from './types'
 
 async function migrateToLatest() {

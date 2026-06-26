@@ -1,5 +1,5 @@
 import type { Dialect } from './dialect/dialect.js'
-import { SchemaModule } from './schema/schema.js'
+import { SchemaModule } from './schema/schema-module.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
 import type { QueryExecutor } from './query-executor/query-executor.js'
@@ -35,10 +35,7 @@ import { parseExpression } from './parser/expression-parser.js'
 import type { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import type { DrainOuterGeneric } from './util/type-utils.js'
-import type {
-  QueryCompiler,
-  RootOperationNode,
-} from './query-compiler/query-compiler.js'
+import type { QueryCompiler } from './query-compiler/query-compiler.js'
 import type {
   ReleaseSavepoint,
   RollbackToSavepoint,
@@ -48,7 +45,11 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 import type { ConnectionProvider } from './driver/connection-provider.js'
-import { logOnce } from './util/log-once.js'
+import type { RootOperationNode } from './operation-node/root-operation-node.js'
+import type {
+  AbortableOperationOptions,
+  AbortableQueryOptions,
+} from './util/abort.js'
 
 declare global {
   interface AsyncDisposable {}
@@ -116,7 +117,7 @@ export class Kysely<DB>
       const adapter = dialect.createAdapter()
 
       const log = new Log(args.log ?? [])
-      const runtimeDriver = new RuntimeDriver(driver, log)
+      const runtimeDriver = new RuntimeDriver(driver, adapter, log)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
       const executor = new DefaultQueryExecutor(
@@ -496,7 +497,7 @@ export class Kysely<DB>
    *   .addColumn('some_column', 'integer')
    *   .execute()
    *
-   * const tempDb = db.withTables<{
+   * const tempDb = db.$extendTables<{
    *   temp_table: {
    *     some_column: number
    *   }
@@ -508,10 +509,92 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+  $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
   > {
     return new Kysely({ ...this.#props })
+  }
+
+  /**
+   * Returns a copy of this Kysely instance without the given tables (provided as
+   * a union type of table names).
+   *
+   * This method only modifies the types and doesn't affect any of the executed
+   * queries in any way.
+   *
+   * See also {@link $pickTables} and {@link $extendTables}.
+   *
+   * ### Examples
+   *
+   * The following example omits tables not used in the downstream query. This
+   * can help with compile-time performance as downstream checks and calculations
+   * work against a smaller scope of the database - less tables and columns.
+   *
+   * Don't optimize prematurely! Build your queries first, measure later. If you
+   * realize the query has a noticeable impact on compilation - try the helper.
+   *
+   * ```ts
+   * const results = await db
+   *   .$omitTables<'toy'>()
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The query is arguably less readable now, and changing it is less obvious -
+   * e.g. adding another table.
+   */
+  $omitTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Omit<DB, T> : DB
+  > {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
+   * Returns a copy of this Kysely instance with just the given tables (provided as
+   * a union type of table names).
+   *
+   * This method only modifies the types and doesn't affect any of the executed
+   * queries in any way.
+   *
+   * See also {@link $omitTables} and {@link $extendTables}.
+   *
+   * ### Examples
+   *
+   * The following example picks the tables used in the downstream query. This
+   * can help with compile-time performance as downstream checks and calculations
+   * work against a smaller scope of the database - less tables and columns.
+   *
+   * Don't optimize prematurely! Build your queries first, measure later. If you
+   * realize the query has a noticeable impact on compilation - try the helper.
+   *
+   * ```ts
+   * const results = await db
+   *   .$pickTables<'person' | 'pet'>()
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The query is arguably less readable now, and changing it is less obvious -
+   * e.g. adding another table.
+   */
+  $pickTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Pick<DB, T> : DB
+  > {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
+   * @deprecated use {@link $extendTables} instead.
+   */
+  // TODO: remove in 0.30
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  > {
+    return this.$extendTables()
   }
 
   /**
@@ -545,20 +628,13 @@ export class Kysely<DB>
    *
    * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
-  executeQuery<R>(
+  async executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    // TODO: remove this in the future. deprecated in  0.28.x
-    queryId?: QueryId,
+    options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
-    if (queryId !== undefined) {
-      logOnce(
-        'Passing `queryId` in `db.executeQuery` is deprecated and will result in a compile-time error in the future.',
-      )
-    }
-
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery<R>(compiledQuery)
+    return await this.#props.executor.executeQuery<R>(compiledQuery, options)
   }
 
   async [Symbol.asyncDispose]() {
@@ -581,24 +657,45 @@ export class Transaction<DB> extends Kysely<DB> {
     return true
   }
 
-  override transaction(): TransactionBuilder<DB> {
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  override transaction(): never {
     throw new Error(
       'calling the transaction method for a Transaction is not supported',
     )
   }
 
-  override connection(): ConnectionBuilder<DB> {
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  override startTransaction(): never {
+    throw new Error(
+      'calling the controlled transaction method for a Transaction is not supported',
+    )
+  }
+
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  override connection(): never {
     throw new Error(
       'calling the connection method for a Transaction is not supported',
     )
   }
 
-  override async destroy(): Promise<void> {
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  override destroy(): never {
     throw new Error(
       'calling the destroy method for a Transaction is not supported',
     )
   }
 
+  /**
+   * Similar to {@link Kysely.withPlugin} but returns the transaction.
+   */
   override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -606,6 +703,9 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withoutPlugins} but returns the transaction.
+   */
   override withoutPlugins(): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -613,6 +713,9 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withSchema} but returns the transaction.
+   */
   override withSchema(schema: string): Transaction<DB> {
     return new Transaction({
       ...this.#props,
@@ -622,9 +725,41 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * Similar to {@link Kysely.withTables} but returns the transaction.
+   *
+   * @deprecated use {@link $extendTables} instead.
+   */
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$extendTables} but returns the transaction.
+   */
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>> {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$omitTables} but returns the transaction.
+   */
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  > {
+    return new Transaction({ ...this.#props })
+  }
+
+  /**
+   * Similar to {@link Kysely.$pickTables} but returns the transaction.
+   */
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  > {
     return new Transaction({ ...this.#props })
   }
 }
@@ -703,19 +838,22 @@ export class ConnectionBuilder<DB> {
     this.#props = freeze(props)
   }
 
-  async execute<T>(callback: (db: Kysely<DB>) => Promise<T>): Promise<T> {
-    return this.#props.executor.provideConnection(async (connection) => {
-      const executor = this.#props.executor.withConnectionProvider(
-        new SingleConnectionProvider(connection),
-      )
+  async execute<T>(
+    callback: (db: Kysely<DB>) => Promise<T>,
+    options?: AbortableOperationOptions,
+  ): Promise<T> {
+    return this.#props.executor.provideConnection(
+      async (connection) => {
+        const executor = this.#props.executor.withConnectionProvider(
+          new SingleConnectionProvider(connection),
+        )
 
-      const db = new Kysely<DB>({
-        ...this.#props,
-        executor,
-      })
+        const db = new Kysely<DB>({ ...this.#props, executor })
 
-      return await callback(db)
-    })
+        return await callback(db)
+      },
+      freeze({ signal: options?.signal }),
+    )
   }
 }
 
@@ -758,10 +896,7 @@ export class TransactionBuilder<DB> {
         state,
       )
 
-      const transaction = new Transaction<DB>({
-        ...kyselyProps,
-        executor,
-      })
+      const transaction = new Transaction<DB>({ ...kyselyProps, executor })
 
       let transactionBegun = false
       try {
@@ -896,7 +1031,7 @@ export class ControlledTransaction<
   commit(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async () => {
+    return new Command(async (): Promise<void> => {
       await this.#props.driver.commitTransaction(
         this.#props.connection.connection,
       )
@@ -932,7 +1067,7 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async () => {
+    return new Command(async (): Promise<void> => {
       await this.#props.driver.rollbackTransaction(
         this.#props.connection.connection,
       )
@@ -975,15 +1110,17 @@ export class ControlledTransaction<
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async () => {
-      await this.#props.driver.savepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
+    return new Command(
+      async (): Promise<ControlledTransaction<DB, [...S, SN]>> => {
+        await this.#props.driver.savepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    })
+        return new ControlledTransaction({ ...this.#props })
+      },
+    )
   }
 
   /**
@@ -1023,15 +1160,19 @@ export class ControlledTransaction<
     : never {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async () => {
-      await this.#props.driver.rollbackToSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
+    return new Command(
+      async (): Promise<
+        ControlledTransaction<DB, RollbackToSavepoint<S, SN>>
+      > => {
+        await this.#props.driver.rollbackToSavepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   /**
@@ -1076,15 +1217,17 @@ export class ControlledTransaction<
     : never {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async () => {
-      await this.#props.driver.releaseSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
+    return new Command(
+      async (): Promise<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> => {
+        await this.#props.driver.releaseSavepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+        )
 
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
@@ -1113,6 +1256,26 @@ export class ControlledTransaction<
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  > {
+    return new ControlledTransaction({ ...this.#props })
+  }
+
+  override $pickTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  > {
     return new ControlledTransaction({ ...this.#props })
   }
 }
@@ -1164,12 +1327,10 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   readonly #state: ControlledTransctionState
 
   constructor(executor: QueryExecutor, state: ControlledTransctionState) {
-    if (executor instanceof NotCommittedOrRolledBackAssertingExecutor) {
-      this.#executor = executor.#executor
-    } else {
-      this.#executor = executor
-    }
-
+    this.#executor =
+      executor instanceof NotCommittedOrRolledBackAssertingExecutor
+        ? executor.#executor
+        : executor
     this.#state = state
   }
 
@@ -1194,21 +1355,26 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
 
   provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T> {
-    return this.#executor.provideConnection(consumer)
+    return this.#executor.provideConnection(consumer, options)
   }
 
-  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
+  executeQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+    options?: AbortableQueryOptions,
+  ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery)
+    return this.#executor.executeQuery(compiledQuery, options)
   }
 
   stream<R>(
     compiledQuery: CompiledQuery<R>,
     chunkSize: number,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize)
+    return this.#executor.stream(compiledQuery, chunkSize, options)
   }
 
   withConnectionProvider(

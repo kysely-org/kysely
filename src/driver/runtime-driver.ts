@@ -1,7 +1,14 @@
+import type { DialectAdapter } from '../dialect/dialect-adapter.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { Log } from '../util/log.js'
+import {
+  type AbortableOperationOptions,
+  printBackgroundFail,
+  waitOrAbort,
+} from '../util/abort.js'
 import { performanceNow } from '../util/performance-now.js'
+import { ConnectionMutex } from './connection-mutex.js'
 import type { DatabaseConnection, QueryResult } from './database-connection.js'
 import type { Driver, TransactionSettings } from './driver.js'
 
@@ -18,43 +25,74 @@ export class RuntimeDriver implements Driver {
   #initDone: boolean
   #destroyPromise?: Promise<void>
   #connections = new WeakSet<DatabaseConnection>()
+  #connectionMutex?: ConnectionMutex
 
-  constructor(driver: Driver, log: Log) {
-    this.#initDone = false
+  constructor(driver: Driver, adapter: DialectAdapter, log: Log) {
     this.#driver = driver
+    this.#initDone = false
     this.#log = log
+
+    if (adapter.supportsMultipleConnections === false) {
+      this.#connectionMutex = new ConnectionMutex()
+    }
   }
 
-  async init(): Promise<void> {
+  async init(options?: AbortableOperationOptions): Promise<void> {
     if (this.#destroyPromise) {
       throw new Error('driver has already been destroyed')
     }
 
-    if (!this.#initPromise) {
-      this.#initPromise = this.#driver
-        .init()
-        .then(() => {
-          this.#initDone = true
-        })
-        .catch((err) => {
-          this.#initPromise = undefined
-          return Promise.reject(err)
-        })
-    }
+    this.#initPromise ??= this.#driver
+      .init(options)
+      .then(() => {
+        this.#initDone = true
+      })
+      .catch((reason) => {
+        // ensure `init` is retried later.
+        this.#initPromise = undefined
+        throw reason
+      })
 
-    await this.#initPromise
+    await waitOrAbort(this.#initPromise, options?.signal, 'init')
   }
 
-  async acquireConnection(): Promise<DatabaseConnection> {
+  async acquireConnection(
+    options?: AbortableOperationOptions,
+  ): Promise<DatabaseConnection> {
     if (this.#destroyPromise) {
       throw new Error('driver has already been destroyed')
     }
 
     if (!this.#initDone) {
-      await this.init()
+      await this.init(options)
     }
 
-    const connection = await this.#driver.acquireConnection()
+    if (this.#connectionMutex) {
+      const lockPromise = this.#connectionMutex.obtainLock()
+
+      await waitOrAbort(
+        lockPromise,
+        options?.signal,
+        'acquireConnection:mutex',
+        () => lockPromise.then(() => this.#connectionMutex?.releaseLock()),
+      )
+    }
+
+    const connectionPromise = this.#driver.acquireConnection(options)
+
+    const connection = await waitOrAbort(
+      connectionPromise,
+      options?.signal,
+      'acquireConnection:acquire',
+      () =>
+        connectionPromise
+          ?.then((connection) =>
+            this.releaseConnection(connection).catch(
+              printBackgroundFail('driver.releaseConnection'),
+            ),
+          )
+          .catch(printBackgroundFail('driver.acquireConnection')),
+    )
 
     if (!this.#connections.has(connection)) {
       if (this.#needsLogging()) {
@@ -67,44 +105,53 @@ export class RuntimeDriver implements Driver {
     return connection
   }
 
-  async releaseConnection(connection: DatabaseConnection): Promise<void> {
-    await this.#driver.releaseConnection(connection)
+  async releaseConnection(
+    connection: DatabaseConnection,
+    options?: AbortableOperationOptions,
+  ): Promise<void> {
+    await this.#driver.releaseConnection(connection, options)
+
+    this.#connectionMutex?.releaseLock()
   }
 
-  beginTransaction(
+  async beginTransaction(
     connection: DatabaseConnection,
     settings: TransactionSettings,
   ): Promise<void> {
-    return this.#driver.beginTransaction(connection, settings)
+    return await this.#driver.beginTransaction(connection, settings)
   }
 
-  commitTransaction(connection: DatabaseConnection): Promise<void> {
-    return this.#driver.commitTransaction(connection)
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    return await this.#driver.commitTransaction(connection)
   }
 
-  rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    return this.#driver.rollbackTransaction(connection)
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    return await this.#driver.rollbackTransaction(connection)
   }
 
-  savepoint(
+  async savepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     if (this.#driver.savepoint) {
-      return this.#driver.savepoint(connection, savepointName, compileQuery)
+      return await this.#driver.savepoint(
+        connection,
+        savepointName,
+        compileQuery,
+      )
     }
 
     throw new Error('The `savepoint` method is not supported by this driver')
   }
 
-  rollbackToSavepoint(
+  async rollbackToSavepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     if (this.#driver.rollbackToSavepoint) {
-      return this.#driver.rollbackToSavepoint(
+      return await this.#driver.rollbackToSavepoint(
         connection,
         savepointName,
         compileQuery,
@@ -116,13 +163,13 @@ export class RuntimeDriver implements Driver {
     )
   }
 
-  releaseSavepoint(
+  async releaseSavepoint(
     connection: DatabaseConnection,
     savepointName: string,
     compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
     if (this.#driver.releaseSavepoint) {
-      return this.#driver.releaseSavepoint(
+      return await this.#driver.releaseSavepoint(
         connection,
         savepointName,
         compileQuery,
@@ -134,21 +181,20 @@ export class RuntimeDriver implements Driver {
     )
   }
 
-  async destroy(): Promise<void> {
+  async destroy(options?: AbortableOperationOptions): Promise<void> {
     if (!this.#initPromise) {
       return
     }
 
-    await this.#initPromise
+    await waitOrAbort(this.#initPromise, options?.signal, 'destroy:initPromise')
 
-    if (!this.#destroyPromise) {
-      this.#destroyPromise = this.#driver.destroy().catch((err) => {
-        this.#destroyPromise = undefined
-        return Promise.reject(err)
-      })
-    }
+    this.#destroyPromise ??= this.#driver.destroy(options).catch((reason) => {
+      // ensure `destroy` is retried later.
+      this.#destroyPromise = undefined
+      throw reason
+    })
 
-    await this.#destroyPromise
+    await waitOrAbort(this.#destroyPromise, options?.signal, 'destroy')
   }
 
   #needsLogging(): boolean {
@@ -167,12 +213,13 @@ export class RuntimeDriver implements Driver {
 
     connection.executeQuery = async (
       compiledQuery,
+      options,
     ): Promise<QueryResult<any>> => {
       let caughtError: unknown
       const startTime = performanceNow()
 
       try {
-        return await executeQuery.call(connection, compiledQuery)
+        return await executeQuery.call(connection, compiledQuery, options)
       } catch (error) {
         caughtError = error
         await dis.#logError(error, compiledQuery, startTime)
@@ -187,6 +234,7 @@ export class RuntimeDriver implements Driver {
     connection.streamQuery = async function* (
       compiledQuery,
       chunkSize,
+      options,
     ): AsyncIterableIterator<QueryResult<any>> {
       let caughtError: unknown
       const startTime = performanceNow()
@@ -196,6 +244,7 @@ export class RuntimeDriver implements Driver {
           connection,
           compiledQuery,
           chunkSize,
+          options,
         )) {
           yield result
         }

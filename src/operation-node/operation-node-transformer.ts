@@ -46,7 +46,7 @@ import type { CommonTableExpressionNode } from './common-table-expression-node.j
 import type { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
 import type { HavingNode } from './having-node.js'
 import { freeze } from '../util/object-utils.js'
-import { requireAllProps } from '../util/require-all-props.js'
+import type { AllProps } from '../util/type-utils.js'
 import type { CreateSchemaNode } from './create-schema-node.js'
 import type { DropSchemaNode } from './drop-schema-node.js'
 import type { AlterTableNode } from './alter-table-node.js'
@@ -99,6 +99,9 @@ import type { OrActionNode } from './or-action-node.js'
 import type { CollateNode } from './collate-node.js'
 import type { QueryId } from '../util/query-id.js'
 import type { RenameConstraintNode } from './rename-constraint-node.js'
+import type { AddValueNode } from './add-value-node.js'
+import type { AlterTypeNode } from './alter-type-node.js'
+import type { RenameValueNode } from './rename-value-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -242,6 +245,9 @@ export class OperationNodeTransformer {
     OutputNode: this.transformOutput.bind(this),
     OrActionNode: this.transformOrAction.bind(this),
     CollateNode: this.transformCollate.bind(this),
+    AlterTypeNode: this.transformAlterType.bind(this),
+    AddValueNode: this.transformAddValue.bind(this),
+    RenameValueNode: this.transformRenameValue.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(
@@ -280,7 +286,7 @@ export class OperationNodeTransformer {
     node: SelectQueryNode,
     queryId?: QueryId,
   ): SelectQueryNode {
-    return requireAllProps<SelectQueryNode>({
+    return {
       kind: 'SelectQueryNode',
       from: this.transformNode(node.from, queryId),
       selections: this.transformNodeList(node.selections, queryId),
@@ -299,121 +305,121 @@ export class OperationNodeTransformer {
       setOperations: this.transformNodeList(node.setOperations, queryId),
       fetch: this.transformNode(node.fetch, queryId),
       top: this.transformNode(node.top, queryId),
-    })
+    } satisfies AllProps<SelectQueryNode>
   }
 
   protected transformSelection(
     node: SelectionNode,
     queryId?: QueryId,
   ): SelectionNode {
-    return requireAllProps<SelectionNode>({
+    return {
       kind: 'SelectionNode',
       selection: this.transformNode(node.selection, queryId),
-    })
+    } satisfies AllProps<SelectionNode>
   }
 
   protected transformColumn(node: ColumnNode, queryId?: QueryId): ColumnNode {
-    return requireAllProps<ColumnNode>({
+    return {
       kind: 'ColumnNode',
       column: this.transformNode(node.column, queryId),
-    })
+    } satisfies AllProps<ColumnNode>
   }
 
   protected transformAlias(node: AliasNode, queryId?: QueryId): AliasNode {
-    return requireAllProps<AliasNode>({
+    return {
       kind: 'AliasNode',
       node: this.transformNode(node.node, queryId),
       alias: this.transformNode(node.alias, queryId),
-    })
+    } satisfies AllProps<AliasNode>
   }
 
   protected transformTable(node: TableNode, queryId?: QueryId): TableNode {
-    return requireAllProps<TableNode>({
+    return {
       kind: 'TableNode',
       table: this.transformNode(node.table, queryId),
-    })
+    } satisfies AllProps<TableNode>
   }
 
   protected transformFrom(node: FromNode, queryId?: QueryId): FromNode {
-    return requireAllProps<FromNode>({
+    return {
       kind: 'FromNode',
       froms: this.transformNodeList(node.froms, queryId),
-    })
+    } satisfies AllProps<FromNode>
   }
 
   protected transformReference(
     node: ReferenceNode,
     queryId?: QueryId,
   ): ReferenceNode {
-    return requireAllProps<ReferenceNode>({
+    return {
       kind: 'ReferenceNode',
       column: this.transformNode(node.column, queryId),
       table: this.transformNode(node.table, queryId),
-    })
+    } satisfies AllProps<ReferenceNode>
   }
 
   protected transformAnd(node: AndNode, queryId?: QueryId): AndNode {
-    return requireAllProps<AndNode>({
+    return {
       kind: 'AndNode',
       left: this.transformNode(node.left, queryId),
       right: this.transformNode(node.right, queryId),
-    })
+    } satisfies AllProps<AndNode>
   }
 
   protected transformOr(node: OrNode, queryId?: QueryId): OrNode {
-    return requireAllProps<OrNode>({
+    return {
       kind: 'OrNode',
       left: this.transformNode(node.left, queryId),
       right: this.transformNode(node.right, queryId),
-    })
+    } satisfies AllProps<OrNode>
   }
 
   protected transformValueList(
     node: ValueListNode,
     queryId?: QueryId,
   ): ValueListNode {
-    return requireAllProps<ValueListNode>({
+    return {
       kind: 'ValueListNode',
       values: this.transformNodeList(node.values, queryId),
-    })
+    } satisfies AllProps<ValueListNode>
   }
 
   protected transformParens(node: ParensNode, queryId?: QueryId): ParensNode {
-    return requireAllProps<ParensNode>({
+    return {
       kind: 'ParensNode',
       node: this.transformNode(node.node, queryId),
-    })
+    } satisfies AllProps<ParensNode>
   }
 
   protected transformJoin(node: JoinNode, queryId?: QueryId): JoinNode {
-    return requireAllProps<JoinNode>({
+    return {
       kind: 'JoinNode',
       joinType: node.joinType,
       table: this.transformNode(node.table, queryId),
       on: this.transformNode(node.on, queryId),
-    })
+    } satisfies AllProps<JoinNode>
   }
 
   protected transformRaw(node: RawNode, queryId?: QueryId): RawNode {
-    return requireAllProps<RawNode>({
+    return {
       kind: 'RawNode',
       sqlFragments: freeze([...node.sqlFragments]),
       parameters: this.transformNodeList(node.parameters, queryId),
-    })
+    } satisfies AllProps<RawNode>
   }
 
   protected transformWhere(node: WhereNode, queryId?: QueryId): WhereNode {
-    return requireAllProps<WhereNode>({
+    return {
       kind: 'WhereNode',
       where: this.transformNode(node.where, queryId),
-    })
+    } satisfies AllProps<WhereNode>
   }
 
   protected transformInsertQuery(
     node: InsertQueryNode,
     queryId?: QueryId,
   ): InsertQueryNode {
-    return requireAllProps<InsertQueryNode>({
+    return {
       kind: 'InsertQueryNode',
       into: this.transformNode(node.into, queryId),
       columns: this.transformNodeList(node.columns, queryId),
@@ -423,28 +429,27 @@ export class OperationNodeTransformer {
       onDuplicateKey: this.transformNode(node.onDuplicateKey, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       with: this.transformNode(node.with, queryId),
-      ignore: node.ignore,
       orAction: this.transformNode(node.orAction, queryId),
       replace: node.replace,
       explain: this.transformNode(node.explain, queryId),
       defaultValues: node.defaultValues,
       top: this.transformNode(node.top, queryId),
       output: this.transformNode(node.output, queryId),
-    })
+    } satisfies AllProps<InsertQueryNode>
   }
 
   protected transformValues(node: ValuesNode, queryId?: QueryId): ValuesNode {
-    return requireAllProps<ValuesNode>({
+    return {
       kind: 'ValuesNode',
       values: this.transformNodeList(node.values, queryId),
-    })
+    } satisfies AllProps<ValuesNode>
   }
 
   protected transformDeleteQuery(
     node: DeleteQueryNode,
     queryId?: QueryId,
   ): DeleteQueryNode {
-    return requireAllProps<DeleteQueryNode>({
+    return {
       kind: 'DeleteQueryNode',
       from: this.transformNode(node.from, queryId),
       using: this.transformNode(node.using, queryId),
@@ -458,42 +463,43 @@ export class OperationNodeTransformer {
       explain: this.transformNode(node.explain, queryId),
       top: this.transformNode(node.top, queryId),
       output: this.transformNode(node.output, queryId),
-    })
+    } satisfies AllProps<DeleteQueryNode>
   }
 
   protected transformReturning(
     node: ReturningNode,
     queryId?: QueryId,
   ): ReturningNode {
-    return requireAllProps<ReturningNode>({
+    return {
       kind: 'ReturningNode',
       selections: this.transformNodeList(node.selections, queryId),
-    })
+    } satisfies AllProps<ReturningNode>
   }
 
   protected transformCreateTable(
     node: CreateTableNode,
     queryId?: QueryId,
   ): CreateTableNode {
-    return requireAllProps<CreateTableNode>({
+    return {
       kind: 'CreateTableNode',
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       constraints: this.transformNodeList(node.constraints, queryId),
+      indexes: this.transformNodeList(node.indexes, queryId),
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
       onCommit: node.onCommit,
       frontModifiers: this.transformNodeList(node.frontModifiers, queryId),
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       selectQuery: this.transformNode(node.selectQuery, queryId),
-    })
+    } satisfies AllProps<CreateTableNode>
   }
 
   protected transformColumnDefinition(
     node: ColumnDefinitionNode,
     queryId?: QueryId,
   ): ColumnDefinitionNode {
-    return requireAllProps<ColumnDefinitionNode>({
+    return {
       kind: 'ColumnDefinitionNode',
       column: this.transformNode(node.column, queryId),
       dataType: this.transformNode(node.dataType, queryId),
@@ -511,79 +517,80 @@ export class OperationNodeTransformer {
       nullsNotDistinct: node.nullsNotDistinct,
       identity: node.identity,
       ifNotExists: node.ifNotExists,
-    })
+    } satisfies AllProps<ColumnDefinitionNode>
   }
 
   protected transformAddColumn(
     node: AddColumnNode,
     queryId?: QueryId,
   ): AddColumnNode {
-    return requireAllProps<AddColumnNode>({
+    return {
       kind: 'AddColumnNode',
       column: this.transformNode(node.column, queryId),
-    })
+    } satisfies AllProps<AddColumnNode>
   }
 
   protected transformDropTable(
     node: DropTableNode,
     queryId?: QueryId,
   ): DropTableNode {
-    return requireAllProps<DropTableNode>({
+    return {
       kind: 'DropTableNode',
       table: this.transformNode(node.table, queryId),
       ifExists: node.ifExists,
       cascade: node.cascade,
-    })
+      temporary: node.temporary,
+    } satisfies AllProps<DropTableNode>
   }
 
   protected transformOrderBy(
     node: OrderByNode,
     queryId?: QueryId,
   ): OrderByNode {
-    return requireAllProps<OrderByNode>({
+    return {
       kind: 'OrderByNode',
       items: this.transformNodeList(node.items, queryId),
-    })
+    } satisfies AllProps<OrderByNode>
   }
 
   protected transformOrderByItem(
     node: OrderByItemNode,
     queryId?: QueryId,
   ): OrderByItemNode {
-    return requireAllProps<OrderByItemNode>({
+    return {
       kind: 'OrderByItemNode',
       orderBy: this.transformNode(node.orderBy, queryId),
       direction: this.transformNode(node.direction, queryId),
       collation: this.transformNode(node.collation, queryId),
       nulls: node.nulls,
-    })
+    } satisfies AllProps<OrderByItemNode>
   }
 
   protected transformGroupBy(
     node: GroupByNode,
     queryId?: QueryId,
   ): GroupByNode {
-    return requireAllProps<GroupByNode>({
+    return {
       kind: 'GroupByNode',
       items: this.transformNodeList(node.items, queryId),
-    })
+    } satisfies AllProps<GroupByNode>
   }
 
   protected transformGroupByItem(
     node: GroupByItemNode,
     queryId?: QueryId,
   ): GroupByItemNode {
-    return requireAllProps<GroupByItemNode>({
+    return {
       kind: 'GroupByItemNode',
       groupBy: this.transformNode(node.groupBy, queryId),
-    })
+    } satisfies AllProps<GroupByItemNode>
   }
 
   protected transformUpdateQuery(
     node: UpdateQueryNode,
     queryId?: QueryId,
   ): UpdateQueryNode {
-    return requireAllProps<UpdateQueryNode>({
+    return {
       kind: 'UpdateQueryNode',
       table: this.transformNode(node.table, queryId),
       from: this.transformNode(node.from, queryId),
@@ -598,39 +605,39 @@ export class OperationNodeTransformer {
       top: this.transformNode(node.top, queryId),
       output: this.transformNode(node.output, queryId),
       orderBy: this.transformNode(node.orderBy, queryId),
-    })
+    } satisfies AllProps<UpdateQueryNode>
   }
 
   protected transformColumnUpdate(
     node: ColumnUpdateNode,
     queryId?: QueryId,
   ): ColumnUpdateNode {
-    return requireAllProps<ColumnUpdateNode>({
+    return {
       kind: 'ColumnUpdateNode',
       column: this.transformNode(node.column, queryId),
       value: this.transformNode(node.value, queryId),
-    })
+    } satisfies AllProps<ColumnUpdateNode>
   }
 
   protected transformLimit(node: LimitNode, queryId?: QueryId): LimitNode {
-    return requireAllProps<LimitNode>({
+    return {
       kind: 'LimitNode',
       limit: this.transformNode(node.limit, queryId),
-    })
+    } satisfies AllProps<LimitNode>
   }
 
   protected transformOffset(node: OffsetNode, queryId?: QueryId): OffsetNode {
-    return requireAllProps<OffsetNode>({
+    return {
       kind: 'OffsetNode',
       offset: this.transformNode(node.offset, queryId),
-    })
+    } satisfies AllProps<OffsetNode>
   }
 
   protected transformOnConflict(
     node: OnConflictNode,
     queryId?: QueryId,
   ): OnConflictNode {
-    return requireAllProps<OnConflictNode>({
+    return {
       kind: 'OnConflictNode',
       columns: this.transformNodeList(node.columns, queryId),
       constraint: this.transformNode(node.constraint, queryId),
@@ -639,24 +646,24 @@ export class OperationNodeTransformer {
       updates: this.transformNodeList(node.updates, queryId),
       updateWhere: this.transformNode(node.updateWhere, queryId),
       doNothing: node.doNothing,
-    })
+    } satisfies AllProps<OnConflictNode>
   }
 
   protected transformOnDuplicateKey(
     node: OnDuplicateKeyNode,
     queryId?: QueryId,
   ): OnDuplicateKeyNode {
-    return requireAllProps<OnDuplicateKeyNode>({
+    return {
       kind: 'OnDuplicateKeyNode',
       updates: this.transformNodeList(node.updates, queryId),
-    })
+    } satisfies AllProps<OnDuplicateKeyNode>
   }
 
   protected transformCreateIndex(
     node: CreateIndexNode,
     queryId?: QueryId,
   ): CreateIndexNode {
-    return requireAllProps<CreateIndexNode>({
+    return {
       kind: 'CreateIndexNode',
       name: this.transformNode(node.name, queryId),
       table: this.transformNode(node.table, queryId),
@@ -666,61 +673,61 @@ export class OperationNodeTransformer {
       ifNotExists: node.ifNotExists,
       where: this.transformNode(node.where, queryId),
       nullsNotDistinct: node.nullsNotDistinct,
-    })
+    } satisfies AllProps<CreateIndexNode>
   }
 
   protected transformList(node: ListNode, queryId?: QueryId): ListNode {
-    return requireAllProps<ListNode>({
+    return {
       kind: 'ListNode',
       items: this.transformNodeList(node.items, queryId),
-    })
+    } satisfies AllProps<ListNode>
   }
 
   protected transformDropIndex(
     node: DropIndexNode,
     queryId?: QueryId,
   ): DropIndexNode {
-    return requireAllProps<DropIndexNode>({
+    return {
       kind: 'DropIndexNode',
       name: this.transformNode(node.name, queryId),
       table: this.transformNode(node.table, queryId),
       ifExists: node.ifExists,
       cascade: node.cascade,
-    })
+    } satisfies AllProps<DropIndexNode>
   }
 
   protected transformPrimaryKeyConstraint(
     node: PrimaryKeyConstraintNode,
     queryId?: QueryId,
   ): PrimaryKeyConstraintNode {
-    return requireAllProps<PrimaryKeyConstraintNode>({
+    return {
       kind: 'PrimaryKeyConstraintNode',
       columns: this.transformNodeList(node.columns, queryId),
       name: this.transformNode(node.name, queryId),
       deferrable: node.deferrable,
       initiallyDeferred: node.initiallyDeferred,
-    })
+    } satisfies AllProps<PrimaryKeyConstraintNode>
   }
 
   protected transformUniqueConstraint(
     node: UniqueConstraintNode,
     queryId?: QueryId,
   ): UniqueConstraintNode {
-    return requireAllProps<UniqueConstraintNode>({
+    return {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns, queryId),
       name: this.transformNode(node.name, queryId),
       nullsNotDistinct: node.nullsNotDistinct,
       deferrable: node.deferrable,
       initiallyDeferred: node.initiallyDeferred,
-    })
+    } satisfies AllProps<UniqueConstraintNode>
   }
 
   protected transformForeignKeyConstraint(
     node: ForeignKeyConstraintNode,
     queryId?: QueryId,
   ): ForeignKeyConstraintNode {
-    return requireAllProps<ForeignKeyConstraintNode>({
+    return {
       kind: 'ForeignKeyConstraintNode',
       columns: this.transformNodeList(node.columns, queryId),
       references: this.transformNode(node.references, queryId),
@@ -729,111 +736,111 @@ export class OperationNodeTransformer {
       onUpdate: node.onUpdate,
       deferrable: node.deferrable,
       initiallyDeferred: node.initiallyDeferred,
-    })
+    } satisfies AllProps<ForeignKeyConstraintNode>
   }
 
   protected transformSetOperation(
     node: SetOperationNode,
     queryId?: QueryId,
   ): SetOperationNode {
-    return requireAllProps<SetOperationNode>({
+    return {
       kind: 'SetOperationNode',
       operator: node.operator,
       expression: this.transformNode(node.expression, queryId),
       all: node.all,
-    })
+    } satisfies AllProps<SetOperationNode>
   }
 
   protected transformReferences(
     node: ReferencesNode,
     queryId?: QueryId,
   ): ReferencesNode {
-    return requireAllProps<ReferencesNode>({
+    return {
       kind: 'ReferencesNode',
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       onDelete: node.onDelete,
       onUpdate: node.onUpdate,
-    })
+    } satisfies AllProps<ReferencesNode>
   }
 
   protected transformCheckConstraint(
     node: CheckConstraintNode,
     queryId?: QueryId,
   ): CheckConstraintNode {
-    return requireAllProps<CheckConstraintNode>({
+    return {
       kind: 'CheckConstraintNode',
       expression: this.transformNode(node.expression, queryId),
       name: this.transformNode(node.name, queryId),
-    })
+    } satisfies AllProps<CheckConstraintNode>
   }
 
   protected transformWith(node: WithNode, queryId?: QueryId): WithNode {
-    return requireAllProps<WithNode>({
+    return {
       kind: 'WithNode',
       expressions: this.transformNodeList(node.expressions, queryId),
       recursive: node.recursive,
-    })
+    } satisfies AllProps<WithNode>
   }
 
   protected transformCommonTableExpression(
     node: CommonTableExpressionNode,
     queryId?: QueryId,
   ): CommonTableExpressionNode {
-    return requireAllProps<CommonTableExpressionNode>({
+    return {
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name, queryId),
       materialized: node.materialized,
       expression: this.transformNode(node.expression, queryId),
-    })
+    } satisfies AllProps<CommonTableExpressionNode>
   }
 
   protected transformCommonTableExpressionName(
     node: CommonTableExpressionNameNode,
     queryId?: QueryId,
   ): CommonTableExpressionNameNode {
-    return requireAllProps<CommonTableExpressionNameNode>({
+    return {
       kind: 'CommonTableExpressionNameNode',
       table: this.transformNode(node.table, queryId),
       columns: this.transformNodeList(node.columns, queryId),
-    })
+    } satisfies AllProps<CommonTableExpressionNameNode>
   }
 
   protected transformHaving(node: HavingNode, queryId?: QueryId): HavingNode {
-    return requireAllProps<HavingNode>({
+    return {
       kind: 'HavingNode',
       having: this.transformNode(node.having, queryId),
-    })
+    } satisfies AllProps<HavingNode>
   }
 
   protected transformCreateSchema(
     node: CreateSchemaNode,
     queryId?: QueryId,
   ): CreateSchemaNode {
-    return requireAllProps<CreateSchemaNode>({
+    return {
       kind: 'CreateSchemaNode',
       schema: this.transformNode(node.schema, queryId),
       ifNotExists: node.ifNotExists,
-    })
+    } satisfies AllProps<CreateSchemaNode>
   }
 
   protected transformDropSchema(
     node: DropSchemaNode,
     queryId?: QueryId,
   ): DropSchemaNode {
-    return requireAllProps<DropSchemaNode>({
+    return {
       kind: 'DropSchemaNode',
       schema: this.transformNode(node.schema, queryId),
       ifExists: node.ifExists,
       cascade: node.cascade,
-    })
+    } satisfies AllProps<DropSchemaNode>
   }
 
   protected transformAlterTable(
     node: AlterTableNode,
     queryId?: QueryId,
   ): AlterTableNode {
-    return requireAllProps<AlterTableNode>({
+    return {
       kind: 'AlterTableNode',
       table: this.transformNode(node.table, queryId),
       renameTo: this.transformNode(node.renameTo, queryId),
@@ -847,35 +854,36 @@ export class OperationNodeTransformer {
       renameConstraint: this.transformNode(node.renameConstraint, queryId),
       addIndex: this.transformNode(node.addIndex, queryId),
       dropIndex: this.transformNode(node.dropIndex, queryId),
-    })
+    } satisfies AllProps<AlterTableNode>
   }
 
   protected transformDropColumn(
     node: DropColumnNode,
     queryId?: QueryId,
   ): DropColumnNode {
-    return requireAllProps<DropColumnNode>({
+    return {
       kind: 'DropColumnNode',
       column: this.transformNode(node.column, queryId),
-    })
+      ifExists: node.ifExists,
+    } satisfies AllProps<DropColumnNode>
   }
 
   protected transformRenameColumn(
     node: RenameColumnNode,
     queryId?: QueryId,
   ): RenameColumnNode {
-    return requireAllProps<RenameColumnNode>({
+    return {
       kind: 'RenameColumnNode',
       column: this.transformNode(node.column, queryId),
       renameTo: this.transformNode(node.renameTo, queryId),
-    })
+    } satisfies AllProps<RenameColumnNode>
   }
 
   protected transformAlterColumn(
     node: AlterColumnNode,
     queryId?: QueryId,
   ): AlterColumnNode {
-    return requireAllProps<AlterColumnNode>({
+    return {
       kind: 'AlterColumnNode',
       column: this.transformNode(node.column, queryId),
       dataType: this.transformNode(node.dataType, queryId),
@@ -884,57 +892,57 @@ export class OperationNodeTransformer {
       dropDefault: node.dropDefault,
       setNotNull: node.setNotNull,
       dropNotNull: node.dropNotNull,
-    })
+    } satisfies AllProps<AlterColumnNode>
   }
 
   protected transformModifyColumn(
     node: ModifyColumnNode,
     queryId?: QueryId,
   ): ModifyColumnNode {
-    return requireAllProps<ModifyColumnNode>({
+    return {
       kind: 'ModifyColumnNode',
       column: this.transformNode(node.column, queryId),
-    })
+    } satisfies AllProps<ModifyColumnNode>
   }
 
   protected transformAddConstraint(
     node: AddConstraintNode,
     queryId?: QueryId,
   ): AddConstraintNode {
-    return requireAllProps<AddConstraintNode>({
+    return {
       kind: 'AddConstraintNode',
       constraint: this.transformNode(node.constraint, queryId),
-    })
+    } satisfies AllProps<AddConstraintNode>
   }
 
   protected transformDropConstraint(
     node: DropConstraintNode,
     queryId?: QueryId,
   ): DropConstraintNode {
-    return requireAllProps<DropConstraintNode>({
+    return {
       kind: 'DropConstraintNode',
       constraintName: this.transformNode(node.constraintName, queryId),
       ifExists: node.ifExists,
       modifier: node.modifier,
-    })
+    } satisfies AllProps<DropConstraintNode>
   }
 
   protected transformRenameConstraint(
     node: RenameConstraintNode,
     queryId?: QueryId,
   ): RenameConstraintNode {
-    return requireAllProps<RenameConstraintNode>({
+    return {
       kind: 'RenameConstraintNode',
       oldName: this.transformNode(node.oldName, queryId),
       newName: this.transformNode(node.newName, queryId),
-    })
+    } satisfies AllProps<RenameConstraintNode>
   }
 
   protected transformCreateView(
     node: CreateViewNode,
     queryId?: QueryId,
   ): CreateViewNode {
-    return requireAllProps<CreateViewNode>({
+    return {
       kind: 'CreateViewNode',
       name: this.transformNode(node.name, queryId),
       temporary: node.temporary,
@@ -943,126 +951,128 @@ export class OperationNodeTransformer {
       materialized: node.materialized,
       columns: this.transformNodeList(node.columns, queryId),
       as: this.transformNode(node.as, queryId),
-    })
+    } satisfies AllProps<CreateViewNode>
   }
 
   protected transformRefreshMaterializedView(
     node: RefreshMaterializedViewNode,
     queryId?: QueryId,
   ): RefreshMaterializedViewNode {
-    return requireAllProps<RefreshMaterializedViewNode>({
+    return {
       kind: 'RefreshMaterializedViewNode',
       name: this.transformNode(node.name, queryId),
       concurrently: node.concurrently,
       withNoData: node.withNoData,
-    })
+    } satisfies AllProps<RefreshMaterializedViewNode>
   }
 
   protected transformDropView(
     node: DropViewNode,
     queryId?: QueryId,
   ): DropViewNode {
-    return requireAllProps<DropViewNode>({
+    return {
       kind: 'DropViewNode',
       name: this.transformNode(node.name, queryId),
       ifExists: node.ifExists,
       materialized: node.materialized,
       cascade: node.cascade,
-    })
+    } satisfies AllProps<DropViewNode>
   }
 
   protected transformGenerated(
     node: GeneratedNode,
     queryId?: QueryId,
   ): GeneratedNode {
-    return requireAllProps<GeneratedNode>({
+    return {
       kind: 'GeneratedNode',
       byDefault: node.byDefault,
       always: node.always,
       identity: node.identity,
       stored: node.stored,
       expression: this.transformNode(node.expression, queryId),
-    })
+    } satisfies AllProps<GeneratedNode>
   }
 
   protected transformDefaultValue(
     node: DefaultValueNode,
     queryId?: QueryId,
   ): DefaultValueNode {
-    return requireAllProps<DefaultValueNode>({
+    return {
       kind: 'DefaultValueNode',
       defaultValue: this.transformNode(node.defaultValue, queryId),
-    })
+    } satisfies AllProps<DefaultValueNode>
   }
 
   protected transformOn(node: OnNode, queryId?: QueryId): OnNode {
-    return requireAllProps<OnNode>({
+    return {
       kind: 'OnNode',
       on: this.transformNode(node.on, queryId),
-    })
+    } satisfies AllProps<OnNode>
   }
 
   protected transformSelectModifier(
     node: SelectModifierNode,
     queryId?: QueryId,
   ): SelectModifierNode {
-    return requireAllProps<SelectModifierNode>({
+    return {
       kind: 'SelectModifierNode',
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier, queryId),
       of: this.transformNodeList(node.of, queryId),
-    })
+    } satisfies AllProps<SelectModifierNode>
   }
 
   protected transformCreateType(
     node: CreateTypeNode,
     queryId?: QueryId,
   ): CreateTypeNode {
-    return requireAllProps<CreateTypeNode>({
+    return {
       kind: 'CreateTypeNode',
       name: this.transformNode(node.name, queryId),
       enum: this.transformNode(node.enum, queryId),
-    })
+    } satisfies AllProps<CreateTypeNode>
   }
 
   protected transformDropType(
     node: DropTypeNode,
     queryId?: QueryId,
   ): DropTypeNode {
-    return requireAllProps<DropTypeNode>({
+    return {
       kind: 'DropTypeNode',
       name: this.transformNode(node.name, queryId),
+      additionalNames: this.transformNodeList(node.additionalNames, queryId),
+      cascade: node.cascade,
       ifExists: node.ifExists,
-    })
+    } satisfies AllProps<DropTypeNode>
   }
 
   protected transformExplain(
     node: ExplainNode,
     queryId?: QueryId,
   ): ExplainNode {
-    return requireAllProps({
+    return {
       kind: 'ExplainNode',
       format: node.format,
       options: this.transformNode(node.options, queryId),
-    })
+    } satisfies AllProps<ExplainNode>
   }
 
   protected transformSchemableIdentifier(
     node: SchemableIdentifierNode,
     queryId?: QueryId,
   ): SchemableIdentifierNode {
-    return requireAllProps<SchemableIdentifierNode>({
+    return {
       kind: 'SchemableIdentifierNode',
       schema: this.transformNode(node.schema, queryId),
       identifier: this.transformNode(node.identifier, queryId),
-    })
+    } satisfies AllProps<SchemableIdentifierNode>
   }
 
   protected transformAggregateFunction(
     node: AggregateFunctionNode,
     queryId?: QueryId,
   ): AggregateFunctionNode {
-    return requireAllProps({
+    return {
       kind: 'AggregateFunctionNode',
       func: node.func,
       aggregated: this.transformNodeList(node.aggregated, queryId),
@@ -1071,152 +1081,152 @@ export class OperationNodeTransformer {
       withinGroup: this.transformNode(node.withinGroup, queryId),
       filter: this.transformNode(node.filter, queryId),
       over: this.transformNode(node.over, queryId),
-    })
+    } satisfies AllProps<AggregateFunctionNode>
   }
 
   protected transformOver(node: OverNode, queryId?: QueryId): OverNode {
-    return requireAllProps({
+    return {
       kind: 'OverNode',
       orderBy: this.transformNode(node.orderBy, queryId),
       partitionBy: this.transformNode(node.partitionBy, queryId),
-    })
+    } satisfies AllProps<OverNode>
   }
 
   protected transformPartitionBy(
     node: PartitionByNode,
     queryId?: QueryId,
   ): PartitionByNode {
-    return requireAllProps({
+    return {
       kind: 'PartitionByNode',
       items: this.transformNodeList(node.items, queryId),
-    })
+    } satisfies AllProps<PartitionByNode>
   }
 
   protected transformPartitionByItem(
     node: PartitionByItemNode,
     queryId?: QueryId,
   ): PartitionByItemNode {
-    return requireAllProps({
+    return {
       kind: 'PartitionByItemNode',
       partitionBy: this.transformNode(node.partitionBy, queryId),
-    })
+    } satisfies AllProps<PartitionByItemNode>
   }
 
   protected transformBinaryOperation(
     node: BinaryOperationNode,
     queryId?: QueryId,
   ): BinaryOperationNode {
-    return requireAllProps<BinaryOperationNode>({
+    return {
       kind: 'BinaryOperationNode',
       leftOperand: this.transformNode(node.leftOperand, queryId),
       operator: this.transformNode(node.operator, queryId),
       rightOperand: this.transformNode(node.rightOperand, queryId),
-    })
+    } satisfies AllProps<BinaryOperationNode>
   }
 
   protected transformUnaryOperation(
     node: UnaryOperationNode,
     queryId?: QueryId,
   ): UnaryOperationNode {
-    return requireAllProps<UnaryOperationNode>({
+    return {
       kind: 'UnaryOperationNode',
       operator: this.transformNode(node.operator, queryId),
       operand: this.transformNode(node.operand, queryId),
-    })
+    } satisfies AllProps<UnaryOperationNode>
   }
 
   protected transformUsing(node: UsingNode, queryId?: QueryId): UsingNode {
-    return requireAllProps<UsingNode>({
+    return {
       kind: 'UsingNode',
       tables: this.transformNodeList(node.tables, queryId),
-    })
+    } satisfies AllProps<UsingNode>
   }
 
   protected transformFunction(
     node: FunctionNode,
     queryId?: QueryId,
   ): FunctionNode {
-    return requireAllProps<FunctionNode>({
+    return {
       kind: 'FunctionNode',
       func: node.func,
       arguments: this.transformNodeList(node.arguments, queryId),
-    })
+    } satisfies AllProps<FunctionNode>
   }
 
   protected transformCase(node: CaseNode, queryId?: QueryId): CaseNode {
-    return requireAllProps<CaseNode>({
+    return {
       kind: 'CaseNode',
       value: this.transformNode(node.value, queryId),
       when: this.transformNodeList(node.when, queryId),
       else: this.transformNode(node.else, queryId),
       isStatement: node.isStatement,
-    })
+    } satisfies AllProps<CaseNode>
   }
 
   protected transformWhen(node: WhenNode, queryId?: QueryId): WhenNode {
-    return requireAllProps<WhenNode>({
+    return {
       kind: 'WhenNode',
       condition: this.transformNode(node.condition, queryId),
       result: this.transformNode(node.result, queryId),
-    })
+    } satisfies AllProps<WhenNode>
   }
 
   protected transformJSONReference(
     node: JSONReferenceNode,
     queryId?: QueryId,
   ): JSONReferenceNode {
-    return requireAllProps<JSONReferenceNode>({
+    return {
       kind: 'JSONReferenceNode',
       reference: this.transformNode(node.reference, queryId),
       traversal: this.transformNode(node.traversal, queryId),
-    })
+    } satisfies AllProps<JSONReferenceNode>
   }
 
   protected transformJSONPath(
     node: JSONPathNode,
     queryId?: QueryId,
   ): JSONPathNode {
-    return requireAllProps<JSONPathNode>({
+    return {
       kind: 'JSONPathNode',
       inOperator: this.transformNode(node.inOperator, queryId),
       pathLegs: this.transformNodeList(node.pathLegs, queryId),
-    })
+    } satisfies AllProps<JSONPathNode>
   }
 
   protected transformJSONPathLeg(
     node: JSONPathLegNode,
     _queryId?: QueryId,
   ): JSONPathLegNode {
-    return requireAllProps<JSONPathLegNode>({
+    return {
       kind: 'JSONPathLegNode',
       type: node.type,
       value: node.value,
-    })
+    } satisfies AllProps<JSONPathLegNode>
   }
 
   protected transformJSONOperatorChain(
     node: JSONOperatorChainNode,
     queryId?: QueryId,
   ): JSONOperatorChainNode {
-    return requireAllProps<JSONOperatorChainNode>({
+    return {
       kind: 'JSONOperatorChainNode',
       operator: this.transformNode(node.operator, queryId),
       values: this.transformNodeList(node.values, queryId),
-    })
+    } satisfies AllProps<JSONOperatorChainNode>
   }
 
   protected transformTuple(node: TupleNode, queryId?: QueryId): TupleNode {
-    return requireAllProps<TupleNode>({
+    return {
       kind: 'TupleNode',
       values: this.transformNodeList(node.values, queryId),
-    })
+    } satisfies AllProps<TupleNode>
   }
 
   protected transformMergeQuery(
     node: MergeQueryNode,
     queryId?: QueryId,
   ): MergeQueryNode {
-    return requireAllProps<MergeQueryNode>({
+    return {
       kind: 'MergeQueryNode',
       into: this.transformNode(node.into, queryId),
       using: this.transformNode(node.using, queryId),
@@ -1226,63 +1236,101 @@ export class OperationNodeTransformer {
       endModifiers: this.transformNodeList(node.endModifiers, queryId),
       output: this.transformNode(node.output, queryId),
       returning: this.transformNode(node.returning, queryId),
-    })
+    } satisfies AllProps<MergeQueryNode>
   }
 
   protected transformMatched(
     node: MatchedNode,
     _queryId?: QueryId,
   ): MatchedNode {
-    return requireAllProps<MatchedNode>({
+    return {
       kind: 'MatchedNode',
       not: node.not,
       bySource: node.bySource,
-    })
+    } satisfies AllProps<MatchedNode>
   }
 
   protected transformAddIndex(
     node: AddIndexNode,
     queryId?: QueryId,
   ): AddIndexNode {
-    return requireAllProps<AddIndexNode>({
+    return {
       kind: 'AddIndexNode',
       name: this.transformNode(node.name, queryId),
       columns: this.transformNodeList(node.columns, queryId),
       unique: node.unique,
       using: this.transformNode(node.using, queryId),
       ifNotExists: node.ifNotExists,
-    })
+    } satisfies AllProps<AddIndexNode>
   }
 
   protected transformCast(node: CastNode, queryId?: QueryId): CastNode {
-    return requireAllProps<CastNode>({
+    return {
       kind: 'CastNode',
       expression: this.transformNode(node.expression, queryId),
       dataType: this.transformNode(node.dataType, queryId),
-    })
+    } satisfies AllProps<CastNode>
   }
 
   protected transformFetch(node: FetchNode, queryId?: QueryId): FetchNode {
-    return requireAllProps<FetchNode>({
+    return {
       kind: 'FetchNode',
       rowCount: this.transformNode(node.rowCount, queryId),
       modifier: node.modifier,
-    })
+    } satisfies AllProps<FetchNode>
   }
 
   protected transformTop(node: TopNode, _queryId?: QueryId): TopNode {
-    return requireAllProps<TopNode>({
+    return {
       kind: 'TopNode',
       expression: node.expression,
       modifiers: node.modifiers,
-    })
+    } satisfies AllProps<TopNode>
   }
 
   protected transformOutput(node: OutputNode, queryId?: QueryId): OutputNode {
-    return requireAllProps<OutputNode>({
+    return {
       kind: 'OutputNode',
       selections: this.transformNodeList(node.selections, queryId),
-    })
+    } satisfies AllProps<OutputNode>
+  }
+
+  protected transformAlterType(
+    node: AlterTypeNode,
+    queryId?: QueryId,
+  ): AlterTypeNode {
+    return {
+      kind: 'AlterTypeNode',
+      name: this.transformNode(node.name, queryId),
+      addValue: this.transformNode(node.addValue, queryId),
+      renameTo: this.transformNode(node.renameTo, queryId),
+      renameValue: this.transformNode(node.renameValue, queryId),
+      setSchema: this.transformNode(node.setSchema, queryId),
+    } satisfies AllProps<AlterTypeNode>
+  }
+
+  protected transformAddValue(
+    node: AddValueNode,
+    queryId?: QueryId,
+  ): AddValueNode {
+    return {
+      kind: 'AddValueNode',
+      value: this.transformNode(node.value, queryId),
+      ifNotExists: node.ifNotExists,
+      isBefore: node.isBefore,
+      neighborValue: this.transformNode(node.neighborValue, queryId),
+    } satisfies AllProps<AddValueNode>
+  }
+
+  protected transformRenameValue(
+    node: RenameValueNode,
+    queryId?: QueryId,
+  ): RenameValueNode {
+    return {
+      kind: 'RenameValueNode',
+      oldValue: this.transformNode(node.oldValue, queryId),
+      newValue: this.transformNode(node.newValue, queryId),
+    } satisfies AllProps<RenameValueNode>
   }
 
   protected transformDataType(

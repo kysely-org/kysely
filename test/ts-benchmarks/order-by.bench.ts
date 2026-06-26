@@ -1,10 +1,6 @@
 import { bench } from '@ark/attest'
 import type { DB } from '../typings/test-d/huge-db.test-d.js'
-import {
-  type SelectQueryBuilder,
-  sql,
-  type Kysely,
-} from '../../dist/esm/index.js'
+import { type SelectQueryBuilder, sql, type Kysely } from '../../dist/index.js'
 
 declare const kysely: Kysely<DB>
 declare const kyselyAny: Kysely<any>
@@ -81,7 +77,7 @@ bench('kysely..orderBy(select)', () =>
       )
       .limit(1),
   ),
-).types([537, 'instantiations'])
+).types([525, 'instantiations'])
 
 bench('kysely..orderBy(eb => select)', () =>
   query.orderBy((eb) =>
@@ -92,7 +88,7 @@ bench('kysely..orderBy(eb => select)', () =>
       )
       .limit(1),
   ),
-).types([686, 'instantiations'])
+).types([674, 'instantiations'])
 
 bench('deprecated - kysely..orderBy(column desc)', () =>
   query.orderBy('col_164b7896ec8e770207febe0812c5f052 desc'),
@@ -194,7 +190,7 @@ bench('kyselyAny..orderBy(select)', () =>
       )
       .limit(1),
   ),
-).types([279, 'instantiations'])
+).types([267, 'instantiations'])
 
 bench('kyselyAny..orderBy(eb => select)', () =>
   queryAny.orderBy((eb) =>
@@ -203,4 +199,4 @@ bench('kyselyAny..orderBy(eb => select)', () =>
       .select('col_164b7896ec8e770207febe0812c5f052')
       .limit(1),
   ),
-).types([368, 'instantiations'])
+).types([356, 'instantiations'])

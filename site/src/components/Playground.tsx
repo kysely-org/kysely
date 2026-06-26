@@ -78,7 +78,7 @@ function useSrc(props: PlaygroundProps) {
       params.set('nohotkey', '1')
     }
 
-    setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
+    setSrc(`https://play.kysely.dev/?${params}${getPlaygroundStateHash(props)}`)
   }, [colorMode])
 
   return src

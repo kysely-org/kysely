@@ -1,16 +1,18 @@
-import { Updateable } from '../../../dist/cjs/index.js'
+import type { Updateable } from '../../../dist/index.js'
 
 import {
   destroyTest,
   initTest,
-  TestContext,
-  Person,
+  type TestContext,
+  type Person,
   testSql,
   DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: sanitize identifiers`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: sanitize identifiers`, () => {
     let ctx: TestContext
 
     before(async function () {

@@ -1,7 +1,6 @@
 import type { Kysely } from '../../kysely.js'
 import type {
   DatabaseIntrospector,
-  DatabaseMetadata,
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
@@ -142,6 +141,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         tableDictionary[key] ||
         freeze({
           columns: [],
+          isForeign: false,
           isView: rawColumn.table_type === 'V ',
           name: rawColumn.table_name,
           schema: rawColumn.table_schema_name ?? undefined,
@@ -167,14 +167,6 @@ export class MssqlIntrospector implements DatabaseIntrospector {
     }
 
     return Object.values(tableDictionary)
-  }
-
-  async getMetadata(
-    options?: DatabaseMetadataOptions,
-  ): Promise<DatabaseMetadata> {
-    return {
-      tables: await this.getTables(options),
-    }
   }
 }
 

@@ -4,7 +4,7 @@ import {
   PostgresDialect,
   MysqlDialect,
   sql,
-} from '../../dist/esm/index.js'
+} from '../../dist/index.js'
 import { createPool } from 'mysql2'
 import Pool from 'pg-pool'
 
@@ -57,4 +57,4 @@ await Promise.all(dbs.map((db) => query.execute(db)))
 
 console.error('local deno test passed')
 
-await Promise.all(dbs.map((db) => db.destroy()))
+await Promise.allSettled(dbs.map((db) => db.destroy()))

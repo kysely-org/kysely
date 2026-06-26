@@ -1,14 +1,16 @@
 {
   "$schema": "https://jsr.io/schema/config-file.v1.json",
   "name": "@kysely/kysely",
-  "version": "0.28.16",
+  "version": "0.29.2",
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
     "./helpers/mysql": "./src/helpers/mysql.ts",
     "./helpers/mssql": "./src/helpers/mssql.ts",
     "./helpers/postgres": "./src/helpers/postgres.ts",
-    "./helpers/sqlite": "./src/helpers/sqlite.ts"
+    "./helpers/sqlite": "./src/helpers/sqlite.ts",
+    "./migration": "./src/migration/index.ts",
+    "./readonly": "./src/readonly/index.ts"
   },
   "publish": {
     "include": [

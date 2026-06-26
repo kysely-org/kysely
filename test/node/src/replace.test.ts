@@ -1,21 +1,23 @@
-import { InsertResult, Kysely, sql } from '../../../dist/cjs/index.js'
+import { InsertResult, Kysely, sql } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   expect,
-  Person,
-  Database,
+  type Person,
+  type Database,
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  if (dialect === 'mysql' || dialect === 'sqlite') {
-    describe(`${dialect}: replace into`, () => {
+  const { sqlSpec, variant } = dialect
+
+  if (sqlSpec === 'mysql' || sqlSpec === 'sqlite') {
+    describe(`${variant}: replace into`, () => {
       let ctx: TestContext
 
       before(async function () {

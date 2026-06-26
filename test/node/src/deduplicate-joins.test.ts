@@ -1,17 +1,19 @@
-import { DeduplicateJoinsPlugin } from '../../../dist/cjs/index.js'
+import { DeduplicateJoinsPlugin } from '../../../dist/index.js'
 
 import {
   clearDatabase,
   destroyTest,
   initTest,
-  TestContext,
+  type TestContext,
   testSql,
   insertDefaultDataSet,
   DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
-  describe(`${dialect}: deduplicate joins`, () => {
+  const { variant } = dialect
+
+  describe(`${variant}: deduplicate joins`, () => {
     let ctx: TestContext
 
     before(async function () {

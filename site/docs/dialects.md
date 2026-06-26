@@ -10,6 +10,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | MySQL | https://kysely-org.github.io/kysely-apidoc/classes/MysqlDialect.html |
 | Microsoft SQL Server (MSSQL) | https://kysely-org.github.io/kysely-apidoc/classes/MssqlDialect.html |
 | SQLite | https://kysely-org.github.io/kysely-apidoc/classes/SqliteDialect.html |
+| PGlite | https://kysely-org.github.io/kysely-apidoc/classes/PGliteDialect.html |
 
 ## Organization dialects
 
@@ -25,6 +26,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | PlanetScale Serverless Driver | https://github.com/depot/kysely-planetscale                                 |
 | Cloudflare D1                 | https://github.com/aidenwallis/kysely-d1                                    |
 | Cloudflare Durable Objects    | https://github.com/benallfree/kysely-do                                     |
+| Cloudflare Durable Objects    | https://github.com/jeffwilde/kysely-durable-objects                         |
 | AWS RDS Data API              | https://github.com/serverless-stack/kysely-data-api                         |
 | SurrealDB                     | https://github.com/igalklebanov/kysely-surrealdb                            |
 | Neon                          | https://github.com/seveibar/kysely-neon                                     |
@@ -34,6 +36,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | Fetch driver                  | https://github.com/andersgee/kysely-fetch-driver                            |
 | SQLite WASM                   | https://github.com/DallasHoff/sqlocal                                       |
 | Deno SQLite                   | https://gitlab.com/soapbox-pub/kysely-deno-sqlite                           |
+| Deno SQLite3                  | https://github.com/marshift/kysely-deno-sqlite3                             |
 | Node SQLite                   | https://github.com/wolfie/kysely-node-native-sqlite                         |
 | TiDB Cloud Serverless Driver  | https://github.com/tidbcloud/kysely                                         |
 | Capacitor SQLite Kysely       | https://github.com/DawidWetzler/capacitor-sqlite-kysely                     |

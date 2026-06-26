@@ -1,4 +1,5 @@
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 /**
  * A single connection to the database engine.
@@ -6,12 +7,40 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
  * These are created by an instance of {@link Driver}.
  */
 export interface DatabaseConnection {
-  executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
+  /**
+   * Used by executors to cancel the inflight query on the database side.
+   */
+  cancelQuery?(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void>
+
+  /**
+   * Used by executors to prepare the connection for operations on the database side.
+   */
+  collectSessionInfo?(): Promise<void>
+
+  executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    options?: AbortableOperationOptions,
+  ): Promise<QueryResult<R>>
+
+  /**
+   * Used by executors to kill the session on the database side.
+   */
+  killSession?(
+    controlConnectionProvider: ControlConnectionProvider,
+  ): Promise<void>
+
   streamQuery<R>(
     compiledQuery: CompiledQuery,
-    chunkSize?: number,
+    chunkSize: number,
+    options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>>
 }
+
+export type ControlConnectionProvider = (
+  consumer: (connection: DatabaseConnection) => Promise<void>,
+) => Promise<void>
 
 export interface QueryResult<O> {
   /**

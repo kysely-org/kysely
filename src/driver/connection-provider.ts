@@ -1,4 +1,5 @@
 import type { DatabaseConnection } from './database-connection.js'
+import type { AbortableOperationOptions } from '../util/abort.js'
 
 export interface ConnectionProvider {
   /**
@@ -7,5 +8,6 @@ export interface ConnectionProvider {
    */
   provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>,
+    options?: AbortableOperationOptions,
   ): Promise<T>
 }

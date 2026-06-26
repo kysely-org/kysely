@@ -1,10 +1,10 @@
 {
   "name": "kysely",
-  "version": "0.28.16",
+  "version": "0.29.2",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
-    "url": "git://github.com/kysely-org/kysely.git"
+    "url": "git+https://github.com/kysely-org/kysely.git"
   },
   "homepage": "https://kysely.dev",
   "keywords": [
@@ -25,13 +25,13 @@
     "plugins"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "typesVersions": {
-    "<4.6": {
+    "<5.4": {
       "*": [
         "outdated-typescript.d.ts"
       ]
@@ -39,40 +39,24 @@
   },
   "files": [
     "dist",
-    "helpers",
     "outdated-typescript.d.ts"
   ],
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "default": "./dist/cjs/index.js"
+      "types@<5.4": "./outdated-typescript.d.ts",
+      "default": "./dist/index.js"
     },
-    "./helpers/postgres": {
-      "import": "./dist/esm/helpers/postgres.js",
-      "require": "./dist/cjs/helpers/postgres.js",
-      "default": "./dist/cjs/helpers/postgres.js"
-    },
-    "./helpers/mysql": {
-      "import": "./dist/esm/helpers/mysql.js",
-      "require": "./dist/cjs/helpers/mysql.js",
-      "default": "./dist/cjs/helpers/mysql.js"
-    },
-    "./helpers/mssql": {
-      "import": "./dist/esm/helpers/mssql.js",
-      "require": "./dist/cjs/helpers/mssql.js",
-      "default": "./dist/cjs/helpers/mssql.js"
-    },
-    "./helpers/sqlite": {
-      "import": "./dist/esm/helpers/sqlite.js",
-      "require": "./dist/cjs/helpers/sqlite.js",
-      "default": "./dist/cjs/helpers/sqlite.js"
-    }
+    "./helpers/mssql": "./dist/helpers/mssql.js",
+    "./helpers/mysql": "./dist/helpers/mysql.js",
+    "./helpers/postgres": "./dist/helpers/postgres.js",
+    "./helpers/sqlite": "./dist/helpers/sqlite.js",
+    "./migration": "./dist/migration/index.js",
+    "./readonly": "./dist/readonly/index.js"
   },
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
-    "bench:ts": "pnpm build && cd ./test/ts-benchmarks && node --experimental-strip-types ./index.ts",
+    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js",
+    "bench:ts": "pnpm build && node --experimental-strip-types ./test/ts-benchmarks/index.ts",
     "test": "pnpm build && pnpm test:node:build && pnpm test:node:run && pnpm test:typings && pnpm test:esmimports && pnpm test:exports",
     "test:node:build": "tsc -p test/node",
     "test:node": "pnpm build && pnpm test:node:build && pnpm test:node:run",
@@ -84,21 +68,18 @@
     "test:deno": "deno run --allow-env --allow-read --allow-net --no-lock test/deno/test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.cjs",
-    "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
-    "test:exports": "attw --pack . && node scripts/check-exports.cjs",
+    "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/index.js --outfile=/dev/null",
+    "test:exports": "attw --profile esm-only --pack . && node scripts/check-exports.cjs",
     "test:jsdocs": "deno check --doc-only --no-lock --unstable-sloppy-imports --config=\"deno.check.json\" ./src",
     "test:outdatedts": "pnpm build && cd test/outdated-ts && pnpm i && pnpm test",
     "lint:deno": "deno lint --config=\"deno.lint.json\" ./src",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
-    "build": "pnpm clean && (pnpm build:esm & pnpm build:cjs) && pnpm script:module-fixup && pnpm script:copy-interface-doc",
-    "build:esm": "tsc -p tsconfig.json && pnpm script:add-deno-type-references",
-    "build:cjs": "tsc -p tsconfig-cjs.json",
-    "script:module-fixup": "node scripts/module-fixup.cjs",
+    "build": "pnpm clean && tsc && pnpm script:add-deno-type-references && pnpm script:copy-interface-doc",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.cjs",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.cjs",
     "script:align-versions": "node --experimental-strip-types scripts/align-versions.mts",
-    "script:generate-site-examples": "node scripts/generate-site-examples.cjs",
-    "script:exclude-test-files-for-backwards-compat": "node --experimental-strip-types scripts/exclude-test-files-for-backwards-compat.mts",
+    "script:generate-site-examples": "node scripts/generate-site-examples.mts",
+    "script:override-tsconfig-target": "node --experimental-strip-types scripts/override-tsconfig-target.mts",
     "script:remove-global-augmentations": "node --experimental-strip-types scripts/remove-global-augmentations.mts",
     "prepublishOnly": "pnpm build && pnpm test:exports",
     "version": "pnpm script:align-versions && git add ."
@@ -110,38 +91,41 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.18.2",
+    "@arethetypeswrong/cli": "0.18.3",
     "@ark/attest": "0.56.0",
+    "@electric-sql/pglite": "0.4.6",
     "@types/better-sqlite3": "7.6.13",
     "@types/chai": "5.2.3",
     "@types/chai-as-promised": "8.0.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "25.5.2",
+    "@types/node": "25.9.1",
     "@types/pg": "8.20.0",
     "@types/pg-cursor": "2.7.2",
+    "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/semver": "7.7.1",
     "@types/sinon": "21.0.1",
-    "better-sqlite3": "12.8.0",
+    "better-sqlite3": "12.10.0",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
     "esbuild": "0.28.0",
     "jsr": "0.14.3",
-    "lodash": "4.18.1",
     "mocha": "11.7.5",
-    "mysql2": "3.21.0",
+    "mysql2": "3.22.4",
     "pathe": "2.0.3",
-    "pg": "8.20.0",
-    "pg-cursor": "2.19.0",
-    "pkg-types": "2.3.0",
-    "playwright": "1.59.1",
-    "prettier": "3.8.1",
-    "semver": "7.7.4",
-    "sinon": "21.0.3",
-    "std-env": "4.0.0",
+    "pg": "8.21.0",
+    "pg-cursor": "2.20.0",
+    "playwright": "1.60.0",
+    "prettier": "3.8.3",
+    "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
+    "remeda": "2.34.1",
+    "semver": "7.8.1",
+    "sinon": "22.0.0",
+    "std-env": "4.1.0",
     "tarn": "3.0.2",
     "tedious": "19.2.1",
     "tsd": "0.33.0",
-    "typescript": "6.0.2"
+    "tsx": "4.22.3",
+    "typescript": "6.0.3"
   },
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+  "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }

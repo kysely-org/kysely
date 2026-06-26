@@ -9,7 +9,7 @@ import {
   MysqlDialect,
   sql,
   MssqlDialect,
-} from '../../dist/esm/index.js'
+} from '../../dist/index.js'
 
 interface Person {
   id: Generated<number>
@@ -94,6 +94,6 @@ await Promise.all(dbs.map((db) => query.execute(db)))
 
 console.log('bun test passed')
 
-await Promise.all(dbs.map((db) => db.destroy()))
+await Promise.allSettled(dbs.map((db) => db.destroy()))
 
 process.exit(0) // hangs otherwise...
