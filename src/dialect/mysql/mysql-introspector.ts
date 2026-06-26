@@ -83,6 +83,12 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         tables.push(table)
       }
 
+      let defaultValue: string | undefined = it.COLUMN_DEFAULT ?? undefined
+      if (defaultValue && /^'(\[.*\]|\{.*\})'$/.test(defaultValue)) {
+        const match = defaultValue.match(/^'(\[.*\]|\{.*\})'$/)
+        if (match) defaultValue = match[1]
+      }
+
       table.columns.push(
         freeze({
           name: it.COLUMN_NAME,
@@ -90,6 +96,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
           isNullable: it.IS_NULLABLE === 'YES',
           isAutoIncrementing: it.EXTRA.toLowerCase().includes('auto_increment'),
           hasDefaultValue: it.COLUMN_DEFAULT !== null,
+          defaultValue,
           comment: it.COLUMN_COMMENT === '' ? undefined : it.COLUMN_COMMENT,
         }),
       )

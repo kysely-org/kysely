@@ -54,5 +54,6 @@ export interface ColumnMetadata {
   readonly isAutoIncrementing: boolean
   readonly isNullable: boolean
   readonly hasDefaultValue: boolean
+  readonly defaultValue?: string
   readonly comment?: string
 }

@@ -47,6 +47,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'typ.typnamespace',
         'dtns.oid',
       )
+      .leftJoin('pg_catalog.pg_attrdef as d', (join) =>
+        join.onRef('d.adrelid', '=', 'c.oid').onRef('d.adnum', '=', 'a.attnum'),
+      )
       .select([
         'a.attname as column',
         'a.attnotnull as not_null',
@@ -58,6 +61,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'dtns.nspname as type_schema',
         sql<string | null>`col_description(a.attrelid, a.attnum)`.as(
           'column_description',
+        ),
+        sql<string | null>`pg_get_expr(d.adbin, d.adrelid)`.as(
+          'column_default',
         ),
         sql<
           string | null
@@ -122,12 +128,19 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         tables.push(table)
       }
 
+      let defaultValue: string | undefined = column.column_default ?? undefined
+      if (defaultValue && /^'(\[.*\]|\{.*\})'::jsonb?$/.test(defaultValue)) {
+        const match = defaultValue.match(/^'(\[.*\]|\{.*\})'::jsonb?$/)
+        if (match) defaultValue = match[1]
+      }
+
       table.columns.push(
         freeze({
           comment: column.column_description ?? undefined,
           dataType: column.type,
           dataTypeSchema: column.type_schema,
           hasDefaultValue: column.has_default,
+          defaultValue,
           isAutoIncrementing: column.auto_incrementing !== null,
           isNullable: !column.not_null,
           name: column.column,
@@ -154,4 +167,5 @@ interface RawColumnMetadata {
   type_schema: string
   auto_incrementing: string | null
   column_description: string | null
+  column_default: string | null
 }
