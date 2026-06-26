@@ -103,10 +103,12 @@ export interface DialectAdapter {
    * }
    * ```
    *
-   * If `supportsTransactionalDdl` is `true` then the `db` passed to this method
-   * is a transaction inside which the migrations will be executed. Otherwise
-   * `db` is a single connection (session) that will be used to execute the
-   * migrations.
+   * If `supportsTransactionalDdl` is `true` and Kysely starts the migration
+   * transaction, the `db` passed to this method is the transaction inside which
+   * the migrations will be executed. The matching `releaseMigrationLock` call
+   * receives the same connection (session) after the transaction has settled.
+   * Otherwise `db` is a single connection (session) that will be used to
+   * execute the migrations.
    */
   acquireMigrationLock(
     db: Kysely<any>,
@@ -116,10 +118,11 @@ export interface DialectAdapter {
   /**
    * Releases the migration lock. See {@link acquireMigrationLock}.
    *
-   * If `supportsTransactionalDdl` is `true` then the `db` passed to this method
-   * is a transaction inside which the migrations were executed. Otherwise `db`
-   * is a single connection (session) that was used to execute the migrations
-   * and the `acquireMigrationLock` call.
+   * If `supportsTransactionalDdl` is `true` and Kysely starts the migration
+   * transaction, the `db` passed to this method is the same connection (session)
+   * after the transaction has settled. Otherwise `db` is the transaction or
+   * single connection that was used to execute the migrations and the
+   * `acquireMigrationLock` call.
    */
   releaseMigrationLock(
     db: Kysely<any>,

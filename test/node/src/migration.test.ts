@@ -830,9 +830,15 @@ for (const dialect of DIALECTS) {
       })
 
       it('should execute in transaction if disableTransactions is false on the `Migrator` instance and transactionDdl supported', async () => {
-        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
-          disableTransactions: false,
-        })
+        const shouldExecuteInTransaction =
+          ctx.db.getExecutor().adapter.supportsTransactionalDdl
+
+        const [migrator, executedUpMethods] = createMigrations(
+          [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+          {
+            disableTransactions: false,
+          },
+        )
 
         const { results } = await migrator.migrateUp()
 
@@ -841,18 +847,18 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
-
-        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
-          expect(transactionSpy.called).to.be.true
-        } else {
-          expect(transactionSpy.called).to.be.false
-        }
       })
 
       it('should execute in transaction if disableTransactions is false when calling `migrateUp` and transactionDdl supported', async () => {
-        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
-          disableTransactions: true,
-        })
+        const shouldExecuteInTransaction =
+          ctx.db.getExecutor().adapter.supportsTransactionalDdl
+
+        const [migrator, executedUpMethods] = createMigrations(
+          [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+          {
+            disableTransactions: true,
+          },
+        )
 
         const { results } = await migrator.migrateUp({
           disableTransactions: false,
@@ -863,12 +869,6 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
-
-        if (ctx.db.getExecutor().adapter.supportsTransactionalDdl) {
-          expect(transactionSpy.called).to.be.true
-        } else {
-          expect(transactionSpy.called).to.be.false
-        }
       })
 
       if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
@@ -902,6 +902,50 @@ for (const dialect of DIALECTS) {
           } finally {
             await trx.rollback().execute()
           }
+        })
+      }
+
+      if (variant === 'postgres') {
+        it('should not run concurrent migrators in parallel when disableTransactions is true (issue #1894)', async () => {
+          // Two migrators running `migrateToLatest` in parallel with
+          // `disableTransactions: true` must not execute migrations
+          // concurrently. Without a surrounding transaction, Postgres releases
+          // `pg_advisory_xact_lock` at the end of the statement that acquires
+          // it, so both migrators can run the same migration's `up` and the
+          // loser fails when it tries to insert a duplicate row into the
+          // migration table.
+          const [migratorA, executedUpA] = createMigrations(
+            ['migration1', 'migration2'],
+            { disableTransactions: true },
+          )
+          const [migratorB, executedUpB] = createMigrations(
+            ['migration1', 'migration2'],
+            { disableTransactions: true },
+          )
+
+          const [resultA, resultB] = await Promise.all([
+            migratorA.migrateToLatest(),
+            migratorB.migrateToLatest(),
+          ])
+
+          // Neither migrator may error (no duplicate-key violation).
+          expect(resultA.error).to.be.undefined
+          expect(resultB.error).to.be.undefined
+
+          // Each migration's `up` must run exactly once across both migrators.
+          const allExecutedUp = [...executedUpA, ...executedUpB]
+          expect(allExecutedUp.sort()).to.eql(['migration1', 'migration2'])
+
+          // The migration table must contain exactly one row per migration.
+          const executed = await (ctx.db as Kysely<any>)
+            .selectFrom(DEFAULT_MIGRATION_TABLE)
+            .select('name')
+            .orderBy('name')
+            .execute()
+          expect(executed.map((it: { name: string }) => it.name)).to.eql([
+            'migration1',
+            'migration2',
+          ])
         })
       }
 
@@ -1160,7 +1204,10 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (string | { name: string; error?: string })[],
+      migrationConfigs: (
+        | string
+        | { name: string; error?: string; transaction?: boolean }
+      )[],
       migratorConfig?: Partial<MigratorProps>,
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
@@ -1174,11 +1221,15 @@ for (const dialect of DIALECTS) {
           return {
             ...migrations,
             [config.name]: {
-              async up(_db): Promise<void> {
+              async up(db): Promise<void> {
                 await setTimeout(20)
 
                 if (config.error) {
                   throw new Error(config.error)
+                }
+
+                if (config.transaction !== undefined) {
+                  expect(db.isTransaction).to.equal(config.transaction)
                 }
 
                 executedUpMethods.push(config.name)

@@ -516,27 +516,33 @@ export class Migrator {
     })
 
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
+      const state = await this.#getState(db)
+
+      if (state.migrations.length === 0) {
+        return { results: [] }
+      }
+
+      const { direction, step } = getMigrationDirectionAndStep(state)
+
+      if (step <= 0) {
+        return { results: [] }
+      }
+
+      if (direction === 'Down') {
+        return await this.#migrateDown(db, state, step)
+      } else if (direction === 'Up') {
+        return await this.#migrateUp(db, state, step)
+      }
+
+      return { results: [] }
+    }
+
+    const runWithLock = async (
+      db: Kysely<any>,
+    ): Promise<MigrationResultSet> => {
       try {
         await adapter.acquireMigrationLock(db, lockOptions)
-        const state = await this.#getState(db)
-
-        if (state.migrations.length === 0) {
-          return { results: [] }
-        }
-
-        const { direction, step } = getMigrationDirectionAndStep(state)
-
-        if (step <= 0) {
-          return { results: [] }
-        }
-
-        if (direction === 'Down') {
-          return await this.#migrateDown(db, state, step)
-        } else if (direction === 'Up') {
-          return await this.#migrateUp(db, state, step)
-        }
-
-        return { results: [] }
+        return await run(db)
       } finally {
         await adapter.releaseMigrationLock(db, lockOptions)
       }
@@ -558,14 +564,23 @@ export class Migrator {
         )
       }
 
-      return run(this.#props.db)
+      return runWithLock(this.#props.db)
     }
 
     if (adapter.supportsTransactionalDdl && !disableTransactions) {
-      return this.#props.db.transaction().execute(run)
+      return this.#props.db.connection().execute(async (db) => {
+        try {
+          return await db.transaction().execute(async (trx) => {
+            await adapter.acquireMigrationLock(trx, lockOptions)
+            return await run(trx)
+          })
+        } finally {
+          await adapter.releaseMigrationLock(db, lockOptions)
+        }
+      })
     }
 
-    return this.#props.db.connection().execute(run)
+    return this.#props.db.connection().execute(runWithLock)
   }
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
