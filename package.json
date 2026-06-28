@@ -107,7 +107,7 @@
     "better-sqlite3": "12.10.0",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "jsr": "0.14.3",
     "mocha": "11.7.5",
     "mysql2": "3.22.4",
