@@ -103,8 +103,8 @@ importers:
         specifier: 8.21.0
         version: 8.21.0
       pg-cursor:
-        specifier: 2.20.0
-        version: 2.20.0(pg@8.21.0)
+        specifier: 2.21.0
+        version: 2.21.0(pg@8.21.0)
       playwright:
         specifier: 1.61.1
         version: 1.61.1
@@ -5563,8 +5563,8 @@ packages:
   pg-connection-string@2.13.0:
     resolution: {integrity: sha512-EMnU9E2fSULdsbErBbMaXJvFeD9B4+nPcM3f+4lsiCR0BHLPrLVjv3DbyM2hgQQviKJaTWIRRTjKjWlHg3p2ig==}
 
-  pg-cursor@2.20.0:
-    resolution: {integrity: sha512-HP/EbUafheaUOs7DxlG6tda/rhmsX2hCTJJJ+gCnhljGyNEs6pBHddbNuomlW3DqEhP3zYD+GqBWkYnJPIZ4tA==}
+  pg-cursor@2.21.0:
+    resolution: {integrity: sha512-IYvk/j+Suhtbo/C3uOf4JLsLK/gWxOTUOmYbDsbKnLaVJDq+KwhwK6ngpRfiCk8eDMS3AmGQABZCv0cREEzHQw==}
     peerDependencies:
       pg: ^8
 
@@ -14326,7 +14326,7 @@ snapshots:
 
   pg-connection-string@2.13.0: {}
 
-  pg-cursor@2.20.0(pg@8.21.0):
+  pg-cursor@2.21.0(pg@8.21.0):
     dependencies:
       pg: 8.21.0
 
