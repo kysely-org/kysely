@@ -4,11 +4,7 @@ import type { TableNode } from './table-node.js'
 import { freeze, isString } from '../util/object-utils.js'
 
 export type OnModifyForeignAction =
-  | 'cascade'
-  | 'no action'
-  | 'restrict'
-  | 'set default'
-  | 'set null'
+  'cascade' | 'no action' | 'restrict' | 'set default' | 'set null'
 
 const ON_MODIFY_FOREIGN_ACTIONS_DICTIONARY: Readonly<
   Record<OnModifyForeignAction, true>

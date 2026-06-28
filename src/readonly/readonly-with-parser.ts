@@ -33,7 +33,9 @@ export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
   creator: ReadonlyQueryCreator<
     // Recursive CTE can select from itself.
     DB & {
-      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+      [
+        K in ExtractTableFromCommonTableExpressionName<CN>
+      ]: ExtractRowFromCommonTableExpressionName<CN>
     }
   >,
 ) => ReadonlyCommonTableExpressionOutput<DB, CN>
@@ -54,7 +56,9 @@ export type ReadonlyQueryCreatorWithCommonTableExpression<
   CTE,
 > = ReadonlyQueryCreator<
   DB & {
-    [K in ExtractTableFromCommonTableExpressionName<CN>]: ReadonlyExtractRowFromCommonTableExpression<CTE>
+    [
+      K in ExtractTableFromCommonTableExpressionName<CN>
+    ]: ReadonlyExtractRowFromCommonTableExpression<CTE>
   }
 >
 

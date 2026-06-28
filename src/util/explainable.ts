@@ -1,12 +1,7 @@
 import type { Expression } from '../expression/expression.js'
 
 export type ExplainFormat =
-  | 'text'
-  | 'xml'
-  | 'json'
-  | 'yaml'
-  | 'traditional'
-  | 'tree'
+  'text' | 'xml' | 'json' | 'yaml' | 'traditional' | 'tree'
 
 export interface Explainable {
   /**

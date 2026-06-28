@@ -7,9 +7,7 @@ import type { SimpleReferenceExpressionNode } from './simple-reference-expressio
 import type { TableNode } from './table-node.js'
 
 type SelectionNodeChild =
-  | SimpleReferenceExpressionNode
-  | AliasNode
-  | SelectAllNode
+  SimpleReferenceExpressionNode | AliasNode | SelectAllNode
 
 export interface SelectionNode extends OperationNode {
   readonly kind: 'SelectionNode'

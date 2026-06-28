@@ -17,8 +17,7 @@ import type { ShallowRecord } from '../util/type-utils.js'
 import type { OperationNode } from '../operation-node/operation-node.js'
 
 export type CommonTableExpression<DB, CN> =
-  | CommonTableExpressionOutput<DB, CN>
-  | CommonTableExpressionFactory<DB, CN>
+  CommonTableExpressionOutput<DB, CN> | CommonTableExpressionFactory<DB, CN>
 
 export type CommonTableExpressionFactory<DB, CN> = (
   creator: QueryCreator<DB>,
@@ -28,7 +27,9 @@ export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
     DB & {
       // Recursive CTE can select from itself.
-      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+      [
+        K in ExtractTableFromCommonTableExpressionName<CN>
+      ]: ExtractRowFromCommonTableExpressionName<CN>
     }
   >,
 ) => CommonTableExpressionOutput<DB, CN>
@@ -39,7 +40,9 @@ export type QueryCreatorWithCommonTableExpression<
   CTE,
 > = QueryCreator<
   DB & {
-    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+    [
+      K in ExtractTableFromCommonTableExpressionName<CN>
+    ]: ExtractRowFromCommonTableExpression<CTE>
   }
 >
 
@@ -61,8 +64,7 @@ export type CommonTableExpressionOutput<DB, CN> =
  * would result in `Pick<Person, 'id' | 'first_name'>`.
  */
 export type ExtractRowFromCommonTableExpression<CTE> = CTE extends
-  | Expression<infer O>
-  | Compilable<infer O>
+  Expression<infer O> | Compilable<infer O>
   ? O
   : CTE extends (creator: QueryCreator<any>) => infer Q
     ? Q extends Expression<infer O> | Compilable<infer O>

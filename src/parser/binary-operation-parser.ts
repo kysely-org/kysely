@@ -54,8 +54,7 @@ export type OperatorExpression = Operator | Expression<unknown>
 export type BinaryOperatorExpression = BinaryOperator | Expression<unknown>
 
 export type ComparisonOperatorExpression =
-  | ComparisonOperator
-  | Expression<unknown>
+  ComparisonOperator | Expression<unknown>
 
 export type FilterObject<DB, TB extends keyof DB> =
   IsNever<TB> extends true

@@ -459,7 +459,10 @@ export function createTableWithId(
   })
 }
 
-async function connect(dialect: DialectDescriptor, config: KyselyConfig): Promise<Kysely<Database>> {
+async function connect(
+  dialect: DialectDescriptor,
+  config: KyselyConfig,
+): Promise<Kysely<Database>> {
   for (let i = 0; i < TEST_INIT_TIMEOUT; i += 1000) {
     let db: Kysely<Database> | undefined
 

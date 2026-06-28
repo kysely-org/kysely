@@ -92,17 +92,7 @@ export const COMPARISON_OPERATORS: readonly ComparisonOperator[] = Object.keys(
 ) as never
 
 export type ArithmeticOperator =
-  | '+'
-  | '-'
-  | '*'
-  | '/'
-  | '%'
-  | '^'
-  | '&'
-  | '|'
-  | '#'
-  | '<<'
-  | '>>'
+  '+' | '-' | '*' | '/' | '%' | '^' | '&' | '|' | '#' | '<<' | '>>'
 
 const ARITHMETIC_OPERATORS_DICTIONARY: Readonly<
   Record<ArithmeticOperator, true>

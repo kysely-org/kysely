@@ -21,8 +21,7 @@ export interface MysqlDialectConfig {
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
   pool:
-    | MysqlPool
-    | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
+    MysqlPool | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
 
   /**
    * Called once for each created connection.

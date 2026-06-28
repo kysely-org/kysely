@@ -1102,8 +1102,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   orderBy<
     OE extends
-      | OrderByExpression<DB, TB, O>
-      | DirectedOrderByStringReference<DB, TB, O>,
+      OrderByExpression<DB, TB, O> | DirectedOrderByStringReference<DB, TB, O>,
   >(
     exprs: ReadonlyArray<OE>,
   ): SelectQueryBuilder<DB, TB, O>
@@ -2934,5 +2933,4 @@ type OuterJoinedBuilderDB<
 }>
 
 type TableOrList<TB extends keyof any> =
-  | (TB & string)
-  | ReadonlyArray<TB & string>
+  (TB & string) | ReadonlyArray<TB & string>

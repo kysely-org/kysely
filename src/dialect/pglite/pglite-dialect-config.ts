@@ -24,8 +24,7 @@ export interface PGliteDialectConfig {
    * https://pglite.dev/docs/api#main-constructor
    */
   pglite:
-    | PGlite
-    | ((options?: AbortableOperationOptions) => PGlite | Promise<PGlite>)
+    PGlite | ((options?: AbortableOperationOptions) => PGlite | Promise<PGlite>)
 }
 
 /**
