@@ -40,8 +40,8 @@ importers:
         specifier: 0.18.3
         version: 0.18.3
       '@ark/attest':
-        specifier: 0.56.0
-        version: 0.56.0(typescript@6.0.3)
+        specifier: 0.56.1
+        version: 0.56.1(typescript@6.0.3)
       '@electric-sql/pglite':
         specifier: 0.5.3
         version: 0.5.3
@@ -324,8 +324,8 @@ packages:
     resolution: {integrity: sha512-sWBB/tdIktaT5xMq0Dz6CJyqcf6oMNdmiKiuPU1lWoJLTL6gjRSsksBuSgqot21hylkklBQY1wiSu+PkZhW7sw==}
     engines: {node: '>=20'}
 
-  '@ark/attest@0.56.0':
-    resolution: {integrity: sha512-Pngs8f1UJiWbeO8LKVdyBL0K3rT/PDVACR7TPyCEULNcN8V1rVec6dKvUnQVpQSj60p4ejlK6dKs+fQoqdUMqA==}
+  '@ark/attest@0.56.1':
+    resolution: {integrity: sha512-CAdgwT9Q/vV3vXh/8CiRgMoEVc32ld3TW/eMKKADh3GuV7Xf4JJQf2Ipx5PBo3D1e41aEv98YUnUQ5/WusZSkw==}
     hasBin: true
     peerDependencies:
       typescript: '*'
@@ -2873,11 +2873,11 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arkregex@0.0.4:
-    resolution: {integrity: sha512-biS/FkvSwQq59TZ453piUp8bxMui11pgOMV9WHAnli1F8o0ayNCZzUwQadL/bGIUic5TkS/QlPcyMuI8ZIwedQ==}
+  arkregex@0.0.6:
+    resolution: {integrity: sha512-9mvuMKQuibfWhBrsNYhsKhNb6k9oEHoAJ/FvDiqe8h+E9Siwe0/cro1WVOGgpajXQ9ZHd24yCOf2k35Q/QqUQw==}
 
-  arktype@2.1.28:
-    resolution: {integrity: sha512-LVZqXl2zWRpNFnbITrtFmqeqNkPPo+KemuzbGSY6jvJwCb4v8NsDzrWOLHnQgWl26TkJeWWcUNUeBpq2Mst1/Q==}
+  arktype@2.2.1:
+    resolution: {integrity: sha512-CWPJxNoSxrS+NYGB3ufwc/blFonESEW5vBQyYPVS0rf4STu8VWoAWfKJSl5vVVm56h4yxpwbODeYwy6XFKvojA==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -7488,14 +7488,15 @@ snapshots:
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
-  '@ark/attest@0.56.0(typescript@6.0.3)':
+  '@ark/attest@0.56.1(typescript@6.0.3)':
     dependencies:
       '@ark/fs': 0.56.0
+      '@ark/schema': 0.56.0
       '@ark/util': 0.56.0
       '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
       '@typescript/vfs': 1.6.1(typescript@6.0.3)
-      arktype: 2.1.28
+      arktype: 2.2.1
       prettier: 3.6.2
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -11095,15 +11096,15 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arkregex@0.0.4:
+  arkregex@0.0.6:
     dependencies:
       '@ark/util': 0.56.0
 
-  arktype@2.1.28:
+  arktype@2.2.1:
     dependencies:
       '@ark/schema': 0.56.0
       '@ark/util': 0.56.0
-      arkregex: 0.0.4
+      arkregex: 0.0.6
 
   array-flatten@1.1.1: {}
 
