@@ -5,10 +5,10 @@ packages:
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
 allowBuilds:
-  better-sqlite3@12.10.0: true
+  better-sqlite3@12.11.1: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
-  esbuild@0.27.3 || 0.28.0 || 0.28.1: true # tsx@4.21.0 dependency || direct.
+  esbuild@0.27.3 || 0.28.1: true # tsx@4.21.0 dependency || direct.
   sharp: false # wrangler dependency, useless scripts
   workerd@1.20260515.1: true # wrangler@4.92.0 dependency
 
