@@ -21,20 +21,16 @@ export type TableExpression<DB, TB extends keyof DB> =
   | AliasedDynamicTableBuilder<any, any>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
-  | TableExpression<DB, TB>
-  | ReadonlyArray<TableExpression<DB, TB>>
+  TableExpression<DB, TB> | ReadonlyArray<TableExpression<DB, TB>>
 
 export type SimpleTableReference<DB> = AnyAliasedTable<DB> | AnyTable<DB>
 export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 export type AnyTable<DB> = keyof DB & string
 
 export type From<DB, TE> = DrainOuterGeneric<{
-  [C in
-    | keyof DB
-    | ExtractAliasFromTableExpression<
-        DB,
-        TE
-      >]: C extends ExtractAliasFromTableExpression<DB, TE>
+  [
+    C in keyof DB | ExtractAliasFromTableExpression<DB, TE>
+  ]: C extends ExtractAliasFromTableExpression<DB, TE>
     ? ExtractRowTypeFromTableExpression<DB, TE, C>
     : C extends keyof DB
       ? DB[C]

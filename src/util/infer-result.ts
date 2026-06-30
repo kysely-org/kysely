@@ -52,9 +52,6 @@ export type InferResult<C extends Compilable<any> | CompiledQuery<any>> =
       : never
 
 type ResolveResult<O> = O extends
-  | InsertResult
-  | UpdateResult
-  | DeleteResult
-  | MergeResult
+  InsertResult | UpdateResult | DeleteResult | MergeResult
   ? O[]
   : Simplify<O>[]

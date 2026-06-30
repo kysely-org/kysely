@@ -270,7 +270,7 @@ class MysqlConnection implements DatabaseConnection {
 
     const stream = this.#connection
       .query(compiledQuery.sql, compiledQuery.parameters as never)
-      .stream<O>({ objectMode: true })
+      .stream({ objectMode: true })
 
     try {
       for await (const row of stream) {

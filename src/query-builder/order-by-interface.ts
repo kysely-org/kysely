@@ -133,8 +133,7 @@ export interface OrderByInterface<DB, TB extends keyof DB, O> {
    */
   orderBy<
     OE extends
-      | OrderByExpression<DB, TB, O>
-      | DirectedOrderByStringReference<DB, TB, O>,
+      OrderByExpression<DB, TB, O> | DirectedOrderByStringReference<DB, TB, O>,
   >(
     exprs: ReadonlyArray<OE>,
   ): OrderByInterface<DB, TB, O>

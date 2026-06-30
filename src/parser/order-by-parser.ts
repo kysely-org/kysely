@@ -26,8 +26,7 @@ export type OrderByExpression<DB, TB extends keyof DB, O> =
   | DynamicReferenceBuilder<any>
 
 export type OrderByModifiers =
-  | OrderByDirection
-  | OrderByModifiersCallbackExpression
+  OrderByDirection | OrderByModifiersCallbackExpression
 
 export type OrderByDirection = 'asc' | 'desc'
 
@@ -44,8 +43,7 @@ export type OrderByModifiersCallbackExpression = (
  * @deprecated performance reasons, use {@link OrderByExpression} instead.
  */
 export type DirectedOrderByStringReference<DB, TB extends keyof DB, O> = `${
-  | StringReference<DB, TB>
-  | (keyof O & string)} ${OrderByDirection}`
+  StringReference<DB, TB> | (keyof O & string)} ${OrderByDirection}`
 
 // TODO: remove in v0.29
 /**
@@ -58,8 +56,7 @@ export type OrderByDirectionExpression = OrderByDirection | Expression<any>
  * @deprecated use {@link OrderByExpression} instead.
  */
 export type UndirectedOrderByExpression<DB, TB extends keyof DB, O> =
-  | ReferenceExpression<DB, TB>
-  | (keyof O & string)
+  ReferenceExpression<DB, TB> | (keyof O & string)
 
 export function parseOrderBy(args: any[]): OrderByItemNode[] {
   if (args.length === 2) {

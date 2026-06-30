@@ -93,7 +93,7 @@ export class JSONPathBuilder<S, O = S> {
    * ```
    */
   at<
-    I extends any[] extends O ? number | 'last' | `#-${number}` : never,
+    I extends (any[] extends O ? number | 'last' | `#-${number}` : never),
     O2 = null | NonNullable<NonNullable<O>[keyof NonNullable<O> & number]>,
   >(
     index: `${I}` extends `${any}.${any}` | `#--${any}` ? never : I,
@@ -161,11 +161,11 @@ export class JSONPathBuilder<S, O = S> {
    * ```
    */
   key<
-    K extends any[] extends O
+    K extends (any[] extends O
       ? never
       : O extends object
         ? keyof NonNullable<O> & string
-        : never,
+        : never),
     O2 = undefined extends O
       ? null | NonNullable<NonNullable<O>[K]>
       : null extends O

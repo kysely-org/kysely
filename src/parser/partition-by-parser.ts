@@ -7,12 +7,10 @@ import {
 } from './reference-parser.js'
 
 export type PartitionByExpression<DB, TB extends keyof DB> =
-  | StringReference<DB, TB>
-  | DynamicReferenceBuilder<any>
+  StringReference<DB, TB> | DynamicReferenceBuilder<any>
 
 export type PartitionByExpressionOrList<DB, TB extends keyof DB> =
-  | ReadonlyArray<PartitionByExpression<DB, TB>>
-  | PartitionByExpression<DB, TB>
+  ReadonlyArray<PartitionByExpression<DB, TB>> | PartitionByExpression<DB, TB>
 
 export function parsePartitionBy(
   partitionBy: PartitionByExpressionOrList<any, any>,

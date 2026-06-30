@@ -11,7 +11,13 @@ export interface MysqlDialectConfig {
    *
    * This is useful for cancelling queries on the database side.
    */
-  controlConnection?: (config: object) => MysqlConnection
+  // The string overload mirrors mysql2's `createConnection`, which also accepts
+  // a connection URI. Without it, mysql2's overloaded `createConnection` isn't
+  // assignable to this type under TypeScript < 5.6.
+  controlConnection?: {
+    (connectionUri: string): MysqlConnection
+    (config: object): MysqlConnection
+  }
 
   /**
    * A mysql2 Pool instance or a function that returns one.
@@ -21,8 +27,7 @@ export interface MysqlDialectConfig {
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
   pool:
-    | MysqlPool
-    | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
+    MysqlPool | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
 
   /**
    * Called once for each created connection.
@@ -60,15 +65,14 @@ export interface MysqlConnection {
   config: object
   connect(callback?: (error: unknown) => void): void
   destroy(): void
+  // `parameters` is `any` and the callback is optional (a single signature
+  // instead of two overloads) so that mysql2's overloaded `query` stays
+  // assignable to this type under TypeScript < 5.6.
   query(
     sql: string,
-    parameters: Array<unknown>,
-  ): { stream: <T>(options: MysqlStreamOptions) => MysqlStream<T> }
-  query(
-    sql: string,
-    parameters: Array<unknown>,
-    callback: (error: unknown, result: MysqlQueryResult) => void,
-  ): void
+    parameters: any,
+    callback?: (error: unknown, result: MysqlQueryResult) => void,
+  ): { stream: (options: MysqlStreamOptions) => MysqlStream }
   threadId: number
 }
 
@@ -83,8 +87,11 @@ export interface MysqlStreamOptions {
   objectMode?: true
 }
 
-export interface MysqlStream<T> {
-  [Symbol.asyncIterator](): AsyncIterableIterator<T>
+export interface MysqlStream {
+  // The iterator type is `any` (rather than `AsyncIterableIterator<T>`) because
+  // `@types/node`'s `Readable` - what mysql2's `query(...).stream()` returns -
+  // isn't assignable to a stricter async iterator type under TypeScript < 5.6.
+  [Symbol.asyncIterator](): any
 }
 
 export interface MysqlOkPacket {

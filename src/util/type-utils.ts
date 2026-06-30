@@ -104,18 +104,12 @@ export type AnyAliasedColumnWithTable<
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
 export type SimplifySingleResult<O> = O extends
-  | InsertResult
-  | UpdateResult
-  | DeleteResult
-  | MergeResult
+  InsertResult | UpdateResult | DeleteResult | MergeResult
   ? O
   : Simplify<O> | undefined
 
 export type SimplifyResult<O> = O extends
-  | InsertResult
-  | UpdateResult
-  | DeleteResult
-  | MergeResult
+  InsertResult | UpdateResult | DeleteResult | MergeResult
   ? O
   : Simplify<O>
 
@@ -247,17 +241,16 @@ export type ShallowDehydrateValue<T> = T extends null | undefined
     ? T
     : T & {} extends (infer U)[]
       ? Array<ShallowDehydrateValue<U>> | Extract<T, null | undefined>
-      :
-          | Exclude<
-              T,
-              StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
-            >
-          | (IsNever<Extract<T, NumbersWhenDataTypeNotAvailable>> extends true
-              ? never
-              : number)
-          | (IsNever<Extract<T, StringsWhenDataTypeNotAvailable>> extends true
-              ? never
-              : string)
+      : | Exclude<
+            T,
+            StringsWhenDataTypeNotAvailable | NumbersWhenDataTypeNotAvailable
+          >
+        | (IsNever<Extract<T, NumbersWhenDataTypeNotAvailable>> extends true
+            ? never
+            : number)
+        | (IsNever<Extract<T, StringsWhenDataTypeNotAvailable>> extends true
+            ? never
+            : string)
 
 export type StringsWhenDataTypeNotAvailable =
   | Date

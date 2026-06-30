@@ -46,9 +46,7 @@ export interface AbortableQueryOptions extends AbortableOperationOptions {
 }
 
 export type InflightQueryAbortStrategy =
-  | 'ignore query'
-  | 'cancel query'
-  | 'kill session'
+  'ignore query' | 'cancel query' | 'kill session'
 
 export function getInflightQueryAbortHandler(
   abortStrategy: InflightQueryAbortStrategy | undefined = 'ignore query',

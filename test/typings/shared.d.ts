@@ -82,8 +82,7 @@ export interface PersonMetadata {
   }>
   discriminatedUnionProfile: JSONColumnType<{
     auth:
-      | { type: 'token'; token: string }
-      | { type: 'session'; session_id: string }
+      { type: 'token'; token: string } | { type: 'session'; session_id: string }
     tags: string[]
   }>
   experience: JSONColumnType<

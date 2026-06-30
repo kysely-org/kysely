@@ -27,12 +27,10 @@ export type OperandExpression<V> =
   Expression<V> | SelectQueryBuilderExpression<Record<string, V>>
 
 export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
-  | OperandExpression<V>
-  | OperandExpressionFactory<DB, TB, V>
+  OperandExpression<V> | OperandExpressionFactory<DB, TB, V>
 
 export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
-  | AliasedExpression<any, any>
-  | AliasedExpressionFactory<DB, TB>
+  AliasedExpression<any, any> | AliasedExpressionFactory<DB, TB>
 
 export type ExpressionFactory<DB, TB extends keyof DB, V> = (
   eb: ExpressionBuilder<DB, TB>,
