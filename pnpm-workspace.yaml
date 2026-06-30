@@ -10,7 +10,7 @@ allowBuilds:
   core-js-pure: false # site dependency, useless scripts
   esbuild@0.27.3 || 0.28.1: true # tsx@4.21.0 dependency || direct.
   sharp: false # wrangler dependency, useless scripts
-  workerd@1.20260515.1: true # wrangler@4.92.0 dependency
+  workerd@1.20260625.1: true # wrangler@4.105.0 dependency
 
 auditConfig:
   # Don't show in `pnpm audit`.
