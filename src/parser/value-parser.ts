@@ -17,12 +17,10 @@ import type { Expression } from '../expression/expression.js'
 import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
-  | V
-  | ExpressionOrFactory<DB, TB, V>
+  V | ExpressionOrFactory<DB, TB, V>
 
 export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
-  | ValueExpression<DB, TB, V>
-  | ReadonlyArray<ValueExpression<DB, TB, V>>
+  ValueExpression<DB, TB, V> | ReadonlyArray<ValueExpression<DB, TB, V>>
 
 export type ExtractTypeFromValueExpressionOrList<VE> =
   VE extends ReadonlyArray<infer AV>

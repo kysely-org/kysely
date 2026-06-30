@@ -49,9 +49,9 @@ export type Selection<
   // Don't replace with DrainOuterGeneric!
 > = [DB] extends [unknown]
   ? {
-      [E in FlattenSelectExpression<SE> as ExtractAliasFromSelectExpression<E>]: SelectType<
-        ExtractTypeFromSelectExpression<DB, TB, E>
-      >
+      [
+        E in FlattenSelectExpression<SE> as ExtractAliasFromSelectExpression<E>
+      ]: SelectType<ExtractTypeFromSelectExpression<DB, TB, E>>
     }
   : {}
 

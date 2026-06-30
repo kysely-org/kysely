@@ -35,20 +35,16 @@ import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-nod
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 
 export type StringReference<DB, TB extends keyof DB> =
-  | AnyColumn<DB, TB>
-  | AnyColumnWithTable<DB, TB>
+  AnyColumn<DB, TB> | AnyColumnWithTable<DB, TB>
 
 export type SimpleReferenceExpression<DB, TB extends keyof DB> =
-  | StringReference<DB, TB>
-  | DynamicReferenceBuilder<any>
+  StringReference<DB, TB> | DynamicReferenceBuilder<any>
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
-  | SimpleReferenceExpression<DB, TB>
-  | ExpressionOrFactory<DB, TB, any>
+  SimpleReferenceExpression<DB, TB> | ExpressionOrFactory<DB, TB, any>
 
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
-  | ReferenceExpression<DB, TB>
-  | ReadonlyArray<ReferenceExpression<DB, TB>>
+  ReferenceExpression<DB, TB> | ReadonlyArray<ReferenceExpression<DB, TB>>
 
 export type ExtractTypeFromReferenceExpression<
   DB,

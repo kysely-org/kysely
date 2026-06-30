@@ -276,10 +276,12 @@ async function testOutput(db: Kysely<Database>) {
 
 function testInsertable() {
   function foo(
-    _bar: Insertable<// no required columns!
-    {
-      optional: number | null
-    }>,
+    _bar: Insertable<
+      // no required columns!
+      {
+        optional: number | null
+      }
+    >,
   ) {}
 
   foo({})
