@@ -152,7 +152,7 @@ importers:
         version: 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/preset-classic':
         specifier: 3.10.1
-        version: 3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)
+        version: 3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)
       '@docusaurus/theme-common':
         specifier: 3.10.1
         version: 3.10.1(@docusaurus/plugin-content-docs@3.10.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
@@ -161,7 +161,7 @@ importers:
         version: 3.10.1(@docusaurus/plugin-content-docs@3.10.1)(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@mdx-js/react':
         specifier: 3.1.1
-        version: 3.1.1(@types/react@19.2.14)(react@19.2.7)
+        version: 3.1.1(@types/react@19.2.17)(react@19.2.7)
       '@radix-ui/colors':
         specifier: 3.0.0
         version: 3.0.0
@@ -191,8 +191,8 @@ importers:
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.1)
       '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
+        specifier: 19.2.17
+        version: 19.2.17
       mermaid:
         specifier: 11.16.0
         version: 11.16.0
@@ -2448,6 +2448,9 @@ packages:
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+
+  '@types/react@19.2.17':
+    resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
   '@types/readable-stream@4.0.21':
     resolution: {integrity: sha512-19eKVv9tugr03IgfXlA9UVUVRbW6IuqRO5B92Dl4a6pT7K8uaGrNS0GkxiZD0BOk6PLuXl5FhWl//eX/pzYdTQ==}
@@ -8639,14 +8642,14 @@ snapshots:
 
   '@docsearch/css@3.9.0': {}
 
-  '@docsearch/react@3.9.0(@algolia/client-search@5.39.0)(@types/react@19.2.14)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)':
+  '@docsearch/react@3.9.0(@algolia/client-search@5.39.0)(@types/react@19.2.17)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)':
     dependencies:
       '@algolia/autocomplete-core': 1.17.9(@algolia/client-search@5.39.0)(algoliasearch@5.39.0)(search-insights@2.17.3)
       '@algolia/autocomplete-preset-algolia': 1.17.9(@algolia/client-search@5.39.0)(algoliasearch@5.39.0)
       '@docsearch/css': 3.9.0
       algoliasearch: 5.39.0
     optionalDependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       search-insights: 2.17.3
@@ -8741,7 +8744,7 @@ snapshots:
       '@docusaurus/utils': 3.10.1(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
       '@docusaurus/utils-common': 3.10.1(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
       '@docusaurus/utils-validation': 3.10.1(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
-      '@mdx-js/react': 3.1.1(@types/react@19.2.14)(react@19.2.7)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.7)
       boxen: 6.2.1
       chalk: 4.1.2
       chokidar: 3.6.0
@@ -9306,7 +9309,7 @@ snapshots:
       - vue-router
       - webpack-cli
 
-  '@docusaurus/preset-classic@3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)':
+  '@docusaurus/preset-classic@3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)':
     dependencies:
       '@docusaurus/core': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/plugin-content-blog': 3.10.1(@docusaurus/plugin-content-docs@3.10.1)(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
@@ -9319,9 +9322,9 @@ snapshots:
       '@docusaurus/plugin-google-tag-manager': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/plugin-sitemap': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/plugin-svgr': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
-      '@docusaurus/theme-classic': 3.10.1(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
+      '@docusaurus/theme-classic': 3.10.1(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/theme-common': 3.10.1(@docusaurus/plugin-content-docs@3.10.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
-      '@docusaurus/theme-search-algolia': 3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)
+      '@docusaurus/theme-search-algolia': 3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)
       '@docusaurus/types': 3.10.1(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
@@ -9358,7 +9361,7 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.7
 
-  '@docusaurus/theme-classic@3.10.1(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)':
+  '@docusaurus/theme-classic@3.10.1(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)':
     dependencies:
       '@docusaurus/core': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/logger': 3.10.1
@@ -9373,7 +9376,7 @@ snapshots:
       '@docusaurus/utils': 3.10.1(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
       '@docusaurus/utils-common': 3.10.1(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
       '@docusaurus/utils-validation': 3.10.1(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)
-      '@mdx-js/react': 3.1.1(@types/react@19.2.14)(react@19.2.7)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.7)
       clsx: 2.1.1
       copy-text-to-clipboard: 3.2.2
       infima: 0.2.0-alpha.45
@@ -9483,10 +9486,10 @@ snapshots:
       - utf-8-validate
       - webpack-cli
 
-  '@docusaurus/theme-search-algolia@3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.14)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)':
+  '@docusaurus/theme-search-algolia@3.10.1(@algolia/client-search@5.39.0)(@mdx-js/react@3.1.1)(@types/react@19.2.17)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)(typescript@6.0.3)':
     dependencies:
       '@algolia/autocomplete-core': 1.19.8(@algolia/client-search@5.39.0)(algoliasearch@5.39.0)(search-insights@2.17.3)
-      '@docsearch/react': 3.9.0(@algolia/client-search@5.39.0)(@types/react@19.2.14)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)
+      '@docsearch/react': 3.9.0(@algolia/client-search@5.39.0)(@types/react@19.2.17)(react-dom@19.2.7)(react@19.2.7)(search-insights@2.17.3)
       '@docusaurus/core': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
       '@docusaurus/logger': 3.10.1
       '@docusaurus/plugin-content-docs': 3.10.1(@mdx-js/react@3.1.1)(acorn@8.16.0)(esbuild@0.28.1)(postcss@8.5.10)(react-dom@19.2.7)(react@19.2.7)(typescript@6.0.3)
@@ -9978,10 +9981,10 @@ snapshots:
       - acorn
       - supports-color
 
-  '@mdx-js/react@3.1.1(@types/react@19.2.14)(react@19.2.7)':
+  '@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.7)':
     dependencies:
       '@types/mdx': 2.0.13
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
       react: 19.2.7
 
   '@mermaid-js/parser@1.1.1':
@@ -10597,6 +10600,10 @@ snapshots:
       '@types/react': 19.2.14
 
   '@types/react@19.2.14':
+    dependencies:
+      csstype: 3.2.3
+
+  '@types/react@19.2.17':
     dependencies:
       csstype: 3.2.3
 
