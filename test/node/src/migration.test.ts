@@ -54,7 +54,7 @@ for (const dialect of DIALECTS) {
 
     describe('getMigrations', () => {
       it('should get migrations', async () => {
-        const [migrator] = createMigrations([
+        const { migrator } = createMigrations([
           'migration1',
           'migration2',
           'migration3',
@@ -84,19 +84,18 @@ for (const dialect of DIALECTS) {
 
     describe('migrateToLatest', () => {
       it('should run all unexecuted migrations', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration2',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration2'])
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
 
         const { results: results2 } = await migrator2.migrateToLatest()
 
@@ -115,18 +114,13 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error if a new migration is added before the last executed one', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration3',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration3'])
 
         await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(['migration1', 'migration2', 'migration3'])
 
         const { error } = await migrator2.migrateToLatest()
 
@@ -140,17 +134,18 @@ for (const dialect of DIALECTS) {
       })
 
       it('should run a new migration added before the last executed one with allowUnorderedMigrations enabled', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations(
-          ['migration1', 'migration3'],
-          { allowUnorderedMigrations: true },
-        )
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration3'], {
+            allowUnorderedMigrations: true,
+          })
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations(
-          ['migration1', 'migration2', 'migration3', 'migration4'],
-          { allowUnorderedMigrations: true },
-        )
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(
+            ['migration1', 'migration2', 'migration3', 'migration4'],
+            { allowUnorderedMigrations: true },
+          )
 
         const { results: results2 } = await migrator2.migrateToLatest()
 
@@ -169,19 +164,13 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error if a previously executed migration is missing', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration2', 'migration3'])
 
         await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(['migration2', 'migration3', 'migration4'])
 
         const { error } = await migrator2.migrateToLatest()
 
@@ -199,17 +188,11 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error if a the last executed migration is not found', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration2', 'migration3'])
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration4',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(['migration1', 'migration2', 'migration4'])
 
         await migrator1.migrateToLatest()
         const { error } = await migrator2.migrateToLatest()
@@ -229,17 +212,17 @@ for (const dialect of DIALECTS) {
 
       describe('with allowUnorderedMigrations', () => {
         it('should return an error if a previously executed migration is missing', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration2', 'migration3'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(['migration1', 'migration2', 'migration3'], {
+              allowUnorderedMigrations: true,
+            })
 
           await migrator1.migrateToLatest()
 
-          const [migrator2, executedUpMethods2] = createMigrations(
-            ['migration2', 'migration3', 'migration4'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration2', 'migration3', 'migration4'], {
+              allowUnorderedMigrations: true,
+            })
 
           const { error } = await migrator2.migrateToLatest()
 
@@ -257,15 +240,15 @@ for (const dialect of DIALECTS) {
         })
 
         it('should return an error if a the last executed migration is not found', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration2', 'migration3'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(['migration1', 'migration2', 'migration3'], {
+              allowUnorderedMigrations: true,
+            })
 
-          const [migrator2, executedUpMethods2] = createMigrations(
-            ['migration1', 'migration2', 'migration4'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration1', 'migration2', 'migration4'], {
+              allowUnorderedMigrations: true,
+            })
 
           await migrator1.migrateToLatest()
           const { error } = await migrator2.migrateToLatest()
@@ -285,7 +268,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error if one of the migrations fails', async () => {
-        const [migrator, executedUpMethods] = createMigrations([
+        const { migrator, executedUpMethods } = createMigrations([
           'migration1',
           { name: 'migration2', error: 'whoopsydaisy' },
           'migration3',
@@ -309,7 +292,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should work correctly when run in parallel', async () => {
-        const [migrator, executedUpMethods] = createMigrations([
+        const { migrator, executedUpMethods } = createMigrations([
           'migration1',
           'migration2',
         ])
@@ -360,21 +343,23 @@ for (const dialect of DIALECTS) {
 
     describe('migrateTo', () => {
       it('should migrate up to a specific migration', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
 
         const { results: results1 } = await migrator1.migrateTo('migration2')
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
 
         const { results: results2 } = await migrator2.migrateTo('migration3')
 
@@ -392,7 +377,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate all the way down', async () => {
-        const [migrator, executedUpMethods, executedDownMethods] =
+        const { migrator, executedUpMethods, executedDownMethods } =
           createMigrations(['migration1', 'migration2', 'migration3'])
 
         const { results: results1 } = await migrator.migrateToLatest()
@@ -423,7 +408,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate all the way down with a foreign NO_MIGRATIONS object', async () => {
-        const [migrator, executedUpMethods, executedDownMethods] =
+        const { migrator, executedUpMethods, executedDownMethods } =
           createMigrations(['migration1', 'migration2', 'migration3'])
 
         const { results: results1 } = await migrator.migrateToLatest()
@@ -456,22 +441,26 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate down to a specific migration', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
-
-        const { results: results1 } = await migrator1.migrateTo('migration4')
-
-        const [migrator2, executedUpMethods2, executedDownMethods2] =
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
           createMigrations([
             'migration1',
             'migration2',
             'migration3',
             'migration4',
           ])
+
+        const { results: results1 } = await migrator1.migrateTo('migration4')
+
+        const {
+          migrator: migrator2,
+          executedUpMethods: executedUpMethods2,
+          executedDownMethods: executedDownMethods2,
+        } = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+        ])
 
         const { results: results2 } = await migrator2.migrateTo('migration2')
 
@@ -500,23 +489,25 @@ for (const dialect of DIALECTS) {
 
       describe('with allowUnorderedMigrations enabled', () => {
         it('should migrate up to a specific migration', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration3', 'migration4', 'migration5'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(
+              ['migration1', 'migration3', 'migration4', 'migration5'],
+              { allowUnorderedMigrations: true },
+            )
 
           const { results: results1 } = await migrator1.migrateTo('migration3')
 
-          const [migrator2, executedUpMethods2] = createMigrations(
-            [
-              'migration1',
-              'migration2',
-              'migration3',
-              'migration4',
-              'migration5',
-            ],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(
+              [
+                'migration1',
+                'migration2',
+                'migration3',
+                'migration4',
+                'migration5',
+              ],
+              { allowUnorderedMigrations: true },
+            )
 
           const { results: results2 } = await migrator2.migrateTo('migration4')
 
@@ -535,18 +526,21 @@ for (const dialect of DIALECTS) {
         })
 
         it('should migrate all the way down', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration2', 'migration4'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(['migration1', 'migration2', 'migration4'], {
+              allowUnorderedMigrations: true,
+            })
 
           const { results: results1 } = await migrator1.migrateToLatest()
 
-          const [migrator2, executedUpMethods2, executedDownMethods2] =
-            createMigrations(
-              ['migration1', 'migration2', 'migration3', 'migration4'],
-              { allowUnorderedMigrations: true },
-            )
+          const {
+            migrator: migrator2,
+            executedUpMethods: executedUpMethods2,
+            executedDownMethods: executedDownMethods2,
+          } = createMigrations(
+            ['migration1', 'migration2', 'migration3', 'migration4'],
+            { allowUnorderedMigrations: true },
+          )
 
           const { results: results2 } = await migrator2.migrateTo(NO_MIGRATIONS)
 
@@ -588,24 +582,28 @@ for (const dialect of DIALECTS) {
         })
 
         it('should migrate down to a specific migration', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration2', 'migration3', 'migration5'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(
+              ['migration1', 'migration2', 'migration3', 'migration5'],
+              { allowUnorderedMigrations: true },
+            )
 
           const { results: results1 } = await migrator1.migrateTo('migration5')
 
-          const [migrator2, executedUpMethods2, executedDownMethods2] =
-            createMigrations(
-              [
-                'migration1',
-                'migration2',
-                'migration3',
-                'migration4',
-                'migration5',
-              ],
-              { allowUnorderedMigrations: true },
-            )
+          const {
+            migrator: migrator2,
+            executedUpMethods: executedUpMethods2,
+            executedDownMethods: executedDownMethods2,
+          } = createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+              'migration5',
+            ],
+            { allowUnorderedMigrations: true },
+          )
 
           const { results: results2 } = await migrator2.migrateTo('migration2')
 
@@ -641,19 +639,17 @@ for (const dialect of DIALECTS) {
         })
 
         it('should migrate down if allowUnorderedMigrations is enabled and migration names are not in order', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations(
-            ['migration1', 'migration3'],
-            { allowUnorderedMigrations: true },
-          )
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations(['migration1', 'migration3'], {
+              allowUnorderedMigrations: true,
+            })
 
           const { results: results1 } = await migrator1.migrateToLatest()
 
-          const [migrator2, executedUpMethods2] = createMigrations(
-            ['migration1', 'migration2', 'migration3'],
-            {
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration1', 'migration2', 'migration3'], {
               allowUnorderedMigrations: true,
-            },
-          )
+            })
 
           const { results: results2 } = await migrator2.migrateToLatest()
 
@@ -673,10 +669,13 @@ for (const dialect of DIALECTS) {
           expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
           expect(executedUpMethods2).to.eql(['migration2'])
 
-          const [migrator3, executedUpMethods3, executedDownMethods3] =
-            createMigrations(['migration1', 'migration2', 'migration3'], {
-              allowUnorderedMigrations: true,
-            })
+          const {
+            migrator: migrator3,
+            executedUpMethods: executedUpMethods3,
+            executedDownMethods: executedDownMethods3,
+          } = createMigrations(['migration1', 'migration2', 'migration3'], {
+            allowUnorderedMigrations: true,
+          })
 
           const { results: results3 } = await migrator3.migrateDown()
           expect(results3).to.eql([
@@ -709,7 +708,7 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate up one step', async () => {
-        const [migrator, executedUpMethods] = createMigrations([
+        const { migrator, executedUpMethods } = createMigrations([
           'migration1',
           'migration2',
         ])
@@ -737,19 +736,18 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error when migrating up if a new migration is added before the last executed one', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration3',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration3'])
 
         await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations([
-          'migration1',
-          'migration2',
-          'migration3',
-          'migration4',
-        ])
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
 
         const { error } = await migrator2.migrateUp()
 
@@ -763,17 +761,18 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate up one step with allowUnorderedMigrations enabled', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations(
-          ['migration1', 'migration3'],
-          { allowUnorderedMigrations: true },
-        )
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration3'], {
+            allowUnorderedMigrations: true,
+          })
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
-        const [migrator2, executedUpMethods2] = createMigrations(
-          ['migration1', 'migration2', 'migration3', 'migration4'],
-          { allowUnorderedMigrations: true },
-        )
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(
+            ['migration1', 'migration2', 'migration3', 'migration4'],
+            { allowUnorderedMigrations: true },
+          )
 
         const { results: results2 } = await migrator2.migrateUp()
         const { results: results3 } = await migrator2.migrateUp()
@@ -796,9 +795,12 @@ for (const dialect of DIALECTS) {
       })
 
       it('should not execute in transaction if disableTransactions is true on the `Migrator` instance', async () => {
-        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
-          disableTransactions: true,
-        })
+        const { migrator, executedUpMethods } = createMigrations(
+          ['migration1'],
+          {
+            disableTransactions: true,
+          },
+        )
 
         const { results } = await migrator.migrateUp()
 
@@ -812,9 +814,12 @@ for (const dialect of DIALECTS) {
       })
 
       it('should not execute in transaction if disableTransactions is true when calling `migrateUp`', async () => {
-        const [migrator, executedUpMethods] = createMigrations(['migration1'], {
-          disableTransactions: false,
-        })
+        const { migrator, executedUpMethods } = createMigrations(
+          ['migration1'],
+          {
+            disableTransactions: false,
+          },
+        )
 
         const { results } = await migrator.migrateUp({
           disableTransactions: true,
@@ -833,12 +838,13 @@ for (const dialect of DIALECTS) {
         const shouldExecuteInTransaction =
           ctx.db.getExecutor().adapter.supportsTransactionalDdl
 
-        const [migrator, executedUpMethods] = createMigrations(
-          [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
-          {
-            disableTransactions: false,
-          },
-        )
+        const { migrator, executedUpMethods, executedInTransactions } =
+          createMigrations(
+            [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+            {
+              disableTransactions: false,
+            },
+          )
 
         const { results } = await migrator.migrateUp()
 
@@ -847,18 +853,20 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
+        expect(executedInTransactions).to.eql([shouldExecuteInTransaction])
       })
 
-      it('should execute in transaction if disableTransactions is false when calling `migrateUp` and transactionDdl supported', async () => {
+      it('should execute in transaction when `migrateUp` is called with disableTransactions false even though the Migrator instance has disableTransactions true', async () => {
         const shouldExecuteInTransaction =
           ctx.db.getExecutor().adapter.supportsTransactionalDdl
 
-        const [migrator, executedUpMethods] = createMigrations(
-          [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
-          {
-            disableTransactions: true,
-          },
-        )
+        const { migrator, executedUpMethods, executedInTransactions } =
+          createMigrations(
+            [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+            {
+              disableTransactions: true,
+            },
+          )
 
         const { results } = await migrator.migrateUp({
           disableTransactions: false,
@@ -869,6 +877,7 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
+        expect(executedInTransactions).to.eql([shouldExecuteInTransaction])
       })
 
       if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
@@ -907,20 +916,31 @@ for (const dialect of DIALECTS) {
 
       if (variant === 'postgres') {
         it('should not run concurrent migrators in parallel when disableTransactions is true (issue #1894)', async () => {
-          // Two migrators running `migrateToLatest` in parallel with
-          // `disableTransactions: true` must not execute migrations
-          // concurrently. Without a surrounding transaction, Postgres releases
-          // `pg_advisory_xact_lock` at the end of the statement that acquires
-          // it, so both migrators can run the same migration's `up` and the
-          // loser fails when it tries to insert a duplicate row into the
-          // migration table.
-          const [migratorA, executedUpA] = createMigrations(
+          let timestamp = 0
+          const executedRuns: {
+            name: string
+            source: 'A' | 'B'
+            timestamp: number
+          }[] = []
+          const recordRun =
+            (source: 'A' | 'B') =>
+            (name: string): void => {
+              executedRuns.push({
+                name,
+                source,
+                timestamp: ++timestamp,
+              })
+            }
+
+          const { migrator: migratorA } = createMigrations(
             ['migration1', 'migration2'],
             { disableTransactions: true },
+            { onUp: recordRun('A') },
           )
-          const [migratorB, executedUpB] = createMigrations(
-            ['migration1', 'migration2'],
+          const { migrator: migratorB } = createMigrations(
+            ['migration1', 'migration2', 'migration3'],
             { disableTransactions: true },
+            { onUp: recordRun('B') },
           )
 
           const [resultA, resultB] = await Promise.all([
@@ -928,23 +948,17 @@ for (const dialect of DIALECTS) {
             migratorB.migrateToLatest(),
           ])
 
-          // Neither migrator may error (no duplicate-key violation).
           expect(resultA.error).to.be.undefined
           expect(resultB.error).to.be.undefined
 
-          // Each migration's `up` must run exactly once across both migrators.
-          const allExecutedUp = [...executedUpA, ...executedUpB]
-          expect(allExecutedUp.sort()).to.eql(['migration1', 'migration2'])
-
-          // The migration table must contain exactly one row per migration.
-          const executed = await (ctx.db as Kysely<any>)
-            .selectFrom(DEFAULT_MIGRATION_TABLE)
-            .select('name')
-            .orderBy('name')
-            .execute()
-          expect(executed.map((it: { name: string }) => it.name)).to.eql([
-            'migration1',
-            'migration2',
+          expect(
+            executedRuns
+              .sort((a, b) => a.timestamp - b.timestamp)
+              .map(({ name, source }) => ({ name, source })),
+          ).to.eql([
+            { name: 'migration1', source: 'A' },
+            { name: 'migration2', source: 'A' },
+            { name: 'migration3', source: 'B' },
           ])
         })
       }
@@ -984,7 +998,7 @@ for (const dialect of DIALECTS) {
 
     describe('migrateDown', () => {
       it('should migrate down one step', async () => {
-        const [migrator, executedUpMethods, executedDownMethods] =
+        const { migrator, executedUpMethods, executedDownMethods } =
           createMigrations([
             'migration1',
             'migration2',
@@ -1014,15 +1028,16 @@ for (const dialect of DIALECTS) {
       })
 
       it('should return an error if a new migration is added before the last executed one', async () => {
-        const [migrator1, executedUpMethods1] = createMigrations([
-          'migration1',
-          'migration3',
-        ])
+        const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+          createMigrations(['migration1', 'migration3'])
 
         await migrator1.migrateToLatest()
 
-        const [migrator2, _executedUpMethods2, executedDownMethods2] =
-          createMigrations(['migration1', 'migration2', 'migration3'])
+        const {
+          migrator: migrator2,
+          executedUpMethods: _executedUpMethods2,
+          executedDownMethods: executedDownMethods2,
+        } = createMigrations(['migration1', 'migration2', 'migration3'])
 
         const { error } = await migrator2.migrateDown()
 
@@ -1036,24 +1051,30 @@ for (const dialect of DIALECTS) {
       })
 
       it('should migrate down one step with allowUnorderedMigrations enabled', async () => {
-        const [migrator1, executedUpMethods1, _executedDownMethods1] =
-          createMigrations(['migration1', 'migration2', 'migration4'], {
-            allowUnorderedMigrations: true,
-          })
+        const {
+          migrator: migrator1,
+          executedUpMethods: executedUpMethods1,
+          executedDownMethods: _executedDownMethods1,
+        } = createMigrations(['migration1', 'migration2', 'migration4'], {
+          allowUnorderedMigrations: true,
+        })
 
         await migrator1.migrateToLatest()
 
-        const [migrator2, _executedUpMethods2, executedDownMethods2] =
-          createMigrations(
-            [
-              'migration1',
-              'migration2',
-              'migration3',
-              'migration4',
-              'migration5',
-            ],
-            { allowUnorderedMigrations: true },
-          )
+        const {
+          migrator: migrator2,
+          executedUpMethods: _executedUpMethods2,
+          executedDownMethods: executedDownMethods2,
+        } = createMigrations(
+          [
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+            'migration5',
+          ],
+          { allowUnorderedMigrations: true },
+        )
 
         const { results: results1 } = await migrator2.migrateDown()
         const { results: results2 } = await migrator2.migrateDown()
@@ -1100,17 +1121,19 @@ for (const dialect of DIALECTS) {
         })
 
         it('should use the same ordering strategy for migrations for both not executed migrations and executed migrations', async () => {
-          const [migrator1, executedUpMethods1] = createMigrations([
-            '2024-01-01-create-table',
-            '2024-01-01.2-update-table',
-          ])
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations([
+              '2024-01-01-create-table',
+              '2024-01-01.2-update-table',
+            ])
 
           await migrator1.migrateToLatest()
 
-          const [migrator2, executedUpMethods2] = createMigrations([
-            '2024-01-01-create-table',
-            '2024-01-01.2-update-table',
-          ])
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations([
+              '2024-01-01-create-table',
+              '2024-01-01.2-update-table',
+            ])
 
           const { results: results2, error } = await migrator2.migrateToLatest()
           expect(error).to.be.undefined
@@ -1128,7 +1151,7 @@ for (const dialect of DIALECTS) {
     if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
       describe('custom migration tables in a custom schema', () => {
         it('should create custom migration tables in custom schema', async () => {
-          const [migrator, executedUpMethods] = createMigrations(
+          const { migrator, executedUpMethods } = createMigrations(
             ['migration1', 'migration2', 'migration3', 'migration4'],
             {
               migrationTableName: CUSTOM_MIGRATION_TABLE,
@@ -1209,9 +1232,16 @@ for (const dialect of DIALECTS) {
         | { name: string; error?: string; transaction?: boolean }
       )[],
       migratorConfig?: Partial<MigratorProps>,
-    ): [Migrator, string[], string[]] {
+      options?: { onUp?: (migrationName: string) => void },
+    ): {
+      migrator: Migrator
+      executedUpMethods: string[]
+      executedDownMethods: string[]
+      executedInTransactions: boolean[]
+    } {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
+      const executedInTransactions: boolean[] = []
 
       const migrations = migrationConfigs.reduce<Record<string, Migration>>(
         (migrations, rawConfig) => {
@@ -1229,10 +1259,11 @@ for (const dialect of DIALECTS) {
                 }
 
                 if (config.transaction !== undefined) {
-                  expect(db.isTransaction).to.equal(config.transaction)
+                  executedInTransactions.push(db.isTransaction)
                 }
 
                 executedUpMethods.push(config.name)
+                options?.onUp?.(config.name)
               },
 
               async down(_db): Promise<void> {
@@ -1250,8 +1281,8 @@ for (const dialect of DIALECTS) {
         {},
       )
 
-      return [
-        new Migrator({
+      return {
+        migrator: new Migrator({
           db: ctx.db,
           provider: {
             getMigrations: () => Promise.resolve(migrations),
@@ -1260,7 +1291,8 @@ for (const dialect of DIALECTS) {
         }),
         executedUpMethods,
         executedDownMethods,
-      ]
+        executedInTransactions,
+      }
     }
 
     async function doesTableExists(

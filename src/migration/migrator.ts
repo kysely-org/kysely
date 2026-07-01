@@ -539,10 +539,11 @@ export class Migrator {
 
     const runWithLock = async (
       db: Kysely<any>,
+      cb: (db: Kysely<any>) => Promise<MigrationResultSet>,
     ): Promise<MigrationResultSet> => {
       try {
         await adapter.acquireMigrationLock(db, lockOptions)
-        return await run(db)
+        return await cb(db)
       } finally {
         await adapter.releaseMigrationLock(db, lockOptions)
       }
@@ -564,23 +565,18 @@ export class Migrator {
         )
       }
 
-      return runWithLock(this.#props.db)
+      return runWithLock(this.#props.db, run)
     }
 
     if (adapter.supportsTransactionalDdl && !disableTransactions) {
-      return this.#props.db.connection().execute(async (db) => {
-        try {
-          return await db.transaction().execute(async (trx) => {
-            await adapter.acquireMigrationLock(trx, lockOptions)
-            return await run(trx)
-          })
-        } finally {
-          await adapter.releaseMigrationLock(db, lockOptions)
-        }
-      })
+      return this.#props.db
+        .connection()
+        .execute((db) =>
+          runWithLock(db, (db) => db.transaction().execute((trx) => run(trx))),
+        )
     }
 
-    return this.#props.db.connection().execute(runWithLock)
+    return this.#props.db.connection().execute((db) => runWithLock(db, run))
   }
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
