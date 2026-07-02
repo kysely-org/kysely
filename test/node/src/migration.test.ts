@@ -840,7 +840,7 @@ for (const dialect of DIALECTS) {
 
         const { migrator, executedUpMethods, executedInTransactions } =
           createMigrations(
-            [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+            ['migration1'],
             {
               disableTransactions: false,
             },
@@ -853,7 +853,12 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
-        expect(executedInTransactions).to.eql([shouldExecuteInTransaction])
+        expect(executedInTransactions).to.eql([
+          {
+            name: 'migration1',
+            isTransaction: shouldExecuteInTransaction,
+          },
+        ])
       })
 
       it('should execute in transaction when `migrateUp` is called with disableTransactions false even though the Migrator instance has disableTransactions true', async () => {
@@ -862,7 +867,7 @@ for (const dialect of DIALECTS) {
 
         const { migrator, executedUpMethods, executedInTransactions } =
           createMigrations(
-            [{ name: 'migration1', transaction: shouldExecuteInTransaction }],
+            ['migration1'],
             {
               disableTransactions: true,
             },
@@ -877,7 +882,12 @@ for (const dialect of DIALECTS) {
         ])
 
         expect(executedUpMethods).to.eql(['migration1'])
-        expect(executedInTransactions).to.eql([shouldExecuteInTransaction])
+        expect(executedInTransactions).to.eql([
+          {
+            name: 'migration1',
+            isTransaction: shouldExecuteInTransaction,
+          },
+        ])
       })
 
       if (sqlSpec === 'postgres' || sqlSpec === 'mssql') {
@@ -1227,21 +1237,21 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (
-        | string
-        | { name: string; error?: string; transaction?: boolean }
-      )[],
+      migrationConfigs: (string | { name: string; error?: string })[],
       migratorConfig?: Partial<MigratorProps>,
       options?: { onUp?: (migrationName: string) => void },
     ): {
       migrator: Migrator
       executedUpMethods: string[]
       executedDownMethods: string[]
-      executedInTransactions: boolean[]
+      executedInTransactions: { name: string; isTransaction: boolean }[]
     } {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
-      const executedInTransactions: boolean[] = []
+      const executedInTransactions: {
+        name: string
+        isTransaction: boolean
+      }[] = []
 
       const migrations = migrationConfigs.reduce<Record<string, Migration>>(
         (migrations, rawConfig) => {
@@ -1258,9 +1268,10 @@ for (const dialect of DIALECTS) {
                   throw new Error(config.error)
                 }
 
-                if (config.transaction !== undefined) {
-                  executedInTransactions.push(db.isTransaction)
-                }
+                executedInTransactions.push({
+                  name: config.name,
+                  isTransaction: db.isTransaction,
+                })
 
                 executedUpMethods.push(config.name)
                 options?.onUp?.(config.name)
