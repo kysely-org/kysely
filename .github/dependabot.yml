@@ -29,6 +29,10 @@ updates:
     cooldown:
       default-days: 1
     directory: /
+    groups:
+      codeql-action:
+        patterns:
+          - github/codeql-action*
     rebase-strategy: disabled
     reviewers:
       - igalklebanov
