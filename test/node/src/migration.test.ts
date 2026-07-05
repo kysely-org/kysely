@@ -839,12 +839,9 @@ for (const dialect of DIALECTS) {
           ctx.db.getExecutor().adapter.supportsTransactionalDdl
 
         const { migrator, executedUpMethods, executedInTransactions } =
-          createMigrations(
-            ['migration1'],
-            {
-              disableTransactions: false,
-            },
-          )
+          createMigrations(['migration1'], {
+            disableTransactions: false,
+          })
 
         const { results } = await migrator.migrateUp()
 
@@ -866,12 +863,9 @@ for (const dialect of DIALECTS) {
           ctx.db.getExecutor().adapter.supportsTransactionalDdl
 
         const { migrator, executedUpMethods, executedInTransactions } =
-          createMigrations(
-            ['migration1'],
-            {
-              disableTransactions: true,
-            },
-          )
+          createMigrations(['migration1'], {
+            disableTransactions: true,
+          })
 
         const { results } = await migrator.migrateUp({
           disableTransactions: false,
@@ -924,52 +918,32 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      if (variant === 'postgres') {
+      if (variant === 'postgres' || variant === 'mssql') {
         it('should not run concurrent migrators in parallel when disableTransactions is true (issue #1894)', async () => {
-          let timestamp = 0
-          const executedRuns: {
-            name: string
-            source: 'A' | 'B'
-            timestamp: number
-          }[] = []
-          const recordRun =
-            (source: 'A' | 'B') =>
-            (name: string): void => {
-              executedRuns.push({
-                name,
-                source,
-                timestamp: ++timestamp,
-              })
-            }
+          let startedRunning: () => void
+          const migratorARunning = new Promise<void>(
+            (resolve) => (startedRunning = resolve),
+          )
 
           const { migrator: migratorA } = createMigrations(
-            ['migration1', 'migration2'],
+            [{ durationMs: 1_000, name: 'migrationA', preUp: () => startedRunning() }],
             { disableTransactions: true },
-            { onUp: recordRun('A') },
           )
-          const { migrator: migratorB } = createMigrations(
-            ['migration1', 'migration2', 'migration3'],
-            { disableTransactions: true },
-            { onUp: recordRun('B') },
-          )
+          const { migrator: migratorB } = createMigrations(['migrationB'], {
+            disableTransactions: false,
+          })
 
           const [resultA, resultB] = await Promise.all([
             migratorA.migrateToLatest(),
-            migratorB.migrateToLatest(),
+            migratorARunning.then(() => migratorB.migrateToLatest()),
           ])
 
           expect(resultA.error).to.be.undefined
-          expect(resultB.error).to.be.undefined
-
-          expect(
-            executedRuns
-              .sort((a, b) => a.timestamp - b.timestamp)
-              .map(({ name, source }) => ({ name, source })),
-          ).to.eql([
-            { name: 'migration1', source: 'A' },
-            { name: 'migration2', source: 'A' },
-            { name: 'migration3', source: 'B' },
-          ])
+          expect(resultB.error)
+            .to.be.instanceOf(Error)
+            .and.satisfy((val: Error) =>
+              val.message.includes('migrationA is missing'),
+            )
         })
       }
 
@@ -1237,9 +1211,16 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (string | { name: string; error?: string })[],
+      migrationConfigs: (
+        | string
+        | {
+            durationMs?: number
+            name: string
+            error?: string
+            preUp?: () => void
+          }
+      )[],
       migratorConfig?: Partial<MigratorProps>,
-      options?: { onUp?: (migrationName: string) => void },
     ): {
       migrator: Migrator
       executedUpMethods: string[]
@@ -1256,13 +1237,16 @@ for (const dialect of DIALECTS) {
       const migrations = migrationConfigs.reduce<Record<string, Migration>>(
         (migrations, rawConfig) => {
           const config =
-            typeof rawConfig === 'string' ? { name: rawConfig } : rawConfig
+            typeof rawConfig === 'string'
+              ? { durationMs: 20, name: rawConfig }
+              : { durationMs: 20, ...rawConfig }
 
           return {
             ...migrations,
             [config.name]: {
               async up(db): Promise<void> {
-                await setTimeout(20)
+                config.preUp?.()
+                await setTimeout(config.durationMs)
 
                 if (config.error) {
                   throw new Error(config.error)
@@ -1274,11 +1258,10 @@ for (const dialect of DIALECTS) {
                 })
 
                 executedUpMethods.push(config.name)
-                options?.onUp?.(config.name)
               },
 
               async down(_db): Promise<void> {
-                await setTimeout(20)
+                await setTimeout(config.durationMs)
 
                 if (config.error) {
                   throw new Error(config.error)
