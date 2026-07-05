@@ -11,7 +11,7 @@ import {
   Migrator,
   NO_MIGRATIONS,
   MigratorProps,
-  type Kysely,
+  Kysely,
 } from '../../../dist/cjs/index.js'
 import {
   clearDatabase,
@@ -697,7 +697,7 @@ for (const dialect of DIALECTS) {
       >
 
       beforeEach(() => {
-        transactionSpy = sandbox.spy(ctx.db, 'transaction')
+        transactionSpy = sandbox.spy(Kysely.prototype, 'transaction')
       })
 
       afterEach(() => {
@@ -790,6 +790,29 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
         expect(executedUpMethods2).to.eql(['migration2', 'migration4'])
       })
+
+      if (dialect === 'postgres' || dialect === 'mssql') {
+        it('should serialize concurrent migrators when transactions are disabled (issue #1894)', async () => {
+          let startedRunning: () => void
+          const migrationStarted = new Promise<void>((resolve) => {
+            startedRunning = resolve
+          })
+          const [migratorA] = createMigrations(
+            [{ name: 'migrationA', durationMs: 1000, preUp: () => startedRunning() }],
+            { disableTransactions: true },
+          )
+          const [migratorB] = createMigrations(['migrationB'])
+
+          const [resultA, resultB] = await Promise.all([
+            migratorA.migrateToLatest(),
+            migrationStarted.then(() => migratorB.migrateToLatest()),
+          ])
+
+          expect(resultA.error).to.be.undefined
+          expect(resultB.error).to.be.instanceOf(Error)
+          expect(getMessage(resultB.error)).to.include('migrationA is missing')
+        })
+      }
 
       it('should not execute in transaction if disableTransactions is true', async () => {
         const [migrator, executedUpMethods] = createMigrations(['migration1'], {
@@ -1050,7 +1073,12 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (string | { name: string; error?: string })[],
+      migrationConfigs: (string | {
+        name: string
+        error?: string
+        durationMs?: number
+        preUp?: () => void
+      })[],
       migratorConfig?: Partial<MigratorProps>,
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
@@ -1065,7 +1093,8 @@ for (const dialect of DIALECTS) {
             ...migrations,
             [config.name]: {
               async up(_db): Promise<void> {
-                await sleep(20)
+                config.preUp?.()
+                await sleep(config.durationMs ?? 20)
 
                 if (config.error) {
                   throw new Error(config.error)
