@@ -3,8 +3,8 @@ import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 import type { MigrationLockOptions } from '../dialect-adapter.js'
 
-// Random id for our transaction lock.
 const LOCK_ID = BigInt('3853314791062309107')
+const LOCK_TIMEOUT_MILLISECONDS = 60 * 60 * 1_000
 
 export class PostgresAdapter extends DialectAdapterBase {
   override get supportsTransactionalDdl(): boolean {
@@ -19,16 +19,22 @@ export class PostgresAdapter extends DialectAdapterBase {
     db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {
-    // Acquire a transaction level advisory lock.
-    await sql`select pg_advisory_xact_lock(${sql.lit(LOCK_ID)})`.execute(db)
+    // in 1 RTT, acquire a session-level advisory lock with a timeout.
+    //
+    // if ever this runs inside a transaction, niche edge case we support - the
+    // user is responsible to set a different timeout value or disable (`0` value).
+    await sql`
+    with set_timeout as (
+      select set_config('lock_timeout', '${sql.lit(LOCK_TIMEOUT_MILLISECONDS)}', true) as config_val
+    )
+    select pg_advisory_lock(${sql.lit(LOCK_ID)})
+    from set_timeout`.execute(db)
   }
 
   override async releaseMigrationLock(
-    _db: Kysely<any>,
+    db: Kysely<any>,
     _opt: MigrationLockOptions,
   ): Promise<void> {
-    // Nothing to do here. `pg_advisory_xact_lock` is automatically released at the
-    // end of the transaction and since `supportsTransactionalDdl` true, we know
-    // the `db` instance passed to acquireMigrationLock is actually a transaction.
+    await sql`select pg_advisory_unlock(${sql.lit(LOCK_ID)})`.execute(db)
   }
 }
