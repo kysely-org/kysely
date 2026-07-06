@@ -254,7 +254,7 @@ export class OnConflictBuilder<
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
-  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+  ): OnConflictUpdateBuilder<OnConflictDatabaseForWhere<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -278,6 +278,16 @@ export interface OnConflictBuilderProps {
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
+/**
+ * A version of the database type for the ON CONFLICT DO UPDATE WHERE clause
+ * that does not strip columns whose update type is set to never.
+ * Allows referencing columns with ColumnType<S, never, never> or
+ * ColumnType<S, I, never> in the WHERE clause of an ON CONFLICT DO UPDATE.
+ */
+export type OnConflictDatabaseForWhere<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
