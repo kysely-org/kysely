@@ -50,8 +50,8 @@ importers:
         specifier: 0.56.2
         version: 0.56.2(typescript@6.0.3)
       '@electric-sql/pglite':
-        specifier: 0.5.3
-        version: 0.5.3
+        specifier: 0.5.4
+        version: 0.5.4
       '@types/better-sqlite3':
         specifier: 7.6.13
         version: 7.6.13
@@ -1577,8 +1577,8 @@ packages:
     resolution: {integrity: sha512-3ojeJry9xBYdJO6qoyyzqeJFSJBVx2mXhyDzSdjwL2+URFQMf+h25gG38iswGImicK0ELjTd1EL2xzk8hf3QPw==}
     engines: {node: '>=20.0'}
 
-  '@electric-sql/pglite@0.5.3':
-    resolution: {integrity: sha512-iTTYbA5Uesrl+N7zss0J5LopT7KE4j9aymYo+EZZh+rZbARQCUQOs+n2pay64JRUpc3fCkpfrniTNJnvYzOE+g==}
+  '@electric-sql/pglite@0.5.4':
+    resolution: {integrity: sha512-yYZUyyXrHU7tPlCjwZQJ6hIG9DscdCCn7Uk0mYKwC1FeHX286AbcmFveMiRBEak8e9iPupjsoVImN3yJZVed2g==}
 
   '@emnapi/runtime@1.8.1':
     resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
@@ -9676,7 +9676,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@electric-sql/pglite@0.5.3': {}
+  '@electric-sql/pglite@0.5.4': {}
 
   '@emnapi/runtime@1.8.1':
     dependencies:
