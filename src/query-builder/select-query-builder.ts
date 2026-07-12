@@ -85,6 +85,8 @@ import type {
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { StandardSchemaV1 } from '../util/standard-schema.js'
+import { StandardSchemaV1Plugin } from '../plugin/standard-schema/standard-schema-plugin.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends
@@ -2112,6 +2114,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`>
 
   /**
+   * TODO: ...
+   */
+  $parseResult<O2 extends Record<keyof O, unknown>>(
+    schema: StandardSchemaV1<O, O2>,
+  ): Executable<O2> & Streamable<O2>
+
+  /**
    * Returns a copy of this SelectQueryBuilder instance with the given plugin installed.
    */
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O>
@@ -2620,6 +2629,12 @@ class SelectQueryBuilderImpl<
 
   $asScalar(): ExpressionWrapper<DB, TB, any> {
     return new ExpressionWrapper(this.toOperationNode())
+  }
+
+  $parseResult<O2>(
+    schema: StandardSchemaV1<Partial<O>, O2>,
+  ): Executable<O2> & Streamable<O2> {
+    return this.withPlugin(new StandardSchemaV1Plugin(schema)) as never
   }
 
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
