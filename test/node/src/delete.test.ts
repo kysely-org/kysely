@@ -219,6 +219,32 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (sqlSpec === 'sqlite') {
+      it('should emit RETURNING before ORDER BY and LIMIT in SQLite', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .returning('first_name')
+          .orderBy('first_name')
+          .limit(1)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'delete from "person" where "gender" = ? returning "first_name" order by "first_name" limit ?',
+            parameters: ['male', 1],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+        expect(result[0]).to.have.property('first_name')
+      })
+    }
+
     if (sqlSpec === 'postgres') {
       it('should delete from t1 using t2', async () => {
         const query = ctx.db
