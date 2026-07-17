@@ -100,7 +100,7 @@ jobs:
         run: pnpm i --frozen-lockfile --prefer-offline
 
       - name: Publish
-        run: pnpm publish --no-git-checks --tag "$DIST_TAG" # the workflow runs in a detached head state, so git checks fail
+        run: pnpm stage publish --no-git-checks --tag "$DIST_TAG" # the workflow runs in a detached head state, so git checks fail
 
   jsr:
     concurrency:
