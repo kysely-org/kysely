@@ -456,6 +456,8 @@ for (const dialect of DIALECTS) {
             parameters: ['Barson', 'female', 1],
           },
         })
+
+        await query.execute()
       })
 
       it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {

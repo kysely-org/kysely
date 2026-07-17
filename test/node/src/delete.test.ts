@@ -1020,5 +1020,28 @@ for (const dialect of DIALECTS) {
         expect(result.last_name).to.equal('Aniston')
       })
     }
+
+    if (sqlSpec === 'sqlite') {
+      it('should order and limit the amount of deleted rows and return', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .returning('id')
+          .orderBy('first_name')
+          .limit(1)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'delete from "person" where "gender" = ? returning "id" order by "first_name" limit ?',
+            parameters: ['male', 1],
+          },
+        })
+
+        await query.execute()
+      })
+    }
   })
 }
