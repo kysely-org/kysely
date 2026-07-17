@@ -303,7 +303,10 @@ class PostgresConnection implements DatabaseConnection {
       })
     }
 
-    const controlClient = new Client({ ...poolOptions })
+    const controlClient = new Client({
+      ...poolOptions,
+      password: 'password' in poolOptions ? poolOptions.password : undefined,
+    })
 
     try {
       await controlClient.connect()
