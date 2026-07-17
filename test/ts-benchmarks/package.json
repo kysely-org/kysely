@@ -1,3 +1,9 @@
 {
-  "type": "module"
+  "name": "kysely-ts-benchmarks",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@ark/attest": "0.56.3",
+    "typescript": "6.0.3"
+  }
 }

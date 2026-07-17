@@ -46,9 +46,6 @@ importers:
       '@arethetypeswrong/cli':
         specifier: 0.18.5
         version: 0.18.5
-      '@ark/attest':
-        specifier: 0.56.3
-        version: 0.56.3(typescript@7.0.2)
       '@electric-sql/pglite':
         specifier: 0.5.4
         version: 0.5.4
@@ -219,6 +216,15 @@ importers:
       wrangler:
         specifier: 4.111.0
         version: 4.111.0
+
+  test/ts-benchmarks:
+    devDependencies:
+      '@ark/attest':
+        specifier: 0.56.3
+        version: 0.56.3(typescript@6.0.3)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
 
 packages:
 
@@ -7381,17 +7387,17 @@ snapshots:
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
-  '@ark/attest@0.56.3(typescript@7.0.2)':
+  '@ark/attest@0.56.3(typescript@6.0.3)':
     dependencies:
       '@ark/fs': 0.56.2
       '@ark/schema': 0.56.2
       '@ark/util': 0.56.2
       '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
-      '@typescript/vfs': 1.6.1(typescript@7.0.2)
+      '@typescript/vfs': 1.6.1(typescript@6.0.3)
       arktype: 2.2.3
       prettier: 3.6.2
-      typescript: 7.0.2
+      typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
 
@@ -10681,10 +10687,10 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@typescript/vfs@1.6.1(typescript@7.0.2)':
+  '@typescript/vfs@1.6.1(typescript@6.0.3)':
     dependencies:
       debug: 4.4.3
-      typescript: 7.0.2
+      typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
 

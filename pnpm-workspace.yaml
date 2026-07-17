@@ -1,6 +1,7 @@
 packages:
   - './site'
   - './test/cloudflare-workers'
+  - './test/ts-benchmarks'
 
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
