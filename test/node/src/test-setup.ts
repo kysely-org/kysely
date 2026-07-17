@@ -142,6 +142,7 @@ const POSTGRES_CONFIG: PoolConfig = {
   database: 'kysely_test',
   host: 'localhost',
   user: 'kysely',
+  password: 'kysely',
   port: 5434,
   max: POOL_SIZE,
 }

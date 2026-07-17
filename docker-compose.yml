@@ -37,7 +37,7 @@ services:
     image: 'postgres'
     environment:
       POSTGRES_DB: kysely_test
+      POSTGRES_PASSWORD: kysely
       POSTGRES_USER: kysely
-      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - '5434:5432'

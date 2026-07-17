@@ -25,6 +25,7 @@ const dbs = [
         database: 'kysely_test',
         host: 'localhost',
         user: 'kysely',
+        password: 'kysely',
         port: 5434,
       }),
     }),
