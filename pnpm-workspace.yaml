@@ -9,7 +9,7 @@ allowBuilds:
   better-sqlite3@12.11.1: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
-  esbuild@0.27.3 || 0.28.1: true # tsx@4.21.0 dependency || direct.
+  esbuild@0.28.1: true # tsx@4.3.1 / docusaurus dependency || direct.
   sharp: false # wrangler dependency, useless scripts
   workerd@1.20260710.1: true # wrangler@4.111.0 dependency
 
@@ -105,6 +105,9 @@ overrides:
   # https://github.com/advisories/GHSA-79cf-xcqc-c78w
   # https://github.com/advisories/GHSA-mx8g-39q3-5c79
   webpack-dev-server@>=5.0.0 <5.2.5: 5.2.5
+  # https://github.com/advisories/GHSA-xv26-6w52-cph6
+  # https://github.com/advisories/GHSA-mp7j-qc5w-4988
+  websocket-driver@>=0.6.0 <0.7.5: 0.7.5
   # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
   ws@>=7.0.0 <7.5.11: 7.5.11
   # https://github.com/advisories/GHSA-58qx-3vcg-4xpx
