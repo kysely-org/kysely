@@ -65,8 +65,8 @@ importers:
         specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: 26.1.0
-        version: 26.1.0
+        specifier: 26.1.1
+        version: 26.1.1
       '@types/pg':
         specifier: 8.20.0
         version: 8.20.0
@@ -102,7 +102,7 @@ importers:
         version: 11.7.6
       mysql2:
         specifier: 3.23.0
-        version: 3.23.0(@types/node@26.1.0)
+        version: 3.23.0(@types/node@26.1.1)
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -2430,6 +2430,9 @@ packages:
 
   '@types/node@26.1.0':
     resolution: {integrity: sha512-O0A1G3xPGy4w7AgQdAQYUlQ+BKk2Oovw8eRpofyp5KdBZULnbe+WqaOVNrm705SHphCiG4XHsACrSmPu1f+Kgw==}
+
+  '@types/node@26.1.1':
+    resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -10566,6 +10569,10 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/node@26.1.1':
+    dependencies:
+      undici-types: 8.3.0
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/pg-cursor@2.7.2':
@@ -13835,9 +13842,9 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  mysql2@3.23.0(@types/node@26.1.0):
+  mysql2@3.23.0(@types/node@26.1.1):
     dependencies:
-      '@types/node': 26.1.0
+      '@types/node': 26.1.1
       aws-ssl-profiles: 1.1.2
       denque: 2.1.0
       generate-function: 2.3.1
