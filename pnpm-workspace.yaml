@@ -1,6 +1,7 @@
 packages:
   - './site'
   - './test/cloudflare-workers'
+  - './test/ts-benchmarks'
 
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
@@ -8,9 +9,9 @@ allowBuilds:
   better-sqlite3@12.11.1: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
-  esbuild@0.27.3 || 0.28.1: true # tsx@4.21.0 dependency || direct.
+  esbuild@0.28.1: true # tsx@4.3.1 / docusaurus dependency || direct.
   sharp: false # wrangler dependency, useless scripts
-  workerd@1.20260625.1: true # wrangler@4.105.0 dependency
+  workerd@1.20260710.1: true # wrangler@4.111.0 dependency
 
 auditConfig:
   # Don't show in `pnpm audit`.
@@ -36,79 +37,13 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeStrict: true
 
 overrides:
-  # https://github.com/advisories/GHSA-4x5r-pxfx-6jf8
-  '@babel/core@>=7.0.0 <7.29.6': 7.29.6
-  # https://github.com/advisories/GHSA-fv7c-fp4j-7gwp
-  '@babel/plugin-transform-modules-systemjs@>=7.0.0 <7.29.4': 7.29.4
-  # https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
-  ajv@>=6.0.0 <6.14.0: 6.14.0
-  # https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
-  ajv@>=7.0.0 <8.18.0: 8.18.0
-  # https://github.com/advisories/GHSA-f886-m6hf-6m8v
-  brace-expansion@>=1.0.0 <1.1.13: 1.1.13
   # https://github.com/advisories/GHSA-73rr-hh4g-fpgx
   diff@>=6.0.0 <8.0.3: 8.0.3
-  # https://github.com/advisories/GHSA-gvmj-g25r-r7wr
-  # https://github.com/advisories/GHSA-vxr8-fq34-vvx9
-  # https://github.com/advisories/GHSA-cmwh-pvxp-8882
-  dompurify@>=3.0.0 <3.4.11: 3.4.11
-  # https://github.com/advisories/GHSA-v39h-62p7-jpjc
-  fast-uri@>=3.0.0 <3.1.2: 3.1.2
-  # https://github.com/advisories/GHSA-r4q5-vmmm-2653
-  follow-redirects@>=1.0.0 <1.16.0: 1.16.0
-  # https://github.com/advisories/GHSA-5j98-mcp5-4vw2
-  glob@>=10.0.0 <10.5.0: 10.5.0
-  # https://github.com/advisories/GHSA-64mm-vxmg-q3vj
-  http-proxy-middleware@>=2.0.0 <2.0.10: 2.0.10
-  # https://github.com/advisories/GHSA-q7cg-457f-vx79
-  joi@>=17.0.0 <17.13.4: 17.13.4
-  # https://github.com/advisories/GHSA-mh29-5h37-fv8m
-  # https://github.com/advisories/GHSA-h67p-54hq-rp68
-  js-yaml@>=3.0.0 <3.15.0: 3.15.0
-  # https://github.com/advisories/GHSA-mh29-5h37-fv8m
-  # https://github.com/advisories/GHSA-h67p-54hq-rp68
-  js-yaml@>=4.0.0 <4.2.0: 4.2.0
-  # https://github.com/advisories/GHSA-869p-cjfg-cm3x
-  jws@>=3.0.0 <3.2.3: 3.2.3
-  # https://github.com/advisories/GHSA-v6wh-96g9-6wx3
-  launch-editor@>=2.0.0 <2.14.1: 2.14.1
-  # https://github.com/advisories/GHSA-4fh9-h7wg-q85m
-  mdast-util-to-hast@>=13.0.0 <13.2.1: 13.2.1
-  # https://github.com/advisories/GHSA-23c5-xmqv-rm74
-  minimatch@>=9.0.0 <9.0.7: 9.0.7
-  # https://github.com/advisories/GHSA-554w-wpv2-vw27
-  # https://github.com/advisories/GHSA-ppp5-5v6c-4jwp
-  node-forge@>=1.0.0 <1.4.0: 1.4.0
-  # https://github.com/advisories/GHSA-37ch-88jc-xwx2
-  path-to-regexp@>=0.1.0 <0.1.13: 0.1.13
-  # https://github.com/advisories/GHSA-c2c7-rcm5-vvqj
-  picomatch@>=2.0.0 <2.3.2: 2.3.2
-  # https://github.com/advisories/GHSA-qx2v-qp2m-jg93
-  postcss@>=8.0.0 <8.5.10: 8.5.10
-  # https://github.com/advisories/GHSA-q8mj-m7cp-5q26
-  qs@>=6.0.0 <6.15.2: 6.15.2
   # https://github.com/advisories/GHSA-5c6j-r48x-rmvq
   # https://github.com/advisories/GHSA-qj8w-gfj5-8c6v
   serialize-javascript@>=5.0.0 <7.0.5: 7.0.5
-  # https://github.com/advisories/GHSA-w7jw-789q-3m8p
-  shell-quote@>=1.1.0 <1.8.4: 1.8.4
-  # https://github.com/advisories/GHSA-xpqw-6gx7-v673
-  svgo@>=3.0.0 <3.3.3: 3.3.3
-  # https://github.com/advisories/GHSA-vj76-c3g6-qr5v
-  tar-fs@>=2.0.0 <2.1.4: 2.1.4
   # https://github.com/advisories/GHSA-w5hq-g745-h8pq
   uuid@>=8.0.0 <11.1.1: 11.1.1
-  # https://github.com/advisories/GHSA-38r7-794h-5758
-  # https://github.com/advisories/GHSA-8fgc-7cc6-rx7x
-  webpack@>=5.0.0 <5.104.1: 5.104.1
-  # https://github.com/advisories/GHSA-79cf-xcqc-c78w
-  # https://github.com/advisories/GHSA-mx8g-39q3-5c79
-  webpack-dev-server@>=5.0.0 <5.2.5: 5.2.5
-  # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
-  ws@>=7.0.0 <7.5.11: 7.5.11
-  # https://github.com/advisories/GHSA-58qx-3vcg-4xpx
-  # https://github.com/advisories/GHSA-96hv-2xvq-fx4p
-  ws@>=8.0.0 <8.21.0: 8.21.0
 
 # how versions get prefixed in `package.json`.
 # https://pnpm.io/settings#saveprefix
