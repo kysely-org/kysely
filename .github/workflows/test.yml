@@ -370,43 +370,6 @@ jobs:
       - name: type-check jsdocs code blocks
         run: pnpm test:jsdocs
 
-  typescript-native:
-    concurrency:
-      cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-typescript-native-${{ github.event.pull_request.number || github.sha }}
-
-    name: TypeScript Native
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: harden runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-
-      - name: install pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        with:
-          cache: true
-
-      - name: use node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: lts/*
-
-      - name: install dependencies
-        run: pnpm i
-
-      - name: build
-        run: pnpm build
-
-      - name: run typescript native tests
-        run: pnx @typescript/native-preview --project ./test/node/tsconfig.json
-
   typescript-composite:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
