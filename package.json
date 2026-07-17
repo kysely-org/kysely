@@ -92,7 +92,7 @@
   ],
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.4",
-    "@ark/attest": "0.56.2",
+    "@ark/attest": "0.56.3",
     "@electric-sql/pglite": "0.5.4",
     "@types/better-sqlite3": "7.6.13",
     "@types/chai": "5.2.3",

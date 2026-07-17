@@ -47,8 +47,8 @@ importers:
         specifier: 0.18.4
         version: 0.18.4
       '@ark/attest':
-        specifier: 0.56.2
-        version: 0.56.2(typescript@6.0.3)
+        specifier: 0.56.3
+        version: 0.56.3(typescript@6.0.3)
       '@electric-sql/pglite':
         specifier: 0.5.4
         version: 0.5.4
@@ -327,20 +327,20 @@ packages:
     resolution: {integrity: sha512-M5F0ePyN6h2Z6XxRiyIPqjGbltotXLjR0CKA0uKspsDu0QmgTNYvRb4RSQPMUs2ZXZHCCYpbaZbFbYOXLxCjUA==}
     engines: {node: '>=20'}
 
-  '@ark/attest@0.56.2':
-    resolution: {integrity: sha512-3JGCXMjJ2Ze3OungsUZrxG9B2k8M/B6R2AHkRr9yQn0Q3oEREumwj5tVuabnNuiP73gWYwzAO+LzsaRtvXQpog==}
+  '@ark/attest@0.56.3':
+    resolution: {integrity: sha512-34YxcziljIzh1mHGaUoBcAGxqEkvFWObai9BhzQF3zkedUUT1ERqOAiqgHf+2wG9D03f7ErHbb/HYKUjkiXxjg==}
     hasBin: true
     peerDependencies:
       typescript: '*'
 
-  '@ark/fs@0.56.1':
-    resolution: {integrity: sha512-n2SqArzHBaoh1CYVr/pvL05Xe1cAhF+GsJn6ccJdOVHPKPP8emCr8lcfOr2BB56vP8WJdMvrEehkSRVgE93OlQ==}
+  '@ark/fs@0.56.2':
+    resolution: {integrity: sha512-mnr9H4P5stD8AHacOUN5nyIiDe8wfCWJQ0l/JZtDGjrnbgIFb2NHRcKf2ym3ielRFgwsnTIZg4P1J6CqfbjM8g==}
 
-  '@ark/schema@0.56.1':
-    resolution: {integrity: sha512-1Cf2g9nKD8K/3JGRu+gCCfYw5d4qR8YLLjDs5W5kpmaButCYWAPFUJqSXyBATPjglzCd4tIkp398iPYVs8MjRA==}
+  '@ark/schema@0.56.2':
+    resolution: {integrity: sha512-Qx4D2JFbBWpntiHZaTv7bGG4H/M2rigiknezKg/WVyDSaLdE4YCcWAOoFB7pjjDqHbbV2OqRfntm1nnXvwMexg==}
 
-  '@ark/util@0.56.1':
-    resolution: {integrity: sha512-Tp1rTik3q5Z+jAeeDxr5JZpmVIw0miti1ykSEHyZv5Pw3TIJl2xbN6KTacOxITp0l3s9ytlrWd30Zvqcy5vzoQ==}
+  '@ark/util@0.56.2':
+    resolution: {integrity: sha512-9kU2sUE38FZEGG7l3hamYMBieLYEJh2L1mrYD2eXpT+78EnQSV1bhjxJhnxGBMSTbtwpBSDNSK+K60WvaI/DTQ==}
 
   '@azure-rest/core-client@2.5.0':
     resolution: {integrity: sha512-KMVIPxG6ygcQ1M2hKHahF7eddKejYsWTjoLIfTWiqnaj42dBkYzj4+S8rK9xxmlOaEHKZHcMrRbm0NfN4kgwHw==}
@@ -2738,11 +2738,11 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arkregex@0.0.7:
-    resolution: {integrity: sha512-O/Ltrn9EUSn3ui0KVzfyrWGDUsHlzKxDVBtpQxL/6JmLRMAZAebfSNf/A/J5Ny5S6QIwrXX+RfXsu888HMs35A==}
+  arkregex@0.0.8:
+    resolution: {integrity: sha512-PJcx6G1kQTgLKPUbeYlYecDRaKq15AMSGVajlKFYWlPeJRQL+j3dKE6tyMs40HZ99djS1l9Vhl3ezAHy9JBIqQ==}
 
-  arktype@2.2.2:
-    resolution: {integrity: sha512-YYf1xhL2dh5aPZFlsY0RAsxv5HZqfLGLptH2ZP3JidTmsGRW8VOymhPjjMTkerL12vR2YtX0SK4c1mATtae8SA==}
+  arktype@2.2.3:
+    resolution: {integrity: sha512-7W+0RLTUNJiBFIIZXwOQxSR8Z273IAd6IvqBeG9+gHnQKFsIx2C0iOtGTmMrPnlX4qLXyc5+ll7A0BIj9WrbTg==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -7357,27 +7357,27 @@ snapshots:
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
-  '@ark/attest@0.56.2(typescript@6.0.3)':
+  '@ark/attest@0.56.3(typescript@6.0.3)':
     dependencies:
-      '@ark/fs': 0.56.1
-      '@ark/schema': 0.56.1
-      '@ark/util': 0.56.1
+      '@ark/fs': 0.56.2
+      '@ark/schema': 0.56.2
+      '@ark/util': 0.56.2
       '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
       '@typescript/vfs': 1.6.1(typescript@6.0.3)
-      arktype: 2.2.2
+      arktype: 2.2.3
       prettier: 3.6.2
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
 
-  '@ark/fs@0.56.1': {}
+  '@ark/fs@0.56.2': {}
 
-  '@ark/schema@0.56.1':
+  '@ark/schema@0.56.2':
     dependencies:
-      '@ark/util': 0.56.1
+      '@ark/util': 0.56.2
 
-  '@ark/util@0.56.1': {}
+  '@ark/util@0.56.2': {}
 
   '@azure-rest/core-client@2.5.0':
     dependencies:
@@ -10903,15 +10903,15 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arkregex@0.0.7:
+  arkregex@0.0.8:
     dependencies:
-      '@ark/util': 0.56.1
+      '@ark/util': 0.56.2
 
-  arktype@2.2.2:
+  arktype@2.2.3:
     dependencies:
-      '@ark/schema': 0.56.1
-      '@ark/util': 0.56.1
-      arkregex: 0.0.7
+      '@ark/schema': 0.56.2
+      '@ark/util': 0.56.2
+      arkregex: 0.0.8
 
   array-flatten@1.1.1: {}
 
