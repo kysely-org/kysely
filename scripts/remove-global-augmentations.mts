@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'pathe'
-import ts from 'typescript'
+import ts from 'typescript-6'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
