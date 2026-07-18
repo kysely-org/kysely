@@ -9,22 +9,49 @@ sidebar_position: 4
 Migration files should look like this:
 
 ```ts
-import { Kysely } from 'kysely'
+import { defineMigration } from 'kysely/migration'
+
+export default defineMigration({
+  async up(db) {
+    // migration code
+  },
+
+  async down(db) {
+    // migration code
+  },
+
+  // config: { transaction: false }
+})
+```
+
+or, equivalently, using named exports:
+
+```ts
+import type { Kysely } from 'kysely'
+//import type { MigrationConfig } from 'kysely/migration'
 
 export async function up(db: Kysely<any>): Promise<void> {
-  // Migration code
+  // migration code
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  // Migration code
+  // migration code
 }
+
+//export const config: MigrationConfig = { transaction: false }
 ```
 
 The `up` function is called when you update your database schema to the next version and `down` when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`.
 
+The optional `down` function is called when you want to revert the updates `up` made.
+
 Migrations should never depend on the current code of your app because they need to work even when the app changes. Migrations need to be "frozen in time".
 
 Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to read/modify data.
+
+Both styles are fully supported — `defineMigration` (added in 0.30.0) simply takes over typing duties, so you don't have to annotate `db` yourself.
+
+The optional `config` object sets per-migration configuration, such as opting a migration out of its transaction. It is only honored when `transactionMode` is `'per-migration'`. See [Transactions](#transactions).
 
 ## Execution order
 
@@ -46,6 +73,114 @@ const migrator = new Migrator({
 })
 ```
 
+## Transactions
+
+When the dialect supports transactional DDL (PostgreSQL and MSSQL do, MySQL and SQLite don't),
+Kysely wraps migrations in transactions. The `transactionMode` option controls how:
+
+```ts
+import { FileMigrationProvider, Migrator } from 'kysely/migration'
+
+const migrator = new Migrator({
+  db,
+  provider: new FileMigrationProvider(...),
+  transactionMode: 'per-migration',
+})
+```
+
+- `'per-run'` — the entire migration run is wrapped in a single transaction. Either every
+  pending migration is applied, or none are. Any migration with a `transaction`
+  configuration results in an error, since a single shared transaction cannot partially
+  exclude a migration.
+
+- `'per-migration'` — each migration runs in its own transaction, together with the
+  insertion/deletion of its migration table record. When a migration fails, only that
+  migration is rolled back — previously completed migrations stay applied, and the run
+  stops. Individual migrations can opt out of their transaction with
+  `config: { transaction: false }`.
+
+- `'none'` — migrations run without transactions. You can still manage transactions
+  manually inside migration bodies with `db.transaction()`.
+
+`transactionMode` can also be passed per-call — e.g. `migrator.migrateToLatest({ transactionMode: 'per-migration' })` —
+which takes precedence over the option on the `Migrator` instance.
+
+When not provided, the current default is `'per-run'` on dialects that support
+transactional DDL and `'none'` on dialects that don't. This default might change to
+`'per-migration'` in a future version — we recommend providing `transactionMode`
+explicitly, which also silences the log message that multi-migration runs print otherwise.
+
+The older `disableTransactions: boolean` option is deprecated — `disableTransactions: true`
+is equivalent to `transactionMode: 'none'`.
+
+On dialects without transactional DDL, explicitly requesting `'per-run'` or
+`'per-migration'` results in an error — the guarantee cannot be honored there. For atomic
+data migrations on such dialects, open a transaction manually inside the migration body
+and keep DDL out of it.
+
+### Statements that need a commit first
+
+Some perfectly valid migration sequences fail when they share a transaction. The most
+common example: a new PostgreSQL enum value cannot be used in the same transaction that
+added it. If migration `0007` runs `ALTER TYPE ... ADD VALUE` and migration `0008` uses
+the new value, the pair works when each migration runs in its own transaction, but fails
+with `unsafe use of new value` when both are pending in a single `'per-run'` run — for
+example in CI, on a fresh development machine, or during a deployment that ships both.
+The same family includes `cannot ALTER TABLE because it has pending trigger events`.
+
+`'per-migration'` mode resolves these by committing between migrations. Alternatively,
+avoid shipping such a pair in the same release.
+
+### Migrations without a transaction
+
+Some statements cannot run inside a transaction at all — most famously PostgreSQL's
+`CREATE INDEX CONCURRENTLY`. Under `'per-migration'` mode, opt the migration out:
+
+```ts
+import { sql } from 'kysely'
+import { defineMigration } from 'kysely/migration'
+
+export default defineMigration({
+  config: { transaction: false },
+
+  async up(db) {
+    // Drop a possibly-leftover invalid index from a previously failed attempt,
+    // then create it. `CREATE INDEX CONCURRENTLY ... IF NOT EXISTS` is not a
+    // substitute — it succeeds silently even when the existing index is invalid.
+    await sql`
+      drop index concurrently if exists "person_first_name_index"
+    `.execute(db)
+
+    await sql`
+      create index concurrently "person_first_name_index"
+      on "person" ("first_name")
+    `.execute(db)
+  },
+
+  async down(db) {
+    await sql`
+      drop index concurrently if exists "person_first_name_index"
+    `.execute(db)
+  },
+})
+```
+
+Without a transaction, a failure can leave the migration partially applied, and the
+migration table record is written separately after the migration completes. Keep
+non-transactional migrations minimal — ideally a single statement — and write them so
+they can be safely retried, like the example above.
+
+Note that the `transaction` configuration is honored in both directions: rolling back a
+migration that has one also requires `transactionMode: 'per-migration'`.
+
+### Choosing a mode
+
+| Mode              | Failure behavior                                                                                          | Trade-offs                                                                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'per-run'`       | A failed run leaves the database exactly as it was — the state your currently-deployed code runs against. | Locks accumulate until the final commit. Sequences that need a commit between migrations fail. No per-migration opt-outs.                                         |
+| `'per-migration'` | A failed run stops at the failing migration — earlier migrations stay applied.                            | Identical behavior whether migrations are applied one at a time (development) or in a batch (CI, deployments). Short lock windows. Durable progress on long runs. |
+| `'none'`          | No rollback of any kind.                                                                                  | Full manual control. The only option on dialects without transactional DDL.                                                                                       |
+
 ## Single file vs multiple file migrations
 
 You don't need to store your migrations as separate files if you don't want to. You can easily implement your own MigrationProvider and give it to the Migrator class when you instantiate one.
@@ -53,91 +188,96 @@ You don't need to store your migrations as separate files if you don't want to. 
 ## PostgreSQL migration example
 
 ```ts
-import { Kysely, sql } from 'kysely'
+import { sql } from 'kysely'
+import { defineMigration } from 'kysely/migration'
 
-export async function up(db: Kysely<any>): Promise<void> {
-  await db.schema
-    .createTable('person')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('first_name', 'varchar', (col) => col.notNull())
-    .addColumn('last_name', 'varchar')
-    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
-    .addColumn('created_at', 'timestamp', (col) =>
-      col.defaultTo(sql`now()`).notNull(),
-    )
-    .execute()
+export default defineMigration({
+  async up(db) {
+    await db.schema
+      .createTable('person')
+      .addColumn('id', 'serial', (col) => col.primaryKey())
+      .addColumn('first_name', 'varchar', (col) => col.notNull())
+      .addColumn('last_name', 'varchar')
+      .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+      .addColumn('created_at', 'timestamp', (col) =>
+        col.defaultTo(sql`now()`).notNull(),
+      )
+      .execute()
 
-  await db.schema
-    .createTable('pet')
-    .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('name', 'varchar', (col) => col.notNull().unique())
-    .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull(),
-    )
-    .addColumn('species', 'varchar', (col) => col.notNull())
-    .execute()
+    await db.schema
+      .createTable('pet')
+      .addColumn('id', 'serial', (col) => col.primaryKey())
+      .addColumn('name', 'varchar', (col) => col.notNull().unique())
+      .addColumn('owner_id', 'integer', (col) =>
+        col.references('person.id').onDelete('cascade').notNull(),
+      )
+      .addColumn('species', 'varchar', (col) => col.notNull())
+      .execute()
 
-  await db.schema
-    .createIndex('pet_owner_id_index')
-    .on('pet')
-    .column('owner_id')
-    .execute()
-}
+    await db.schema
+      .createIndex('pet_owner_id_index')
+      .on('pet')
+      .column('owner_id')
+      .execute()
+  },
 
-export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropTable('pet').execute()
-  await db.schema.dropTable('person').execute()
-}
+  async down(db) {
+    await db.schema.dropTable('pet').execute()
+    await db.schema.dropTable('person').execute()
+  },
+})
 ```
 
 ## SQLite migration example
 
 ```ts
-import { Kysely, sql } from 'kysely'
+import { sql } from 'kysely'
+import { defineMigration } from 'kysely/migration'
 
-export async function up(db: Kysely<any>): Promise<void> {
-  await db.schema
-    .createTable('person')
-    .addColumn('id', 'integer', (col) => col.primaryKey())
-    .addColumn('first_name', 'text', (col) => col.notNull())
-    .addColumn('last_name', 'text')
-    .addColumn('gender', 'text', (col) => col.notNull())
-    .addColumn('created_at', 'text', (col) =>
-      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
-    )
-    .execute()
+export default defineMigration({
+  async up(db) {
+    await db.schema
+      .createTable('person')
+      .addColumn('id', 'integer', (col) => col.primaryKey())
+      .addColumn('first_name', 'text', (col) => col.notNull())
+      .addColumn('last_name', 'text')
+      .addColumn('gender', 'text', (col) => col.notNull())
+      .addColumn('created_at', 'text', (col) =>
+        col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
+      )
+      .execute()
 
-  await db.schema
-    .createTable('pet')
-    .addColumn('id', 'integer', (col) => col.primaryKey())
-    .addColumn('name', 'text', (col) => col.notNull().unique())
-    .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull(),
-    )
-    .addColumn('species', 'text', (col) => col.notNull())
-    .execute()
+    await db.schema
+      .createTable('pet')
+      .addColumn('id', 'integer', (col) => col.primaryKey())
+      .addColumn('name', 'text', (col) => col.notNull().unique())
+      .addColumn('owner_id', 'integer', (col) =>
+        col.references('person.id').onDelete('cascade').notNull(),
+      )
+      .addColumn('species', 'text', (col) => col.notNull())
+      .execute()
 
-  await db.schema
-    .createIndex('pet_owner_id_index')
-    .on('pet')
-    .column('owner_id')
-    .execute()
-}
+    await db.schema
+      .createIndex('pet_owner_id_index')
+      .on('pet')
+      .column('owner_id')
+      .execute()
+  },
 
-export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropTable('pet').execute()
-  await db.schema.dropTable('person').execute()
-}
+  async down(db) {
+    await db.schema.dropTable('pet').execute()
+    await db.schema.dropTable('person').execute()
+  },
+})
 ```
 
-## CLI (optional)
+## CLI
 
 Kysely offers a CLI you can use for migrations (and more). It can help you create and run migrations.
-It is not part of the core, and your mileage may vary.
 
 For more information, visit https://github.com/kysely-org/kysely-ctl.
 
-## Running migrations
+## Running migrations programmatically
 
 You can then use:
 
@@ -203,6 +343,37 @@ migrateToLatest()
 ```
 
 The migration methods use a lock on the database level and parallel calls are executed serially. This means that you can safely call migrateToLatest and other migration methods from multiple server instances simultaneously and the migrations are guaranteed to only be executed once. The locks are also automatically released if the migration process crashes or the connection to the database fails.
+
+## Coming from knex
+
+Kysely's migration transaction options map closely to knex's:
+
+- knex's `disableTransactions: true` exists in Kysely under the same name, but is
+  deprecated — use `transactionMode: 'none'` instead.
+
+- knex's per-file `exports.config = { transaction: false }` is the same `config` key in
+  Kysely. The difference: Kysely only honors it when `transactionMode` is
+  `'per-migration'`. Where knex silently drops the batch-wide transaction when any
+  migration opts out, Kysely returns an error that tells you to choose a mode — the
+  resulting behavior under `'per-migration'` is then equivalent to knex's (each migration
+  in its own transaction, opted-out ones bare), but chosen explicitly rather than
+  triggered implicitly.
+
+- knex honors `config.transaction = true` as an opt-_in_ when `disableTransactions` is
+  enabled. Kysely doesn't — under `'none'` there are no transactions to configure.
+  Instead, manage the transaction inside the migration body:
+
+  ```ts
+  import { defineMigration } from 'kysely/migration'
+
+  export default defineMigration({
+    async up(db) {
+      await db.transaction().execute(async (trx) => {
+        // atomic work here
+      })
+    },
+  })
+  ```
 
 ## Reference documentation
 
