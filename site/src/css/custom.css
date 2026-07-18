@@ -41,6 +41,10 @@
 /* remove default theme max-width in examples content */
 :root [class^='col docItemCol_'] {
   max-width: unset !important;
+  /* let the column shrink below its content's min-content width — otherwise a
+     single wide code block forces it to full row width and the table of
+     contents column wraps below the article */
+  min-width: 0;
 }
 
 [data-theme='dark'] {
