@@ -1,29 +1,22 @@
-import type { MigrationLockOptions } from '../dialect/dialect-adapter.js'
+import type {
+  DialectAdapter,
+  MigrationLockOptions,
+} from '../dialect/dialect-adapter.js'
 import type { Kysely } from '../kysely.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import type { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
 import type { CreateTableBuilder } from '../schema/create-table-builder.js'
-import { freeze, getLast, isObject } from '../util/object-utils.js'
+import { logOnce } from '../util/log-once.js'
+import { freeze, isObject } from '../util/object-utils.js'
+import type { Migration } from './migration.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
 export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const DEFAULT_ALLOW_UNORDERED_MIGRATIONS = false
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
-
-export interface Migration {
-  up(db: Kysely<any>): Promise<void>
-
-  /**
-   * An optional down method.
-   *
-   * If you don't provide a down method, the migration is skipped when
-   * migrating down.
-   */
-  down?(db: Kysely<any>): Promise<void>
-}
 
 /**
  * A class for running migrations.
@@ -515,6 +508,8 @@ export class Migrator {
       lockTableSchema: this.#props.migrationTableSchema,
     })
 
+    const transactionMode = this.#resolveTransactionMode(options, adapter)
+
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       const state = await this.#getState(db)
 
@@ -528,13 +523,53 @@ export class Migrator {
         return { results: [] }
       }
 
-      if (direction === 'Down') {
-        return await this.#migrateDown(db, state, step)
-      } else if (direction === 'Up') {
-        return await this.#migrateUp(db, state, step)
+      const migrationsToRun = this.#getMigrationsToRun(state, direction, step)
+
+      const [orchestrator, runner] =
+        direction === 'Down'
+          ? [
+              this.#rollbackMigrations.bind(this),
+              this.#rollbackMigration.bind(this),
+            ]
+          : [this.#applyMigrations.bind(this), this.#applyMigration.bind(this)]
+
+      if (transactionMode.value === 'per-migration') {
+        return await orchestrator(migrationsToRun, async (migration) => {
+          if (migration.config?.transaction === false) {
+            return await runner(db, migration)
+          }
+
+          await db.transaction().execute((trx) => runner(trx, migration))
+        })
       }
 
-      return { results: [] }
+      const migrationWithTransactionConfig = migrationsToRun.find(
+        (migration) => migration.config?.transaction != null,
+      )
+
+      if (migrationWithTransactionConfig) {
+        const modeDescription = transactionMode.explicit
+          ? `\`transactionMode\` is '${transactionMode.value}'`
+          : `\`transactionMode\` was not provided and defaults to '${transactionMode.value}'`
+
+        throw new Error(
+          `Migration "${migrationWithTransactionConfig.name}" has a \`transaction\` configuration but ${modeDescription}. Per-migration transaction configuration is only supported when \`transactionMode\` is 'per-migration'. Set \`transactionMode: 'per-migration'\` on the migrator or the migrate call to enable it.`,
+        )
+      }
+
+      if (
+        !transactionMode.explicit &&
+        adapter.supportsTransactionalDdl &&
+        migrationsToRun.length > 1
+      ) {
+        logOnce(
+          "kysely:migrator: multiple migrations were run in a single transaction ('per-run'). This default might change in a future version of Kysely. Pass an explicit `transactionMode` to the migrator to pin the behavior and silence this message: 'per-run' to keep the current behavior, or 'per-migration' to run each migration in its own transaction.",
+        )
+      }
+
+      return await orchestrator(migrationsToRun, (migration) =>
+        runner(db, migration),
+      )
     }
 
     const runWithLock = async (
@@ -549,9 +584,6 @@ export class Migrator {
       }
     }
 
-    const disableTransactions =
-      options?.disableTransactions ?? this.#props.disableTransactions
-
     if (this.#props.db.isTransaction) {
       if (!adapter.supportsTransactionalDdl) {
         throw new Error(
@@ -559,31 +591,106 @@ export class Migrator {
         )
       }
 
-      if (disableTransactions) {
+      if (transactionMode.value !== 'per-run') {
         throw new Error(
-          '`disableTransactions` is true but the migrator was given a transaction. Passing a transaction to this migrator would result in failure or unexpected behavior.',
+          `The transaction mode is '${transactionMode.value}' but the migrator was given a transaction. Passing a transaction to this migrator is only supported when \`transactionMode\` is 'per-run'.`,
         )
       }
 
       return runWithLock(this.#props.db, run)
     }
 
-    if (adapter.supportsTransactionalDdl && !disableTransactions) {
+    if (transactionMode.value === 'per-run') {
       return this.#props.db
         .connection()
-        .execute((db) =>
-          runWithLock(db, (db) => db.transaction().execute((trx) => run(trx))),
-        )
+        .execute((db) => runWithLock(db, (db) => db.transaction().execute(run)))
     }
 
     return this.#props.db.connection().execute((db) => runWithLock(db, run))
   }
 
+  #resolveTransactionMode(
+    options: MigrateOptions | undefined,
+    adapter: DialectAdapter,
+  ): { value: MigratorTransactionMode; explicit: boolean } {
+    const resolveLevel = (
+      options: MigrateOptions | undefined,
+      source: 'migrate call options' | 'migrator properties',
+    ): { value: MigratorTransactionMode; explicit: boolean } | undefined => {
+      if (!options) {
+        return
+      }
+
+      const { disableTransactions, transactionMode } = options
+
+      if (
+        disableTransactions != null &&
+        transactionMode &&
+        (transactionMode === 'none') !== disableTransactions
+      ) {
+        throw new Error(
+          `\`transactionMode\` is '${transactionMode}' but \`disableTransactions\` is ${disableTransactions} in the ${source}. These options contradict each other. Prefer \`transactionMode\` — \`disableTransactions\` is deprecated.`,
+        )
+      }
+
+      if (transactionMode) {
+        if (transactionMode !== 'none' && !adapter.supportsTransactionalDdl) {
+          throw new Error(
+            `\`transactionMode\` is '${transactionMode}' but transactional DDL is not supported in this dialect. Migrations would fail or behave unexpectedly.`,
+          )
+        }
+
+        return { explicit: true, value: transactionMode }
+      }
+
+      if (disableTransactions == null) {
+        return
+      }
+
+      if (disableTransactions === true) {
+        return { explicit: true, value: 'none' }
+      }
+
+      return {
+        explicit: false,
+        value: adapter.supportsTransactionalDdl ? 'per-run' : 'none',
+      }
+    }
+
+    return (
+      resolveLevel(options, 'migrate call options') ||
+      resolveLevel(this.#props, 'migrator properties') || {
+        explicit: false,
+        value: adapter.supportsTransactionalDdl ? 'per-run' : 'none',
+      }
+    )
+  }
+
+  #getMigrationsToRun(
+    state: MigrationState,
+    direction: MigrationDirection,
+    step: number,
+  ): ReadonlyArray<NamedMigration> {
+    if (direction === 'Down') {
+      return state.executedMigrations
+        .toReversed()
+        .slice(0, step)
+        .map((name) => {
+          return state.migrations.find((it) => it.name === name)!
+        })
+    }
+
+    return state.pendingMigrations.slice(0, step)
+  }
+
   async #getState(db: Kysely<any>): Promise<MigrationState> {
-    const migrations = await this.#resolveMigrations()
-    const executedMigrations = await this.#getExecutedMigrations(db)
+    const [migrations, executedMigrations] = await Promise.all([
+      this.#resolveMigrations(),
+      this.#getExecutedMigrations(db),
+    ])
 
     this.#ensureNoMissingMigrations(migrations, executedMigrations)
+
     if (!this.#allowUnorderedMigrations) {
       this.#ensureMigrationsInOrder(migrations, executedMigrations)
     }
@@ -594,9 +701,9 @@ export class Migrator {
     )
 
     return freeze({
-      migrations,
       executedMigrations,
-      lastMigration: getLast(executedMigrations),
+      lastMigration: executedMigrations.at(-1),
+      migrations,
       pendingMigrations,
     })
   }
@@ -605,9 +712,9 @@ export class Migrator {
     migrations: ReadonlyArray<NamedMigration>,
     executedMigrations: ReadonlyArray<string>,
   ): ReadonlyArray<NamedMigration> {
-    return migrations.filter((migration) => {
-      return !executedMigrations.includes(migration.name)
-    })
+    return migrations.filter(
+      (migration) => !executedMigrations.includes(migration.name),
+    )
   }
 
   async #resolveMigrations(): Promise<ReadonlyArray<NamedMigration>> {
@@ -615,10 +722,7 @@ export class Migrator {
 
     return Object.keys(allMigrations)
       .sort()
-      .map((name) => ({
-        ...allMigrations[name],
-        name,
-      }))
+      .map((name) => ({ ...allMigrations[name], name }))
   }
 
   async #getExecutedMigrations(
@@ -678,112 +782,90 @@ export class Migrator {
     }
   }
 
-  async #migrateDown(
-    db: Kysely<any>,
-    state: MigrationState,
-    step: number,
+  async #rollbackMigrations(
+    migrationsToRollback: readonly NamedMigration[],
+    rollbacker: (migration: NamedMigration) => Promise<void>,
   ): Promise<MigrationResultSet> {
-    const migrationsToRollback: ReadonlyArray<NamedMigration> =
-      state.executedMigrations
-        .toReversed()
-        .slice(0, step)
-        .map((name) => {
-          return state.migrations.find((it) => it.name === name)!
-        })
-
-    const results: MigrationResult[] = migrationsToRollback.map((migration) => {
-      return {
-        migrationName: migration.name,
-        direction: 'Down',
-        status: 'NotExecuted',
-      }
-    })
+    const results: {
+      -readonly [K in keyof MigrationResult]: MigrationResult[K]
+    }[] = migrationsToRollback.map((migration) => ({
+      direction: 'Down',
+      migrationName: migration.name,
+      status: 'NotExecuted',
+    }))
 
     for (let i = 0; i < results.length; ++i) {
       const migration = migrationsToRollback[i]
 
+      if (!migration.down) {
+        continue
+      }
+
       try {
-        if (migration.down) {
-          await migration.down(db)
-          await db
-            .withPlugin(this.#schemaPlugin)
-            .deleteFrom(this.#migrationTable)
-            .where('name', '=', migration.name)
-            .execute()
+        await rollbacker(migration)
 
-          results[i] = {
-            migrationName: migration.name,
-            direction: 'Down',
-            status: 'Success',
-          }
-        }
+        results[i].status = 'Success'
       } catch (error) {
-        results[i] = {
-          migrationName: migration.name,
-          direction: 'Down',
-          status: 'Error',
-        }
+        results[i].status = 'Error'
 
-        throw new MigrationResultSetError({
-          error,
-          results,
-        })
+        throw new MigrationResultSetError({ error, results })
       }
     }
 
     return { results }
   }
 
-  async #migrateUp(
-    db: Kysely<any>,
-    state: MigrationState,
-    step: number,
+  async #applyMigrations(
+    migrationsToRun: readonly NamedMigration[],
+    applier: (migration: NamedMigration) => Promise<void>,
   ): Promise<MigrationResultSet> {
-    const migrationsToRun: ReadonlyArray<NamedMigration> =
-      state.pendingMigrations.slice(0, step)
-
-    const results: MigrationResult[] = migrationsToRun.map((migration) => {
-      return {
-        migrationName: migration.name,
-        direction: 'Up',
-        status: 'NotExecuted',
-      }
-    })
+    const results: {
+      -readonly [K in keyof MigrationResult]: MigrationResult[K]
+    }[] = migrationsToRun.map((migration) => ({
+      direction: 'Up',
+      migrationName: migration.name,
+      status: 'NotExecuted',
+    }))
 
     for (let i = 0; i < results.length; i++) {
-      const migration = state.pendingMigrations[i]
+      const migration = migrationsToRun[i]
 
       try {
-        await migration.up(db)
-        await db
-          .withPlugin(this.#schemaPlugin)
-          .insertInto(this.#migrationTable)
-          .values({
-            name: migration.name,
-            timestamp: new Date().toISOString(),
-          })
-          .execute()
+        await applier(migration)
 
-        results[i] = {
-          migrationName: migration.name,
-          direction: 'Up',
-          status: 'Success',
-        }
+        results[i].status = 'Success'
       } catch (error) {
-        results[i] = {
-          migrationName: migration.name,
-          direction: 'Up',
-          status: 'Error',
-        }
+        results[i].status = 'Error'
 
-        throw new MigrationResultSetError({
-          error,
-          results,
-        })
+        throw new MigrationResultSetError({ error, results })
       }
     }
 
     return { results }
+  }
+
+  async #applyMigration(
+    db: Kysely<any>,
+    migration: NamedMigration,
+  ): Promise<void> {
+    await migration.up(db)
+    await db
+      .withPlugin(this.#schemaPlugin)
+      .insertInto(this.#migrationTable)
+      .values({ name: migration.name, timestamp: new Date().toISOString() })
+      .execute()
+  }
+
+  async #rollbackMigration(
+    db: Kysely<any>,
+    migration: NamedMigration,
+  ): Promise<void> {
+    await migration.down!(db)
+    await db
+      .withPlugin(this.#schemaPlugin)
+      .deleteFrom(this.#migrationTable)
+      .where('name', '=', migration.name)
+      .execute()
   }
 
   async #createIfNotExists(
@@ -803,10 +885,53 @@ export interface MigrateOptions {
    *
    * Default is `false`.
    *
-   * This is useful when some migrations include queries that would fail otherwise.
+   * @deprecated Use {@link transactionMode} instead — `disableTransactions: true`
+   * is equivalent to `transactionMode: 'none'`. Setting both to contradicting
+   * values results in an error.
    */
   readonly disableTransactions?: boolean
+
+  /**
+   * Controls how migrations are wrapped in transactions, when the dialect
+   * supports transactional DDL ({@link DialectAdapter.supportsTransactionalDdl}).
+   *
+   * - `'per-run'` — the entire migration run is wrapped in a single transaction.
+   *   Either every migration in the run is applied, or none are. Any migration
+   *   with a per-migration `transaction` configuration ({@link MigrationConfig.transaction})
+   *   results in an error, since a single shared transaction cannot partially
+   *   exclude a migration. Requires transactional DDL — results in an error on
+   *   dialects without it (e.g. MySQL).
+   *
+   * - `'per-migration'` — each migration runs in its own transaction, together
+   *   with the insertion/deletion of its migration table record. A failure rolls
+   *   back only the failing migration; previously completed migrations stay
+   *   applied. Individual migrations can opt out of their transaction with
+   *   `config: { transaction: false }` — required for statements that cannot
+   *   run inside a transaction, such as PostgreSQL's `CREATE INDEX CONCURRENTLY`
+   *   or `ALTER TYPE ... ADD VALUE` (pre-12). Requires transactional DDL —
+   *   results in an error on dialects without it.
+   *
+   * - `'none'` — migrations run without any transactions. Any migration with a
+   *   per-migration `transaction` configuration results in an error.
+   *
+   * When not provided, the current default is `'per-run'` on dialects that
+   * support transactional DDL and `'none'` on dialects that don't. This
+   * default might change to `'per-migration'` in a future version of Kysely —
+   * running multiple migrations without an explicit `transactionMode` logs a
+   * message about this. Provide an explicit `transactionMode` to make the
+   * migrator's behavior independent of the default.
+   *
+   * Note that transactions spanning multiple migrations (`'per-run'`) can make
+   * otherwise-valid migration sequences fail. For example, a new PostgreSQL enum
+   * value cannot be used in the same transaction that added it, so a migration
+   * that runs `ALTER TYPE ... ADD VALUE` followed by a migration that uses the
+   * new value works when the two run in separate transactions, but fails when
+   * both are pending in a single `'per-run'` mode run.
+   */
+  readonly transactionMode?: MigratorTransactionMode
 }
+
+export type MigratorTransactionMode = 'per-run' | 'per-migration' | 'none'
 
 export interface MigratorProps extends MigrateOptions {
   readonly db: Kysely<any>
@@ -995,16 +1120,24 @@ interface NamedMigration extends Migration {
 }
 
 interface MigrationState {
-  // All migrations sorted by name.
+  /**
+   * All migrations sorted by name.
+   */
   readonly migrations: ReadonlyArray<NamedMigration>
 
-  // Names of executed migrations sorted by execution timestamp
+  /**
+   * Names of executed migrations sorted by execution timestamp.
+   */
   readonly executedMigrations: ReadonlyArray<string>
 
-  // Name of the last executed migration.
+  /**
+   * Name of the last executed migration.
+   */
   readonly lastMigration?: string
 
-  // Migrations that have not yet ran
+  /**
+   * Migrations that have not yet ran.
+   */
   readonly pendingMigrations: ReadonlyArray<NamedMigration>
 }
 
