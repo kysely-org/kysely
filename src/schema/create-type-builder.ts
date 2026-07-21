@@ -22,7 +22,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
   }
 
   /**
-   * Creates an anum type.
+   * Creates an enum type.
    *
    * ### Examples
    *
