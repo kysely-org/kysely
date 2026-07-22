@@ -192,10 +192,10 @@ importers:
     devDependencies:
       '@ark/attest':
         specifier: 0.56.3
-        version: 0.56.3(typescript@6.0.3)
+        version: 0.56.3(typescript@7.0.2)
       typescript:
-        specifier: 6.0.3
-        version: 6.0.3
+        specifier: 7.0.2
+        version: 7.0.2
 
 packages:
 
@@ -7358,17 +7358,17 @@ snapshots:
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
-  '@ark/attest@0.56.3(typescript@6.0.3)':
+  '@ark/attest@0.56.3(typescript@7.0.2)':
     dependencies:
       '@ark/fs': 0.56.2
       '@ark/schema': 0.56.2
       '@ark/util': 0.56.2
       '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
-      '@typescript/vfs': 1.6.1(typescript@6.0.3)
+      '@typescript/vfs': 1.6.1(typescript@7.0.2)
       arktype: 2.2.3
       prettier: 3.6.2
-      typescript: 6.0.3
+      typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -10658,10 +10658,10 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@typescript/vfs@1.6.1(typescript@6.0.3)':
+  '@typescript/vfs@1.6.1(typescript@7.0.2)':
     dependencies:
       debug: 4.4.3
-      typescript: 6.0.3
+      typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
 
