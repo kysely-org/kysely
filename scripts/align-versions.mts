@@ -29,7 +29,7 @@ await Promise.all([
   writeFile(
     readmePath,
     readmeContent.replace(
-      /([^\d]?)\d{1,2}\.\d{1,2}\.\d{1,2}(-rc\.\d+)?([^\d]?)/g,
+      /([^\d]?)\d{1,2}\.\d{1,2}\.\d{1,2}(-(?:beta|rc)\.\d+)?([^\d]?)/g,
       `$1${version}$3`,
     ),
   ),

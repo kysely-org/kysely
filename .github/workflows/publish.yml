@@ -38,15 +38,15 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           # Validate ref_name format before using it
-          if [[ ! "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+          if [[ ! "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$ ]]; then
             echo "Error: tag does not follow semver!"
             exit 1
           fi
 
           TAG="$REF_NAME"
 
-          # Route stable tags to master/latest, RC tags to next/next
-          if [[ "$TAG" =~ -rc\.[0-9]+$ ]]; then
+          # Route stable tags to master/latest, prerelease (beta/rc) tags to next/next
+          if [[ "$TAG" =~ -(beta|rc)\.[0-9]+$ ]]; then
             BRANCH=next
             DIST_TAG=next
           else
@@ -84,8 +84,8 @@ jobs:
           # Get version from package.json safely (parse as JSON, don't execute)
           PACKAGE_VERSION=$(node -p "JSON.parse(require('node:fs').readFileSync('./package.json', 'utf8')).version")
 
-          # Validate version format: must be MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-rc.N
-          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+          # Validate version format: must be MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-beta.N/-rc.N
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$ ]]; then
             echo "Error: package.json version does not follow semver!"
             exit 1
           fi
