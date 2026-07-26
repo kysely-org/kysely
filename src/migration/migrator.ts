@@ -29,7 +29,7 @@ export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
  * other way.
  *
  * ```ts
- * import { promises as fs } from 'node:fs'
+ * import fs from 'node:fs/promises'
  * import path from 'node:path'
  * import * as Sqlite from 'better-sqlite3'
  * import { Kysely, SqliteDialect } from 'kysely'
@@ -105,7 +105,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import * as Sqlite from 'better-sqlite3'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
@@ -150,7 +150,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -173,7 +173,7 @@ export class Migrator {
    * you can use a special constant `NO_MIGRATIONS`:
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely/migration'
    *
@@ -197,7 +197,7 @@ export class Migrator {
    * {@link MigrationResultSet.error} holds an error:
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -292,7 +292,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -324,7 +324,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
