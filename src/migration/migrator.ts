@@ -31,7 +31,7 @@ const CLOCK_BEHIND_WARNING_THRESHOLD_MILLISECONDS = 1_000
  * other way.
  *
  * ```ts
- * import { promises as fs } from 'node:fs'
+ * import fs from 'node:fs/promises'
  * import path from 'node:path'
  * import * as Sqlite from 'better-sqlite3'
  * import { Kysely, SqliteDialect } from 'kysely'
@@ -107,7 +107,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import * as Sqlite from 'better-sqlite3'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
@@ -152,7 +152,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -175,7 +175,7 @@ export class Migrator {
    * you can use a special constant `NO_MIGRATIONS`:
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from 'kysely/migration'
    *
@@ -191,10 +191,35 @@ export class Migrator {
    *
    * await migrator.migrateTo(NO_MIGRATIONS)
    * ```
+   *
+   * By default, this method migrates up or down depending on which side of the
+   * current migration state the target migration is on. Pass
+   * {@link MigrateToOptions.direction} to enforce a direction — if reaching the
+   * target would require migrating the other way, nothing is executed and
+   * {@link MigrationResultSet.error} holds an error:
+   *
+   * ```ts
+   * import fs from 'node:fs/promises'
+   * import path from 'node:path'
+   * import { FileMigrationProvider, Migrator } from 'kysely/migration'
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   provider: new FileMigrationProvider({
+   *     fs,
+   *     // Path to the folder that contains all your migrations.
+   *     migrationFolder: 'some/path/to/migrations',
+   *     path,
+   *   })
+   * })
+   *
+   * // Errors if `some_migration` is already executed.
+   * await migrator.migrateTo('some_migration', { direction: 'Up' })
+   * ```
    */
   async migrateTo(
     targetMigrationName: string | NoMigrations,
-    options?: MigrateOptions,
+    options?: MigrateToOptions,
   ): Promise<MigrationResultSet> {
     return this.#migrate(
       ({
@@ -206,6 +231,10 @@ export class Migrator {
           isObject(targetMigrationName) &&
           targetMigrationName.__noMigrations__ === true
         ) {
+          if (options?.direction === 'Up') {
+            throw new Error(`can't migrate up to NO_MIGRATIONS`)
+          }
+
           return { direction: 'Down', step: Infinity }
         }
 
@@ -224,6 +253,12 @@ export class Migrator {
         )
 
         if (executedIndex !== -1) {
+          if (options?.direction === 'Up') {
+            throw new Error(
+              `migration "${targetMigrationName}" is already executed; can't migrate up to it`,
+            )
+          }
+
           return {
             direction: 'Down',
             step: executedMigrations.length - executedIndex - 1,
@@ -231,6 +266,12 @@ export class Migrator {
         }
 
         if (pendingIndex !== -1) {
+          if (options?.direction === 'Down') {
+            throw new Error(
+              `migration "${targetMigrationName}" isn't executed; can't migrate down to it`,
+            )
+          }
+
           return { direction: 'Up', step: pendingIndex + 1 }
         }
 
@@ -253,7 +294,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -285,7 +326,7 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import { promises as fs } from 'node:fs'
+   * import fs from 'node:fs/promises'
    * import path from 'node:path'
    * import { FileMigrationProvider, Migrator } from 'kysely/migration'
    *
@@ -995,6 +1036,22 @@ export interface MigrateOptions {
 
 export type MigratorTransactionMode = 'per-run' | 'per-migration' | 'none'
 
+export interface MigrateToOptions extends MigrateOptions {
+  /**
+   * Enforces a migration direction.
+   *
+   * When provided and reaching the target migration would require migrating
+   * the other way, nothing is executed and {@link MigrationResultSet.error}
+   * holds an error. For example, `direction: 'Up'` errors when the target
+   * migration is already executed.
+   *
+   * By default, {@link Migrator.migrateTo | migrateTo} migrates up or down
+   * depending on which side of the current migration state the target
+   * migration is on.
+   */
+  readonly direction?: MigrationDirection
+}
+
 export interface MigratorProps extends MigrateOptions {
   readonly db: Kysely<any>
   readonly provider: MigrationProvider
@@ -1105,7 +1162,7 @@ export interface MigrationResultSet {
   readonly results?: MigrationResult[]
 }
 
-type MigrationDirection = 'Up' | 'Down'
+export type MigrationDirection = 'Up' | 'Down'
 
 export interface MigrationResult {
   readonly migrationName: string
