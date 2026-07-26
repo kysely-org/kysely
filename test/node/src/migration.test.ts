@@ -488,6 +488,123 @@ for (const dialect of DIALECTS) {
         expect(executedDownMethods2).to.eql(['migration4', 'migration3'])
       })
 
+      it('should migrate up to a specific migration with direction enforced', async () => {
+        const { migrator, executedUpMethods } = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+
+        const { results } = await migrator.migrateTo('migration2', {
+          direction: 'Up',
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+      })
+
+      it('should return an error when migrating up to an already executed migration', async () => {
+        const { migrator, executedUpMethods, executedDownMethods } =
+          createMigrations(['migration1', 'migration2', 'migration3'])
+
+        await migrator.migrateToLatest()
+
+        const { error } = await migrator.migrateTo('migration2', {
+          direction: 'Up',
+        })
+
+        expect(error).to.be.an.instanceOf(Error)
+        expect(getMessage(error)).to.eql(
+          `migration "migration2" is already executed; can't migrate up to it`,
+        )
+
+        expect(executedUpMethods).to.eql([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+        expect(executedDownMethods).to.eql([])
+      })
+
+      it('should migrate down to a specific migration with direction enforced', async () => {
+        const { migrator, executedDownMethods } = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+
+        await migrator.migrateToLatest()
+
+        const { results } = await migrator.migrateTo('migration1', {
+          direction: 'Down',
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration3', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedDownMethods).to.eql(['migration3', 'migration2'])
+      })
+
+      it('should return an error when migrating down to a pending migration', async () => {
+        const { migrator, executedUpMethods, executedDownMethods } =
+          createMigrations(['migration1', 'migration2', 'migration3'])
+
+        const { error } = await migrator.migrateTo('migration2', {
+          direction: 'Down',
+        })
+
+        expect(error).to.be.an.instanceOf(Error)
+        expect(getMessage(error)).to.eql(
+          `migration "migration2" isn't executed; can't migrate down to it`,
+        )
+
+        expect(executedUpMethods).to.eql([])
+        expect(executedDownMethods).to.eql([])
+      })
+
+      it('should migrate all the way down with direction enforced', async () => {
+        const { migrator, executedDownMethods } = createMigrations([
+          'migration1',
+          'migration2',
+        ])
+
+        await migrator.migrateToLatest()
+
+        const { results } = await migrator.migrateTo(NO_MIGRATIONS, {
+          direction: 'Down',
+        })
+
+        expect(results).to.eql([
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedDownMethods).to.eql(['migration2', 'migration1'])
+      })
+
+      it('should return an error when migrating up to NO_MIGRATIONS', async () => {
+        const { migrator, executedUpMethods, executedDownMethods } =
+          createMigrations(['migration1', 'migration2'])
+
+        await migrator.migrateToLatest()
+
+        const { error } = await migrator.migrateTo(NO_MIGRATIONS, {
+          direction: 'Up',
+        })
+
+        expect(error).to.be.an.instanceOf(Error)
+        expect(getMessage(error)).to.eql(`can't migrate up to NO_MIGRATIONS`)
+
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+        expect(executedDownMethods).to.eql([])
+      })
+
       describe('with allowUnorderedMigrations enabled', () => {
         it('should migrate up to a specific migration', async () => {
           const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
