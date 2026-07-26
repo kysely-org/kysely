@@ -68,7 +68,7 @@ interface Database {}
 declare const config: PoolOptions
 // ---cut---
 import { Kysely, MysqlDialect } from 'kysely'
-import { createPool } from 'mysql2'
+import { createPool } from 'mysql2/promise' // or just 'mysql2' — both work
 
 export const db = new Kysely<Database>({
   dialect: new MysqlDialect({
