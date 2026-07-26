@@ -16,7 +16,7 @@ import type { MysqlDialectConfig } from './mysql-dialect-config.js'
  * The constructor takes an instance of {@link MysqlDialectConfig}.
  *
  * ```ts
- * import { createPool } from 'mysql2'
+ * import { createPool } from 'mysql2/promise' // or just 'mysql2' — both work
  *
  * new MysqlDialect({
  *   pool: createPool({
@@ -30,7 +30,7 @@ import type { MysqlDialectConfig } from './mysql-dialect-config.js'
  * can be a function:
  *
  * ```ts
- * import { createPool } from 'mysql2'
+ * import { createPool } from 'mysql2/promise' // or just 'mysql2' — both work
  *
  * new MysqlDialect({
  *   pool: async () => createPool({
