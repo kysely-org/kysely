@@ -1,23 +1,67 @@
+.quotesSection {
+  background: var(--kl-panel);
+  border-top: 1px solid var(--kl-line);
+}
+
+.quotesContainer {
+  padding-bottom: 84px;
+  padding-top: 72px;
+}
+
+.sectionHeading {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.sectionSub {
+  color: var(--kl-mut);
+  font-size: 14.5px;
+  margin: 0 0 34px;
+}
+
+.featured {
+  margin-bottom: 16px;
+}
+
+.featured .quoteContainer {
+  margin-bottom: 0;
+  padding: 26px 28px;
+}
+
+.featured .quoteText {
+  font-size: 17.5px;
+  line-height: 1.6;
+}
+
+.quotesInnerContainer {
+  column-gap: 16px;
+  columns: 3;
+}
+
 .quoteContainer {
   align-items: flex-start;
-  background-color: white;
-  border-radius: 8px;
+  background-color: var(--kl-bg);
+  border: 1px solid var(--kl-line);
+  border-radius: 10px;
+  break-inside: avoid;
   display: flex;
-  flex: 0 1 300px;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 20px 22px;
   position: relative;
   text-decoration: none;
 }
 
-[data-theme='dark'] .quoteContainer {
-  background-color: var(--gray-12);
+.quoteContainer:hover {
+  border-color: #3c3c3c;
+  text-decoration: none;
 }
 
 .quoteInnerContainer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .quoteHeader {
@@ -26,44 +70,22 @@
   flex-direction: column;
 }
 
-.quoteTitle,
-.quoteSubtitle {
-  color: var(--gray-11);
+.quoteTitle {
+  color: var(--kl-ink);
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
-[data-theme='dark'] .quoteTitle,
-[data-theme='dark'] .quoteSubtitle {
-  color: var(--gray-9);
+.quoteSubtitle {
+  color: var(--kl-mut);
+  font-size: 12px;
 }
 
 .quoteText {
-  color: var(--gray-12);
+  color: #cfcfcf;
+  font-size: 13.5px;
+  line-height: 1.6;
   text-align: left;
-}
-
-[data-theme='dark'] .quoteText {
-  color: var(--gray-6);
-}
-
-.quotesSection {
-  background: radial-gradient(circle, var(--sky-4) 0%, white 65%);
-  display: grid;
-  place-items: center;
-}
-
-[data-theme='dark'] .quotesSection {
-  background: radial-gradient(circle, var(--blue-12) 0%, var(--gray-12) 65%);
-}
-
-.quotesContainer {
-  text-align: center;
-}
-
-.quotesInnerContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
 }
 
 .icon {
@@ -74,6 +96,18 @@
   width: 16px;
 }
 
-[data-theme='dark'] .darkIcon {
-  fill: white;
+.darkIcon {
+  fill: #e8e8e8;
+}
+
+@media (max-width: 996px) {
+  .quotesInnerContainer {
+    columns: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .quotesInnerContainer {
+    columns: 1;
+  }
 }

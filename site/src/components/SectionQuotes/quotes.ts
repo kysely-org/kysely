@@ -2,6 +2,13 @@ import type { QuoteProps } from './Quote'
 
 export const quotes: QuoteProps[] = [
   {
+    authorName: 'Peter Steinberger',
+    authorTitle: 'OpenClaw author, OpenAI',
+    avatar: 'steipete',
+    link: 'https://x.com/steipete/status/2005692454553673900',
+    text: 'This. In one of my projects I ripped out Drizzle ORM and replaced it with Kysely. ORMs are more fore humans than agents. Why deal with leaky abstractions when I can have type-safe raw power?',
+  },
+  {
     authorName: 'Tim Griesser',
     authorTitle: 'Knex.js creator, Cypress Staff Eng',
     avatar: 'tgriesser',

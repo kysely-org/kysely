@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Better Auth",
+    "repo": "better-auth/better-auth",
+    "path": "packages/better-auth/src/db/get-migration.ts",
+    "sha": "e2c73fbec87f5e19f6a2b5ac371bc5bba9bd49ff",
+    "href": "https://github.com/better-auth/better-auth/blob/e2c73fbec87f5e19f6a2b5ac371bc5bba9bd49ff/packages/better-auth/src/db/get-migration.ts"
+  },
+  {
+    "name": "Bluesky",
+    "repo": "bluesky-social/atproto",
+    "path": "packages/pds/package.json",
+    "sha": "87e6a95c39f199e53b6a68b7d1fa23fbe8459753",
+    "href": "https://github.com/bluesky-social/atproto/blob/87e6a95c39f199e53b6a68b7d1fa23fbe8459753/packages/pds/package.json"
+  },
+  {
+    "name": "Cal.com",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2990566802"
+  },
+  {
+    "name": "Deno",
+    "href": "https://reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1"
+  },
+  {
+    "name": "Docmost",
+    "repo": "docmost/docmost",
+    "path": "apps/server/package.json",
+    "sha": "70d2ff86856f0ffa66b5c64d0dadac80133c8b5c",
+    "href": "https://github.com/docmost/docmost/blob/70d2ff86856f0ffa66b5c64d0dadac80133c8b5c/apps/server/package.json"
+  },
+  {
+    "name": "Documenso",
+    "repo": "documenso/documenso",
+    "path": "ARCHITECTURE.md",
+    "sha": "a457e1ef7de449e4f758fc6943a8014e952c34c6",
+    "href": "https://github.com/documenso/documenso/blob/a457e1ef7de449e4f758fc6943a8014e952c34c6/ARCHITECTURE.md"
+  },
+  {
+    "name": "Maersk",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2183966432"
+  },
+  {
+    "name": "Mozilla",
+    "repo": "mozilla/fxa",
+    "path": "libs/shared/db/mysql/account/src/lib/kysely-types.ts",
+    "sha": "ea296fd6814bfc1fd801e2bb35a11ffbe4f173a8",
+    "href": "https://github.com/mozilla/fxa/blob/ea296fd6814bfc1fd801e2bb35a11ffbe4f173a8/libs/shared/db/mysql/account/src/lib/kysely-types.ts"
+  },
+  {
+    "name": "OpenClaw",
+    "repo": "openclaw/openclaw",
+    "path": "package.json",
+    "sha": "6a4e2f3d7526296da59ce407dd68f7311e37bcc7",
+    "href": "https://github.com/openclaw/openclaw/blob/6a4e2f3d7526296da59ce407dd68f7311e37bcc7/package.json"
+  },
+  {
+    "name": "Parabol",
+    "repo": "ParabolInc/parabol",
+    "path": "package.json",
+    "sha": "184f571ef5c724bcb840061afb433b08205e1f35",
+    "href": "https://github.com/ParabolInc/parabol/blob/184f571ef5c724bcb840061afb433b08205e1f35/package.json"
+  },
+  {
+    "name": "Prisma",
+    "repo": "prisma/studio",
+    "path": "data/query.ts",
+    "sha": "550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b",
+    "href": "https://github.com/prisma/studio/blob/550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b/data/query.ts"
+  },
+  {
+    "name": "tldraw",
+    "repo": "tldraw/tldraw",
+    "path": "apps/dotcom/sync-worker/package.json",
+    "sha": "e857c8e412bef005cec63bef6c30807fab255ff7",
+    "href": "https://github.com/tldraw/tldraw/blob/e857c8e412bef005cec63bef6c30807fab255ff7/apps/dotcom/sync-worker/package.json"
+  }
+]

@@ -26,20 +26,26 @@ export function DemoVideo() {
   }, [])
 
   return (
-    <div className={styles.videoContainer}>
-      <video
-        height="610"
-        loop
-        muted
-        playsInline
-        poster="/demo-poster.webp"
-        preload="none"
-        ref={videoRef}
-        width="824"
-      >
-        <source src="/demo_optimized.webm" type="video/webm" />
-        <source src="/demo.mp4" type="video/mp4" />
-      </video>
-    </div>
+    <figure className={styles.frame}>
+      <div className={styles.cropBox}>
+        <video
+          className={styles.video}
+          height="610"
+          loop
+          muted
+          playsInline
+          poster="/demo-poster.webp"
+          preload="none"
+          ref={videoRef}
+          width="824"
+        >
+          <source src="/demo_optimized.webm" type="video/webm" />
+          <source src="/demo.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <figcaption className={styles.caption}>
+        real footage — schema-aware autocompletion and inline docs
+      </figcaption>
+    </figure>
   )
 }

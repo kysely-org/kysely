@@ -5,13 +5,20 @@ import { quotes } from './quotes'
 import styles from './styles.module.css'
 
 export function SectionQuotes() {
+  const [featured, ...rest] = quotes
+
   return (
     <section className={styles.quotesSection}>
       <div className={clsx('container', styles.quotesContainer)}>
-        <h2>What the internet is saying</h2>
-        <p>Developers are loving Kysely for its simplicity and power.</p>
+        <h2 className={styles.sectionHeading}>
+          Trusted by the people who build your other tools
+        </h2>
+        <p className={styles.sectionSub}>Unprompted, in public, on the record.</p>
+        <div className={styles.featured}>
+          <Quote {...featured} />
+        </div>
         <div className={styles.quotesInnerContainer}>
-          {quotes.map((quote, index) => (
+          {rest.map((quote, index) => (
             <Quote key={index} {...quote} />
           ))}
         </div>

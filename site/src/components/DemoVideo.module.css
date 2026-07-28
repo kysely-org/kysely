@@ -1,19 +1,38 @@
-.videoContainer {
-  background: transparent;
+.frame {
+  margin: 0;
   max-width: 832px;
-  position: relative;
   width: 100%;
 }
 
-.videoContainer video {
-  background: transparent;
-  border: none;
-  border-radius: 24px;
+/*
+ * Crops the recording's VS Code activity bar (left) and status bar (bottom)
+ * so the code and autocompletion fill the frame. Source video is 824x610;
+ * the native title bar is kept.
+ */
+.cropBox {
+  aspect-ratio: 772 / 584;
+  background: #1e1e1e;
+  border: 1px solid var(--kl-line, #2e2e2e);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 45%);
+  overflow: hidden;
+  position: relative;
+}
+
+.video {
   display: block;
   height: auto;
-  margin: 0;
-  max-height: 610px;
-  outline: none;
-  padding: 0;
-  width: 100%;
+  left: -6.67%;
+  position: absolute;
+  top: 0;
+  width: 106.67%;
+}
+
+.caption {
+  color: var(--kl-mut, #9b9b9b);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-top: 12px;
+  text-align: center;
 }
