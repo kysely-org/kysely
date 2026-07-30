@@ -972,11 +972,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => UpdateQueryBuilder<any, any, any, O2>,
-  ): O2 extends UpdateResult
-    ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
-    : O2 extends O & infer E
-      ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
-      : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
+  ): unknown extends O2
+    ? // `O2` is only this wide when the compiler is asking what `$if` returns
+      // for an unknown callback, which it has to do whenever it compares two
+      // `UpdateQueryBuilder` types. Resolving the branches below would turn
+      // that into a union of builders and make the comparison recurse - see
+      // `JoinResultForUnknownTable` in `select-query-builder.ts` for the same
+      // problem in the join result types. A single type converges instead.
+      UpdateQueryBuilder<any, any, any, O2>
+    : O2 extends UpdateResult
+      ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
+      : O2 extends O & infer E
+        ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+        : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }

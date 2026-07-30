@@ -794,7 +794,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * delete from `pet` order by `created_at` limit ?
    * ```
    */
-  limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
+  limit<VE extends ValueExpression<DB, TB, number>>(
+    limit: VE,
+  ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
@@ -901,11 +903,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => DeleteQueryBuilder<any, any, O2>,
-  ): O2 extends DeleteResult
-    ? DeleteQueryBuilder<DB, TB, DeleteResult>
-    : O2 extends O & infer E
-      ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
-      : DeleteQueryBuilder<DB, TB, Partial<O2>> {
+  ): unknown extends O2
+    ? // See the identical guard on `UpdateQueryBuilder.$if`.
+      DeleteQueryBuilder<any, any, O2>
+    : O2 extends DeleteResult
+      ? DeleteQueryBuilder<DB, TB, DeleteResult>
+      : O2 extends O & infer E
+        ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+        : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
