@@ -11,7 +11,35 @@ import type {
 import { expectAssignable, expectType } from 'tsd'
 import type { Database, Movie, Person } from '../shared.js'
 
-// TODO: type-checking this is crazy slow. Figure out the cause.
+// The tests below relate two different instantiations of the same builder type.
+// TypeScript can't derive variance for `SelectQueryBuilder` or `ExpressionBuilder`
+// (both mention their `DB`/`TB` parameters under `keyof` and in conditional types),
+// so it has to compare them structurally, member by member. That makes these the
+// most expensive type-level operations in the library, so two rules keep them in
+// check - breaking either one is easy to do by accident and expensive:
+//
+//   1. A method that accepts a `DB`/`TB`-parameterized expression type must keep it
+//      behind a generic type parameter (`limit<VE extends ValueExpression<...>>(v: VE)`,
+//      not `limit(v: ValueExpression<...>)`). Otherwise the comparison expands the
+//      whole expression union, which pulls in `ExpressionBuilder`, which pulls in
+//      `SelectQueryBuilder` again.
+//
+//   2. A method whose result type is computed from the arguments must converge when
+//      asked what it returns for an *unknown* argument, because that is what the
+//      compiler computes while comparing two builders. If it instead expands into a
+//      union of builders, the comparison recurses until the compiler's internal
+//      limit - and that limit is not the same across TypeScript versions. The join
+//      result types guard against this with `TableExpression<DB, TB> extends TE`, and
+//      `UpdateQueryBuilder.$if`/`DeleteQueryBuilder.$if` with `unknown extends O2`.
+//
+// Note that such a guard is only worth adding where it *replaces* a conditional that
+// would otherwise expand into a union of builders. Adding one to a result type that is
+// already a single type makes things dramatically worse, because the guard is itself a
+// conditional - it was measured at 15x on `Kysely.$extendTables` and friends. Not every
+// expensive comparison is worth guarding either: the guard has a fixed cost of its own,
+// so it only pays where the recursion actually blows up.
+//
+// See `test/ts-benchmarks/generic.bench.ts`.
 function testSelectQueryBuilderExtends() {
   type A = { a: number }
   type B = { b: string }
@@ -25,7 +53,6 @@ function testSelectQueryBuilderExtends() {
   expectAssignable<T1>(t2)
 }
 
-// TODO: type-checking this is crazy slow. Figure out the cause.
 function testExpressionBuilderExtends() {
   type A = { a: number }
   type B = { b: string }
@@ -39,7 +66,6 @@ function testExpressionBuilderExtends() {
   expectAssignable<T1>(t2)
 }
 
-// TODO: type-checking this is crazy slow. Figure out the cause.
 function testExpressionBuilderExtendsFuncArg() {
   type A = { a: number }
   type B = { b: string }
@@ -56,7 +82,6 @@ function testExpressionBuilderExtendsFuncArg() {
   test(t2)
 }
 
-// TODO: type-checking this is crazy slow. Figure out the cause.
 async function testGenericSelectHelper() {
   type Parent = { id: Generated<string> }
   type Person = { id: Generated<string>; parent_id: string }

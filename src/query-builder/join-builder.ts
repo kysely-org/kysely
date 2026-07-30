@@ -34,7 +34,9 @@ export class JoinBuilder<
     rhs: OperandValueExpressionOrList<DB, TB, RE>,
   ): JoinBuilder<DB, TB>
 
-  on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB>
+  on<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E,
+  ): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -52,11 +54,10 @@ export class JoinBuilder<
    *
    * See {@link WhereInterface.whereRef} for documentation and examples.
    */
-  onRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>,
-  ): JoinBuilder<DB, TB> {
+  onRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>,
+  >(lhs: LRE, op: ComparisonOperatorExpression, rhs: RRE): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
