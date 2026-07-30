@@ -1,77 +1,193 @@
 [
   {
+    "name": "AWS Blocks",
+    "repo": "aws-devtools-labs/aws-blocks",
+    "path": "packages/bb-data/package.json",
+    "sha": "ac0966a5cda9b8b617dd0fabbe2024b13e43a2d9",
+    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/ac0966a5cda9b8b617dd0fabbe2024b13e43a2d9/packages/bb-data/package.json",
+    "group": "built-into"
+  },
+  {
     "name": "Better Auth",
     "repo": "better-auth/better-auth",
     "path": "packages/better-auth/src/db/get-migration.ts",
-    "sha": "e2c73fbec87f5e19f6a2b5ac371bc5bba9bd49ff",
-    "href": "https://github.com/better-auth/better-auth/blob/e2c73fbec87f5e19f6a2b5ac371bc5bba9bd49ff/packages/better-auth/src/db/get-migration.ts"
+    "sha": "de5acf171f9c5b4af2c2c59bc69ffc631d03eb9f",
+    "href": "https://github.com/better-auth/better-auth/blob/de5acf171f9c5b4af2c2c59bc69ffc631d03eb9f/packages/better-auth/src/db/get-migration.ts",
+    "group": "built-into"
   },
   {
     "name": "Bluesky",
     "repo": "bluesky-social/atproto",
     "path": "packages/pds/package.json",
-    "sha": "87e6a95c39f199e53b6a68b7d1fa23fbe8459753",
-    "href": "https://github.com/bluesky-social/atproto/blob/87e6a95c39f199e53b6a68b7d1fa23fbe8459753/packages/pds/package.json"
+    "sha": "d3bbeb5fe87f8c389c2f18abd2bc055ef916a63a",
+    "href": "https://github.com/bluesky-social/atproto/blob/d3bbeb5fe87f8c389c2f18abd2bc055ef916a63a/packages/pds/package.json",
+    "group": "production"
   },
   {
     "name": "Cal.com",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2990566802"
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2990566802",
+    "group": "production"
+  },
+  {
+    "name": "Carbon",
+    "repo": "crbnos/carbon",
+    "path": "packages/database/package.json",
+    "sha": "e6f41ce54886bec46c7c83615ed3c2e5708e2071",
+    "href": "https://github.com/crbnos/carbon/blob/e6f41ce54886bec46c7c83615ed3c2e5708e2071/packages/database/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "Colanode",
+    "repo": "colanode/colanode",
+    "path": "packages/client/src/services/kysely-service.ts",
+    "sha": "d649523637f0f059c936418488165d4a689da27c",
+    "href": "https://github.com/colanode/colanode/blob/d649523637f0f059c936418488165d4a689da27c/packages/client/src/services/kysely-service.ts",
+    "group": "built-into"
+  },
+  {
+    "name": "Conar",
+    "repo": "wannabespace/conar",
+    "path": "apps/app/package.json",
+    "sha": "7bb1b88a8bb9822188e2f548f998505f07a2dce0",
+    "href": "https://github.com/wannabespace/conar/blob/7bb1b88a8bb9822188e2f548f998505f07a2dce0/apps/app/package.json",
+    "group": "built-into"
   },
   {
     "name": "Deno",
-    "href": "https://reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1"
+    "href": "https://reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1",
+    "group": "production"
   },
   {
     "name": "Docmost",
     "repo": "docmost/docmost",
     "path": "apps/server/package.json",
     "sha": "70d2ff86856f0ffa66b5c64d0dadac80133c8b5c",
-    "href": "https://github.com/docmost/docmost/blob/70d2ff86856f0ffa66b5c64d0dadac80133c8b5c/apps/server/package.json"
+    "href": "https://github.com/docmost/docmost/blob/70d2ff86856f0ffa66b5c64d0dadac80133c8b5c/apps/server/package.json",
+    "group": "production"
   },
   {
     "name": "Documenso",
     "repo": "documenso/documenso",
     "path": "ARCHITECTURE.md",
     "sha": "a457e1ef7de449e4f758fc6943a8014e952c34c6",
-    "href": "https://github.com/documenso/documenso/blob/a457e1ef7de449e4f758fc6943a8014e952c34c6/ARCHITECTURE.md"
+    "href": "https://github.com/documenso/documenso/blob/a457e1ef7de449e4f758fc6943a8014e952c34c6/ARCHITECTURE.md",
+    "group": "production"
+  },
+  {
+    "name": "EmDash",
+    "repo": "emdash-cms/emdash",
+    "path": "packages/core/package.json",
+    "sha": "481949b25a2741e0a4d842c0a8c01ce4457ff333",
+    "href": "https://github.com/emdash-cms/emdash/blob/481949b25a2741e0a4d842c0a8c01ce4457ff333/packages/core/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "Evolu",
+    "repo": "evoluhq/evolu",
+    "path": "packages/common/package.json",
+    "sha": "5e0cde081c4edd36d2d513994e8056a61b3202f2",
+    "href": "https://github.com/evoluhq/evolu/blob/5e0cde081c4edd36d2d513994e8056a61b3202f2/packages/common/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "Immich",
+    "repo": "immich-app/immich",
+    "path": "server/package.json",
+    "sha": "bcf6e66e26d4a26dc8e08da1423ff4e8a6cd1fd8",
+    "href": "https://github.com/immich-app/immich/blob/bcf6e66e26d4a26dc8e08da1423ff4e8a6cd1fd8/server/package.json",
+    "group": "built-into"
   },
   {
     "name": "Maersk",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2183966432"
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-2183966432",
+    "group": "production"
+  },
+  {
+    "name": "MikroORM",
+    "repo": "mikro-orm/mikro-orm",
+    "path": "packages/sql/package.json",
+    "sha": "2b3b6b8c014e5a8678df72fcf7d0aaaf62a44c89",
+    "href": "https://github.com/mikro-orm/mikro-orm/blob/2b3b6b8c014e5a8678df72fcf7d0aaaf62a44c89/packages/sql/package.json",
+    "group": "built-into"
   },
   {
     "name": "Mozilla",
     "repo": "mozilla/fxa",
     "path": "libs/shared/db/mysql/account/src/lib/kysely-types.ts",
-    "sha": "ea296fd6814bfc1fd801e2bb35a11ffbe4f173a8",
-    "href": "https://github.com/mozilla/fxa/blob/ea296fd6814bfc1fd801e2bb35a11ffbe4f173a8/libs/shared/db/mysql/account/src/lib/kysely-types.ts"
+    "sha": "15da9e7abcf772e6cca61cb3068efcd62ecbab0d",
+    "href": "https://github.com/mozilla/fxa/blob/15da9e7abcf772e6cca61cb3068efcd62ecbab0d/libs/shared/db/mysql/account/src/lib/kysely-types.ts",
+    "group": "production"
+  },
+  {
+    "name": "Notesnook",
+    "repo": "streetwriters/notesnook",
+    "path": "apps/web/src/common/sqlite/wa-sqlite-kysely-driver.ts",
+    "sha": "b5140d9947d01d34635d5e8b1d4653bea26a73a7",
+    "href": "https://github.com/streetwriters/notesnook/blob/b5140d9947d01d34635d5e8b1d4653bea26a73a7/apps/web/src/common/sqlite/wa-sqlite-kysely-driver.ts",
+    "group": "built-into"
   },
   {
     "name": "OpenClaw",
     "repo": "openclaw/openclaw",
     "path": "package.json",
-    "sha": "6a4e2f3d7526296da59ce407dd68f7311e37bcc7",
-    "href": "https://github.com/openclaw/openclaw/blob/6a4e2f3d7526296da59ce407dd68f7311e37bcc7/package.json"
+    "sha": "d239a59d82ea929c92df2fff716a70c8e5d6bf1e",
+    "href": "https://github.com/openclaw/openclaw/blob/d239a59d82ea929c92df2fff716a70c8e5d6bf1e/package.json",
+    "group": "built-into"
   },
   {
     "name": "Parabol",
     "repo": "ParabolInc/parabol",
     "path": "package.json",
     "sha": "184f571ef5c724bcb840061afb433b08205e1f35",
-    "href": "https://github.com/ParabolInc/parabol/blob/184f571ef5c724bcb840061afb433b08205e1f35/package.json"
+    "href": "https://github.com/ParabolInc/parabol/blob/184f571ef5c724bcb840061afb433b08205e1f35/package.json",
+    "group": "production"
   },
   {
     "name": "Prisma",
     "repo": "prisma/studio",
     "path": "data/query.ts",
     "sha": "550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b",
-    "href": "https://github.com/prisma/studio/blob/550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b/data/query.ts"
+    "href": "https://github.com/prisma/studio/blob/550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b/data/query.ts",
+    "group": "production"
+  },
+  {
+    "name": "RedwoodSDK",
+    "repo": "redwoodjs/sdk",
+    "path": "sdk/package.json",
+    "sha": "a6705a453c6447bf467e8cebe32cd35f31d9696c",
+    "href": "https://github.com/redwoodjs/sdk/blob/a6705a453c6447bf467e8cebe32cd35f31d9696c/sdk/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "Sink",
+    "repo": "miantiao-me/Sink",
+    "path": "package.json",
+    "sha": "3f8d30ae8c917f269249d6c7c1c3894fc8d8af91",
+    "href": "https://github.com/miantiao-me/Sink/blob/3f8d30ae8c917f269249d6c7c1c3894fc8d8af91/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "StudioCMS",
+    "repo": "withstudiocms/studiocms",
+    "path": "packages/@withstudiocms/kysely/package.json",
+    "sha": "8f953e8c2d6cdc037c09a06eee684083c3a82ff3",
+    "href": "https://github.com/withstudiocms/studiocms/blob/8f953e8c2d6cdc037c09a06eee684083c3a82ff3/packages/@withstudiocms/kysely/package.json",
+    "group": "built-into"
   },
   {
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/package.json",
-    "sha": "e857c8e412bef005cec63bef6c30807fab255ff7",
-    "href": "https://github.com/tldraw/tldraw/blob/e857c8e412bef005cec63bef6c30807fab255ff7/apps/dotcom/sync-worker/package.json"
+    "sha": "46979946f542a7819bdab5f41bc30a0837fb107e",
+    "href": "https://github.com/tldraw/tldraw/blob/46979946f542a7819bdab5f41bc30a0837fb107e/apps/dotcom/sync-worker/package.json",
+    "group": "production"
+  },
+  {
+    "name": "ZenStack",
+    "repo": "zenstackhq/zenstack",
+    "path": "packages/orm/package.json",
+    "sha": "78e741e3ef426bb79749a91e24d3b660075f1aae",
+    "href": "https://github.com/zenstackhq/zenstack/blob/78e741e3ef426bb79749a91e24d3b660075f1aae/packages/orm/package.json",
+    "group": "built-into"
   }
 ]

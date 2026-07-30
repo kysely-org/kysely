@@ -10,6 +10,7 @@ import {
   compilerSnippetHtml,
   compositionSnippetHtml,
 } from '../components/snippets.generated'
+import { version } from '../../package.json'
 import productionProof from '../data/production-proof.json'
 import styles from './index.module.css'
 
@@ -41,7 +42,7 @@ function SectionHero() {
     <header className={styles.hero}>
       <div className={clsx('container', styles.heroInner)}>
         <div>
-          <span className={styles.eyebrow}>TypeScript · MIT · since 2021</span>
+          <span className={styles.eyebrow}>v{version} · MIT · since 2021</span>
           <h1 className={styles.heroTitle}>
             The type-safe SQL query builder for TypeScript
           </h1>
@@ -164,21 +165,36 @@ function SectionStats() {
 // Each name in src/data/production-proof.json links to public evidence of
 // runtime dependence: internal usage or a manifest, pinned to a commit SHA
 // by scripts/verify-proof-links.mjs, or a public statement by an employee.
+// "production" = the company's own deployed services run Kysely.
+// "built-into" = Kysely is the product's data layer, running wherever it runs.
+const PROOF_GROUPS = [
+  { group: 'production', caption: 'In production at' },
+  { group: 'built-into', caption: 'Built into' },
+]
+
 function SectionProduction() {
   return (
     <section className={styles.production}>
       <div className={clsx('container', styles.productionInner)}>
-        <span className={styles.productionCaption}>In production at</span>
-        <span className={styles.productionNames}>
-          {productionProof.map(({ href, name }) => (
-            <a key={name} href={href}>
-              {name}
-            </a>
-          ))}
-          <a className={styles.productionCTA} href={IN_PRODUCTION_URL}>
-            + add your team
-          </a>
-        </span>
+        {PROOF_GROUPS.map(({ group, caption }) => (
+          <React.Fragment key={group}>
+            <span className={styles.productionCaption}>{caption}</span>
+            <span className={styles.productionNames}>
+              {productionProof
+                .filter((entry) => entry.group === group)
+                .map(({ href, name }) => (
+                  <a key={name} href={href}>
+                    {name}
+                  </a>
+                ))}
+              {group === 'production' && (
+                <a className={styles.productionCTA} href={IN_PRODUCTION_URL}>
+                  + add your team
+                </a>
+              )}
+            </span>
+          </React.Fragment>
+        ))}
       </div>
     </section>
   )
