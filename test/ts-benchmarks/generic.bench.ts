@@ -4,6 +4,7 @@ import type {
   DeleteQueryBuilder,
   ExpressionBuilder,
   Generated,
+  InsertQueryBuilder,
   Kysely,
   MergeQueryBuilder,
   Nullable,
@@ -75,6 +76,15 @@ declare const wideDeleteQueryBuilder: DeleteQueryBuilder<
 >
 declare function acceptsNarrowDeleteQueryBuilder(
   qb: DeleteQueryBuilder<{ a: A; b: B }, 'a', unknown>,
+): void
+
+declare const wideInsertQueryBuilder: InsertQueryBuilder<
+  { a: A; b: B },
+  'a',
+  { a: number }
+>
+declare function acceptsNarrowInsertQueryBuilder(
+  qb: InsertQueryBuilder<{ a: A; b: B }, 'a', unknown>,
 ): void
 
 declare const wideUpdateQueryBuilder: UpdateQueryBuilder<
@@ -163,6 +173,10 @@ bench('select(genericSelectHelper) on a left joined query', () => {
 bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
   return acceptsNarrowDeleteQueryBuilder(wideDeleteQueryBuilder)
 }).types([10919, 'instantiations'])
+
+bench('InsertQueryBuilder assignable to narrower InsertQueryBuilder', () => {
+  return acceptsNarrowInsertQueryBuilder(wideInsertQueryBuilder)
+}).types([2614, 'instantiations'])
 
 bench('UpdateQueryBuilder assignable to narrower UpdateQueryBuilder', () => {
   return acceptsNarrowUpdateQueryBuilder(wideUpdateQueryBuilder)

@@ -1847,7 +1847,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>,
+    func: (qb: this) => SelectQueryBuilderExpression<O & O2>,
   ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>>
 
   /**
@@ -2589,10 +2589,10 @@ class SelectQueryBuilderImpl<
 
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>,
+    func: (qb: this) => SelectQueryBuilderExpression<O & O2>,
   ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>> {
     if (condition) {
-      return func(this)
+      return func(this) as any
     }
 
     return new SelectQueryBuilderImpl({
