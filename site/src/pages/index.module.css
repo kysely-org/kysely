@@ -1,24 +1,81 @@
 .landing {
-  /* Neutrals anchored to VS Code Dark+ so the demo video and shiki
-     figures share the page's palette. Sky blue is the only hue. */
+  /* Neutrals anchored to VS Code Dark+ (dark) / Light+ (light) so the shiki
+     figures share the page's palette in both themes. Sky is the only hue. */
   --kl-bg: #131313;
+  --kl-card: #131313;
+  --kl-surface: #1e1e1e;
   --kl-panel: #1e1e1e;
   --kl-panel2: #252526;
   --kl-line: #2e2e2e;
+  --kl-dash: #3c3c3c;
+  --kl-dots: #4a4a4a;
+  --kl-dot-glyph: #3a3a3a;
   --kl-ink: #e8e8e8;
+  --kl-text2: #cfcfcf;
+  --kl-strong: #c9c9c9;
+  --kl-caption: #b5b5b5;
   --kl-mut: #9b9b9b;
+  --kl-faint: #6f6f6f;
   --kl-acc: #38bdf8;
+  --kl-acc-contrast: #06202e;
+  --kl-acc-dots: rgb(56 189 248 / 45%);
   --kl-err: #f14c4c;
+  --kl-err-text: #f48771;
   --kl-type: #4ec9b0;
+  --kl-shadow: rgb(0 0 0 / 45%);
 
   background: var(--kl-bg);
   color: var(--kl-ink);
+}
+
+:global(html[data-theme='light']) .landing {
+  --kl-bg: #ffffff;
+  --kl-card: #ffffff;
+  --kl-surface: #ffffff;
+  --kl-panel: #f6f8fa;
+  --kl-panel2: #f3f3f3;
+  --kl-line: #e1e4e8;
+  --kl-dash: #c9ced4;
+  --kl-dots: #b6bcc2;
+  --kl-dot-glyph: #d4d4d4;
+  --kl-ink: #1f2328;
+  --kl-text2: #3a4148;
+  --kl-strong: #454c54;
+  --kl-caption: #57606a;
+  --kl-mut: #656d76;
+  --kl-faint: #8b949e;
+  --kl-acc: #0284c7;
+  --kl-acc-contrast: #ffffff;
+  --kl-acc-dots: rgb(2 132 199 / 40%);
+  --kl-err: #e51400;
+  --kl-err-text: #cd3131;
+  --kl-type: #267f99;
+  --kl-shadow: rgb(31 35 40 / 15%);
 }
 
 .landing h1,
 .landing h2,
 .landing h3 {
   color: var(--kl-ink);
+}
+
+/* One consistent 1140px rail for every section; Infima's container otherwise
+   grows to 1320px on wide screens and misaligns with the hero. */
+.landing :global(.container) {
+  max-width: 1140px;
+}
+
+/* Inline code chips follow the landing palette in both themes. */
+.landing :not(pre) > code {
+  background: var(--kl-panel2);
+  border-color: var(--kl-line);
+  color: var(--kl-ink);
+}
+
+.editorCode :global(pre.shiki) code {
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 /* ------------------------------ hero ------------------------------ */
@@ -48,13 +105,48 @@
   padding: 5px 12px;
 }
 
+.eyebrow a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 4px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-acc-dots);
+  text-underline-offset: 3px;
+}
+
+.eyebrow a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
+}
+
 .heroTitle {
-  font-size: clamp(32px, 3.8vw, 46px);
+  font-size: clamp(36px, 3.9vw, 50px);
   font-weight: 750;
   letter-spacing: -0.03em;
-  line-height: 1.08;
-  margin: 18px 0 14px;
+  line-height: 1.06;
+  margin: 18px 0 16px;
+}
+
+.heroCategory {
+  color: var(--kl-mut);
+  display: block;
+  font-weight: 700;
   text-wrap: balance;
+}
+
+.heroCategory a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 12px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 8px;
+}
+
+.heroCategory a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
 }
 
 .heroSubtitle {
@@ -62,7 +154,20 @@
   font-size: 16.5px;
   line-height: 1.65;
   margin: 0 0 26px;
-  max-width: 46ch;
+}
+
+.heroSubtitle a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 5px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-underline-offset: 3px;
+}
+
+.heroSubtitle a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
 }
 
 .heroButtons {
@@ -87,11 +192,11 @@
 
 .btnPrimary {
   background: var(--kl-acc);
-  color: #06202e;
+  color: var(--kl-acc-contrast);
 }
 
 .btnPrimary:hover {
-  color: #06202e;
+  color: var(--kl-acc-contrast);
   filter: brightness(1.1);
 }
 
@@ -126,6 +231,28 @@
   padding-left: 0;
 }
 
+a.stat {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stat:hover {
+  text-decoration: none;
+}
+
+a.stat .statValue {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 7px;
+  width: fit-content;
+}
+
+a.stat:hover .statValue {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
+}
+
 .statValue {
   font-size: 30px;
   font-variant-numeric: tabular-nums;
@@ -155,9 +282,9 @@
 }
 
 .productionCaption {
-  color: var(--kl-mut);
+  color: var(--kl-caption);
   font-family: var(--ifm-font-family-monospace);
-  font-size: 11.5px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -177,12 +304,16 @@
   align-items: center;
   border: 1px solid var(--kl-line);
   border-radius: 8px;
-  color: #c9c9c9;
+  color: var(--kl-strong);
   display: inline-flex;
   font-size: 14.5px;
   font-weight: 650;
   padding: 8px 14px;
+  position: relative;
   text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .productionNames a:hover {
@@ -191,8 +322,30 @@
   text-decoration: none;
 }
 
+.productionNames a:not(.productionCTA)::after {
+  color: var(--kl-acc);
+  content: '↗';
+  font-size: 10px;
+  opacity: 0;
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.productionNames a:hover::after {
+  opacity: 1;
+}
+
+.productionFootnote {
+  color: var(--kl-faint);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
 .productionNames a.productionCTA {
-  border: 1px dashed #3c3c3c;
+  border: 1px dashed var(--kl-dash);
   color: var(--kl-acc);
   font-size: 12.5px;
   font-weight: 600;
@@ -206,7 +359,7 @@
 /* --------------------------- error figure --------------------------- */
 
 .compiler {
-  border-top: 1px solid var(--kl-line);
+  border-top: none;
 }
 
 .compilerInner {
@@ -233,7 +386,7 @@
 }
 
 .editor {
-  background: var(--kl-panel);
+  background: var(--kl-surface);
   border: 1px solid var(--kl-line);
   border-radius: 12px;
   overflow: hidden;
@@ -257,7 +410,7 @@
 }
 
 .editorDots i {
-  background: #3a3a3a;
+  background: var(--kl-dot-glyph);
   border-radius: 50%;
   display: block;
   height: 10px;
@@ -274,14 +427,32 @@
   padding: 18px 20px;
 }
 
+/* Dual-theme shiki output: tokens carry --shiki-dark/--shiki-light vars. */
+.editorCode :global(pre.shiki) span {
+  color: var(--shiki-dark);
+}
+
+:global(html[data-theme='light']) .editorCode :global(pre.shiki) span {
+  color: var(--shiki-light);
+}
+
 .editorCode :global(.kl-squiggle) {
   text-decoration: underline wavy var(--kl-err) 1.5px;
   text-underline-offset: 4px;
 }
 
+.editorCaption {
+  color: var(--kl-mut);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-top: 12px;
+  text-align: center;
+}
+
 .errPanel {
   border-top: 1px solid var(--kl-line);
-  color: #f48771;
+  color: var(--kl-err-text);
   font-family: var(--ifm-font-family-monospace);
   font-size: 12px;
   line-height: 1.7;
@@ -332,57 +503,6 @@
 
 .typePanel span {
   color: var(--kl-mut);
-}
-
-/* --------------------------- playground --------------------------- */
-
-.playgroundSection {
-  background: var(--kl-panel);
-  border-top: 1px solid var(--kl-line);
-}
-
-.playgroundContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - var(--ifm-navbar-height));
-  overflow: hidden;
-  padding-bottom: 40px;
-  padding-top: 64px;
-}
-
-.playgroundContainer h2 {
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  margin: 0 0 6px;
-}
-
-.playgroundContainer > p {
-  color: var(--kl-mut);
-  font-size: 14.5px;
-  margin: 0 0 28px;
-}
-
-.playground {
-  border: 1px solid var(--kl-line);
-  border-radius: 10px;
-  height: 100%;
-  overflow: hidden;
-  padding: 0;
-  width: 100%;
-}
-
-/* Prevent mobile browser from scrolling to iframe on page load */
-@media (max-width: 768px) {
-  .playground {
-    overflow-anchor: none;
-    /* Make iframe not focusable but still interactive */
-    pointer-events: auto;
-  }
-
-  .playground:focus {
-    outline: none;
-  }
 }
 
 /* --------------------------- examples CTA --------------------------- */

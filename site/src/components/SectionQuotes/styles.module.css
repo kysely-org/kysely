@@ -66,7 +66,7 @@
 
 .quoteContainer {
   align-items: flex-start;
-  background-color: var(--kl-bg);
+  background-color: var(--kl-card);
   border: 1px solid var(--kl-line);
   border-radius: 10px;
   display: flex;
@@ -75,11 +75,27 @@
   padding: 20px 22px;
   position: relative;
   text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.quoteContainer::after {
+  color: var(--kl-acc);
+  content: '↗';
+  font-size: 11px;
+  opacity: 0;
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  transition: opacity 0.15s ease;
 }
 
 .quoteContainer:hover {
-  border-color: #3c3c3c;
+  border-color: var(--kl-dash);
   text-decoration: none;
+}
+
+.quoteContainer:hover::after {
+  opacity: 1;
 }
 
 .quoteInnerContainer {
@@ -105,7 +121,7 @@
 }
 
 .quoteText {
-  color: #cfcfcf;
+  color: var(--kl-text2);
   font-size: 13.5px;
   line-height: 1.6;
   text-align: left;
@@ -120,6 +136,6 @@
 }
 
 .darkIcon {
-  fill: #e8e8e8;
+  fill: var(--kl-ink);
 }
 

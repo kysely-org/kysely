@@ -7,6 +7,23 @@ import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
+import { socialIconPaths } from './src/components/socialIconPaths'
+
+function socialNavbarItem(
+  label: string,
+  href: string,
+  icon: { d: string; evenOdd?: boolean; viewBox: string },
+) {
+  const pathRules = icon.evenOdd
+    ? ' fill-rule="evenodd" clip-rule="evenodd"'
+    : ''
+
+  return {
+    position: 'right' as const,
+    type: 'html' as const,
+    value: `<a class="navbar-social" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${label}"><svg viewBox="${icon.viewBox}" xmlns="http://www.w3.org/2000/svg"><path${pathRules} d="${icon.d}"/></svg></a>`,
+  }
+}
 
 export default {
   baseUrl: '/',
@@ -174,7 +191,6 @@ export default {
           title: 'Sponsors',
         },
       ],
-      style: 'dark',
     },
     headTags: [
       {
@@ -229,14 +245,18 @@ export default {
     navbar: {
       items: [
         {
+          position: 'left',
+          type: 'search',
+        },
+        {
           docId: 'intro',
           label: 'Docs',
-          position: 'left',
+          position: 'right',
           type: 'doc',
         },
         {
-          href: 'https://github.com/kysely-org/kysely',
-          label: 'GitHub',
+          href: 'https://play.kysely.dev',
+          label: 'Playground',
           position: 'right',
         },
         {
@@ -244,6 +264,24 @@ export default {
           label: 'API docs',
           position: 'right',
         },
+        {
+          ...socialNavbarItem(
+            'GitHub',
+            'https://github.com/kysely-org/kysely',
+            socialIconPaths.github,
+          ),
+          className: 'navbar-group-start',
+        },
+        socialNavbarItem(
+          'Discord',
+          'https://discord.gg/xyBJ3GwvAm',
+          socialIconPaths.discord,
+        ),
+        socialNavbarItem(
+          'Bluesky',
+          'https://bsky.app/profile/kysely.dev',
+          socialIconPaths.bluesky,
+        ),
       ],
       logo: {
         alt: 'Kysely Logo',
@@ -251,7 +289,6 @@ export default {
         src: 'img/logo.svg',
         width: 32,
       },
-      style: 'dark',
       title: 'Kysely',
     },
     prism: {
@@ -259,6 +296,7 @@ export default {
       theme: themes.github,
     },
   } satisfies PresetClassicThemeConfig,
+  clientModules: ['./src/clientModules/navbarScroll.ts'],
   themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
   url: 'https://kysely.dev',

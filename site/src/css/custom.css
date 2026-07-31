@@ -61,6 +61,7 @@
   --ifm-footer-link-color: var(--gray-12);
 }
 
+
 [data-theme='dark'] .footer {
   background: #131313;
   border-top: 1px solid #2e2e2e;
@@ -69,6 +70,154 @@
 .navbar__title {
   font-weight: 650;
   letter-spacing: -0.01em;
+}
+
+/* VitePress navbar metrics: 64px tall, 24px side padding, translucent
+   group dividers. */
+:root {
+  --ifm-navbar-height: 64px;
+  --ifm-navbar-padding-horizontal: 24px;
+  --navbar-divider: rgb(60 60 67 / 12%);
+}
+
+[data-theme='dark'] {
+  --navbar-divider: rgb(82 82 89 / 32%);
+}
+
+/* VitePress-style navbar: same color as the body at rest, gaining a
+   separating hairline (as a shadow, so no layout shift) once scrolled.
+   Fixed rather than sticky so the macOS overscroll bounce moves the page
+   under the bar, not the bar itself. The landing commits to its own
+   background colors, matched via :has. */
+.navbar {
+  background: var(--ifm-background-color);
+  box-shadow: none;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: box-shadow 0.2s ease;
+}
+
+/* The fixed navbar leaves the document flow; restore its space. */
+#__docusaurus {
+  padding-top: var(--ifm-navbar-height);
+}
+
+/* Infima's light --ifm-background-color is literally `transparent`; the
+   fixed navbar needs a real surface. */
+html[data-theme='light'] .navbar {
+  background: #ffffff;
+}
+
+html[data-theme='light'] body:has([class^='landing_']) .navbar {
+  background: #ffffff;
+}
+
+html[data-theme='dark'] body:has([class^='landing_']) .navbar {
+  background: #131313;
+}
+
+/* VitePress's "gutter" edge: slightly darker than the surface it separates,
+   in both themes — not the lighter in-content divider. */
+html[data-navbar-scrolled] .navbar {
+  box-shadow: 0 1px 0 #e2e2e3;
+}
+
+html[data-theme='dark'][data-navbar-scrolled] .navbar {
+  box-shadow: 0 1px 0 #000000;
+}
+
+.navbar__link {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Social icon buttons, VitePress-style. */
+.navbar-social {
+  align-items: center;
+  border-radius: 6px;
+  color: var(--ifm-navbar-link-color);
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+  width: 32px;
+}
+
+.navbar-social:hover {
+  color: var(--ifm-navbar-link-color);
+  opacity: 1;
+}
+
+.navbar-social svg {
+  fill: currentColor;
+  height: 19px;
+  width: 19px;
+}
+
+.navbar__items--right .navbar__item:has(.navbar-social) {
+  padding: 0 2px;
+}
+
+/* Socials sit outermost, past the color-mode toggle (which Docusaurus
+   always renders after the items) — flex order flips the visual sequence. */
+.navbar__items--right > div[class*='toggle_'] {
+  order: 5;
+}
+
+.navbar__items--right .navbar__item:has(.navbar-social) {
+  order: 10;
+}
+
+/* Vertical dividers flanking the appearance toggle, with hono/knex's exact
+   VitePress geometry: 24px bars, 8px toward the outer groups, 16px toward
+   the toggle. */
+.navbar__items--right > div[class*='toggle_'] {
+  margin-left: 8px;
+  padding-left: 16px;
+  position: relative;
+}
+
+.navbar__items--right .navbar__item.navbar-group-start {
+  margin-left: 16px;
+  padding: 0 2px 0 8px;
+  position: relative;
+}
+
+.navbar__items--right .navbar-group-start::before,
+.navbar__items--right > div[class*='toggle_']::before {
+  background: var(--navbar-divider);
+  content: '';
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+}
+
+/* Replace the stock external-link SVG with the house ↗ used on the
+   landing's proof tiles and quote cards. */
+.navbar [class*='iconExternalLink'] {
+  display: none;
+}
+
+.navbar__link:has([class*='iconExternalLink'])::after {
+  content: '↗';
+  display: inline-block;
+  font-size: 11px;
+  margin-left: 3px;
+  opacity: 0.55;
+  position: relative;
+  top: -2px;
+  transition: opacity 0.15s ease;
+}
+
+.navbar__link:has([class*='iconExternalLink']):hover::after {
+  opacity: 1;
 }
 
 .button {

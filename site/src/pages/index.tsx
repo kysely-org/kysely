@@ -16,6 +16,13 @@ import styles from './index.module.css'
 
 const GITHUB_URL = 'https://github.com/kysely-org/kysely'
 const IN_PRODUCTION_URL = 'https://github.com/kysely-org/kysely/issues/320'
+// Igal's versioning-philosophy comment on "Roadmap to v1.0?"
+const STABILITY_URL =
+  'https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767'
+// The AdonisJS creator's type-safety deep dive across TypeScript ORMs
+const TYPE_SAFETY_URL = 'https://github.com/thetutlage/meta/discussions/8'
+const TEST_FOLDER_BASE_URL =
+  'https://github.com/kysely-org/kysely/tree/master/test'
 
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext()
@@ -26,11 +33,10 @@ export default function Home(): JSX.Element {
         <SectionHero />
         <SectionStats />
         <SectionProduction />
-        <SectionFeatures />
         <SectionCompiler />
         <SectionComposition />
+        <SectionFeatures />
         <SectionQuotes />
-        <SectionPlayground />
         <SectionExamplesCTA />
       </div>
     </Layout>
@@ -42,14 +48,91 @@ function SectionHero() {
     <header className={styles.hero}>
       <div className={clsx('container', styles.heroInner)}>
         <div>
-          <span className={styles.eyebrow}>v{version} · MIT · since 2021</span>
+          <span className={styles.eyebrow}>
+            <a
+              href={`${GITHUB_URL}/releases/tag/v${version}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              v{version}
+            </a>{' '}
+            ·{' '}
+            <a
+              href={`${GITHUB_URL}/blob/master/LICENSE`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              MIT
+            </a>{' '}
+            ·{' '}
+            <a
+              href={`${GITHUB_URL}/commit/8af0017741a355281cbe0d9d3352bffea51eb64c`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              since 2021
+            </a>
+          </span>
           <h1 className={styles.heroTitle}>
-            The type-safe SQL query builder for TypeScript
+            Kysely
+            <span className={styles.heroCategory}>
+              <a
+                href={TYPE_SAFETY_URL}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Type-safe
+              </a>{' '}
+              SQL query builder
+            </span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Kysely compiles 1:1 to the SQL you expect, infers precise result
-            types from your queries, and catches broken queries at compile time
-            — with zero runtime dependencies.
+            <a href={STABILITY_URL} rel="noopener noreferrer" target="_blank">
+              Mature
+            </a>
+            , predictable SQL, precise types, tight feedback loops.
+            <br />
+            Runs everywhere:{' '}
+            <a
+              href={`${TEST_FOLDER_BASE_URL}/node`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Node
+            </a>
+            ,{' '}
+            <a
+              href={`${TEST_FOLDER_BASE_URL}/deno`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Deno
+            </a>
+            ,{' '}
+            <a
+              href={`${TEST_FOLDER_BASE_URL}/bun`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Bun
+            </a>
+            ,{' '}
+            <a
+              href={`${TEST_FOLDER_BASE_URL}/cloudflare-workers`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Workers
+            </a>
+            ,{' '}
+            <a
+              href={`${TEST_FOLDER_BASE_URL}/browser`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Browsers
+            </a>
+            .
           </p>
           <div className={styles.heroButtons}>
             <a
@@ -76,6 +159,7 @@ function SectionHero() {
 // Rendered at build time and shown until the live numbers arrive — also the
 // permanent values for visitors with JavaScript disabled or the APIs blocked.
 const FALLBACK_STATS = {
+  contributors: '150+',
   downloads: '12M+',
   stars: '14k+',
 }
@@ -90,11 +174,27 @@ function formatCompact(value: number): string {
 }
 
 function useLiveStats() {
+  const [contributors, setContributors] = useState<number | null>(null)
   const [downloads, setDownloads] = useState<number | null>(null)
   const [stars, setStars] = useState<number | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
+
+    // The total lives in the Link header's last-page number.
+    fetch(
+      'https://api.github.com/repos/kysely-org/kysely/contributors?per_page=1',
+      { signal: controller.signal },
+    )
+      .then((response) => {
+        const link = response.headers.get('link') ?? ''
+        const match = link.match(/[?&]page=(\d+)>; rel="last"/)
+
+        if (match) {
+          setContributors(Number(match[1]))
+        }
+      })
+      .catch(() => {})
 
     fetch('https://api.npmjs.org/downloads/point/last-week/kysely', {
       signal: controller.signal,
@@ -121,14 +221,15 @@ function useLiveStats() {
     return () => controller.abort()
   }, [])
 
-  return { downloads, stars }
+  return { contributors, downloads, stars }
 }
 
 function SectionStats() {
-  const { downloads, stars } = useLiveStats()
+  const { contributors, downloads, stars } = useLiveStats()
 
   const stats = [
     {
+      href: 'https://npmtrends.com/@mikro-orm/core-vs-@prisma/client-vs-drizzle-orm-vs-knex-vs-kysely-vs-sequelize-vs-typeorm',
       label: 'weekly npm downloads',
       title:
         downloads != null
@@ -140,23 +241,54 @@ function SectionStats() {
           : FALLBACK_STATS.downloads,
     },
     {
+      href: `${GITHUB_URL}/stargazers`,
       label: 'GitHub stars',
       title: stars != null ? stars.toLocaleString('en') : undefined,
       value: stars != null ? formatCompact(stars) : FALLBACK_STATS.stars,
     },
-    { label: 'runtime dependencies', title: undefined, value: '0' },
-    { label: 'built-in dialects', title: undefined, value: '5' },
+    {
+      href: 'https://www.npmjs.com/package/kysely?activeTab=dependencies',
+      label: 'runtime dependencies',
+      title: undefined,
+      value: '0',
+    },
+    {
+      href: `${GITHUB_URL}/graphs/contributors?all=1`,
+      label: 'contributors',
+      title:
+        contributors != null
+          ? `${contributors.toLocaleString('en')} on GitHub`
+          : undefined,
+      value:
+        contributors != null
+          ? formatCompact(contributors)
+          : FALLBACK_STATS.contributors,
+    },
   ]
 
   return (
     <section className={styles.stats}>
       <div className={clsx('container', styles.statsInner)}>
-        {stats.map(({ label, title, value }) => (
-          <div key={label} className={styles.stat} title={title}>
-            <div className={styles.statValue}>{value}</div>
-            <div className={styles.statLabel}>{label}</div>
-          </div>
-        ))}
+        {stats.map(({ href, label, title, value }) =>
+          href ? (
+            <a
+              key={label}
+              className={styles.stat}
+              href={href}
+              rel="noopener noreferrer"
+              target="_blank"
+              title={title}
+            >
+              <div className={styles.statValue}>{value}</div>
+              <div className={styles.statLabel}>{label}</div>
+            </a>
+          ) : (
+            <div key={label} className={styles.stat} title={title}>
+              <div className={styles.statValue}>{value}</div>
+              <div className={styles.statLabel}>{label}</div>
+            </div>
+          ),
+        )}
       </div>
     </section>
   )
@@ -183,18 +315,32 @@ function SectionProduction() {
               {productionProof
                 .filter((entry) => entry.group === group)
                 .map(({ href, name }) => (
-                  <a key={name} href={href}>
+                  <a
+                    key={name}
+                    href={href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
                     {name}
                   </a>
                 ))}
               {group === 'production' && (
-                <a className={styles.productionCTA} href={IN_PRODUCTION_URL}>
+                <a
+                  className={styles.productionCTA}
+                  href={IN_PRODUCTION_URL}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
                   + add your team
                 </a>
               )}
             </span>
           </React.Fragment>
         ))}
+        <span className={styles.productionFootnote}>
+          every name links to public proof — a manifest, internal usage, or a
+          statement on the record
+        </span>
       </div>
     </section>
   )
@@ -215,23 +361,29 @@ function SectionCompiler() {
             through every query that needs updating.
           </p>
         </div>
-        <div className={styles.editor}>
-          <div className={styles.editorBar}>
-            <span className={styles.editorDots}>
-              <i />
-              <i />
-              <i />
-            </span>
-            person.repository.ts
+        <div>
+          <div className={styles.editor}>
+            <div className={styles.editorBar}>
+              <span className={styles.editorDots}>
+                <i />
+                <i />
+                <i />
+              </span>
+              person.repository.ts
+            </div>
+            <div
+              className={styles.editorCode}
+              dangerouslySetInnerHTML={{ __html: compilerSnippetHtml }}
+            />
+            <div className={styles.errPanel}>
+              Argument of type <span>'"person.ag"'</span> is not assignable to
+              parameter of type{' '}
+              <span>{"'ReferenceExpression<DB, \"person\">'"}</span>.{' '}
+              <span>ts(2345)</span>
+            </div>
           </div>
-          <div
-            className={styles.editorCode}
-            dangerouslySetInnerHTML={{ __html: compilerSnippetHtml }}
-          />
-          <div className={styles.errPanel}>
-            Argument of type <span>'"person.ag"'</span> is not assignable to
-            parameter of type <span>{"'ReferenceExpression<DB, \"person\">'"}</span>
-            . <span>ts(2345)</span>
+          <div className={styles.editorCaption}>
+            actual compiler output — ts(2345)
           </div>
         </div>
       </div>
@@ -255,60 +407,29 @@ function SectionComposition() {
             nested JSON — one query, one round trip, no relations DSL to learn.
           </p>
         </div>
-        <div className={styles.editor}>
-          <div className={styles.editorBar}>
-            <span className={styles.editorDots}>
-              <i />
-              <i />
-              <i />
-            </span>
-            person.helpers.ts
+        <div>
+          <div className={styles.editor}>
+            <div className={styles.editorBar}>
+              <span className={styles.editorDots}>
+                <i />
+                <i />
+                <i />
+              </span>
+              person.helpers.ts
+            </div>
+            <div
+              className={styles.editorCode}
+              dangerouslySetInnerHTML={{ __html: compositionSnippetHtml }}
+            />
+            <div className={styles.typePanel}>
+              <span>const person:</span>{' '}
+              {
+                "{ id: number; first_name: string; pets: { name: string; species: 'dog' | 'cat' }[] }"
+              }
+            </div>
           </div>
-          <div
-            className={styles.editorCode}
-            dangerouslySetInnerHTML={{ __html: compositionSnippetHtml }}
-          />
-          <div className={styles.typePanel}>
-            <span>const person:</span>{' '}
-            {
-              "{ id: number; first_name: string; pets: { name: string; species: 'dog' | 'cat' }[] }"
-            }
-          </div>
+          <div className={styles.editorCaption}>inferred type, verbatim</div>
         </div>
-      </div>
-    </section>
-  )
-}
-
-const STACKBLITZ_URL = 'https://stackblitz.com/edit/react-ts-pppzf5'
-const STACKBLITZ_PARAMS = new URLSearchParams({
-  ctl: '1',
-  embed: '1',
-  file: 'playground.ts',
-  hidedevtools: '1',
-  hideExplorer: '1',
-  hideNavigation: '1',
-  showSidebar: '0',
-  theme: 'dark',
-})
-
-function SectionPlayground() {
-  return (
-    <section className={styles.playgroundSection}>
-      <div className={clsx('container', styles.playgroundContainer)}>
-        <h2>Try it out for yourself!</h2>
-        <p>
-          Modify the query on the left and view the generated SQL on the right.
-        </p>
-        <iframe
-          allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-          className={styles.playground}
-          sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-          src={`${STACKBLITZ_URL}?${STACKBLITZ_PARAMS}`}
-          tabIndex={-1}
-          title="Kysely Demo"
-          loading="lazy"
-        />
       </div>
     </section>
   )

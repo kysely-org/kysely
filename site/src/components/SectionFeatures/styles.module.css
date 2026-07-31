@@ -1,4 +1,5 @@
 .features {
+  border-top: 1px solid var(--kl-line);
   padding: 72px 0 84px;
   width: 100%;
 }
@@ -48,6 +49,16 @@
   font-size: 13.5px;
   line-height: 1.65;
   margin: 0;
+}
+
+.featureDescription a {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.featureDescription a:hover code {
+  border-color: var(--kl-acc);
+  color: var(--kl-acc);
 }
 
 @media (max-width: 996px) {

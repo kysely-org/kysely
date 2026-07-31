@@ -11,10 +11,10 @@
  */
 .cropBox {
   aspect-ratio: 772 / 584;
-  background: #1e1e1e;
+  background: var(--kl-surface, #1e1e1e);
   border: 1px solid var(--kl-line, #2e2e2e);
   border-radius: 12px;
-  box-shadow: 0 24px 64px rgb(0 0 0 / 45%);
+  box-shadow: 0 24px 64px var(--kl-shadow, rgb(0 0 0 / 45%));
   overflow: hidden;
   position: relative;
 }

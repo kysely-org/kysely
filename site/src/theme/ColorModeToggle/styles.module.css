@@ -1,0 +1,129 @@
+.toggle {
+  align-items: center;
+  display: flex;
+}
+
+/* A pill-shaped button mostly hidden behind the track's left curve — the
+   visible part is a crescent sliver carrying the system icon. */
+.crescent {
+  align-items: center;
+  background: var(--ifm-color-emphasis-200);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 11px 0 0 11px;
+  border-right: none;
+  cursor: pointer;
+  display: flex;
+  height: 22px;
+  justify-content: flex-start;
+  margin-right: -22px;
+  opacity: 0.55;
+  padding: 0 0 0 5px;
+  position: relative;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.25s ease;
+  width: 42px;
+  z-index: 1;
+}
+
+.crescent:hover {
+  border-color: var(--ifm-color-emphasis-600);
+  opacity: 1;
+}
+
+.crescentActive {
+  background: #ffffff;
+  opacity: 1;
+}
+
+.crescentActive .crescentIcon {
+  color: #3c3c43;
+}
+
+:global(html[data-theme='dark']) .crescentActive {
+  background: #1d1d1f;
+}
+
+:global(html[data-theme='dark']) .crescentActive .crescentIcon {
+  color: #e8e8e8;
+}
+
+.crescentIcon {
+  color: var(--ifm-color-emphasis-700);
+  height: 10px;
+  width: 10px;
+}
+
+.track {
+  background: var(--ifm-color-emphasis-200);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 11px;
+  cursor: pointer;
+  height: 22px;
+  padding: 0;
+  position: relative;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+  width: 40px;
+  z-index: 2;
+}
+
+.track:hover {
+  border-color: var(--ifm-color-emphasis-600);
+}
+
+.thumb {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  display: flex;
+  height: 18px;
+  justify-content: center;
+  left: 1px;
+  position: absolute;
+  top: 1px;
+  transition: transform 0.25s ease;
+  width: 18px;
+}
+
+:global(html[data-theme='dark']) .thumb {
+  background: #1d1d1f;
+  transform: translateX(18px);
+}
+
+.icon {
+  height: 12px;
+  position: absolute;
+  transition: opacity 0.25s ease;
+  width: 12px;
+}
+
+.sun {
+  color: #3c3c43;
+  opacity: 1;
+}
+
+.moon {
+  color: #e8e8e8;
+  opacity: 0;
+}
+
+:global(html[data-theme='dark']) .sun {
+  opacity: 0;
+}
+
+:global(html[data-theme='dark']) .moon {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crescent,
+  .track,
+  .thumb,
+  .icon {
+    transition: none;
+  }
+}

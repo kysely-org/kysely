@@ -11,8 +11,9 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { codeToHtml } from 'shiki'
 
-// Matches the VS Code theme in the hero demo video.
-const THEME = 'dark-plus'
+// Dual themes: Dark+ matches the hero demo video; Light+ is its light-mode
+// sibling. Emitted as CSS variables and switched by [data-theme] in CSS.
+const THEMES = { dark: 'dark-plus', light: 'light-plus' }
 
 const compilerSnippet = `const rows = await db
   .selectFrom('person')
@@ -34,7 +35,12 @@ const person = await db
   .executeTakeFirstOrThrow()`
 
 function highlight(code, decorations = []) {
-  return codeToHtml(code, { lang: 'ts', theme: THEME, decorations })
+  return codeToHtml(code, {
+    lang: 'ts',
+    themes: THEMES,
+    defaultColor: false,
+    decorations,
+  })
 }
 
 const squiggleTarget = "'person.ag'"
