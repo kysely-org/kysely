@@ -94,7 +94,33 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-export class Kysely<DB>
+// Why `in out DB` here and on the other generic types in this file:
+//
+// To relate two *different* instantiations of the same generic type - say
+// `Kysely<DB1>` to `Kysely<DB2>` - TypeScript first needs the variance of each
+// type parameter. Nothing declared it, so the compiler measured it: it
+// instantiates the type twice with synthetic marker types and relates the two
+// results structurally, member by member.
+//
+// That measurement was the expensive part, and it didn't terminate on its own.
+// Members like `$extendTables` return the same type over a *recomputed* `DB`, so
+// comparing them starts the whole comparison again one level down, against a `DB`
+// the compiler hasn't seen before and so can't match against a pair already in
+// progress. It only stopped at the compiler's internal recursion limit - and that
+// limit isn't the same across versions, which is why this cost ~5x more on
+// TypeScript 7 than on 6. Relating two `Kysely` types was ~12k type
+// instantiations on TS6 and ~56k on TS7; it is now 2 on both.
+//
+// An explicit annotation skips the measurement entirely: the compiler just uses
+// the declared variance. `in out` (invariant) is the strictest option and the
+// only sound one here - TypeScript rejects `out DB` with TS2636, because
+// `selectFrom` and friends take `keyof DB`.
+//
+// This is not a technique the query builders can borrow. They deliberately let a
+// wider builder stand in for a narrower one, which is bivariance, and bivariance
+// can't be spelled as an annotation. See `test/typings/test-d/generic.test-d.ts`
+// for what keeps those in check instead.
+export class Kysely<in out DB>
   extends QueryCreator<DB>
   implements QueryExecutorProvider, AsyncDisposable
 {
@@ -665,7 +691,7 @@ export type Transaction<DB> = TransactionMethods<DB> & Kysely<DB>
  * return another transaction rather than a plain `Kysely` instance, and the
  * ones a transaction doesn't support.
  */
-export interface TransactionMethods<DB> {
+export interface TransactionMethods<in out DB> {
   /**
    * Always `true` for a transaction.
    *
@@ -901,7 +927,7 @@ export interface KyselyConfig {
   readonly log?: LogConfig
 }
 
-export class ConnectionBuilder<DB> {
+export class ConnectionBuilder<in out DB> {
   readonly #props: ConnectionBuilderProps
 
   constructor(props: ConnectionBuilderProps) {
@@ -929,7 +955,7 @@ export class ConnectionBuilder<DB> {
 
 interface ConnectionBuilderProps extends KyselyProps {}
 
-export class TransactionBuilder<DB> {
+export class TransactionBuilder<in out DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
@@ -996,7 +1022,7 @@ interface TransactionBuilderProps extends KyselyProps {
   readonly isolationLevel?: IsolationLevel
 }
 
-export class ControlledTransactionBuilder<DB> {
+export class ControlledTransactionBuilder<in out DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
@@ -1062,7 +1088,10 @@ export type ControlledTransaction<
  * @typeParam S - The names of the savepoints that are currently open, in the
  *    order they were created.
  */
-export interface ControlledTransactionMethods<DB, S extends string[] = []> {
+export interface ControlledTransactionMethods<
+  in out DB,
+  S extends string[] = [],
+> {
   readonly isCommitted: boolean
 
   readonly isRolledBack: boolean

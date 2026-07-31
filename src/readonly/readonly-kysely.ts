@@ -4,9 +4,11 @@ import type {
   ConnectionBuilder,
   ControlledTransaction,
   ControlledTransactionBuilder,
+  ControlledTransactionMethods,
   Kysely,
   Transaction,
   TransactionBuilder,
+  TransactionMethods,
 } from '../kysely.js'
 import type {
   ReleaseSavepoint,
@@ -58,7 +60,10 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * db.deleteFrom('person') // typescript compiler error!
  * ```
  */
-export interface ReadonlyKysely<DB>
+// `DB` is `in out` on this and the other read-only types below for the same
+// reason it is on `Kysely`. See the comment above the `Kysely` class in
+// `src/kysely.ts`.
+export interface ReadonlyKysely<in out DB>
   extends
     ReadonlyQueryCreator<DB>,
     Pick<
@@ -156,7 +161,7 @@ export interface ReadonlyKysely<DB>
 /**
  * Similar to {@link ConnectionBuilder} but read-only.
  */
-export interface ReadonlyConnectionBuilder<DB> extends Omit<
+export interface ReadonlyConnectionBuilder<in out DB> extends Omit<
   ConnectionBuilder<DB>,
   'execute'
 > {
@@ -172,7 +177,7 @@ export interface ReadonlyConnectionBuilder<DB> extends Omit<
 /**
  * Similar to {@link TransactionBuilder} but read-only.
  */
-export interface ReadonlyTransactionBuilder<DB> {
+export interface ReadonlyTransactionBuilder<in out DB> {
   /**
    * Similar to {@link TransactionBuilder.execute} but read-only.
    */
@@ -193,36 +198,58 @@ export interface ReadonlyTransactionBuilder<DB> {
 
 /**
  * Similar to {@link Transaction} but read-only.
+ *
+ * Like {@link Transaction}, this is an intersection of
+ * {@link ReadonlyTransactionMethods} and {@link ReadonlyKysely} rather than an
+ * interface that repeats their members, for type check performance reasons.
+ *
+ * Spelling it this way is what makes a `ReadonlyTransaction` usable where a
+ * {@link ReadonlyKysely} is expected: the compiler finds the very same
+ * `ReadonlyKysely<DB>` among the intersection's members and stops there. As an
+ * interface of its own it had to relate the two structurally, and the members
+ * that return themselves over a recomputed `DB` - `$extendTables` and friends -
+ * made that recurse until the compiler gave up. That cost 1.3M type
+ * instantiations on TypeScript 7, five times what it cost on 6.
  */
-export interface ReadonlyTransaction<DB>
-  extends
-    Pick<
-      ReadonlyKysely<DB>,
-      | 'case'
-      | 'deleteFrom'
-      | 'dynamic'
-      | 'executeQuery'
-      | 'fn'
-      | 'getExecutor'
-      | 'insertInto'
-      | 'introspection'
-      | 'mergeInto'
-      | 'replaceInto'
-      | 'schema'
-      | 'selectFrom'
-      | 'selectNoFrom'
-      | 'updateTable'
-      | 'with'
-      | 'withRecursive'
-    >,
-    Pick<
-      Transaction<DB>,
-      | 'connection'
-      | 'destroy'
-      | 'isTransaction'
-      | 'startTransaction'
-      | 'transaction'
-    > {
+export type ReadonlyTransaction<DB> = ReadonlyTransactionMethods<DB> &
+  ReadonlyKysely<DB>
+
+/**
+ * The methods a {@link ReadonlyTransaction} has on top of the
+ * {@link ReadonlyKysely} ones.
+ *
+ * Similar to {@link TransactionMethods} but read-only.
+ */
+export interface ReadonlyTransactionMethods<in out DB> {
+  /**
+   * Always `true` for a transaction.
+   *
+   * The type is `true` instead of `boolean` to make `ReadonlyKysely<DB>`
+   * unassignable to `ReadonlyTransaction<DB>` while allowing assignment the
+   * other way around.
+   */
+  readonly isTransaction: true
+
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  transaction(): never
+
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  startTransaction(): never
+
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  connection(): never
+
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  destroy(): never
+
   /**
    * Similar to {@link Transaction.withoutPlugins} but read-only.
    */
@@ -272,7 +299,7 @@ export interface ReadonlyTransaction<DB>
 /**
  * Similar to {@link ControlledTransactionBuilder} but read-only.
  */
-export interface ReadonlyControlledTransactionBuilder<DB> {
+export interface ReadonlyControlledTransactionBuilder<in out DB> {
   /**
    * Similar to {@link ControlledTransactionBuilder.execute} but read-only.
    */
@@ -295,14 +322,31 @@ export interface ReadonlyControlledTransactionBuilder<DB> {
 
 /**
  * Similar to {@link ControlledTransaction} but read-only.
+ *
+ * Like {@link ReadonlyTransaction}, this is an intersection rather than an
+ * interface of its own, for the type check performance reasons described there.
  */
-export interface ReadonlyControlledTransaction<DB, S extends string[] = []>
-  extends
-    ReadonlyTransaction<DB>,
-    Pick<
-      ControlledTransaction<DB, S>,
-      'commit' | 'isCommitted' | 'isRolledBack' | 'rollback'
-    > {
+export type ReadonlyControlledTransaction<
+  DB,
+  S extends string[] = [],
+> = ReadonlyControlledTransactionMethods<DB, S> & ReadonlyTransaction<DB>
+
+/**
+ * The methods a {@link ReadonlyControlledTransaction} has on top of the
+ * {@link ReadonlyTransaction} ones.
+ *
+ * Similar to {@link ControlledTransactionMethods} but read-only.
+ *
+ * @typeParam S - The names of the savepoints that are currently open, in the
+ *    order they were created.
+ */
+export interface ReadonlyControlledTransactionMethods<
+  in out DB,
+  S extends string[] = [],
+> extends Pick<
+  ControlledTransactionMethods<DB, S>,
+  'commit' | 'isCommitted' | 'isRolledBack' | 'rollback'
+> {
   /**
    * Similar to {@link ControlledTransaction.releaseSavepoint} but read-only.
    */

@@ -1,4 +1,5 @@
 import type {
+  ControlledTransaction,
   Kysely,
   ExpressionBuilder,
   SelectQueryBuilder,
@@ -6,17 +7,22 @@ import type {
   Nullable,
   Selectable,
   SelectType,
+  Transaction,
 } from '../index.js'
 
-import { expectAssignable, expectType } from 'tsd'
+import { expectAssignable, expectNotAssignable, expectType } from 'tsd'
 import type { Database, Movie, Person } from '../shared.js'
 
 // The tests below relate two different instantiations of the same builder type.
-// TypeScript can't derive variance for `SelectQueryBuilder` or `ExpressionBuilder`
-// (both mention their `DB`/`TB` parameters under `keyof` and in conditional types),
-// so it has to compare them structurally, member by member. That makes these the
-// most expensive type-level operations in the library, so two rules keep them in
-// check - breaking either one is easy to do by accident and expensive:
+//
+// To do that, TypeScript first needs the variance of each type parameter. Nothing
+// declares it, so the compiler measures it: it instantiates the type twice with
+// synthetic marker types and relates the two results structurally, member by
+// member. For these builders that measurement comes back "unreliable" - they
+// mention their `DB`/`TB` parameters under `keyof` and in conditional types - so
+// every comparison then *also* falls back to the same structural walk. That makes
+// these the most expensive type-level operations in the library, and three rules
+// keep them in check. Breaking any of them is easy to do by accident, and expensive:
 //
 //   1. A method that accepts a `DB`/`TB`-parameterized expression type must keep it
 //      behind a generic type parameter (`limit<VE extends ValueExpression<...>>(v: VE)`,
@@ -32,7 +38,14 @@ import type { Database, Movie, Person } from '../shared.js'
 //      result types guard against this with `TableExpression<DB, TB> extends TE`, and
 //      `UpdateQueryBuilder.$if`/`DeleteQueryBuilder.$if` with `unknown extends O2`.
 //
-// Note that such a guard is only worth adding where it *replaces* a conditional that
+//   3. A type that is only ever related at a single `DB` should declare its variance
+//      instead, with an `in out` annotation. That skips the measurement entirely, and
+//      with it the recursion - it is what makes relating two `Kysely` types free. This
+//      is only available to types that don't need the structural fallback: the query
+//      builders let a wider builder stand in for a narrower one (the first tests
+//      below), which is bivariance, and bivariance can't be spelled as an annotation.
+//
+// Note that a rule 2 guard is only worth adding where it *replaces* a conditional that
 // would otherwise expand into a union of builders. Adding one to a result type that is
 // already a single type makes things dramatically worse, because the guard is itself a
 // conditional - it was measured at 15x on `Kysely.$extendTables` and friends. Not every
@@ -80,6 +93,39 @@ function testExpressionBuilderExtendsFuncArg() {
 
   const t2 = {} as T2
   test(t2)
+}
+
+// `Kysely` and the transaction types declare `DB` as `in out` (rule 3 above).
+function testKyselyAssignability() {
+  type A = { a: number }
+  type B = { b: string }
+
+  // Written out a second time on purpose: an identical *type* short-circuits the
+  // whole comparison, so it wouldn't test anything. Two separately written but
+  // mutually assignable databases is the case that has to go through variance.
+  const db = {} as Kysely<{ a: A; b: B }>
+  const trx = {} as Transaction<{ a: A; b: B }>
+  const controlled = {} as ControlledTransaction<{ a: A; b: B }>
+
+  expectAssignable<Kysely<{ a: { a: number }; b: { b: string } }>>(db)
+
+  // A transaction can stand in for a `Kysely`, but not the other way around.
+  expectAssignable<Kysely<{ a: A; b: B }>>(trx)
+  expectAssignable<Kysely<{ a: A; b: B }>>(controlled)
+  expectAssignable<Transaction<{ a: A; b: B }>>(controlled)
+  expectNotAssignable<Transaction<{ a: A; b: B }>>(db)
+
+  // A `Kysely` over a *different* database is not interchangeable, in either
+  // direction. Use `$omitTables`/`$pickTables`/`$extendTables` to change it.
+  //
+  // Both of these used to be allowed, but only because the compiler didn't trust
+  // the variance it had measured and fell back to comparing the two structurally,
+  // where the methods match bivariantly. It was never a variance the library could
+  // have declared - TypeScript rejects `out DB` on `Kysely` with TS2636 - and the
+  // second one is unsound: it hands you a `Kysely` typed with a table the
+  // underlying database doesn't have.
+  expectNotAssignable<Kysely<{ a: A }>>(db)
+  expectNotAssignable<Kysely<{ a: A; b: B }>>({} as Kysely<{ a: A }>)
 }
 
 async function testGenericSelectHelper() {

@@ -12,6 +12,11 @@ import type {
   UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
 } from '../../dist/index.js'
+import type {
+  ReadonlyControlledTransaction,
+  ReadonlyKysely,
+  ReadonlyTransaction,
+} from '../../dist/readonly/index.js'
 
 // These benchmarks cover the scenarios in `test/typings/test-d/generic.test-d.ts`.
 // They all relate two different instantiations of the same builder type, which
@@ -120,6 +125,17 @@ declare function acceptsKysely(db: Kysely<{ a: A; b: B }>): void
 declare const controlledTransaction: ControlledTransaction<{ a: A; b: B }>
 declare function acceptsTransaction(trx: Transaction<{ a: A; b: B }>): void
 
+declare const readonlyKysely: ReadonlyKysely<{ a: A; b: B }>
+declare const readonlyTransaction: ReadonlyTransaction<{ a: A; b: B }>
+declare const readonlyControlledTransaction: ReadonlyControlledTransaction<{
+  a: A
+  b: B
+}>
+declare function acceptsReadonlyKysely(db: ReadonlyKysely<{ a: A; b: B }>): void
+declare function acceptsReadonlyTransaction(
+  trx: ReadonlyTransaction<{ a: A; b: B }>,
+): void
+
 console.log('generic.bench.ts:\n')
 
 bench.baseline(() => {})
@@ -162,16 +178,39 @@ bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
 
 bench('Kysely assignable to Kysely', () => {
   return acceptsKysely(plainKysely)
-}).types([11784, 'instantiations'])
+}).types([2, 'instantiations'])
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([11832, 'instantiations'])
+}).types([50, 'instantiations'])
 
 bench('ControlledTransaction assignable to Kysely', () => {
   return acceptsKysely(controlledTransaction)
-}).types([11846, 'instantiations'])
+}).types([64, 'instantiations'])
 
+// Still the expensive one: a `ControlledTransaction` and a `Transaction` share
+// members whose return types are these same two intersections, so the compiler
+// has to walk both in full. It doesn't recurse without bound - the count barely
+// moves between TypeScript versions - it's just a lot of members.
 bench('ControlledTransaction assignable to Transaction', () => {
   return acceptsTransaction(controlledTransaction)
-}).types([330097, 'instantiations'])
+}).types([136150, 'instantiations'])
+
+// The read-only mirror of the four cases above. It has the same shape for the
+// same reason, and had the same problem: before `ReadonlyTransaction` became an
+// intersection, the second of these cost 1.3M instantiations on TypeScript 7.
+bench('ReadonlyKysely assignable to ReadonlyKysely', () => {
+  return acceptsReadonlyKysely(readonlyKysely)
+}).types([26, 'instantiations'])
+
+bench('ReadonlyTransaction assignable to ReadonlyKysely', () => {
+  return acceptsReadonlyKysely(readonlyTransaction)
+}).types([101, 'instantiations'])
+
+bench('ReadonlyControlledTransaction assignable to ReadonlyKysely', () => {
+  return acceptsReadonlyKysely(readonlyControlledTransaction)
+}).types([131, 'instantiations'])
+
+bench('ReadonlyControlledTransaction assignable to ReadonlyTransaction', () => {
+  return acceptsReadonlyTransaction(readonlyControlledTransaction)
+}).types([74677, 'instantiations'])
