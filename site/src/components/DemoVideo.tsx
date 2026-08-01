@@ -69,7 +69,7 @@ export function DemoVideo() {
         )}
       </div>
       <figcaption className={styles.caption}>
-        real footage — schema-aware autocompletion and inline docs
+        real footage: schema-aware autocompletion and inline docs
       </figcaption>
     </figure>
   )

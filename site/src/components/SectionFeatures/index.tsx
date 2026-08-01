@@ -8,7 +8,7 @@ type FeatureItem = {
 }
 
 // One sentence per cell, for landing-page scannability. The original long
-// copy is kept in comments below each entry — good candidates for expansion
+// copy is kept in comments below each entry; good candidates for expansion
 // in the docs.
 const FeatureList: FeatureItem[] = [
   // Original: "Kysely's state-of-the-art, type-safe API provides precise
@@ -20,7 +20,8 @@ const FeatureList: FeatureItem[] = [
     title: 'No compromises',
     description: (
       <>
-        Precise result types and compile-time errors within queries — and with{' '}
+        Precise TypeScript result types and compile-time errors within queries.
+        With{' '}
         <a
           href="https://github.com/RobinBlomberg/kysely-codegen"
           rel="noopener noreferrer"
@@ -37,12 +38,12 @@ const FeatureList: FeatureItem[] = [
   // structure, and predictability through 1:1 compilation. Teams proficient
   // in SQL can pick up Kysely and be productive in minutes."
   {
-    tag: 'wysiwyg',
+    tag: 'no magic',
     title: 'What you see is what you get',
     description: (
       <>
-        A thin abstraction layer over SQL, crafted by SQL lovers for SQL lovers
-        — familiar naming, predictable 1:1 compilation.
+        A thin abstraction layer over SQL, crafted by SQL lovers for SQL
+        lovers. Familiar naming, predictable 1:1 query compilation.
       </>
     ),
   },
@@ -55,7 +56,7 @@ const FeatureList: FeatureItem[] = [
     title: 'Your schema, autocompleted',
     description: (
       <>
-        Your database schema types flow through Kysely's fluent API — a typing
+        Your database schema types flow through Kysely's fluent API. A typing
         experience second only to full-blown database IDEs.
       </>
     ),
@@ -65,12 +66,12 @@ const FeatureList: FeatureItem[] = [
   // MERGE, WITH, and more. When needed, you can also use raw SQL strings,
   // even within structured queries."
   {
-    tag: 'depth',
-    title: 'The whole of SQL',
+    tag: 'sql',
+    title: 'Deeper than the rest',
     description: (
       <>
-        SELECT through MERGE, CTEs, window functions — with raw SQL escape
-        hatches inside structured queries.
+        Spec-faithful APIs for everything production teams need, composable
+        all the way down, escape hatches everywhere.
       </>
     ),
   },
@@ -83,7 +84,7 @@ const FeatureList: FeatureItem[] = [
     title: 'Query any SQL database',
     description: (
       <>
-        PostgreSQL, MySQL, MS SQL Server, SQLite, and PGlite out of the box —
+        PostgreSQL, MySQL, MS SQL Server, SQLite, and PGlite out of the box,
         plus a community-driven dialect system for everything else.
       </>
     ),
@@ -97,30 +98,31 @@ const FeatureList: FeatureItem[] = [
     title: 'Run anywhere',
     description: (
       <>
-        Zero dependencies and no environment-specific APIs — runs in Node.js,
+        Zero dependencies and no environment-specific APIs. Runs in Node.js,
         Deno, Bun, AWS Lambda, Cloudflare Workers, and browsers.
       </>
     ),
   },
+  // Benched 2026-08: the migrations story is optional and already covered in
+  // the docs. Kept for reuse there.
+  // {
+  //   tag: 'no surprises',
+  //   title: "If it ain't broke",
+  //   description: "Up/down migrations as code, like we've always done it:
+  //     reviewed in the PR, run as written. No outsourcing prod to a diff
+  //     engine. Try kysely-ctl (https://github.com/kysely-org/kysely-ctl)."
+  // },
   // Original: "Kysely's migration module provides a flexible, non-opinionated
   // core for writing migrations in TypeScript, and running them in your
   // environment and pace of choice. Its community-driven ecosystem provides
   // file migration providers, CLIs, and more."
   {
-    tag: 'migrations',
-    title: 'Take control',
+    tag: 'agent-ready',
+    title: 'Manual included',
     description: (
       <>
-        A flexible, non-opinionated core for writing and running TypeScript
-        migrations — at your pace. Try{' '}
-        <a
-          href="https://github.com/kysely-org/kysely-ctl"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <code>kysely-ctl</code>
-        </a>
-        .
+        Everything is documented inline, with type-checked code examples that
+        can't drift. Hover docs for humans, rich context for agents.
       </>
     ),
   },
@@ -133,7 +135,7 @@ const FeatureList: FeatureItem[] = [
     title: 'Extend everything',
     description: (
       <>
-        Modify queries before compilation and results after execution —
+        Modify queries before compilation and results after execution.
         camelCase to snake_case and back, for example.
       </>
     ),
@@ -155,9 +157,7 @@ export function SectionFeatures(): JSX.Element {
     <section className={styles.features}>
       <div className="container">
         <h2 className={styles.sectionHeading}>Show this to your boss!</h2>
-        <p className={styles.sectionSub}>
-          If you know SQL, you already know Kysely.
-        </p>
+        <p className={styles.sectionSub}>What Kysely optimizes for.</p>
         <div className={styles.grid}>
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />

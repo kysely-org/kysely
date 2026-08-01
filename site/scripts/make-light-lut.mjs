@@ -65,7 +65,7 @@ function map(p) {
   for (const [src, dst] of anchors) {
     const d2 = dist2(p, src)
     if (d2 < 1e-8) return dst
-    const w = 1 / d2 ** 2 // power 4 — localizes each anchor's influence
+    const w = 1 / d2 ** 2 // power 4, localizes each anchor's influence
     wsum += w
     out[0] += dst[0] * w
     out[1] += dst[1] * w

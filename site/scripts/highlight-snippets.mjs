@@ -21,17 +21,20 @@ const compilerSnippet = `const rows = await db
   .where('person.ag', '>', 18)
   .execute()`
 
-const compositionSnippet = `function withPets(eb: ExpressionBuilder<DB, 'person'>) {
-  return jsonArrayFrom(
-    eb.selectFrom('pet')
-      .select(['pet.name', 'pet.species'])
-      .whereRef('pet.owner_id', '=', 'person.id')
-  ).as('pets')
+const compositionSnippet = `function withPets(
+  eb: ExpressionBuilder<DB, 'person'>,
+) {
+  const pets = eb
+    .selectFrom('pet')
+    .select(['name', 'species'])
+    .whereRef('owner_id', '=', 'person.id')
+  return jsonArrayFrom(pets).as('pets')
 }
 
 const person = await db
   .selectFrom('person')
-  .select((eb) => ['person.id', 'person.first_name', withPets(eb)])
+  .select(['id', 'first_name'])
+  .select(withPets)
   .executeTakeFirstOrThrow()`
 
 function highlight(code, decorations = []) {
@@ -57,7 +60,7 @@ const [compilerHtml, compositionHtml] = await Promise.all([
   highlight(compositionSnippet),
 ])
 
-const output = `// AUTO-GENERATED FILE — DO NOT EDIT.
+const output = `// AUTO-GENERATED FILE. DO NOT EDIT.
 // Source of truth: scripts/highlight-snippets.mjs. Regenerate with \`pnpm snippets\`.
 
 export const compilerSnippetHtml = ${JSON.stringify(compilerHtml)}

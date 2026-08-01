@@ -1,4 +1,4 @@
-// Single source of truth for social icon SVGs — consumed by the quote cards
+// Single source of truth for social icon SVGs, consumed by the quote cards
 // (SectionQuotes/Quote.tsx) and by the navbar's social buttons
 // (docusaurus.config.ts html items).
 export const socialIconPaths = {

@@ -505,42 +505,12 @@ a.stat:hover .statValue {
   color: var(--kl-mut);
 }
 
-/* --------------------------- examples CTA --------------------------- */
-
-.examplesCTASection {
-  border-top: 1px solid var(--kl-line);
-  display: grid;
-  place-items: center;
-}
-
-.examplesCTAContainer {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  max-width: 520px;
-  padding: 100px 16px;
-  text-align: center;
-}
-
-.examplesCTAContainer h2 {
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  margin: 0 0 10px;
-}
-
-.examplesCTAContainer p {
-  color: var(--kl-mut);
-  font-size: 15px;
-  line-height: 1.7;
-  margin: 0 0 24px;
-}
-
 /* --------------------------- responsive --------------------------- */
 
 @media (max-width: 996px) {
   .heroInner {
     gap: 40px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding-top: 52px;
   }
 
@@ -563,12 +533,12 @@ a.stat:hover .statValue {
 
   .compilerInner {
     gap: 32px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (min-width: 997px) {
-  /* editor left, copy right — mirrors the compiler section */
+  /* editor left, copy right, mirroring the compiler section */
   .compositionInner > .compositionCopy {
     order: 2;
   }
@@ -577,11 +547,16 @@ a.stat:hover .statValue {
 @media (max-width: 996px) {
   .compositionInner {
     gap: 32px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 640px) {
+  .editorCode :global(pre.shiki) {
+    font-size: 11px;
+    padding: 14px 12px;
+  }
+
   .statsInner {
     grid-template-columns: 1fr;
   }

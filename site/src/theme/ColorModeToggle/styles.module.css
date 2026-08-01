@@ -3,7 +3,7 @@
   display: flex;
 }
 
-/* A pill-shaped button mostly hidden behind the track's left curve — the
+/* A pill-shaped button mostly hidden behind the track's left curve; the
    visible part is a crescent sliver carrying the system icon. */
 .crescent {
   align-items: center;

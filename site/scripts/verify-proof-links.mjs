@@ -65,7 +65,7 @@ for (const entry of entries) {
     console.log(`ok   ${entry.name} @ ${sha.slice(0, 7)}`)
   } catch (error) {
     failures++
-    console.warn(`warn ${entry.name}: ${error.message} — keeping existing permalink`)
+    console.warn(`warn ${entry.name}: ${error.message}; keeping existing permalink`)
   }
 }
 

@@ -126,71 +126,14 @@ export default {
         hideable: true,
       },
     },
+    // Minimal VitePress-style footer. Vercel badge stays: they host us for
+    // free.
     footer: {
-      links: [
-        {
-          items: [
-            { label: 'Introduction', to: '/docs/intro' },
-            { label: 'Getting started', to: '/docs/getting-started' },
-            { label: 'Playground', to: '/docs/playground' },
-            { label: 'Migrations', to: '/docs/migrations' },
-            // { label: 'Examples', to: '/docs/category/examples' },
-            { label: 'Recipes', to: '/docs/category/recipes' },
-            { label: 'Other runtimes', to: '/docs/category/other-runtimes' },
-            { label: 'Dialects', to: '/docs/dialects' },
-            { label: 'Generating types', to: '/docs/generating-types' },
-            { label: 'Plugin system', to: '/docs/plugins' },
-          ],
-          title: 'Docs',
-        },
-        {
-          items: [
-            { label: 'SELECT', to: '/docs/category/select' },
-            { label: 'WHERE', to: '/docs/category/where' },
-            { label: 'JOIN', to: '/docs/category/join' },
-            { label: 'INSERT', to: '/docs/category/insert' },
-            { label: 'UPDATE', to: '/docs/category/update' },
-            { label: 'DELETE', to: '/docs/category/delete' },
-            { label: 'Transactions', to: '/docs/category/transactions' },
-            { label: 'CTE', to: '/docs/category/cte' },
-          ],
-          title: 'Examples',
-        },
-        {
-          items: [
-            {
-              label: 'Discord',
-              href: 'https://discord.gg/xyBJ3GwvAm',
-            },
-            {
-              label: 'Bluesky',
-              href: 'https://bsky.app/profile/kysely.dev',
-            },
-          ],
-          title: 'Community',
-        },
-        {
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/kysely-org/kysely',
-            },
-            {
-              label: 'API docs',
-              href: 'https://kysely-org.github.io/kysely-apidoc/',
-            },
-          ],
-          title: 'Other',
-        },
-        {
-          items: [
-            {
-              html: `<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="/img/powered-by-vercel.svg" style="width: 214px; height: 44px" alt="Powered by Vercel" /></a>`,
-            },
-          ],
-          title: 'Sponsors',
-        },
-      ],
+      copyright: [
+        `Released under the MIT License.`,
+        `Copyright © 2022-present Sami Koskimäki & Kysely contributors.`,
+        `<a class="footer-vercel" href="https://vercel.com/?utm_source=kysely&utm_campaign=oss" target="_blank" rel="noopener noreferrer"><img src="/img/powered-by-vercel.svg" width="176" height="36" alt="Powered by Vercel" /></a>`,
+      ].join('<br/>'),
     },
     headTags: [
       {

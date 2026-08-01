@@ -13,7 +13,6 @@
   --ifm-color-primary-light: var(--sky-8);
   --ifm-color-primary-lighter: var(--sky-7);
   --ifm-color-primary-lightest: var(--sky-6);
-  --ifm-footer-background-color: var(--sky-12);
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-button-font-weight: 500;
@@ -51,20 +50,45 @@
   --ifm-color-primary-light: var(--sky-6);
   --ifm-color-primary-lighter: var(--sky-4);
   --ifm-color-primary-lightest: var(--sky-2);
-  --ifm-footer-background-color: var(--sky-12);
 }
 
-[data-theme='light'] .footer {
-  background: #f3f6f9;
-  border-top: 1px solid var(--gray-5);
-  --ifm-footer-title-color: var(--ifm-color-black);
-  --ifm-footer-link-color: var(--gray-12);
+/* Minimal VitePress-style footer: body background, gutter hairline on top,
+   centered muted text. */
+.footer {
+  background: transparent;
+  border-top: 1px solid #e2e2e3;
+  padding: 32px 24px;
 }
-
 
 [data-theme='dark'] .footer {
+  border-top-color: #000000;
+}
+
+/* The footer renders outside the landing wrapper; match its background. */
+html[data-theme='dark'] body:has([class^='landing_']) .footer {
   background: #131313;
-  border-top: 1px solid #2e2e2e;
+}
+
+.footer .footer__copyright {
+  color: rgb(60 60 67 / 78%);
+  font-size: 14px;
+  line-height: 24px;
+  text-align: center;
+}
+
+[data-theme='dark'] .footer .footer__copyright {
+  color: rgb(235 235 245 / 60%);
+}
+
+.footer .footer-vercel {
+  display: inline-block;
+  margin-top: 14px;
+}
+
+.footer .footer-vercel img {
+  display: block;
+  height: 36px;
+  width: auto;
 }
 
 .navbar__title {
@@ -119,7 +143,7 @@ html[data-theme='dark'] body:has([class^='landing_']) .navbar {
 }
 
 /* VitePress's "gutter" edge: slightly darker than the surface it separates,
-   in both themes — not the lighter in-content divider. */
+   in both themes, not the lighter in-content divider. */
 html[data-navbar-scrolled] .navbar {
   box-shadow: 0 1px 0 #e2e2e3;
 }
@@ -163,7 +187,7 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
 }
 
 /* Socials sit outermost, past the color-mode toggle (which Docusaurus
-   always renders after the items) — flex order flips the visual sequence. */
+   always renders after the items), so flex order flips the visual sequence. */
 .navbar__items--right > div[class*='toggle_'] {
   order: 5;
 }

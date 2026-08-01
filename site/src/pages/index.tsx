@@ -10,7 +10,7 @@ import {
   compilerSnippetHtml,
   compositionSnippetHtml,
 } from '../components/snippets.generated'
-import { version } from '../../package.json'
+import packageJson from '../../package.json'
 import productionProof from '../data/production-proof.json'
 import styles from './index.module.css'
 
@@ -37,7 +37,6 @@ export default function Home(): JSX.Element {
         <SectionComposition />
         <SectionFeatures />
         <SectionQuotes />
-        <SectionExamplesCTA />
       </div>
     </Layout>
   )
@@ -50,11 +49,11 @@ function SectionHero() {
         <div>
           <span className={styles.eyebrow}>
             <a
-              href={`${GITHUB_URL}/releases/tag/v${version}`}
+              href={`${GITHUB_URL}/releases/tag/v${packageJson.version}`}
               rel="noopener noreferrer"
               target="_blank"
             >
-              v{version}
+              v{packageJson.version}
             </a>{' '}
             ·{' '}
             <a
@@ -156,7 +155,7 @@ function SectionHero() {
   )
 }
 
-// Rendered at build time and shown until the live numbers arrive — also the
+// Rendered at build time and shown until the live numbers arrive, and the
 // permanent values for visitors with JavaScript disabled or the APIs blocked.
 const FALLBACK_STATS = {
   contributors: '150+',
@@ -338,8 +337,7 @@ function SectionProduction() {
           </React.Fragment>
         ))}
         <span className={styles.productionFootnote}>
-          every name links to public proof — a manifest, internal usage, or a
-          statement on the record
+          every name links to proof
         </span>
       </div>
     </section>
@@ -353,11 +351,12 @@ function SectionCompiler() {
         <div className={styles.compilerCopy}>
           <h2>Broken queries don't ship</h2>
           <p>
-            Column typos, impossible joins, mistyped values — Kysely surfaces
-            them in your editor as you type, not in production at 3am.
+            Non-existent tables, misspelled columns, mistyped values: Kysely
+            surfaces them as you type, as agents code, and as your schema
+            evolves, not in production at 3am.
           </p>
           <p>
-            Rename a column in your schema types, and the compiler walks you
+            When a column gets renamed, the TypeScript compiler walks you
             through every query that needs updating.
           </p>
         </div>
@@ -383,7 +382,7 @@ function SectionCompiler() {
             </div>
           </div>
           <div className={styles.editorCaption}>
-            actual compiler output — ts(2345)
+            actual TypeScript compiler output
           </div>
         </div>
       </div>
@@ -400,11 +399,11 @@ function SectionComposition() {
           <p>
             Extract any fragment of a query into a plain, typed function and
             reuse it across queries. Expressions, subqueries, and CTEs all
-            compose the same way — it's just TypeScript.
+            compose the same way. It's just TypeScript.
           </p>
           <p>
             Here, a correlated subquery returns each person's pets as typed,
-            nested JSON — one query, one round trip, no relations DSL to learn.
+            nested JSON. One query, one round trip, no relations DSL to learn.
           </p>
         </div>
         <div>
@@ -435,22 +434,3 @@ function SectionComposition() {
   )
 }
 
-function SectionExamplesCTA() {
-  return (
-    <section className={styles.examplesCTASection}>
-      <div className={styles.examplesCTAContainer}>
-        <h2>Looking for code examples?</h2>
-        <p>
-          From finding a single record to complex joins, our docs have examples
-          to get you started quickly.
-        </p>
-        <a
-          className={clsx(styles.btn, styles.btnPrimary)}
-          href="/docs/category/examples"
-        >
-          Jump right in
-        </a>
-      </div>
-    </section>
-  )
-}
