@@ -88,6 +88,8 @@ import type {
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { StandardSchemaV1 } from '../util/standard-schema.js'
+import { StandardSchemaV1Plugin } from '../plugin/standard-schema/standard-schema-plugin.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -1116,6 +1118,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     ? UpdateQueryBuilder<DB, UT, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new UpdateQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * TODO: ...
+   */
+  $parseResult<O2 extends Record<keyof O, unknown>>(
+    schema: StandardSchemaV1<O, O2>,
+  ): Executable<O2> & Streamable<O2> {
+    return this.withPlugin(new StandardSchemaV1Plugin(schema)) as never
   }
 
   /**
