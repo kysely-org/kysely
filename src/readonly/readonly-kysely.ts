@@ -60,9 +60,6 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * db.deleteFrom('person') // typescript compiler error!
  * ```
  */
-// `DB` is `in out` on this and the other read-only types below for the same
-// reason it is on `Kysely`. See the comment above the `Kysely` class in
-// `src/kysely.ts`.
 export interface ReadonlyKysely<in out DB>
   extends
     ReadonlyQueryCreator<DB>,
