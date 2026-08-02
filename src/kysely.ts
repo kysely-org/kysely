@@ -94,16 +94,6 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-//
-// An explicit annotation skips the measurement entirely: the compiler just uses
-// the declared variance. `in out` (invariant) is the strictest option and the
-// only sound one here - TypeScript rejects `out DB` with TS2636, because
-// `selectFrom` and friends take `keyof DB`.
-//
-// This is not a technique the query builders can borrow. They deliberately let a
-// wider builder stand in for a narrower one, which is bivariance, and bivariance
-// can't be spelled as an annotation. See `test/typings/test-d/generic.test-d.ts`
-// for what keeps those in check instead.
 export class Kysely<in out DB>
   extends QueryCreator<DB>
   implements QueryExecutorProvider, AsyncDisposable
