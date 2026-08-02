@@ -5,14 +5,16 @@
  */
 
 /* You can override the default Infima variables here. */
+/* Tailwind sky family, matching the landing accents. Radix sky-9 (the old
+   primary) is a loud cyan in light mode. */
 :root {
-  --ifm-color-primary: var(--sky-9);
-  --ifm-color-primary-dark: var(--sky-10);
-  --ifm-color-primary-darker: var(--sky-11);
-  --ifm-color-primary-darkest: var(--sky-12);
-  --ifm-color-primary-light: var(--sky-8);
-  --ifm-color-primary-lighter: var(--sky-7);
-  --ifm-color-primary-lightest: var(--sky-6);
+  --ifm-color-primary: #0284c7;
+  --ifm-color-primary-dark: #0369a1;
+  --ifm-color-primary-darker: #075985;
+  --ifm-color-primary-darkest: #0c4a6e;
+  --ifm-color-primary-light: #0ea5e9;
+  --ifm-color-primary-lighter: #38bdf8;
+  --ifm-color-primary-lightest: #7dd3fc;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-button-font-weight: 500;
@@ -43,13 +45,13 @@
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: var(--sky-9);
-  --ifm-color-primary-dark: var(--sky-10);
-  --ifm-color-primary-darker: var(--sky-11);
-  --ifm-color-primary-darkest: var(--sky-12);
-  --ifm-color-primary-light: var(--sky-6);
-  --ifm-color-primary-lighter: var(--sky-4);
-  --ifm-color-primary-lightest: var(--sky-2);
+  --ifm-color-primary: #38bdf8;
+  --ifm-color-primary-dark: #0ea5e9;
+  --ifm-color-primary-darker: #0284c7;
+  --ifm-color-primary-darkest: #0369a1;
+  --ifm-color-primary-light: #7dd3fc;
+  --ifm-color-primary-lighter: #bae6fd;
+  --ifm-color-primary-lightest: #e0f2fe;
 }
 
 /* Minimal VitePress-style footer: body background, gutter hairline on top,
@@ -158,6 +160,7 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   letter-spacing: -0.01em;
 }
 
+
 /* Social icon buttons, VitePress-style. */
 .navbar-social {
   align-items: center;
@@ -221,6 +224,76 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   top: 50%;
   transform: translateY(-50%);
   width: 1px;
+}
+
+/* VitePress-style search button, hono.dev metrics: 40px tall, 8px radius,
+   13px muted placeholder, joined kbd chips bordered with the divider token. */
+@media (min-width: 997px) {
+  .navbar .DocSearch-Button {
+    align-items: center;
+    background: #f6f6f7;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: rgb(60 60 67 / 78%);
+    display: flex;
+    height: 40px;
+    margin: 0;
+    padding: 0 10px 0 12px;
+    transition: border-color 0.25s ease;
+  }
+
+  [data-theme='dark'] .navbar .DocSearch-Button {
+    background: #252529;
+    color: rgb(235 235 245 / 60%);
+  }
+
+  .navbar .DocSearch-Button:hover,
+  .navbar .DocSearch-Button:focus {
+    border-color: var(--ifm-color-primary);
+    box-shadow: none;
+  }
+
+  .navbar .DocSearch-Search-Icon {
+    color: currentColor;
+    height: 14px;
+    margin-right: 10px;
+    width: 14px;
+  }
+
+  .navbar .DocSearch-Button-Placeholder {
+    font-size: 13px;
+    padding: 0 16px 0 0;
+  }
+
+  .navbar .DocSearch-Button-Keys {
+    display: flex;
+    min-width: auto;
+  }
+
+  .navbar .DocSearch-Button-Key {
+    background: transparent;
+    border: 1px solid var(--navbar-divider);
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+    box-shadow: none;
+    color: currentColor;
+    font-family: inherit;
+    font-size: 12px;
+    height: 22px;
+    line-height: 22px;
+    margin: 2px 0 0;
+    min-width: 0;
+    padding: 0 0 2px 6px;
+    top: 0;
+    width: auto;
+  }
+
+  .navbar .DocSearch-Button-Key + .DocSearch-Button-Key {
+    border: 1px solid var(--navbar-divider);
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    padding: 0 6px 2px 2px;
+  }
 }
 
 /* Replace the stock external-link SVG with the house ↗ used on the

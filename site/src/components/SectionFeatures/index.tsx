@@ -16,8 +16,8 @@ const FeatureList: FeatureItem[] = [
   // high-performing teams the confidence to ship at greater velocity. Use
   // `kysely-codegen` to make the database the source of types."
   {
-    tag: 'type-safety',
-    title: 'No compromises',
+    tag: 'no compromises',
+    title: 'Type safety above all',
     description: (
       <>
         Precise TypeScript result types and compile-time errors within queries.
@@ -66,26 +66,12 @@ const FeatureList: FeatureItem[] = [
   // MERGE, WITH, and more. When needed, you can also use raw SQL strings,
   // even within structured queries."
   {
-    tag: 'sql',
-    title: 'Deeper than the rest',
+    tag: 'all sql',
+    title: 'Freedom of expression',
     description: (
       <>
         Spec-faithful APIs for everything production teams need, composable
         all the way down, escape hatches everywhere.
-      </>
-    ),
-  },
-  // Original: "Kysely's community-driven dialect system makes it easy to
-  // implement support for any SQL database without waiting for the core team.
-  // It ships with official dialects for PostgreSQL, MySQL, MS SQL Server,
-  // SQLite, and PGlite right out of the box."
-  {
-    tag: 'dialects',
-    title: 'Query any SQL database',
-    description: (
-      <>
-        PostgreSQL, MySQL, MS SQL Server, SQLite, and PGlite out of the box,
-        plus a community-driven dialect system for everything else.
       </>
     ),
   },
@@ -94,12 +80,26 @@ const FeatureList: FeatureItem[] = [
   // JavaScript environment, including Node.js, Deno, Bun, AWS Lambda,
   // Cloudflare Workers, and browsers."
   {
-    tag: 'portability',
+    tag: 'no dependencies',
     title: 'Run anywhere',
     description: (
       <>
-        Zero dependencies and no environment-specific APIs. Runs in Node.js,
-        Deno, Bun, AWS Lambda, Cloudflare Workers, and browsers.
+        No environment-specific APIs, nothing to bundle around. Runs in
+        Node.js, Deno, Bun, AWS Lambda, Cloudflare Workers, and browsers.
+      </>
+    ),
+  },
+  // Original: "Kysely's plugin system allows you tap into the process, and
+  // modify queries before compilation and/or their results after execution.
+  // This opens up various use cases, such as transforming camelCase names to
+  // snake_case and vice versa."
+  {
+    tag: 'no opinions',
+    title: 'Opt-in your flavors',
+    description: (
+      <>
+        Plugins modify queries before compilation and results after execution.
+        camelCase to snake_case and back, for example.
       </>
     ),
   },
@@ -117,7 +117,7 @@ const FeatureList: FeatureItem[] = [
   // environment and pace of choice. Its community-driven ecosystem provides
   // file migration providers, CLIs, and more."
   {
-    tag: 'agent-ready',
+    tag: 'ax',
     title: 'Manual included',
     description: (
       <>
@@ -126,17 +126,17 @@ const FeatureList: FeatureItem[] = [
       </>
     ),
   },
-  // Original: "Kysely's plugin system allows you tap into the process, and
-  // modify queries before compilation and/or their results after execution.
-  // This opens up various use cases, such as transforming camelCase names to
-  // snake_case and vice versa."
+  // Original: "Kysely's community-driven dialect system makes it easy to
+  // implement support for any SQL database without waiting for the core team.
+  // It ships with official dialects for PostgreSQL, MySQL, MS SQL Server,
+  // SQLite, and PGlite right out of the box."
   {
-    tag: 'plugins',
-    title: 'Extend everything',
+    tag: 'all drivers',
+    title: 'Query any SQL database',
     description: (
       <>
-        Modify queries before compilation and results after execution.
-        camelCase to snake_case and back, for example.
+        PostgreSQL, MySQL, MS SQL Server, SQLite, and PGlite out of the box,
+        plus a community-driven dialect system for everything else.
       </>
     ),
   },

@@ -1,5 +1,4 @@
 .quotesSection {
-  background: var(--kl-panel);
   border-top: 1px solid var(--kl-line);
 }
 
@@ -64,9 +63,15 @@
   }
 }
 
+/* Light gets tonal lift too: VitePress-style grey cards on the white
+   ground, matching the figures' panel grey. */
+:global(html[data-theme='light']) .quoteContainer {
+  background-color: var(--kl-panel);
+}
+
 .quoteContainer {
   align-items: flex-start;
-  background-color: var(--kl-card);
+  background-color: var(--kl-surface);
   border: 1px solid var(--kl-line);
   border-radius: 10px;
   display: flex;
