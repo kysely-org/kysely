@@ -192,9 +192,6 @@ bench('ControlledTransaction assignable to Transaction', () => {
   return acceptsTransaction(controlledTransaction)
 }).types([136150, 'instantiations'])
 
-// The read-only mirror of the four cases above. It has the same shape for the
-// same reason, and had the same problem: before `ReadonlyTransaction` became an
-// intersection, the second of these cost 1.3M instantiations on TypeScript 7.
 bench('ReadonlyKysely assignable to ReadonlyKysely', () => {
   return acceptsReadonlyKysely(readonlyKysely)
 }).types([26, 'instantiations'])
