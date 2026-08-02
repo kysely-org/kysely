@@ -199,14 +199,6 @@ export interface ReadonlyTransactionBuilder<in out DB> {
  * Like {@link Transaction}, this is an intersection of
  * {@link ReadonlyTransactionMethods} and {@link ReadonlyKysely} rather than an
  * interface that repeats their members, for type check performance reasons.
- *
- * Spelling it this way is what makes a `ReadonlyTransaction` usable where a
- * {@link ReadonlyKysely} is expected: the compiler finds the very same
- * `ReadonlyKysely<DB>` among the intersection's members and stops there. As an
- * interface of its own it had to relate the two structurally, and the members
- * that return themselves over a recomputed `DB` - `$extendTables` and friends -
- * made that recurse until the compiler gave up. That cost 1.3M type
- * instantiations on TypeScript 7, five times what it cost on 6.
  */
 export type ReadonlyTransaction<DB> = ReadonlyTransactionMethods<DB> &
   ReadonlyKysely<DB>
