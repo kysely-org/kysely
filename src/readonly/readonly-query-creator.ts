@@ -10,8 +10,6 @@ import type {
 /**
  * Similar to {@link QueryCreator} but read-only.
  */
-// `DB` is `in out` for the same reason it is on `Kysely`. See the comment above
-// the `Kysely` class in `src/kysely.ts`.
 export interface ReadonlyQueryCreator<in out DB> extends Pick<
   QueryCreator<DB>,
   'selectFrom' | 'selectNoFrom'
