@@ -5,7 +5,7 @@ import type {
   DeleteResult,
 } from '../index.js'
 import type { Database } from '../shared.js'
-import { expectType } from 'tsd'
+import { expectError, expectType } from 'tsd'
 
 async function testIfInSelect(db: Kysely<Database>) {
   const condition = Math.random() < 0.5
@@ -60,6 +60,43 @@ async function testIfInSelect(db: Kysely<Database>) {
     .execute()
 
   expectType<{ species: 'dog' | 'cat'; person_age?: number | null }>(r5)
+}
+
+// The callback's return type is declared as `SelectQueryBuilderExpression` for
+// type-checking performance, so pin down that it still only accepts a select
+// query builder.
+function testIfInSelectCallbackReturnType(db: Kysely<Database>) {
+  const condition = Math.random() < 0.5
+
+  expectError(db.selectFrom('pet').select('species').$if(condition, () => 42))
+
+  expectError(
+    db
+      .selectFrom('pet')
+      .select('species')
+      .$if(condition, () => {}),
+  )
+
+  expectError(
+    db
+      .selectFrom('pet')
+      .select('species')
+      .$if(condition, () =>
+        db.insertInto('person').values({
+          first_name: 'Foo',
+          last_name: 'Bar',
+          gender: 'other',
+          age: 0,
+        }),
+      ),
+  )
+
+  expectError(
+    db
+      .selectFrom('pet')
+      .select('species')
+      .$if(condition, (qb) => qb.select('no_such_column')),
+  )
 }
 
 async function testIfInInsert(db: Kysely<Database>) {
