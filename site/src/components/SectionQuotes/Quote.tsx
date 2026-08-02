@@ -31,7 +31,12 @@ export function Quote(props: QuoteProps) {
   const jpgSrc = `/img/avatars/${avatar}.jpg`
 
   return (
-    <a className={styles.quoteContainer} href={link} target="_blank">
+    <a
+      className={styles.quoteContainer}
+      href={link}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
       <div className={styles.quoteInnerContainer}>
         <picture>
           <source srcSet={webpSrc} type="image/webp" />
