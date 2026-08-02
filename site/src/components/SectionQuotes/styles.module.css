@@ -1,23 +1,111 @@
+.quotesSection {
+  border-top: 1px solid var(--kl-line);
+}
+
+.quotesContainer {
+  padding-bottom: 84px;
+  padding-top: 72px;
+}
+
+.sectionHeading {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.sectionSub {
+  color: var(--kl-mut);
+  font-size: 14.5px;
+  margin: 0 0 34px;
+}
+
+.featured {
+  margin-bottom: 16px;
+}
+
+.featured .quoteContainer {
+  padding: 26px 28px;
+}
+
+.featured .quoteText {
+  font-size: 17.5px;
+  line-height: 1.6;
+}
+
+.masonry {
+  display: none;
+  gap: 16px;
+}
+
+.masonryColumn {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 997px) {
+  .masonry3 {
+    display: flex;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 996px) {
+  .masonry2 {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .masonry1 {
+    display: flex;
+  }
+}
+
+/* Light gets tonal lift too: VitePress-style grey cards on the white
+   ground, matching the figures' panel grey. */
+:global(html[data-theme='light']) .quoteContainer {
+  background-color: var(--kl-panel);
+}
+
 .quoteContainer {
   align-items: flex-start;
-  background-color: white;
-  border-radius: 8px;
+  background-color: var(--kl-surface);
+  border: 1px solid var(--kl-line);
+  border-radius: 10px;
   display: flex;
-  flex: 0 1 300px;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: 10px;
+  padding: 20px 22px;
   position: relative;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.quoteContainer::after {
+  color: var(--kl-acc);
+  content: '↗';
+  font-size: 11px;
+  opacity: 0;
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.quoteContainer:hover {
+  border-color: var(--kl-dash);
   text-decoration: none;
 }
 
-[data-theme='dark'] .quoteContainer {
-  background-color: var(--gray-12);
+.quoteContainer:hover::after {
+  opacity: 1;
 }
 
 .quoteInnerContainer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .quoteHeader {
@@ -26,44 +114,22 @@
   flex-direction: column;
 }
 
-.quoteTitle,
-.quoteSubtitle {
-  color: var(--gray-11);
+.quoteTitle {
+  color: var(--kl-ink);
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
-[data-theme='dark'] .quoteTitle,
-[data-theme='dark'] .quoteSubtitle {
-  color: var(--gray-9);
+.quoteSubtitle {
+  color: var(--kl-mut);
+  font-size: 12px;
 }
 
 .quoteText {
-  color: var(--gray-12);
+  color: var(--kl-text2);
+  font-size: 13.5px;
+  line-height: 1.6;
   text-align: left;
-}
-
-[data-theme='dark'] .quoteText {
-  color: var(--gray-6);
-}
-
-.quotesSection {
-  background: radial-gradient(circle, var(--sky-4) 0%, white 65%);
-  display: grid;
-  place-items: center;
-}
-
-[data-theme='dark'] .quotesSection {
-  background: radial-gradient(circle, var(--blue-12) 0%, var(--gray-12) 65%);
-}
-
-.quotesContainer {
-  text-align: center;
-}
-
-.quotesInnerContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
 }
 
 .icon {
@@ -74,6 +140,7 @@
   width: 16px;
 }
 
-[data-theme='dark'] .darkIcon {
-  fill: white;
+.darkIcon {
+  fill: var(--kl-ink);
 }
+

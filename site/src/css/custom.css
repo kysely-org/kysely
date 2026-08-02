@@ -5,15 +5,16 @@
  */
 
 /* You can override the default Infima variables here. */
+/* Tailwind sky family, matching the landing accents. Radix sky-9 (the old
+   primary) is a loud cyan in light mode. */
 :root {
-  --ifm-color-primary: var(--sky-9);
-  --ifm-color-primary-dark: var(--sky-10);
-  --ifm-color-primary-darker: var(--sky-11);
-  --ifm-color-primary-darkest: var(--sky-12);
-  --ifm-color-primary-light: var(--sky-8);
-  --ifm-color-primary-lighter: var(--sky-7);
-  --ifm-color-primary-lightest: var(--sky-6);
-  --ifm-footer-background-color: var(--sky-12);
+  --ifm-color-primary: #0284c7;
+  --ifm-color-primary-dark: #0369a1;
+  --ifm-color-primary-darker: #075985;
+  --ifm-color-primary-darkest: #0c4a6e;
+  --ifm-color-primary-light: #0ea5e9;
+  --ifm-color-primary-lighter: #38bdf8;
+  --ifm-color-primary-lightest: #7dd3fc;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-button-font-weight: 500;
@@ -44,55 +45,278 @@
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: var(--sky-9);
-  --ifm-color-primary-dark: var(--sky-10);
-  --ifm-color-primary-darker: var(--sky-11);
-  --ifm-color-primary-darkest: var(--sky-12);
-  --ifm-color-primary-light: var(--sky-6);
-  --ifm-color-primary-lighter: var(--sky-4);
-  --ifm-color-primary-lightest: var(--sky-2);
-  --ifm-footer-background-color: var(--sky-12);
+  --ifm-color-primary: #38bdf8;
+  --ifm-color-primary-dark: #0ea5e9;
+  --ifm-color-primary-darker: #0284c7;
+  --ifm-color-primary-darkest: #0369a1;
+  --ifm-color-primary-light: #7dd3fc;
+  --ifm-color-primary-lighter: #bae6fd;
+  --ifm-color-primary-lightest: #e0f2fe;
 }
 
-[data-theme='light'] .footer {
-  background-image: linear-gradient(
-    180deg,
-    hsl(0deg 0% 100%) 0%,
-    hsl(227deg 10% 98%) 40%,
-    hsl(226deg 19% 97%) 58%,
-    hsl(224deg 28% 96%) 69%,
-    hsl(222deg 36% 95%) 77%,
-    hsl(220deg 45% 94%) 83%,
-    hsl(219deg 54% 93%) 89%,
-    hsl(216deg 65% 93%) 93%,
-    hsl(214deg 80% 93%) 97%,
-    hsl(211deg 100% 93%) 100%
-  );
-  --ifm-footer-title-color: var(--ifm-color-black);
-  --ifm-footer-link-color: var(--gray-12);
+/* Minimal VitePress-style footer: body background, gutter hairline on top,
+   centered muted text. */
+.footer {
+  background: transparent;
+  border-top: 1px solid #e2e2e3;
+  padding: 32px 24px;
 }
 
 [data-theme='dark'] .footer {
-  background-image: linear-gradient(
-    180deg,
-    hsl(0deg 0% 9%) 0%,
-    hsl(227deg 10% 10%) 40%,
-    hsl(226deg 19% 11%) 58%,
-    hsl(224deg 28% 12%) 69%,
-    hsl(222deg 36% 13%) 77%,
-    hsl(220deg 45% 14%) 83%,
-    hsl(219deg 54% 15%) 89%,
-    hsl(216deg 65% 15%) 93%,
-    hsl(214deg 80% 15%) 97%,
-    hsl(211deg 100% 15%) 100%
-  );
+  border-top-color: #000000;
+}
+
+/* The footer renders outside the landing wrapper; match its background. */
+html[data-theme='dark'] body:has([class^='landing_']) .footer {
+  background: #131313;
+}
+
+.footer .footer__copyright {
+  color: rgb(60 60 67 / 78%);
+  font-size: 14px;
+  line-height: 24px;
+  text-align: center;
+}
+
+[data-theme='dark'] .footer .footer__copyright {
+  color: rgb(235 235 245 / 60%);
+}
+
+.footer .footer-vercel {
+  display: inline-block;
+  margin-top: 14px;
+}
+
+.footer .footer-vercel img {
+  display: block;
+  height: 36px;
+  width: auto;
 }
 
 .navbar__title {
-  text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* VitePress navbar metrics: 64px tall, 24px side padding, translucent
+   group dividers. */
+:root {
+  --ifm-navbar-height: 64px;
+  --ifm-navbar-padding-horizontal: 24px;
+  --navbar-divider: rgb(60 60 67 / 12%);
+}
+
+[data-theme='dark'] {
+  --navbar-divider: rgb(82 82 89 / 32%);
+}
+
+/* VitePress-style navbar: same color as the body at rest, gaining a
+   separating hairline (as a shadow, so no layout shift) once scrolled.
+   Fixed rather than sticky so the macOS overscroll bounce moves the page
+   under the bar, not the bar itself. The landing commits to its own
+   background colors, matched via :has. */
+.navbar {
+  background: var(--ifm-background-color);
+  box-shadow: none;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: box-shadow 0.2s ease;
+}
+
+/* The fixed navbar leaves the document flow; restore its space. */
+#__docusaurus {
+  padding-top: var(--ifm-navbar-height);
+}
+
+/* Infima's light --ifm-background-color is literally `transparent`; the
+   fixed navbar needs a real surface. */
+html[data-theme='light'] .navbar {
+  background: #ffffff;
+}
+
+html[data-theme='light'] body:has([class^='landing_']) .navbar {
+  background: #ffffff;
+}
+
+html[data-theme='dark'] body:has([class^='landing_']) .navbar {
+  background: #131313;
+}
+
+/* VitePress's "gutter" edge: slightly darker than the surface it separates,
+   in both themes, not the lighter in-content divider. */
+html[data-navbar-scrolled] .navbar {
+  box-shadow: 0 1px 0 #e2e2e3;
+}
+
+html[data-theme='dark'][data-navbar-scrolled] .navbar {
+  box-shadow: 0 1px 0 #000000;
+}
+
+.navbar__link {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+
+/* Social icon buttons, VitePress-style. */
+.navbar-social {
+  align-items: center;
+  border-radius: 6px;
+  color: var(--ifm-navbar-link-color);
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+  width: 32px;
+}
+
+.navbar-social:hover {
+  color: var(--ifm-navbar-link-color);
+  opacity: 1;
+}
+
+.navbar-social svg {
+  fill: currentColor;
+  height: 19px;
+  width: 19px;
+}
+
+.navbar__items--right .navbar__item:has(.navbar-social) {
+  padding: 0 2px;
+}
+
+/* Socials sit outermost, past the color-mode toggle (which Docusaurus
+   always renders after the items), so flex order flips the visual sequence. */
+.navbar__items--right > div[class*='toggle_'] {
+  order: 5;
+}
+
+.navbar__items--right .navbar__item:has(.navbar-social) {
+  order: 10;
+}
+
+/* Vertical dividers flanking the appearance toggle, with hono/knex's exact
+   VitePress geometry: 24px bars, 8px toward the outer groups, 16px toward
+   the toggle. */
+.navbar__items--right > div[class*='toggle_'] {
+  margin-left: 8px;
+  padding-left: 16px;
+  position: relative;
+}
+
+.navbar__items--right .navbar__item.navbar-group-start {
+  margin-left: 16px;
+  padding: 0 2px 0 8px;
+  position: relative;
+}
+
+.navbar__items--right .navbar-group-start::before,
+.navbar__items--right > div[class*='toggle_']::before {
+  background: var(--navbar-divider);
+  content: '';
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+}
+
+/* VitePress-style search button, hono.dev metrics: 40px tall, 8px radius,
+   13px muted placeholder, joined kbd chips bordered with the divider token. */
+@media (min-width: 997px) {
+  .navbar .DocSearch-Button {
+    align-items: center;
+    background: #f6f6f7;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: rgb(60 60 67 / 78%);
+    display: flex;
+    height: 40px;
+    margin: 0;
+    padding: 0 10px 0 12px;
+    transition: border-color 0.25s ease;
+  }
+
+  [data-theme='dark'] .navbar .DocSearch-Button {
+    background: #252529;
+    color: rgb(235 235 245 / 60%);
+  }
+
+  .navbar .DocSearch-Button:hover,
+  .navbar .DocSearch-Button:focus {
+    border-color: var(--ifm-color-primary);
+    box-shadow: none;
+  }
+
+  .navbar .DocSearch-Search-Icon {
+    color: currentColor;
+    height: 14px;
+    margin-right: 10px;
+    width: 14px;
+  }
+
+  .navbar .DocSearch-Button-Placeholder {
+    font-size: 13px;
+    padding: 0 16px 0 0;
+  }
+
+  .navbar .DocSearch-Button-Keys {
+    display: flex;
+    min-width: auto;
+  }
+
+  .navbar .DocSearch-Button-Key {
+    background: transparent;
+    border: 1px solid var(--navbar-divider);
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+    box-shadow: none;
+    color: currentColor;
+    font-family: inherit;
+    font-size: 12px;
+    height: 22px;
+    line-height: 22px;
+    margin: 2px 0 0;
+    min-width: 0;
+    padding: 0 0 2px 6px;
+    top: 0;
+    width: auto;
+  }
+
+  .navbar .DocSearch-Button-Key + .DocSearch-Button-Key {
+    border: 1px solid var(--navbar-divider);
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    padding: 0 6px 2px 2px;
+  }
+}
+
+/* Replace the stock external-link SVG with the house ↗ used on the
+   landing's proof tiles and quote cards. */
+.navbar [class*='iconExternalLink'] {
+  display: none;
+}
+
+.navbar__link:has([class*='iconExternalLink'])::after {
+  content: '↗';
+  display: inline-block;
+  font-size: 11px;
+  margin-left: 3px;
+  opacity: 0.55;
+  position: relative;
+  top: -2px;
+  transition: opacity 0.15s ease;
+}
+
+.navbar__link:has([class*='iconExternalLink']):hover::after {
+  opacity: 1;
 }
 
 .button {
-  box-shadow: var(--shadow-elevation-medium);
+  box-shadow: var(--shadow-elevation-low);
 }

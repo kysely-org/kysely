@@ -7,6 +7,23 @@ import type { MermaidConfig } from 'mermaid'
 import { themes } from 'prism-react-renderer'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
+import { socialIconPaths } from './src/components/socialIconPaths'
+
+function socialNavbarItem(
+  label: string,
+  href: string,
+  icon: { d: string; evenOdd?: boolean; viewBox: string },
+) {
+  const pathRules = icon.evenOdd
+    ? ' fill-rule="evenodd" clip-rule="evenodd"'
+    : ''
+
+  return {
+    position: 'right' as const,
+    type: 'html' as const,
+    value: `<a class="navbar-social" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="${label}"><svg viewBox="${icon.viewBox}" xmlns="http://www.w3.org/2000/svg"><path${pathRules} d="${icon.d}"/></svg></a>`,
+  }
+}
 
 export default {
   baseUrl: '/',
@@ -109,72 +126,14 @@ export default {
         hideable: true,
       },
     },
+    // Minimal VitePress-style footer. Vercel badge stays: they host us for
+    // free.
     footer: {
-      links: [
-        {
-          items: [
-            { label: 'Introduction', to: '/docs/intro' },
-            { label: 'Getting started', to: '/docs/getting-started' },
-            { label: 'Playground', to: '/docs/playground' },
-            { label: 'Migrations', to: '/docs/migrations' },
-            // { label: 'Examples', to: '/docs/category/examples' },
-            { label: 'Recipes', to: '/docs/category/recipes' },
-            { label: 'Other runtimes', to: '/docs/category/other-runtimes' },
-            { label: 'Dialects', to: '/docs/dialects' },
-            { label: 'Generating types', to: '/docs/generating-types' },
-            { label: 'Plugin system', to: '/docs/plugins' },
-          ],
-          title: 'Docs',
-        },
-        {
-          items: [
-            { label: 'SELECT', to: '/docs/category/select' },
-            { label: 'WHERE', to: '/docs/category/where' },
-            { label: 'JOIN', to: '/docs/category/join' },
-            { label: 'INSERT', to: '/docs/category/insert' },
-            { label: 'UPDATE', to: '/docs/category/update' },
-            { label: 'DELETE', to: '/docs/category/delete' },
-            { label: 'Transactions', to: '/docs/category/transactions' },
-            { label: 'CTE', to: '/docs/category/cte' },
-          ],
-          title: 'Examples',
-        },
-        {
-          items: [
-            {
-              label: 'Discord',
-              href: 'https://discord.gg/xyBJ3GwvAm',
-            },
-            {
-              label: 'Bluesky',
-              href: 'https://bsky.app/profile/kysely.dev',
-            },
-          ],
-          title: 'Community',
-        },
-        {
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/kysely-org/kysely',
-            },
-            {
-              label: 'API docs',
-              href: 'https://kysely-org.github.io/kysely-apidoc/',
-            },
-          ],
-          title: 'Other',
-        },
-        {
-          items: [
-            {
-              html: `<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="/img/powered-by-vercel.svg" style="width: 214px; height: 44px" alt="Powered by Vercel" /></a>`,
-            },
-          ],
-          title: 'Sponsors',
-        },
-      ],
-      style: 'dark',
+      copyright: [
+        `Released under the MIT License.`,
+        `Copyright © 2022-present Sami Koskimäki & Kysely contributors.`,
+        `<a class="footer-vercel" href="https://vercel.com/?utm_source=kysely&utm_campaign=oss" target="_blank" rel="noopener noreferrer"><img src="/img/powered-by-vercel.svg" width="176" height="36" alt="Powered by Vercel" /></a>`,
+      ].join('<br/>'),
     },
     headTags: [
       {
@@ -229,14 +188,18 @@ export default {
     navbar: {
       items: [
         {
+          position: 'left',
+          type: 'search',
+        },
+        {
           docId: 'intro',
           label: 'Docs',
-          position: 'left',
+          position: 'right',
           type: 'doc',
         },
         {
-          href: 'https://github.com/kysely-org/kysely',
-          label: 'GitHub',
+          href: 'https://play.kysely.dev',
+          label: 'Playground',
           position: 'right',
         },
         {
@@ -244,6 +207,24 @@ export default {
           label: 'API docs',
           position: 'right',
         },
+        {
+          ...socialNavbarItem(
+            'GitHub',
+            'https://github.com/kysely-org/kysely',
+            socialIconPaths.github,
+          ),
+          className: 'navbar-group-start',
+        },
+        socialNavbarItem(
+          'Discord',
+          'https://discord.gg/xyBJ3GwvAm',
+          socialIconPaths.discord,
+        ),
+        socialNavbarItem(
+          'Bluesky',
+          'https://bsky.app/profile/kysely.dev',
+          socialIconPaths.bluesky,
+        ),
       ],
       logo: {
         alt: 'Kysely Logo',
@@ -251,7 +232,6 @@ export default {
         src: 'img/logo.svg',
         width: 32,
       },
-      style: 'dark',
       title: 'Kysely',
     },
     prism: {
@@ -259,6 +239,7 @@ export default {
       theme: themes.github,
     },
   } satisfies PresetClassicThemeConfig,
+  clientModules: ['./src/clientModules/navbarScroll.ts'],
   themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
   url: 'https://kysely.dev',

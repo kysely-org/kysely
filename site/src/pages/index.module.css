@@ -1,186 +1,606 @@
-.heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  min-height: calc(100vh - var(--ifm-navbar-height));
+.landing {
+  /* Neutrals anchored to VS Code Dark+ (dark) / Light+ (light) so the shiki
+     figures share the page's palette in both themes. Sky is the only hue. */
+  --kl-bg: #131313;
+  --kl-card: #131313;
+  --kl-surface: #1e1e1e;
+  --kl-panel: #1e1e1e;
+  --kl-panel2: #252526;
+  --kl-line: #2e2e2e;
+  --kl-dash: #3c3c3c;
+  --kl-dots: #4a4a4a;
+  --kl-dot-glyph: #3a3a3a;
+  --kl-ink: #e8e8e8;
+  --kl-text2: #cfcfcf;
+  --kl-strong: #c9c9c9;
+  --kl-caption: #b5b5b5;
+  --kl-mut: #9b9b9b;
+  --kl-faint: #6f6f6f;
+  --kl-acc: #38bdf8;
+  --kl-acc-contrast: #06202e;
+  --kl-acc-dots: rgb(56 189 248 / 45%);
+  --kl-err: #f14c4c;
+  --kl-err-text: #f48771;
+  --kl-type: #4ec9b0;
+  --kl-shadow: rgb(0 0 0 / 45%);
 
-  position: relative;
-  background: linear-gradient(
-    315deg,
-    var(--sky-7) 3%,
-    var(--blue-7) 38%,
-    var(--sky-7) 68%,
-    var(--blue-7) 98%
-  );
-  animation: gradient 95s ease infinite;
-  background-size: 400% 400%;
-  background-attachment: fixed;
+  background: var(--kl-bg);
+  color: var(--kl-ink);
 }
 
-@keyframes bounce {
-  0% {
-    transform: translateX(-50%) translateY(0);
-  }
-  50% {
-    transform: translateX(-50%) translateY(-10px);
-  }
-  100% {
-    transform: translateX(-50%) translateY(0);
-  }
+:global(html[data-theme='light']) .landing {
+  --kl-bg: #ffffff;
+  --kl-card: #ffffff;
+  --kl-surface: #ffffff;
+  --kl-panel: #f6f8fa;
+  --kl-panel2: #f3f3f3;
+  --kl-line: #e1e4e8;
+  --kl-dash: #c9ced4;
+  --kl-dots: #b6bcc2;
+  --kl-dot-glyph: #d4d4d4;
+  --kl-ink: #1f2328;
+  --kl-text2: #3a4148;
+  --kl-strong: #454c54;
+  --kl-caption: #57606a;
+  --kl-mut: #656d76;
+  --kl-faint: #8b949e;
+  --kl-acc: #0284c7;
+  --kl-acc-contrast: #ffffff;
+  --kl-acc-dots: rgb(2 132 199 / 40%);
+  --kl-err: #e51400;
+  --kl-err-text: #cd3131;
+  --kl-type: #267f99;
+  --kl-shadow: rgb(31 35 40 / 15%);
+}
+
+.landing h1,
+.landing h2,
+.landing h3 {
+  color: var(--kl-ink);
+}
+
+/* One consistent 1140px rail for every section; Infima's container otherwise
+   grows to 1320px on wide screens and misaligns with the hero. */
+.landing :global(.container) {
+  max-width: 1140px;
+}
+
+/* Inline code chips follow the landing palette in both themes. */
+.landing :not(pre) > code {
+  background: var(--kl-panel2);
+  border-color: var(--kl-line);
+  color: var(--kl-ink);
+}
+
+.editorCode :global(pre.shiki) code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* ------------------------------ hero ------------------------------ */
+
+.hero {
+  border-bottom: 1px solid var(--kl-line);
+}
+
+.heroInner {
+  align-items: center;
+  display: grid;
+  gap: 56px;
+  grid-template-columns: minmax(0, 10fr) minmax(0, 11fr);
+  padding-bottom: 72px;
+  padding-top: 80px;
+}
+
+.eyebrow {
+  background: var(--kl-panel);
+  border: 1px solid var(--kl-line);
+  border-radius: 999px;
+  color: var(--kl-acc);
+  display: inline-block;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+}
+
+.eyebrow a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 4px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-acc-dots);
+  text-underline-offset: 3px;
+}
+
+.eyebrow a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
 }
 
 .heroTitle {
-  font-size: 90px;
-  font-weight: 200;
-  color: var(--sky-12);
+  font-size: clamp(36px, 3.9vw, 50px);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin: 18px 0 16px;
+}
+
+.heroCategory {
+  color: var(--kl-mut);
+  display: block;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.heroCategory a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 12px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 8px;
+}
+
+.heroCategory a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
 }
 
 .heroSubtitle {
-  font-size: 24px;
-  font-weight: 300;
-  color: var(--sky-12);
-  line-height: 1.2;
+  color: var(--kl-mut);
+  font-size: 16.5px;
+  line-height: 1.65;
+  margin: 0 0 26px;
 }
 
-.buttons {
+.heroSubtitle a {
+  color: inherit;
+  cursor: pointer;
+  padding-bottom: 5px;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-underline-offset: 3px;
+}
+
+.heroSubtitle a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
+}
+
+.heroButtons {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-@keyframes gradient {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
+/* Tertiary reassurance link: whispered, not shouted. */
+.heroAudit {
+  color: var(--kl-faint);
+  font-size: 13px;
+  margin: 14px 0 0;
 }
 
-.wave {
-  /* pause the animation */
-  animation-play-state: paused;
-  background: rgb(255 255 255 / 10%);
-  border-radius: 1000%;
-  position: absolute;
-  width: 400vw;
-  height: 400vh;
-  animation: wave 200s 0s linear infinite;
-  transform: translate3d(0, 0, 0);
-  opacity: 0.8;
-  top: 20vh;
-  left: 20vw;
+.heroAudit a {
+  color: var(--kl-mut);
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-underline-offset: 3px;
 }
 
-.wave:nth-of-type(2) {
-  top: 0vh;
-  left: 0vw;
-  animation-duration: 190s;
+.heroAudit a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
 }
 
-.wave:nth-of-type(3) {
-  top: -20vh;
-  left: -20vw;
-  animation-duration: 180s;
-}
-
-.wave:nth-of-type(4) {
-  top: -40vh;
-  left: -40vw;
-  animation-duration: 170s;
-}
-
-.wave:nth-of-type(5) {
-  top: -60vh;
-  left: -60vw;
-  animation-duration: 160s;
-}
-
-@keyframes wave {
-  2% {
-    transform: translateX(0%);
-  }
-
-  25% {
-    transform: translateX(-10%);
-  }
-
-  50% {
-    transform: translateX(0%);
-  }
-
-  75% {
-    transform: translateX(10%);
-  }
-
-  100% {
-    transform: translateX(0%);
-  }
-}
-
-.playground {
+.btn {
+  border: 1px solid transparent;
   border-radius: 8px;
-  border: 1px solid var(--gray-11);
-  height: 100%;
-  overflow: hidden;
-  padding: 0;
-  width: 100%;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 18px;
+  text-decoration: none;
 }
 
-/* Prevent mobile browser from scrolling to iframe on page load */
-@media (max-width: 768px) {
-  .playground {
-    overflow-anchor: none;
-    /* Make iframe not focusable but still interactive */
-    pointer-events: auto;
-  }
-
-  .playground:focus {
-    outline: none;
-  }
+.btn:hover {
+  text-decoration: none;
 }
 
-.playgroundContainer {
-  align-items: center;
-  border: 0;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - var(--ifm-navbar-height));
-  overflow: hidden;
-  padding: 0;
-  padding-bottom: 40px;
-  padding-top: 60px;
-  width: 100%;
+.btnPrimary {
+  background: var(--kl-acc);
+  color: var(--kl-acc-contrast);
 }
 
-[data-theme='dark'] .playgroundSection {
-  background: var(--gray-12);
+.btnPrimary:hover {
+  color: var(--kl-acc-contrast);
+  filter: brightness(1.1);
 }
 
-.examplesCTASection {
-  background: radial-gradient(circle, var(--sky-4) 0%, white 20%);
+.btnSecondary {
+  border-color: var(--kl-line);
+  color: var(--kl-ink);
+}
+
+.btnSecondary:hover {
+  border-color: var(--kl-mut);
+  color: var(--kl-ink);
+}
+
+/* ------------------------------ stats ------------------------------ */
+
+.stats {
+  border-bottom: 1px solid var(--kl-line);
+}
+
+.statsInner {
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(4, 1fr);
 }
 
-[data-theme='dark'] .examplesCTASection {
-  background: radial-gradient(circle, var(--blue-12) 0%, var(--gray-12) 20%);
+.stat {
+  border-left: 1px solid var(--kl-line);
+  padding: 22px 26px 24px;
 }
 
-.examplesCTAContainer {
-  align-items: center;
+.stat:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+a.stat {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stat:hover {
+  text-decoration: none;
+}
+
+a.stat .statValue {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 7px;
+  width: fit-content;
+}
+
+a.stat:hover .statValue {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
+}
+
+.statValue {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.statLabel {
+  color: var(--kl-mut);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+/* --------------------------- production --------------------------- */
+
+.production {
+  border-bottom: 1px solid var(--kl-line);
+  padding: 26px 0 28px;
+}
+
+.productionInner {
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  max-width: 460px;
-  padding: 128px 0;
+  gap: 14px;
+}
+
+.productionCaption {
+  color: var(--kl-caption);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.productionCaption:not(:first-child) {
+  margin-top: 10px;
+}
+
+.productionNames {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.productionNames a {
+  align-items: center;
+  border: 1px solid var(--kl-line);
+  border-radius: 8px;
+  color: var(--kl-strong);
+  display: inline-flex;
+  font-size: 14.5px;
+  font-weight: 650;
+  padding: 8px 14px;
+  position: relative;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.productionNames a:hover {
+  border-color: var(--kl-mut);
+  color: var(--kl-ink);
+  text-decoration: none;
+}
+
+.productionNames a:not(.productionCTA)::after {
+  color: var(--kl-acc);
+  content: '↗';
+  font-size: 10px;
+  opacity: 0;
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.productionNames a:hover::after {
+  opacity: 1;
+}
+
+.productionFootnote {
+  color: var(--kl-faint);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.productionNames a.productionCTA {
+  border: 1px dashed var(--kl-dash);
+  color: var(--kl-acc);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.productionNames a.productionCTA:hover {
+  border-color: var(--kl-acc);
+  color: var(--kl-acc);
+}
+
+/* --------------------------- error figure --------------------------- */
+
+.compiler {
+  border-top: none;
+}
+
+.compilerInner {
+  align-items: center;
+  display: grid;
+  gap: 48px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  padding-bottom: 80px;
+  padding-top: 72px;
+}
+
+.compilerCopy h2 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.compilerCopy p {
+  color: var(--kl-mut);
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+  max-width: 46ch;
+}
+
+.editor {
+  background: var(--kl-surface);
+  border: 1px solid var(--kl-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.editorBar {
+  align-items: center;
+  background: var(--kl-panel2);
+  border-bottom: 1px solid var(--kl-line);
+  color: var(--kl-mut);
+  display: flex;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  gap: 10px;
+  padding: 9px 14px;
+}
+
+.editorDots {
+  display: flex;
+  gap: 6px;
+}
+
+.editorDots i {
+  background: var(--kl-dot-glyph);
+  border-radius: 50%;
+  display: block;
+  height: 10px;
+  width: 10px;
+}
+
+.editorCode :global(pre.shiki) {
+  background: transparent !important;
+  border-radius: 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+  margin: 0;
+  overflow-x: auto;
+  padding: 18px 20px;
+}
+
+/* Dual-theme shiki output: tokens carry --shiki-dark/--shiki-light vars. */
+.editorCode :global(pre.shiki) span {
+  color: var(--shiki-dark);
+}
+
+:global(html[data-theme='light']) .editorCode :global(pre.shiki) span {
+  color: var(--shiki-light);
+}
+
+.editorCode :global(.kl-squiggle) {
+  text-decoration: underline wavy var(--kl-err) 1.5px;
+  text-underline-offset: 4px;
+}
+
+.editorCaption {
+  color: var(--kl-mut);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-top: 12px;
   text-align: center;
 }
 
-.examplesCTA {
-  display: flex;
-  gap: 8px;
+.errPanel {
+  border-top: 1px solid var(--kl-line);
+  color: var(--kl-err-text);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 12px 20px 14px;
+}
+
+.errPanel span {
+  color: var(--kl-mut);
+}
+
+/* --------------------------- composition --------------------------- */
+
+.composition {
+  border-top: 1px solid var(--kl-line);
+}
+
+.compositionInner {
+  align-items: center;
+  display: grid;
+  gap: 48px;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  padding-bottom: 80px;
+  padding-top: 72px;
+}
+
+.compositionCopy h2 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.compositionCopy p {
+  color: var(--kl-mut);
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+  max-width: 46ch;
+}
+
+.typePanel {
+  border-top: 1px solid var(--kl-line);
+  color: var(--kl-type);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 12px 20px 14px;
+}
+
+.typePanel span {
+  color: var(--kl-mut);
+}
+
+/* --------------------------- responsive --------------------------- */
+
+@media (max-width: 996px) {
+  .heroInner {
+    gap: 40px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 52px;
+  }
+
+  .statsInner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat {
+    border-top: 1px solid var(--kl-line);
+  }
+
+  .stat:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .stat:nth-child(-n + 2) {
+    border-top: 0;
+  }
+
+  .compilerInner {
+    gap: 32px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 997px) {
+  /* editor left, copy right, mirroring the compiler section */
+  .compositionInner > .compositionCopy {
+    order: 2;
+  }
+}
+
+@media (max-width: 996px) {
+  .compositionInner {
+    gap: 32px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Deliberate full-width stack instead of ragged wrapping. */
+  .heroButtons {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroButtons .btn {
+    text-align: center;
+  }
+
+  .heroAudit {
+    text-align: center;
+  }
+
+  .editorCode :global(pre.shiki) {
+    font-size: 11px;
+    padding: 14px 12px;
+  }
+
+  .statsInner {
+    grid-template-columns: 1fr;
+  }
+
+  .stat {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .stat:nth-child(2) {
+    border-top: 1px solid var(--kl-line);
+  }
 }
