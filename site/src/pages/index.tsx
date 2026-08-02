@@ -146,15 +146,17 @@ function SectionHero() {
             >
               View on GitHub
             </a>
+          </div>
+          <p className={styles.heroAudit}>
+            or audit us on{' '}
             <a
               href="https://socket.dev/npm/package/kysely"
-              className={clsx(styles.btn, styles.btnSecondary)}
               rel="noopener noreferrer"
               target="_blank"
             >
-              Audit on socket.dev
+              socket.dev
             </a>
-          </div>
+          </p>
         </div>
 
         <DemoVideo />

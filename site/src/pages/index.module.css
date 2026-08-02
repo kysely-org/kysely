@@ -176,6 +176,26 @@
   gap: 10px;
 }
 
+/* Tertiary reassurance link: whispered, not shouted. */
+.heroAudit {
+  color: var(--kl-faint);
+  font-size: 13px;
+  margin: 14px 0 0;
+}
+
+.heroAudit a {
+  color: var(--kl-mut);
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--kl-dots);
+  text-underline-offset: 3px;
+}
+
+.heroAudit a:hover {
+  color: var(--kl-ink);
+  text-decoration-color: var(--kl-acc);
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 8px;
@@ -552,6 +572,20 @@ a.stat:hover .statValue {
 }
 
 @media (max-width: 640px) {
+  /* Deliberate full-width stack instead of ragged wrapping. */
+  .heroButtons {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroButtons .btn {
+    text-align: center;
+  }
+
+  .heroAudit {
+    text-align: center;
+  }
+
   .editorCode :global(pre.shiki) {
     font-size: 11px;
     padding: 14px 12px;
