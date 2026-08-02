@@ -94,22 +94,6 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-// Why `in out DB` here and on the other generic types in this file:
-//
-// To relate two *different* instantiations of the same generic type - say
-// `Kysely<DB1>` to `Kysely<DB2>` - TypeScript first needs the variance of each
-// type parameter. Nothing declared it, so the compiler measured it: it
-// instantiates the type twice with synthetic marker types and relates the two
-// results structurally, member by member.
-//
-// That measurement was the expensive part, and it didn't terminate on its own.
-// Members like `$extendTables` return the same type over a *recomputed* `DB`, so
-// comparing them starts the whole comparison again one level down, against a `DB`
-// the compiler hasn't seen before and so can't match against a pair already in
-// progress. It only stopped at the compiler's internal recursion limit - and that
-// limit isn't the same across versions, which is why this cost ~5x more on
-// TypeScript 7 than on 6. Relating two `Kysely` types was ~12k type
-// instantiations on TS6 and ~56k on TS7; it is now 2 on both.
 //
 // An explicit annotation skips the measurement entirely: the compiler just uses
 // the declared variance. `in out` (invariant) is the strictest option and the
