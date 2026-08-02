@@ -188,10 +188,6 @@ bench('ControlledTransaction assignable to Kysely', () => {
   return acceptsKysely(controlledTransaction)
 }).types([64, 'instantiations'])
 
-// Still the expensive one: a `ControlledTransaction` and a `Transaction` share
-// members whose return types are these same two intersections, so the compiler
-// has to walk both in full. It doesn't recurse without bound - the count barely
-// moves between TypeScript versions - it's just a lot of members.
 bench('ControlledTransaction assignable to Transaction', () => {
   return acceptsTransaction(controlledTransaction)
 }).types([136150, 'instantiations'])
