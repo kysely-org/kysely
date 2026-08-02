@@ -146,6 +146,14 @@ function SectionHero() {
             >
               View on GitHub
             </a>
+            <a
+              href="https://socket.dev/npm/package/kysely"
+              className={clsx(styles.btn, styles.btnSecondary)}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Audit on socket.dev
+            </a>
           </div>
         </div>
 
