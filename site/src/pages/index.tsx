@@ -238,7 +238,7 @@ function SectionStats() {
 
   const stats = [
     {
-      href: 'https://npmtrends.com/@mikro-orm/core-vs-@prisma/client-vs-drizzle-orm-vs-knex-vs-kysely-vs-sequelize-vs-typeorm',
+      href: 'https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads',
       label: 'weekly npm downloads',
       title:
         downloads != null
@@ -250,7 +250,7 @@ function SectionStats() {
           : FALLBACK_STATS.downloads,
     },
     {
-      href: `${GITHUB_URL}/stargazers`,
+      href: 'https://ossinsight.io/analyze/kysely-org/kysely',
       label: 'GitHub stars',
       title: stars != null ? stars.toLocaleString('en') : undefined,
       value: stars != null ? formatCompact(stars) : FALLBACK_STATS.stars,
