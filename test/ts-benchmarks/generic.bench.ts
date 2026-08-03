@@ -174,4 +174,4 @@ bench('ControlledTransaction assignable to Kysely', () => {
 
 bench('ControlledTransaction assignable to Transaction', () => {
   return acceptsTransaction(controlledTransaction)
-}).types([330097, 'instantiations'])
+}).types([155377, 'instantiations'])
