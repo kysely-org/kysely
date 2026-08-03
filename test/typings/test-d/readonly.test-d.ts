@@ -2,6 +2,7 @@ import {
   expectAssignable,
   expectDeprecated,
   expectError,
+  expectNotAssignable,
   expectNotDeprecated,
   expectType,
 } from 'tsd'
@@ -25,6 +26,7 @@ import {
   type ReadonlyQueryResult,
   type ReadonlyTransaction,
   type ReadonlyTransactionBuilder,
+  type ReadonlyTransactionMethods,
   type Selectable,
   SelectQueryNode,
   type Transaction,
@@ -336,7 +338,7 @@ async function testReadonlyTransaction(
   expectType<typeof tx.case>(rtx.case)
   expectNotDeprecated(rtx.case)
 
-  expectType<typeof tx.connection>(rtx.connection)
+  expectType<Disabled<'connection'>>(rtx.connection)
   expectDeprecated(rtx.connection)
 
   expectType<NotAllowed>(rtx.deleteFrom)
@@ -384,10 +386,10 @@ async function testReadonlyTransaction(
   expectType<typeof tx.selectNoFrom>(rtx.selectNoFrom)
   expectNotDeprecated(rtx.selectNoFrom)
 
-  expectType<typeof tx.startTransaction>(rtx.startTransaction)
+  expectType<Disabled<'startTransaction'>>(rtx.startTransaction)
   expectDeprecated(rtx.startTransaction)
 
-  expectType<typeof tx.transaction>(rtx.transaction)
+  expectType<Disabled<'transaction'>>(rtx.transaction)
   expectDeprecated(rtx.transaction)
 
   expectType<NotAllowed>(rtx.updateTable)
@@ -410,6 +412,25 @@ async function testReadonlyTransaction(
 
   expectType<typeof rtx>(rtx.withoutPlugins())
   expectNotDeprecated(rtx.withoutPlugins)
+}
+
+// `ReadonlyTransaction` and `ReadonlyControlledTransaction` are intersections
+// that contain a `ReadonlyKysely<DB>`, which is what lets the compiler relate
+// them to one without walking either type. These are the assignments that shape
+// buys, so they're worth pinning.
+function testReadonlyTransactionAssignability(
+  rdb: ReadonlyKysely<Database>,
+  rtx: ReadonlyTransaction<Database>,
+  rctx: ReadonlyControlledTransaction<Database>,
+) {
+  expectAssignable<ReadonlyKysely<Database>>(rtx)
+  expectAssignable<ReadonlyKysely<Database>>(rctx)
+  expectAssignable<ReadonlyTransaction<Database>>(rctx)
+
+  // `isTransaction` is `true` rather than `boolean` to keep this one direction
+  // only - a plain read-only Kysely is not a transaction.
+  expectNotAssignable<ReadonlyTransaction<Database>>(rdb)
+  expectNotAssignable<ReadonlyControlledTransaction<Database>>(rtx)
 }
 
 async function testReadonlyControlledTransaction(
@@ -456,7 +477,7 @@ async function testReadonlyControlledTransaction(
   expectType<typeof tx.commit>(rtx.commit)
   expectNotDeprecated(rtx.commit)
 
-  expectType<typeof tx.connection>(rtx.connection)
+  expectType<Disabled<'connection'>>(rtx.connection)
   expectDeprecated(rtx.connection)
 
   expectType<NotAllowed>(rtx.deleteFrom)
@@ -552,10 +573,10 @@ async function testReadonlyControlledTransaction(
   expectType<typeof tx.selectNoFrom>(rtx.selectNoFrom)
   expectNotDeprecated(rtx.selectNoFrom)
 
-  expectType<typeof tx.startTransaction>(rtx.startTransaction)
+  expectType<Disabled<'startTransaction'>>(rtx.startTransaction)
   expectDeprecated(rtx.startTransaction)
 
-  expectType<typeof tx.transaction>(rtx.transaction)
+  expectType<Disabled<'transaction'>>(rtx.transaction)
   expectDeprecated(rtx.transaction)
 
   expectType<NotAllowed>(rtx.updateTable)
@@ -588,6 +609,15 @@ type DatabaseOf<K> = K extends Kysely<infer DB> ? DB : never
 
 type SavepointsOf<T> =
   T extends ControlledTransactionMethods<any, infer S> ? S : never
+
+// The members a transaction doesn't support are an overload set, because
+// `ReadonlyTransaction` is an intersection: the `never` overload from
+// `ReadonlyTransactionMethods` comes first and is the one calls resolve to, and
+// the one `ReadonlyKysely` declares follows it.
+type Disabled<
+  K extends keyof ReadonlyTransactionMethods<Database> &
+    keyof ReadonlyKysely<Database>,
+> = ReadonlyTransactionMethods<Database>[K] & ReadonlyKysely<Database>[K]
 
 declare function keyof<T>(thing: T): keyof T & string
 

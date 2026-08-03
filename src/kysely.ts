@@ -94,7 +94,7 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-export class Kysely<DB>
+export class Kysely<in out DB>
   extends QueryCreator<DB>
   implements QueryExecutorProvider, AsyncDisposable
 {
@@ -661,7 +661,7 @@ export type Transaction<DB> = TransactionMethods<DB> & Kysely<DB>
 /**
  * The methods a {@link Transaction} has on top of the {@link Kysely} ones.
  */
-export interface TransactionMethods<DB> {
+export interface TransactionMethods<in out DB> {
   /**
    * Always `true` for a transaction.
    *
@@ -897,7 +897,7 @@ export interface KyselyConfig {
   readonly log?: LogConfig
 }
 
-export class ConnectionBuilder<DB> {
+export class ConnectionBuilder<in out DB> {
   readonly #props: ConnectionBuilderProps
 
   constructor(props: ConnectionBuilderProps) {
@@ -925,7 +925,7 @@ export class ConnectionBuilder<DB> {
 
 interface ConnectionBuilderProps extends KyselyProps {}
 
-export class TransactionBuilder<DB> {
+export class TransactionBuilder<in out DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
@@ -992,7 +992,7 @@ interface TransactionBuilderProps extends KyselyProps {
   readonly isolationLevel?: IsolationLevel
 }
 
-export class ControlledTransactionBuilder<DB> {
+export class ControlledTransactionBuilder<in out DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
@@ -1058,7 +1058,10 @@ export type ControlledTransaction<
  * @typeParam S - The names of the savepoints that are currently open, in the
  *    order they were created.
  */
-export interface ControlledTransactionMethods<DB, S extends string[] = []> {
+export interface ControlledTransactionMethods<
+  in out DB,
+  S extends string[] = [],
+> {
   readonly isCommitted: boolean
 
   readonly isRolledBack: boolean

@@ -10,7 +10,7 @@ import type {
 /**
  * Similar to {@link QueryCreator} but read-only.
  */
-export interface ReadonlyQueryCreator<DB> extends Pick<
+export interface ReadonlyQueryCreator<in out DB> extends Pick<
   QueryCreator<DB>,
   'selectFrom' | 'selectNoFrom'
 > {
