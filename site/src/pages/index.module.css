@@ -109,7 +109,8 @@
   color: inherit;
   cursor: pointer;
   padding-bottom: 4px;
-  text-decoration: underline dotted;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-color: var(--kl-acc-dots);
   text-underline-offset: 3px;
 }
@@ -138,7 +139,8 @@
   color: inherit;
   cursor: pointer;
   padding-bottom: 12px;
-  text-decoration: underline dotted;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-color: var(--kl-dots);
   text-decoration-thickness: 3px;
   text-underline-offset: 8px;
@@ -160,7 +162,8 @@
   color: inherit;
   cursor: pointer;
   padding-bottom: 5px;
-  text-decoration: underline dotted;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-color: var(--kl-dots);
   text-underline-offset: 3px;
 }
@@ -186,7 +189,8 @@
 .heroAudit a {
   color: var(--kl-mut);
   cursor: pointer;
-  text-decoration: underline dotted;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-color: var(--kl-dots);
   text-underline-offset: 3px;
 }
@@ -256,12 +260,16 @@ a.stat {
   text-decoration: none;
 }
 
+/* Explicit hover color: Infima's bare `a:hover` ties a.stat's specificity,
+   and extracted-CSS order flips between dev and production builds. */
 a.stat:hover {
+  color: inherit;
   text-decoration: none;
 }
 
 a.stat .statValue {
-  text-decoration: underline dotted;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
   text-decoration-color: var(--kl-dots);
   text-decoration-thickness: 3px;
   text-underline-offset: 7px;
