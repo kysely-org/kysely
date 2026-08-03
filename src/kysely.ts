@@ -660,10 +660,6 @@ export type Transaction<DB> = TransactionMethods<DB> & Kysely<DB>
 
 /**
  * The methods a {@link Transaction} has on top of the {@link Kysely} ones.
- *
- * These are the members that make a transaction a transaction: the ones that
- * return another transaction rather than a plain `Kysely` instance, and the
- * ones a transaction doesn't support.
  */
 export interface TransactionMethods<DB> {
   /**
