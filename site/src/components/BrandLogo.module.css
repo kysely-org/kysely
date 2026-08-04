@@ -1,0 +1,8 @@
+/* Default contract: fill the container's width, never exceed 100px tall,
+   aspect ratio preserved by the viewBox. Contexts (e.g. proof chips) may
+   override with more specific rules. */
+.brandLogo {
+  display: block;
+  max-height: 100px;
+  width: 100%;
+}

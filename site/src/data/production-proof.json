@@ -3,24 +3,34 @@
     "name": "AWS Blocks",
     "repo": "aws-devtools-labs/aws-blocks",
     "path": "packages/bb-data/package.json",
-    "sha": "ac0966a5cda9b8b617dd0fabbe2024b13e43a2d9",
-    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/ac0966a5cda9b8b617dd0fabbe2024b13e43a2d9/packages/bb-data/package.json",
+    "sha": "58f77dd62d780eda7d2bb61b135fce00687dc50f",
+    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/58f77dd62d780eda7d2bb61b135fce00687dc50f/packages/bb-data/package.json",
     "group": "built-into"
+  },
+  {
+    "name": "Best Western",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1441061874",
+    "group": "production"
   },
   {
     "name": "Better Auth",
     "repo": "better-auth/better-auth",
     "path": "packages/better-auth/src/db/get-migration.ts",
-    "sha": "de5acf171f9c5b4af2c2c59bc69ffc631d03eb9f",
-    "href": "https://github.com/better-auth/better-auth/blob/de5acf171f9c5b4af2c2c59bc69ffc631d03eb9f/packages/better-auth/src/db/get-migration.ts",
+    "sha": "701cd43babac52784d855291a6adc0cf3fba7970",
+    "href": "https://github.com/better-auth/better-auth/blob/701cd43babac52784d855291a6adc0cf3fba7970/packages/better-auth/src/db/get-migration.ts",
     "group": "built-into"
   },
   {
     "name": "Bluesky",
     "repo": "bluesky-social/atproto",
     "path": "packages/pds/package.json",
-    "sha": "d3bbeb5fe87f8c389c2f18abd2bc055ef916a63a",
-    "href": "https://github.com/bluesky-social/atproto/blob/d3bbeb5fe87f8c389c2f18abd2bc055ef916a63a/packages/pds/package.json",
+    "sha": "6a7eff7a7d0fff48eaa600d06130a6c031358447",
+    "href": "https://github.com/bluesky-social/atproto/blob/6a7eff7a7d0fff48eaa600d06130a6c031358447/packages/pds/package.json",
+    "group": "production"
+  },
+  {
+    "name": "Bold.org",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3409499680",
     "group": "production"
   },
   {
@@ -32,9 +42,9 @@
     "name": "Carbon",
     "repo": "crbnos/carbon",
     "path": "packages/database/package.json",
-    "sha": "e6f41ce54886bec46c7c83615ed3c2e5708e2071",
-    "href": "https://github.com/crbnos/carbon/blob/e6f41ce54886bec46c7c83615ed3c2e5708e2071/packages/database/package.json",
-    "group": "built-into"
+    "sha": "4d9987e44fb1dc84d1d4ff89c8ae28a61e219857",
+    "href": "https://github.com/crbnos/carbon/blob/4d9987e44fb1dc84d1d4ff89c8ae28a61e219857/packages/database/package.json",
+    "group": "production"
   },
   {
     "name": "Colanode",
@@ -53,48 +63,66 @@
     "group": "built-into"
   },
   {
+    "name": "CS Demo Manager",
+    "repo": "akiver/cs-demo-manager",
+    "path": "src/node/database/database.ts",
+    "sha": "8961f5072fe4d42803dde68e8e71b3c90b216504",
+    "href": "https://github.com/akiver/cs-demo-manager/blob/8961f5072fe4d42803dde68e8e71b3c90b216504/src/node/database/database.ts",
+    "group": "built-into"
+  },
+  {
     "name": "Deno",
     "href": "https://reddit.com/r/Deno/comments/1hvofl1/comment/mbbhmf1",
+    "group": "production"
+  },
+  {
+    "name": "Depot",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1693345768",
     "group": "production"
   },
   {
     "name": "Docmost",
     "repo": "docmost/docmost",
     "path": "apps/server/package.json",
-    "sha": "70d2ff86856f0ffa66b5c64d0dadac80133c8b5c",
-    "href": "https://github.com/docmost/docmost/blob/70d2ff86856f0ffa66b5c64d0dadac80133c8b5c/apps/server/package.json",
+    "sha": "56ac42767a575ded03f98a4e70d6373e3b59af7c",
+    "href": "https://github.com/docmost/docmost/blob/56ac42767a575ded03f98a4e70d6373e3b59af7c/apps/server/package.json",
     "group": "production"
   },
   {
     "name": "Documenso",
     "repo": "documenso/documenso",
     "path": "ARCHITECTURE.md",
-    "sha": "a457e1ef7de449e4f758fc6943a8014e952c34c6",
-    "href": "https://github.com/documenso/documenso/blob/a457e1ef7de449e4f758fc6943a8014e952c34c6/ARCHITECTURE.md",
+    "sha": "9c27ce6d185f7e25eec80439b931c4709723a2ae",
+    "href": "https://github.com/documenso/documenso/blob/9c27ce6d185f7e25eec80439b931c4709723a2ae/ARCHITECTURE.md",
     "group": "production"
   },
   {
     "name": "EmDash",
     "repo": "emdash-cms/emdash",
     "path": "packages/core/package.json",
-    "sha": "481949b25a2741e0a4d842c0a8c01ce4457ff333",
-    "href": "https://github.com/emdash-cms/emdash/blob/481949b25a2741e0a4d842c0a8c01ce4457ff333/packages/core/package.json",
+    "sha": "ecebade8fb3ff4976c88787595fcb2922c3ee469",
+    "href": "https://github.com/emdash-cms/emdash/blob/ecebade8fb3ff4976c88787595fcb2922c3ee469/packages/core/package.json",
     "group": "built-into"
   },
   {
     "name": "Evolu",
     "repo": "evoluhq/evolu",
     "path": "packages/common/package.json",
-    "sha": "5e0cde081c4edd36d2d513994e8056a61b3202f2",
-    "href": "https://github.com/evoluhq/evolu/blob/5e0cde081c4edd36d2d513994e8056a61b3202f2/packages/common/package.json",
+    "sha": "27f01cf76ca8fcfd12eb6be06f6073776843a73c",
+    "href": "https://github.com/evoluhq/evolu/blob/27f01cf76ca8fcfd12eb6be06f6073776843a73c/packages/common/package.json",
     "group": "built-into"
+  },
+  {
+    "name": "Founderpath",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1659420634",
+    "group": "production"
   },
   {
     "name": "Immich",
     "repo": "immich-app/immich",
     "path": "server/package.json",
-    "sha": "bcf6e66e26d4a26dc8e08da1423ff4e8a6cd1fd8",
-    "href": "https://github.com/immich-app/immich/blob/bcf6e66e26d4a26dc8e08da1423ff4e8a6cd1fd8/server/package.json",
+    "sha": "29e7ea5302bc3f6ed1eb845706cc77cb34f40048",
+    "href": "https://github.com/immich-app/immich/blob/29e7ea5302bc3f6ed1eb845706cc77cb34f40048/server/package.json",
     "group": "built-into"
   },
   {
@@ -103,36 +131,54 @@
     "group": "production"
   },
   {
+    "name": "Materialize",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1664372473",
+    "group": "production"
+  },
+  {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/package.json",
-    "sha": "2b3b6b8c014e5a8678df72fcf7d0aaaf62a44c89",
-    "href": "https://github.com/mikro-orm/mikro-orm/blob/2b3b6b8c014e5a8678df72fcf7d0aaaf62a44c89/packages/sql/package.json",
+    "sha": "a88383d17a0164c5ef9895a8c30cf24a71e7bc63",
+    "href": "https://github.com/mikro-orm/mikro-orm/blob/a88383d17a0164c5ef9895a8c30cf24a71e7bc63/packages/sql/package.json",
     "group": "built-into"
   },
   {
     "name": "Mozilla",
     "repo": "mozilla/fxa",
     "path": "libs/shared/db/mysql/account/src/lib/kysely-types.ts",
-    "sha": "15da9e7abcf772e6cca61cb3068efcd62ecbab0d",
-    "href": "https://github.com/mozilla/fxa/blob/15da9e7abcf772e6cca61cb3068efcd62ecbab0d/libs/shared/db/mysql/account/src/lib/kysely-types.ts",
+    "sha": "2127ca534b1c76807a58a761126e22bb3b906c6b",
+    "href": "https://github.com/mozilla/fxa/blob/2127ca534b1c76807a58a761126e22bb3b906c6b/libs/shared/db/mysql/account/src/lib/kysely-types.ts",
     "group": "production"
   },
   {
     "name": "Notesnook",
     "repo": "streetwriters/notesnook",
     "path": "apps/web/src/common/sqlite/wa-sqlite-kysely-driver.ts",
-    "sha": "b5140d9947d01d34635d5e8b1d4653bea26a73a7",
-    "href": "https://github.com/streetwriters/notesnook/blob/b5140d9947d01d34635d5e8b1d4653bea26a73a7/apps/web/src/common/sqlite/wa-sqlite-kysely-driver.ts",
+    "sha": "d3d21aa8355cb90931b8cedd9ef20005bdad13a8",
+    "href": "https://github.com/streetwriters/notesnook/blob/d3d21aa8355cb90931b8cedd9ef20005bdad13a8/apps/web/src/common/sqlite/wa-sqlite-kysely-driver.ts",
     "group": "built-into"
   },
   {
     "name": "OpenClaw",
     "repo": "openclaw/openclaw",
     "path": "package.json",
-    "sha": "d239a59d82ea929c92df2fff716a70c8e5d6bf1e",
-    "href": "https://github.com/openclaw/openclaw/blob/d239a59d82ea929c92df2fff716a70c8e5d6bf1e/package.json",
+    "sha": "1aea2df9351969f6cbac4bc17abcbb71a1720670",
+    "href": "https://github.com/openclaw/openclaw/blob/1aea2df9351969f6cbac4bc17abcbb71a1720670/package.json",
     "group": "built-into"
+  },
+  {
+    "name": "Open Collective",
+    "repo": "opencollective/opencollective-api",
+    "path": "package.json",
+    "sha": "1bc072a2c7b7e9d179220f1ebd31c9e3cf77f500",
+    "href": "https://github.com/opencollective/opencollective-api/blob/1bc072a2c7b7e9d179220f1ebd31c9e3cf77f500/package.json",
+    "group": "production"
+  },
+  {
+    "name": "Open.cx",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3541278200",
+    "group": "production"
   },
   {
     "name": "Parabol",
@@ -159,6 +205,27 @@
     "group": "built-into"
   },
   {
+    "name": "Reflect",
+    "repo": "team-reflect/reflect-open",
+    "path": "packages/core/package.json",
+    "sha": "45a3b39203dc6e99c22da186d294c804909d3f9e",
+    "href": "https://github.com/team-reflect/reflect-open/blob/45a3b39203dc6e99c22da186d294c804909d3f9e/packages/core/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "ROOST Coop",
+    "repo": "roostorg/coop",
+    "path": "db/package.json",
+    "sha": "0ecffa354c66cf85e24062e6483142e520a0f26b",
+    "href": "https://github.com/roostorg/coop/blob/0ecffa354c66cf85e24062e6483142e520a0f26b/db/package.json",
+    "group": "built-into"
+  },
+  {
+    "name": "Sesame Care",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1993016822",
+    "group": "production"
+  },
+  {
     "name": "Sink",
     "repo": "miantiao-me/Sink",
     "path": "package.json",
@@ -173,6 +240,14 @@
     "sha": "8f953e8c2d6cdc037c09a06eee684083c3a82ff3",
     "href": "https://github.com/withstudiocms/studiocms/blob/8f953e8c2d6cdc037c09a06eee684083c3a82ff3/packages/@withstudiocms/kysely/package.json",
     "group": "built-into"
+  },
+  {
+    "name": "Teable",
+    "repo": "teableio/teable",
+    "path": "packages/v2/adapter-repository-postgres/package.json",
+    "sha": "ca571d969d9cb235aed08222c147ec0665e3fd1a",
+    "href": "https://github.com/teableio/teable/blob/ca571d969d9cb235aed08222c147ec0665e3fd1a/packages/v2/adapter-repository-postgres/package.json",
+    "group": "production"
   },
   {
     "name": "tldraw",
