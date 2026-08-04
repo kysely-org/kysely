@@ -336,12 +336,21 @@ a.stat:hover .statValue {
   display: inline-flex;
   font-size: 14.5px;
   font-weight: 650;
+  gap: 8px;
+  min-height: 39px;
   padding: 8px 14px;
   position: relative;
   text-decoration: none;
   transition:
     border-color 0.15s ease,
     color 0.15s ease;
+}
+
+/* Brand marks render at chip scale, monochrome in the chip's ink. */
+.productionNames a svg {
+  height: 18px;
+  max-height: none;
+  width: auto;
 }
 
 .productionNames a:hover {

@@ -3,6 +3,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
 
+import { BrandLogoSvg, brandLogos } from '../components/BrandLogo'
 import { DemoVideo } from '../components/DemoVideo'
 import { SectionFeatures } from '../components/SectionFeatures'
 import { SectionQuotes } from '../components/SectionQuotes'
@@ -313,6 +314,18 @@ const PROOF_GROUPS = [
   { group: 'built-into', caption: 'Built into' },
 ]
 
+// Icon-only marks that read clearer with the name alongside the glyph.
+const LOGO_WITH_NAME = new Set([
+  'CS Demo Manager',
+  'Conar',
+  'Materialize',
+  'Notesnook',
+  'OpenClaw',
+  'StudioCMS',
+  'Teable',
+  'ZenStack',
+])
+
 function SectionProduction() {
   return (
     <section className={styles.production}>
@@ -326,11 +339,20 @@ function SectionProduction() {
                 .map(({ href, name }) => (
                   <a
                     key={name}
+                    aria-label={name}
                     href={href}
                     rel="noopener noreferrer"
                     target="_blank"
+                    title={name}
                   >
-                    {name}
+                    {brandLogos[name] ? (
+                      <>
+                        <BrandLogoSvg logo={brandLogos[name]} />
+                        {LOGO_WITH_NAME.has(name) && <span>{name}</span>}
+                      </>
+                    ) : (
+                      name
+                    )}
                   </a>
                 ))}
               {group === 'production' && (
@@ -347,7 +369,7 @@ function SectionProduction() {
           </React.Fragment>
         ))}
         <span className={styles.productionFootnote}>
-          every name links to proof
+          every logo links to proof
         </span>
       </div>
     </section>
