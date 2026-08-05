@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { isFunction, isObject } from '../util/object-utils.js'
 import type { Migration, MigrationProvider } from './migrator.js'
 
@@ -39,9 +40,13 @@ export class FileMigrationProvider implements MigrationProvider {
         fileName,
       )
 
+      const importPath = filePath.startsWith('file://')
+        ? filePath
+        : pathToFileURL(filePath).href
+
       const migration = this.#props.import
         ? await this.#props.import(filePath)
-        : await import(/* webpackIgnore: true */ filePath)
+        : await import(/* webpackIgnore: true */ importPath)
 
       const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))
 

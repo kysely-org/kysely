@@ -1,0 +1,30 @@
+---
+title: 'Nested JSONB object'
+---
+
+# Nested JSONB object
+
+While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+helpers for fetching nested objects and arrays in a single query. In this example we
+use the `jsonbObjectFrom` helper to fetch a person's favorite pet as a JSONB object.
+
+import { Playground } from '../../../src/components/Playground'
+
+import {
+  nestedJsonbObject
+} from './0125-nested-jsonb-object'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={nestedJsonbObject} />
+</div>
+
+:::info[More examples]
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [select method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#select)
+ - [selectAll method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#selectAll)
+ - [selectFrom method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#selectFrom)
+:::

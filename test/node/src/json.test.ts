@@ -12,6 +12,9 @@ import {
   jsonArrayFrom as pg_jsonArrayFrom,
   jsonObjectFrom as pg_jsonObjectFrom,
   jsonBuildObject as pg_jsonBuildObject,
+  jsonbArrayFrom as pg_jsonbArrayFrom,
+  jsonbObjectFrom as pg_jsonbObjectFrom,
+  jsonbBuildObject as pg_jsonbBuildObject,
 } from '../../../dist/helpers/postgres.js'
 import {
   jsonArrayFrom as mysql_jsonArrayFrom,
@@ -616,6 +619,38 @@ for (const dialect of DIALECTS) {
       const expectedType0: NumericString = result.mode
       const expectedType1: NumericString = result.dehydrated.mode
     })
+
+    if (sqlSpec === 'postgres') {
+      it('should execute jsonbArrayFrom, jsonbObjectFrom, and jsonbBuildObject correctly', async () => {
+        const query = db
+          .selectFrom('person')
+          .select((eb) => [
+            pg_jsonbArrayFrom(
+              eb
+                .selectFrom('pet')
+                .select(['id', 'name'])
+                .whereRef('owner_id', '=', 'person.id')
+                .orderBy('name')
+            ).as('pets'),
+            pg_jsonbObjectFrom(
+              eb
+                .selectFrom('pet')
+                .select(['id', 'name'])
+                .whereRef('owner_id', '=', 'person.id')
+                .limit(1)
+            ).as('first_pet'),
+            pg_jsonbBuildObject({
+              first: eb.ref('first_name'),
+              last: eb.ref('last_name'),
+            }).as('name_obj'),
+          ])
+
+        const compiled = query.compile()
+        expect(compiled.sql).to.equal(
+          'select (select coalesce(jsonb_agg(agg), \'[]\'::jsonb) from (select "id", "name" from "pet" where "owner_id" = "person"."id" order by "name") as agg) as "pets", (select to_jsonb(obj) from (select "id", "name" from "pet" where "owner_id" = "person"."id" limit $1) as obj) as "first_pet", jsonb_build_object(\'first\', "first_name", \'last\', "last_name") as "name_obj" from "person"'
+        )
+      })
+    }
   })
 
   function toJson<T>(obj: T): RawBuilder<T> {

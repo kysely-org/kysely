@@ -167,8 +167,8 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V>
-      ? ShallowDehydrateValue<V>
-      : never
+    ? ShallowDehydrateValue<V>
+    : never
   }>
 > {
   return sql`json_build_object(${sql.join(
@@ -226,4 +226,149 @@ export type MergeAction = 'INSERT' | 'UPDATE' | 'DELETE'
  */
 export function mergeAction(): RawBuilder<MergeAction> {
   return sql`merge_action()`
+}
+
+/**
+ * A postgres helper for aggregating a subquery (or other expression) into a JSONB array.
+ *
+ * ### Examples
+ *
+ * <!-- siteExample("select", "Nested JSONB array", 115) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonbArrayFrom` helper to fetch a person's pets as a JSONB array along with the person's id.
+ *
+ * ```ts
+ * import { jsonbArrayFrom } from 'kysely/helpers/postgres'
+ *
+ * const result = await db
+ *   .selectFrom('person')
+ *   .select((eb) => [
+ *     'id',
+ *     jsonbArrayFrom(
+ *       eb.selectFrom('pet')
+ *         .select(['pet.id as pet_id', 'pet.name'])
+ *         .whereRef('pet.owner_id', '=', 'person.id')
+ *         .orderBy('pet.name')
+ *     ).as('pets')
+ *   ])
+ *   .execute()
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "id", (
+ *   select coalesce(jsonb_agg(agg), '[]'::jsonb) from (
+ *     select "pet"."id" as "pet_id", "pet"."name"
+ *     from "pet"
+ *     where "pet"."owner_id" = "person"."id"
+ *     order by "pet"."name"
+ *   ) as agg
+ * ) as "pets"
+ * from "person"
+ * ```
+ */
+export function jsonbArrayFrom<O>(
+  expr: Expression<O>,
+): RawBuilder<Simplify<ShallowDehydrateObject<O>>[]> {
+  return sql`(select coalesce(jsonb_agg(agg), '[]'::jsonb) from ${expr} as agg)`
+}
+
+/**
+ * A postgres helper for turning a subquery (or other expression) into a JSONB object.
+ *
+ * The subquery must only return one row.
+ *
+ * ### Examples
+ *
+ * <!-- siteExample("select", "Nested JSONB object", 125) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonbObjectFrom` helper to fetch a person's favorite pet as a JSONB object.
+ *
+ * ```ts
+ * import { jsonbObjectFrom } from 'kysely/helpers/postgres'
+ *
+ * const result = await db
+ *   .selectFrom('person')
+ *   .select((eb) => [
+ *     'id',
+ *     jsonbObjectFrom(
+ *       eb.selectFrom('pet')
+ *         .select(['pet.id as pet_id', 'pet.name'])
+ *         .whereRef('pet.owner_id', '=', 'person.id')
+ *         .where('pet.is_favorite', '=', true)
+ *     ).as('favorite_pet')
+ *   ])
+ *   .execute()
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "id", (
+ *   select to_jsonb(obj) from (
+ *     select "pet"."id" as "pet_id", "pet"."name"
+ *     from "pet"
+ *     where "pet"."owner_id" = "person"."id"
+ *     and "pet"."is_favorite" = $1
+ *   ) as obj
+ * ) as "favorite_pet"
+ * from "person"
+ * ```
+ */
+export function jsonbObjectFrom<O>(
+  expr: Expression<O>,
+): RawBuilder<Simplify<ShallowDehydrateObject<O>> | null> {
+  return sql`(select to_jsonb(obj) from ${expr} as obj)`
+}
+
+/**
+ * The PostgreSQL `jsonb_build_object` function.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * import { sql } from 'kysely'
+ * import { jsonbBuildObject } from 'kysely/helpers/postgres'
+ *
+ * const result = await db
+ *   .selectFrom('person')
+ *   .select((eb) => [
+ *     'id',
+ *     jsonbBuildObject({
+ *       first: eb.ref('first_name'),
+ *       last: eb.ref('last_name'),
+ *       full: sql<string>`first_name || ' ' || last_name`
+ *     }).as('name')
+ *   ])
+ *   .execute()
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "id", jsonb_build_object(
+ *   'first', first_name,
+ *   'last', last_name,
+ *   'full', first_name || ' ' || last_name
+ * ) as "name"
+ * from "person"
+ * ```
+ */
+export function jsonbBuildObject<O extends Record<string, Expression<unknown>>>(
+  obj: O,
+): RawBuilder<
+  Simplify<{
+    [K in keyof O]: O[K] extends Expression<infer V>
+    ? ShallowDehydrateValue<V>
+    : never
+  }>
+> {
+  return sql`jsonb_build_object(${sql.join(
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
+  )})`
 }

@@ -51,7 +51,9 @@ for (const dialect of DIALECTS) {
 
           const stackLines = err.stack.split('\n')
           const lastStackLine = stackLines[stackLines.length - 1]
-          expect(lastStackLine).to.contain(__filename)
+          expect(lastStackLine.replace(/\\/g, '/')).to.contain(
+            __filename.replace(/\\/g, '/'),
+          )
         }
       }
     })
