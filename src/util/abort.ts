@@ -61,6 +61,7 @@ export function getInflightQueryAbortHandler(
     const handler = connection.cancelQuery
 
     if (!handler) {
+      beforeThrow()
       throwUnsupportedInflightQueryAbortStrategyError(
         abortStrategy,
         connection.killSession ? 'kill session' : undefined,
@@ -74,6 +75,7 @@ export function getInflightQueryAbortHandler(
     const handler = connection.killSession
 
     if (!handler) {
+      beforeThrow()
       throwUnsupportedInflightQueryAbortStrategyError(
         abortStrategy,
         connection.cancelQuery ? 'cancel query' : undefined,
