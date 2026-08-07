@@ -1,0 +1,5 @@
+site: build
+
+# Index only each page's main content; navbars, sidebars and footers sit
+# outside <main> in the Docusaurus build.
+root_selector: main
