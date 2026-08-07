@@ -28,11 +28,3 @@
   width: 106.67%;
 }
 
-.caption {
-  color: var(--kl-mut, #9b9b9b);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  margin-top: 12px;
-  text-align: center;
-}
