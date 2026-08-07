@@ -371,7 +371,9 @@ a.stat:hover .statValue {
   transition: color 0.15s ease;
 }
 
-.productionNames a:hover::after {
+/* Must out-specify the base rule above, not tie with it: extracted-CSS
+   order flips between dev and production builds. */
+.productionNames a:not(.productionCTA):hover::after {
   color: var(--kl-acc);
 }
 
