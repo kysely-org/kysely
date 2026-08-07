@@ -366,9 +366,6 @@ function SectionProduction() {
             </span>
           </React.Fragment>
         ))}
-        <span className={styles.productionFootnote}>
-          every logo links to proof
-        </span>
       </div>
     </section>
   )
@@ -410,9 +407,6 @@ function SectionCompiler() {
               <span>{'\'ReferenceExpression<DB, "person">\''}</span>.{' '}
               <span>ts(2345)</span>
             </div>
-          </div>
-          <div className={styles.editorCaption}>
-            actual TypeScript compiler output
           </div>
         </div>
       </div>
@@ -457,7 +451,6 @@ function SectionComposition() {
               }
             </div>
           </div>
-          <div className={styles.editorCaption}>inferred type, verbatim</div>
         </div>
       </div>
     </section>

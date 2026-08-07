@@ -359,26 +359,20 @@ a.stat:hover .statValue {
   text-decoration: none;
 }
 
+/* Every cell links to proof; the corner arrow is the standing cue, faint
+   until intent. */
 .productionNames a:not(.productionCTA)::after {
-  color: var(--kl-acc);
+  color: var(--kl-faint);
   content: '↗';
   font-size: 10px;
-  opacity: 0;
   position: absolute;
   right: 4px;
   top: 2px;
-  transition: opacity 0.15s ease;
+  transition: color 0.15s ease;
 }
 
 .productionNames a:hover::after {
-  opacity: 1;
-}
-
-.productionFootnote {
-  color: var(--kl-faint);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  color: var(--kl-acc);
 }
 
 .productionNames a.productionCTA {
@@ -476,15 +470,6 @@ a.stat:hover .statValue {
 .editorCode :global(.kl-squiggle) {
   text-decoration: underline wavy var(--kl-err) 1.5px;
   text-underline-offset: 4px;
-}
-
-.editorCaption {
-  color: var(--kl-mut);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  margin-top: 12px;
-  text-align: center;
 }
 
 .errPanel {

@@ -83,15 +83,16 @@
   transition: border-color 0.15s ease;
 }
 
+/* Every card links to the source; the corner arrow is the standing cue,
+   faint until intent (same convention as the proof wall). */
 .quoteContainer::after {
-  color: var(--kl-acc);
+  color: var(--kl-faint);
   content: '↗';
   font-size: 11px;
-  opacity: 0;
   position: absolute;
   right: 6px;
   top: 4px;
-  transition: opacity 0.15s ease;
+  transition: color 0.15s ease;
 }
 
 .quoteContainer:hover {
@@ -100,7 +101,7 @@
 }
 
 .quoteContainer:hover::after {
-  opacity: 1;
+  color: var(--kl-acc);
 }
 
 .quoteInnerContainer {
