@@ -125,13 +125,6 @@ export default {
   projectName: 'kysely',
   tagline: 'The most powerful type-safe SQL query builder for TypeScript',
   themeConfig: {
-    algolia: {
-      // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
-      apiKey: 'ebee59ab1b71803be5983f6dbfeea352',
-      appId: 'MDKJWTIJFR',
-      contextualSearch: true,
-      indexName: 'kysely',
-    },
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
