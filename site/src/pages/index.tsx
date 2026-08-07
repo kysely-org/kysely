@@ -246,9 +246,7 @@ function SectionStats() {
           ? `${downloads.toLocaleString('en')} in the last 7 days`
           : undefined,
       value:
-        downloads != null
-          ? formatCompact(downloads)
-          : FALLBACK_STATS.downloads,
+        downloads != null ? formatCompact(downloads) : FALLBACK_STATS.downloads,
     },
     {
       href: 'https://ossinsight.io/analyze/kysely-org/kysely',
@@ -409,7 +407,7 @@ function SectionCompiler() {
             <div className={styles.errPanel}>
               Argument of type <span>'"person.ag"'</span> is not assignable to
               parameter of type{' '}
-              <span>{"'ReferenceExpression<DB, \"person\">'"}</span>.{' '}
+              <span>{'\'ReferenceExpression<DB, "person">\''}</span>.{' '}
               <span>ts(2345)</span>
             </div>
           </div>
@@ -465,4 +463,3 @@ function SectionComposition() {
     </section>
   )
 }
-

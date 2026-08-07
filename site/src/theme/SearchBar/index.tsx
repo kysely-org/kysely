@@ -1,9 +1,13 @@
-import React, {useEffect, useRef, useState} from 'react'
-import {useColorMode} from '@docusaurus/theme-common'
+import React, { useEffect, useRef, useState } from 'react'
+import { useColorMode } from '@docusaurus/theme-common'
 
-// While prototyping, the API reference index is served locally with CORS.
-// In production this becomes: https://kysely-org.github.io/kysely-apidoc/pagefind/
-const APIDOC_PAGEFIND_URL = 'http://localhost:8081/pagefind/'
+// The API reference index. Never point this at localhost: the on-load
+// probe would trip Chrome's Local Network Access permission prompt
+// ("access other apps and services on this device") for every visitor of
+// a deployed site. Until kysely-apidoc deploys its Pagefind bundle, the
+// probe fails and search runs guide-only.
+const APIDOC_PAGEFIND_URL =
+  'https://kysely-org.github.io/kysely-apidoc/pagefind/'
 
 // The bundle only exists in production builds (`pnpm build` + `pagefind
 // --site build`), so search is a no-op in `docusaurus start`.
@@ -24,7 +28,7 @@ declare module 'react' {
       'pagefind-modal': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
-      > & {instance?: string; 'reset-on-close'?: boolean}
+      > & { instance?: string; 'reset-on-close'?: boolean }
       'pagefind-modal-trigger': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement>,
         HTMLElement
@@ -81,7 +85,7 @@ export default function SearchBar(): React.JSX.Element {
   const [isReady, setIsReady] = useState(false)
   // Rendered during SSR, so default to Mac and correct after mount.
   const [modifierKey, setModifierKey] = useState('⌘')
-  const {colorMode} = useColorMode()
+  const { colorMode } = useColorMode()
 
   useEffect(() => {
     if (!/mac/i.test(navigator.platform)) {
@@ -89,7 +93,8 @@ export default function SearchBar(): React.JSX.Element {
     }
   }, [])
   const modalRef = useRef<
-    (HTMLElement & {instance?: {triggerSearch?: (term: string) => void}}) | null
+    | (HTMLElement & { instance?: { triggerSearch?: (term: string) => void } })
+    | null
   >(null)
 
   // `reset-on-close` only takes effect on close paths that run the
@@ -117,7 +122,7 @@ export default function SearchBar(): React.JSX.Element {
           const searchInput = modal.querySelector('input')
           if (searchInput && searchInput.value !== '') {
             searchInput.value = ''
-            searchInput.dispatchEvent(new Event('input', {bubbles: true}))
+            searchInput.dispatchEvent(new Event('input', { bubbles: true }))
           }
         }
       }
@@ -171,8 +176,10 @@ export default function SearchBar(): React.JSX.Element {
         // Rendered from the title element, since the link's ::after is
         // taken by the primary badge.
         if (badge === 'Example') {
-          const category = new URL(link.href, window.location.href).pathname
-            .split('/')[3]
+          const category = new URL(
+            link.href,
+            window.location.href,
+          ).pathname.split('/')[3]
           if (category) {
             link
               .closest('.pf-result-title')
@@ -193,7 +200,7 @@ export default function SearchBar(): React.JSX.Element {
     })
 
     stampResultLinks(modal)
-    linkObserver.observe(modal, {childList: true, subtree: true})
+    linkObserver.observe(modal, { childList: true, subtree: true })
 
     return () => {
       observer.disconnect()
@@ -211,7 +218,9 @@ export default function SearchBar(): React.JSX.Element {
         }
 
         if (!includeApidocIndex) {
-          console.warn('[search] API docs index unreachable, searching guides only')
+          console.warn(
+            '[search] API docs index unreachable, searching guides only',
+          )
         }
 
         // Must run before the components below mount: a connected component
@@ -256,8 +265,8 @@ export default function SearchBar(): React.JSX.Element {
       }
     }
 
-    document.addEventListener('wheel', onScrollIntent, {passive: false})
-    document.addEventListener('touchmove', onScrollIntent, {passive: false})
+    document.addEventListener('wheel', onScrollIntent, { passive: false })
+    document.addEventListener('touchmove', onScrollIntent, { passive: false })
 
     return () => {
       cancelled = true
