@@ -48,6 +48,23 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    // `docusaurus start` has no Pagefind bundle (it's generated from the
+    // built HTML), which would leave the search button dead in dev. Serve
+    // the last production build's index instead: content may be stale, but
+    // search UI work doesn't need a 90s rebuild per iteration.
+    function pagefindDevServer() {
+      return {
+        configureWebpack: () => ({
+          devServer: {
+            static: {
+              directory: `${__dirname}/build/pagefind`,
+              publicPath: '/pagefind',
+            },
+          },
+        }),
+        name: 'pagefind-dev-server',
+      }
+    },
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
@@ -108,13 +125,6 @@ export default {
   projectName: 'kysely',
   tagline: 'The most powerful type-safe SQL query builder for TypeScript',
   themeConfig: {
-    algolia: {
-      // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
-      apiKey: 'ebee59ab1b71803be5983f6dbfeea352',
-      appId: 'MDKJWTIJFR',
-      contextualSearch: true,
-      indexName: 'kysely',
-    },
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,

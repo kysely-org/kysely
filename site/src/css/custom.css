@@ -226,51 +226,155 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   width: 1px;
 }
 
-/* VitePress-style search button, hono.dev metrics: 40px tall, 8px radius,
-   13px muted placeholder, joined kbd chips bordered with the divider token. */
+/* Pagefind Component UI theme mapping. Colors ride the --ifm vars (which
+   flip with [data-theme]); the SearchBar also stamps data-pf-theme="dark"
+   for the component's own dark-only rules. */
+:root {
+  --pf-font: var(--ifm-font-family-base);
+  --pf-background: var(--ifm-background-surface-color);
+  --pf-text: var(--ifm-font-color-base);
+  --pf-text-secondary: var(--ifm-color-emphasis-700);
+  --pf-text-muted: var(--ifm-color-emphasis-600);
+  --pf-border: var(--ifm-color-emphasis-200);
+  --pf-border-focus: var(--ifm-color-emphasis-400);
+  --pf-hover: var(--ifm-color-emphasis-100);
+  --pf-mark: var(--ifm-font-color-base);
+  --pf-outline-focus: var(--ifm-color-primary);
+  --pf-modal-max-width: 720px;
+}
+
+/* The modal body's UA scrollbar follows color-scheme, which the component
+   doesn't set; without this it renders for the wrong theme in dark mode.
+   --pf-font is re-pinned here because the component declares it at element
+   level, which beats the :root mapping above. */
+pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) {
+  --pf-font: var(--ifm-font-family-base);
+  color-scheme: light;
+}
+
+/* Source hints on result titles (API / Example / Recipe); the SearchBar
+   stamps data-result-badge on the links as they render. */
+pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-badge-detail]::after,
+pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title a[data-result-badge]::after {
+  border: 1px solid var(--pf-border, #e0e0e0);
+  border-radius: 4px;
+  color: var(--pf-text-muted, #767676);
+  content: attr(data-result-badge);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-left: 8px;
+  padding: 1px 5px;
+  position: relative;
+  top: -1px;
+}
+
+pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-badge-detail]::after {
+  content: attr(data-result-badge-detail);
+  margin-left: 6px;
+}
+
+[data-pf-theme='dark'] pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) {
+  color-scheme: dark;
+}
+
+/* Replace the stock external-link SVG with the house ↗ used on the
+   landing's proof tiles and quote cards. */
+.navbar [class*='iconExternalLink'] {
+  display: none;
+}
+
+/* Center the trigger on the navbar's midline: as an inline-block it
+   otherwise rides high on the line box's baseline space. The theme wrapper
+   div (data-pf-theme) collapses via display: contents so the trigger is
+   the flex child. */
+.navbar [class*='navbarSearchContainer'] {
+  align-items: center;
+  display: flex;
+}
+
+.navbar [class*='navbarSearchContainer'] > div {
+  display: contents;
+}
+
+/* The search trigger, VitePress metrics (hono.dev): 40px tall, 8px
+   radius, 13px muted placeholder, joined kbd chips, fixed 180px width.
+   The pre-hydration stand-in renders the same pf-* markup so the swap to
+   the live component is pixel-identical, and the magnifier is drawn here
+   via mask so it needs neither pagefind-component-ui.css nor an inline
+   SVG. The :is(*, #\#) prefix mirrors the specificity booster that
+   stylesheet puts on every rule (three ID-weight :is() wrappers); without
+   it these lose. */
+.navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.386 14.386l4.0877 4.0877-4.0877-4.0877c-2.9418 2.9419-7.7115 2.9419-10.6533 0-2.9419-2.9418-2.9419-7.7115 0-10.6533 2.9418-2.9419 7.7115-2.9419 10.6533 0 2.9419 2.9418 2.9419 7.7115 0 10.6533z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  /* Declared explicitly (not inherited/var-mapped): the component's
+     runtime styles otherwise flip font stack, smoothing and muted color
+     on upgrade, which reads as a flicker of the label and chips. */
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--ifm-font-family-base);
+  margin: 0;
+  transition: border-color 0.25s ease;
+}
+
+.navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn:hover,
+.navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn:focus {
+  border-color: var(--ifm-color-primary);
+  box-shadow: none;
+}
+
 @media (min-width: 997px) {
-  .navbar .DocSearch-Button {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
     align-items: center;
     background: #f6f6f7;
-    border: 1px solid transparent;
-    border-radius: 8px;
     color: rgb(60 60 67 / 78%);
     display: flex;
+    gap: 0;
     height: 40px;
-    margin: 0;
     padding: 0 10px 0 12px;
-    transition: border-color 0.25s ease;
+    width: 180px;
   }
 
-  [data-theme='dark'] .navbar .DocSearch-Button {
+  [data-theme='dark'] .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
     background: #252529;
     color: rgb(235 235 245 / 60%);
   }
 
-  .navbar .DocSearch-Button:hover,
-  .navbar .DocSearch-Button:focus {
-    border-color: var(--ifm-color-primary);
-    box-shadow: none;
-  }
-
-  .navbar .DocSearch-Search-Icon {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
     color: currentColor;
     height: 14px;
     margin-right: 10px;
     width: 14px;
   }
 
-  .navbar .DocSearch-Button-Placeholder {
+  /* Text flexes so the fixed-width button pushes the chips to the right
+     edge (three flex children here, so space-between would split the icon
+     from its label). */
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-text {
+    -webkit-font-smoothing: antialiased;
+    color: inherit;
+    flex: 1 1 auto;
+    font-family: inherit;
     font-size: 13px;
     padding: 0 16px 0 0;
+    text-align: left;
   }
 
-  .navbar .DocSearch-Button-Keys {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-shortcut {
     display: flex;
-    min-width: auto;
+    gap: 0;
+    margin: 0;
+    padding: 0;
   }
 
-  .navbar .DocSearch-Button-Key {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-key {
+    -webkit-font-smoothing: antialiased;
     background: transparent;
     border: 1px solid var(--navbar-divider);
     border-radius: 4px 0 0 4px;
@@ -284,11 +388,10 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
     margin: 2px 0 0;
     min-width: 0;
     padding: 0 0 2px 6px;
-    top: 0;
     width: auto;
   }
 
-  .navbar .DocSearch-Button-Key + .DocSearch-Button-Key {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-key + .pf-trigger-key {
     border: 1px solid var(--navbar-divider);
     border-left: none;
     border-radius: 0 4px 4px 0;
@@ -296,10 +399,23 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   }
 }
 
-/* Replace the stock external-link SVG with the house ↗ used on the
-   landing's proof tiles and quote cards. */
-.navbar [class*='iconExternalLink'] {
-  display: none;
+@media (max-width: 996px) {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
+    background: none;
+    padding: 6px;
+  }
+
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-text,
+
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-shortcut {
+    display: none;
+  }
+
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-icon {
+    color: var(--ifm-navbar-link-color);
+    height: 18px;
+    width: 18px;
+  }
 }
 
 .navbar__link:has([class*='iconExternalLink'])::after {
