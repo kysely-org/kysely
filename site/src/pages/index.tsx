@@ -316,9 +316,11 @@ const PROOF_GROUPS = [
 const LOGO_WITH_NAME = new Set([
   'CS Demo Manager',
   'Conar',
+  'EmbedPDF',
   'Materialize',
   'Notesnook',
   'OpenClaw',
+  'Replicas',
   'StudioCMS',
   'Teable',
   'ZenStack',
