@@ -1,5 +1,13 @@
 [
   {
+    "name": "AirTrail",
+    "repo": "johanohly/AirTrail",
+    "path": "src/lib/db/index.ts",
+    "sha": "85157a6980f218370c16b75555791d674128ff1d",
+    "href": "https://github.com/johanohly/AirTrail/blob/85157a6980f218370c16b75555791d674128ff1d/src/lib/db/index.ts",
+    "group": "built-into"
+  },
+  {
     "name": "AWS Blocks",
     "repo": "aws-devtools-labs/aws-blocks",
     "path": "packages/bb-data/package.json",
@@ -18,6 +26,14 @@
     "path": "packages/better-auth/src/db/get-migration.ts",
     "sha": "95e248eb88a2819ae95da2e6632e2958e0771805",
     "href": "https://github.com/better-auth/better-auth/blob/95e248eb88a2819ae95da2e6632e2958e0771805/packages/better-auth/src/db/get-migration.ts",
+    "group": "built-into"
+  },
+  {
+    "name": "bknd",
+    "repo": "bknd-io/bknd",
+    "path": "app/package.json",
+    "sha": "8c596781ff83d4dde330b97a4721ae1d458ab715",
+    "href": "https://github.com/bknd-io/bknd/blob/8c596781ff83d4dde330b97a4721ae1d458ab715/app/package.json",
     "group": "built-into"
   },
   {
@@ -47,6 +63,14 @@
     "group": "production"
   },
   {
+    "name": "Civitai",
+    "repo": "civitai/civitai",
+    "path": "packages/civitai-db/package.json",
+    "sha": "dda8e34d2e2390612f4b4c67dd194b83c4723c68",
+    "href": "https://github.com/civitai/civitai/blob/dda8e34d2e2390612f4b4c67dd194b83c4723c68/packages/civitai-db/package.json",
+    "group": "production"
+  },
+  {
     "name": "Colanode",
     "repo": "colanode/colanode",
     "path": "packages/client/src/services/kysely-service.ts",
@@ -61,6 +85,14 @@
     "sha": "7bb1b88a8bb9822188e2f548f998505f07a2dce0",
     "href": "https://github.com/wannabespace/conar/blob/7bb1b88a8bb9822188e2f548f998505f07a2dce0/apps/app/package.json",
     "group": "built-into"
+  },
+  {
+    "name": "Corsair.dev",
+    "repo": "corsairdev/corsair",
+    "path": "packages/corsair/package.json",
+    "sha": "c6429b7227c5083aae39a67406af6bb268ecd1ff",
+    "href": "https://github.com/corsairdev/corsair/blob/c6429b7227c5083aae39a67406af6bb268ecd1ff/packages/corsair/package.json",
+    "group": "production"
   },
   {
     "name": "CS Demo Manager",
@@ -124,6 +156,14 @@
     "name": "Founderpath",
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1659420634",
     "group": "production"
+  },
+  {
+    "name": "Hot Updater",
+    "repo": "gronxb/hot-updater",
+    "path": "plugins/postgres/package.json",
+    "sha": "c268a44e88700e149f57fc6493efc1d27327bda9",
+    "href": "https://github.com/gronxb/hot-updater/blob/c268a44e88700e149f57fc6493efc1d27327bda9/plugins/postgres/package.json",
+    "group": "built-into"
   },
   {
     "name": "Immich",
@@ -205,6 +245,14 @@
     "group": "production"
   },
   {
+    "name": "Profilarr",
+    "repo": "Dictionarry-Hub/profilarr",
+    "path": "deno.jsonc",
+    "sha": "ff7d9edb349d770addee4e3a96a4e3fb0208e918",
+    "href": "https://github.com/Dictionarry-Hub/profilarr/blob/ff7d9edb349d770addee4e3a96a4e3fb0208e918/deno.jsonc",
+    "group": "built-into"
+  },
+  {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
     "path": "sdk/package.json",
@@ -269,6 +317,14 @@
     "sha": "ef6e81c014869894b34df7bef503030c6ccba850",
     "href": "https://github.com/tldraw/tldraw/blob/ef6e81c014869894b34df7bef503030c6ccba850/apps/dotcom/sync-worker/package.json",
     "group": "production"
+  },
+  {
+    "name": "Tunarr",
+    "repo": "chrisbenincasa/tunarr",
+    "path": "server/package.json",
+    "sha": "541cff33a47f5b4c0675322592ba456e4c0122e1",
+    "href": "https://github.com/chrisbenincasa/tunarr/blob/541cff33a47f5b4c0675322592ba456e4c0122e1/server/package.json",
+    "group": "built-into"
   },
   {
     "name": "ZenStack",
