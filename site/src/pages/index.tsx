@@ -314,15 +314,18 @@ const PROOF_GROUPS = [
 
 // Icon-only marks that read clearer with the name alongside the glyph.
 const LOGO_WITH_NAME = new Set([
+  'AirTrail',
   'CS Demo Manager',
   'Conar',
   'EmbedPDF',
+  'Hot Updater',
   'Materialize',
   'Notesnook',
   'OpenClaw',
   'Replicas',
   'StudioCMS',
   'Teable',
+  'Tunarr',
   'ZenStack',
 ])
 
