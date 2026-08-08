@@ -229,6 +229,14 @@
     "group": "production"
   },
   {
+    "name": "OpenSanctions",
+    "repo": "opensanctions/opensanctions",
+    "path": "ui/package.json",
+    "sha": "e7e5ed975cd41ab44f79e6b331e90a17e10ef9b5",
+    "href": "https://github.com/opensanctions/opensanctions/blob/e7e5ed975cd41ab44f79e6b331e90a17e10ef9b5/ui/package.json",
+    "group": "production"
+  },
+  {
     "name": "Parabol",
     "repo": "ParabolInc/parabol",
     "path": "package.json",
