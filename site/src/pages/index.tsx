@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useState } from 'react'
+import React, { JSX, useEffect, useRef, useState } from 'react'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
@@ -391,12 +391,77 @@ const LOGO_WITH_NAME = new Set([
 ])
 
 function SectionProduction() {
+  const [helpOpen, setHelpOpen] = useState(false)
+  const helpRef = useRef<HTMLSpanElement>(null)
+
+  // Hover peeks the explainer; a click pins it open until a click lands
+  // outside or Escape is pressed.
+  useEffect(() => {
+    if (!helpOpen) {
+      return
+    }
+
+    const onClick = (event: MouseEvent) => {
+      if (!helpRef.current?.contains(event.target as Node)) {
+        setHelpOpen(false)
+      }
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setHelpOpen(false)
+      }
+    }
+
+    document.addEventListener('click', onClick)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('click', onClick)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [helpOpen])
+
   return (
     <section className={styles.production}>
       <div className={clsx('container', styles.productionInner)}>
         {PROOF_GROUPS.map(({ group, caption }) => (
           <React.Fragment key={group}>
-            <span className={styles.productionCaption}>{caption}</span>
+            <span className={styles.productionCaption}>
+              {caption}
+              {group === 'production' && (
+                <span
+                  ref={helpRef}
+                  className={clsx(
+                    styles.proofHelp,
+                    helpOpen && styles.proofHelpOpen,
+                  )}
+                >
+                  <button
+                    aria-expanded={helpOpen}
+                    aria-label="How proof is graded"
+                    className={clsx('clean-btn', styles.proofHelpButton)}
+                    onClick={() => setHelpOpen((open) => !open)}
+                    type="button"
+                  >
+                    <svg
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                      <path d="M12 17h.01" />
+                    </svg>
+                  </button>
+                  <span role="tooltip" className={styles.proofHelpPanel}>
+                    Every logo links to public proof and is graded on age and
+                    code over words.
+                  </span>
+                </span>
+              )}
+            </span>
             <span className={styles.productionNames}>
               {proofEntries
                 .filter((entry) => entry.group === group)
