@@ -93,7 +93,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
     "@electric-sql/pglite": "0.5.4",
-    "@types/better-sqlite3": "7.6.13",
+    "@types/better-sqlite3": "9.6.0",
     "@types/chai": "5.2.3",
     "@types/chai-as-promised": "8.0.2",
     "@types/mocha": "10.0.10",
@@ -103,7 +103,7 @@
     "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
     "@types/semver": "7.8.0",
     "@types/sinon": "22.0.0",
-    "better-sqlite3": "12.11.1",
+    "better-sqlite3": "13.0.3",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
     "esbuild": "0.28.2",

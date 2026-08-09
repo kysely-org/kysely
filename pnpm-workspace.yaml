@@ -6,7 +6,7 @@ packages:
 # Allow (true) or disallow (false) script execution.
 # https://pnpm.io/settings#allowbuilds
 allowBuilds:
-  better-sqlite3@12.11.1: true
+  better-sqlite3@13.0.3: true
   core-js: false # site dependency, useless scripts
   core-js-pure: false # site dependency, useless scripts
   esbuild@0.28.1 || 0.28.2: true # tsx@4.3.1 / docusaurus dependency || direct.
