@@ -45,6 +45,9 @@
 }
 
 [data-theme='dark'] {
+  /* The light-mode value is a black tint, invisible on the #1e1e1e code
+     background. */
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.07);
   --ifm-color-primary: #38bdf8;
   --ifm-color-primary-dark: #0ea5e9;
   --ifm-color-primary-darker: #0284c7;

@@ -4,9 +4,9 @@ import type {
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
-import { themes } from 'prism-react-renderer'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
+import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
 
 function socialNavbarItem(
@@ -245,8 +245,8 @@ export default {
       title: 'Kysely',
     },
     prism: {
-      darkTheme: themes.dracula,
-      theme: themes.github,
+      darkTheme: darkPlus,
+      theme: lightPlus,
     },
   } satisfies PresetClassicThemeConfig,
   clientModules: ['./src/clientModules/navbarScroll.ts'],
