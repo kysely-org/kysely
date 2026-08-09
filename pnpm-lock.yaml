@@ -33,8 +33,8 @@ importers:
         specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: 26.1.1
-        version: 26.1.1
+        specifier: 26.2.0
+        version: 26.2.0
       '@types/pg':
         specifier: 8.20.0
         version: 8.20.0
@@ -70,7 +70,7 @@ importers:
         version: 11.7.6
       mysql2:
         specifier: 3.23.2
-        version: 3.23.2(@types/node@26.1.1)
+        version: 3.23.2(@types/node@26.2.0)
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -2575,11 +2575,11 @@ packages:
   '@types/node@17.0.45':
     resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
 
-  '@types/node@26.1.0':
-    resolution: {integrity: sha512-O0A1G3xPGy4w7AgQdAQYUlQ+BKk2Oovw8eRpofyp5KdBZULnbe+WqaOVNrm705SHphCiG4XHsACrSmPu1f+Kgw==}
-
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
+
+  '@types/node@26.2.0':
+    resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -10639,7 +10639,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 26.1.0
+      '@types/node': 26.2.0
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -10880,11 +10880,11 @@ snapshots:
 
   '@types/node@17.0.45': {}
 
-  '@types/node@26.1.0':
+  '@types/node@26.1.1':
     dependencies:
       undici-types: 8.3.0
 
-  '@types/node@26.1.1':
+  '@types/node@26.2.0':
     dependencies:
       undici-types: 8.3.0
 
@@ -10892,12 +10892,12 @@ snapshots:
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 26.1.0
+      '@types/node': 26.2.0
       '@types/pg': 8.20.0
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 26.1.0
+      '@types/node': 26.2.0
       pg-protocol: 1.13.0
       pg-types: 2.2.0
 
@@ -10930,7 +10930,7 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 26.1.0
+      '@types/node': 26.2.0
 
   '@types/retry@0.12.2': {}
 
@@ -14200,9 +14200,9 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  mysql2@3.23.2(@types/node@26.1.1):
+  mysql2@3.23.2(@types/node@26.2.0):
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 26.2.0
       aws-ssl-profiles: 1.1.2
       denque: 2.1.0
       generate-function: 2.3.1
@@ -15920,7 +15920,7 @@ snapshots:
       '@azure/identity': 4.13.1
       '@azure/keyvault-keys': 4.10.2
       '@js-joda/core': 6.0.1
-      '@types/node': 26.1.0
+      '@types/node': 26.2.0
       bl: 6.1.5
       iconv-lite: 0.7.2
       js-md4: 0.3.2
