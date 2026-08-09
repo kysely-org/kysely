@@ -37,13 +37,46 @@ ignoreWorkspaceRootCheck: true
 minimumReleaseAgeStrict: true
 
 overrides:
+  # https://github.com/advisories/GHSA-v422-hmwv-36x6
+  body-parser@>=1.0.0 <1.20.6: 1.20.6
+  # https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+  # https://github.com/advisories/GHSA-mh99-v99m-4gvg
+  # https://github.com/advisories/GHSA-rgw5-rvv9-x895
+  brace-expansion@>=1.0.0 <1.1.18: 1.1.18
+  brace-expansion@>=5.0.0 <5.0.9: 5.0.9
   # https://github.com/advisories/GHSA-73rr-hh4g-fpgx
   diff@>=6.0.0 <8.0.3: 8.0.3
+  # https://github.com/advisories/GHSA-55q2-fjhq-7xh7
+  # https://github.com/advisories/GHSA-c2j3-45gr-mqc4
+  dompurify@>=3.0.0 <3.4.13: 3.4.13
+  # https://github.com/advisories/GHSA-v2hh-gcrm-f6hx
+  # https://github.com/advisories/GHSA-7p8r-x3mc-p8w7
+  fast-uri@>=3.0.0 <3.1.5: 3.1.5
+  # https://github.com/advisories/GHSA-52cp-r559-cp3m
+  # https://github.com/advisories/GHSA-5p4m-2wfm-xmqj
+  js-yaml@>=4.0.0 <4.3.1: 4.3.1
+  # https://github.com/advisories/GHSA-6x64-9x62-f2gx
+  # https://github.com/advisories/GHSA-3rrr-jr9j-h3q3
+  # https://github.com/advisories/GHSA-2v8p-3f2j-5mp7
+  # https://github.com/advisories/GHSA-rhh3-jpg6-66xh
+  # https://github.com/advisories/GHSA-c4c3-pg64-4m4v
+  mermaid@>=11.0.0 <11.16.1: 11.16.1
+  # https://github.com/advisories/GHSA-6g55-p6wh-862q
+  # https://github.com/advisories/GHSA-r28c-9q8g-f849
+  # https://github.com/advisories/GHSA-fxqj-rqcc-2cmp
+  postcss@>=8.0.0 <8.5.23: 8.5.23
   # https://github.com/advisories/GHSA-5c6j-r48x-rmvq
   # https://github.com/advisories/GHSA-qj8w-gfj5-8c6v
   serialize-javascript@>=5.0.0 <7.0.5: 7.0.5
+  # https://github.com/advisories/GHSA-395f-4hp3-45gv
+  shell-quote@>=1.0.0 <1.9.0: 1.9.0
+  # https://github.com/advisories/GHSA-2p49-hgcm-8545
+  svgo@>=3.0.0 <3.3.4: 3.3.4
   # https://github.com/advisories/GHSA-w5hq-g745-h8pq
   uuid@>=8.0.0 <11.1.1: 11.1.1
+  # https://github.com/advisories/GHSA-f5vj-f2hx-8m93
+  # https://github.com/advisories/GHSA-m28w-2pqf-7qgj
+  webpack-dev-server@>=5.0.0 <5.2.6: 5.2.6
 
 # how versions get prefixed in `package.json`.
 # https://pnpm.io/settings#saveprefix
