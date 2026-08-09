@@ -101,7 +101,7 @@
     "@types/pg": "8.21.0",
     "@types/pg-cursor": "2.7.2",
     "@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:@types/lodash.merge@4.6.1",
-    "@types/semver": "7.7.1",
+    "@types/semver": "7.8.0",
     "@types/sinon": "22.0.0",
     "better-sqlite3": "12.11.1",
     "chai": "6.2.2",
