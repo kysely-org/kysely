@@ -377,6 +377,31 @@ a.stat:hover .statValue {
   color: var(--kl-acc);
 }
 
+/* Proof strength gauge on "in production at" cells: fill per proofStrength()
+   in index.tsx. Faint until hover, like the corner arrow. */
+.proofBar {
+  background: var(--kl-line);
+  border-radius: 1px;
+  bottom: 3px;
+  height: 2px;
+  left: 14px;
+  overflow: hidden;
+  position: absolute;
+  right: 14px;
+}
+
+.proofBar > span {
+  background: var(--kl-mut);
+  display: block;
+  height: 100%;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.productionNames a:hover .proofBar > span {
+  opacity: 1;
+}
+
 .productionNames a.productionCTA {
   border: 1px dashed var(--kl-dash);
   color: var(--kl-acc);
