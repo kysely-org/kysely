@@ -312,20 +312,81 @@ const PROOF_GROUPS = [
   { group: 'built-into', caption: 'Built into' },
 ]
 
-// Icon-only marks that read clearer with the name alongside the glyph.
+interface ProofEntry {
+  name: string
+  href: string
+  group: string
+  repo?: string
+  path?: string
+  sha?: string
+  provenAt?: string
+}
+
+const proofEntries = productionProof as ProofEntry[]
+
+// Proof strength, the hairline gauge on "in production at" cells. Evidence
+// fades as it ages, with an 18-month half-life, until the two-year floor:
+// beyond that everything is equally "old" instead of decaying toward an
+// accusatory zero. Age quantizes to whole 30-day months so the SSG render
+// and client hydration agree even when they happen on different days.
+const STATEMENT_WEIGHT = 0.6
+const PROOF_HALF_LIFE_MONTHS = 18
+const PROOF_AGE_CAP_MONTHS = 24
+
+function recencyFactor(provenAt?: string): number {
+  if (!provenAt) {
+    return 0.5
+  }
+
+  const months = Math.min(
+    PROOF_AGE_CAP_MONTHS,
+    Math.max(
+      0,
+      Math.floor((Date.now() - Date.parse(provenAt)) / (30 * 86_400_000)),
+    ),
+  )
+
+  return 0.5 ** (months / PROOF_HALF_LIFE_MONTHS)
+}
+
+// "In production at" only: pinned code is a stronger claim than a public
+// statement, decayed by evidence age. Built-into cells carry no gauge and
+// no metrics; ranking fellow OSS projects is not this wall's job.
+function proofStrength({ provenAt, repo }: ProofEntry): number {
+  return (repo ? 1 : STATEMENT_WEIGHT) * recencyFactor(provenAt)
+}
+
+// Production cells surface the proof's kind and date on hover; built-into
+// chips carry only their name.
+function proofTitle({ href, name, provenAt, repo }: ProofEntry): string {
+  const kind = !repo
+    ? 'public statement'
+    : href.includes('/blob/')
+      ? 'code, pinned'
+      : 'public statement, code-backed'
+
+  return provenAt ? `${name} · ${kind} ${provenAt}` : name
+}
+
+// Marks that read clearer with text alongside: icon-only glyphs get the full
+// name; wordmarks get only what the mark doesn't already say (the Prisma
+// wordmark + "Studio").
 const LOGO_WITH_NAME = new Set([
   'AirTrail',
-  'CS Demo Manager',
   'Conar',
   'EmbedPDF',
   'Hot Updater',
+  'inlang',
   'Materialize',
   'Notesnook',
   'OpenClaw',
+  'Prisma Studio',
   'Replicas',
+  'Stacks',
   'StudioCMS',
   'Teable',
   'Tunarr',
+  'wevm curl.md',
   'ZenStack',
 ])
 
@@ -337,27 +398,47 @@ function SectionProduction() {
           <React.Fragment key={group}>
             <span className={styles.productionCaption}>{caption}</span>
             <span className={styles.productionNames}>
-              {productionProof
+              {proofEntries
                 .filter((entry) => entry.group === group)
-                .map(({ href, name }) => (
-                  <a
-                    key={name}
-                    aria-label={name}
-                    href={href}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    title={name}
-                  >
-                    {brandLogos[name] ? (
-                      <>
-                        <BrandLogoSvg logo={brandLogos[name]} />
-                        {LOGO_WITH_NAME.has(name) && <span>{name}</span>}
-                      </>
-                    ) : (
-                      name
-                    )}
-                  </a>
-                ))}
+                .map((entry) => {
+                  const { href, name } = entry
+
+                  return (
+                    <a
+                      key={name}
+                      aria-label={name}
+                      href={href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      title={group === 'production' ? proofTitle(entry) : name}
+                    >
+                      {brandLogos[name] ? (
+                        <>
+                          <BrandLogoSvg logo={brandLogos[name]} />
+                          {LOGO_WITH_NAME.has(name) && (
+                            <span>
+                              {(name.startsWith(brandLogos[name].label)
+                                ? name.slice(brandLogos[name].label.length)
+                                : ''
+                              ).trim() || name}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        name
+                      )}
+                      {group === 'production' && (
+                        <span className={styles.proofBar}>
+                          <span
+                            style={{
+                              width: `${Math.round(proofStrength(entry) * 100)}%`,
+                            }}
+                          />
+                        </span>
+                      )}
+                    </a>
+                  )
+                })}
               {group === 'production' && (
                 <a
                   className={styles.productionCTA}

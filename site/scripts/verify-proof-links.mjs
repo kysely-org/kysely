@@ -5,11 +5,16 @@
  * For every entry in src/data/production-proof.json that has a `repo`:
  *   1. Resolves the repo's current default-branch HEAD commit.
  *   2. Confirms the proof file still exists there and still mentions kysely.
- *   3. On success, re-pins `sha` and `href` to that commit.
+ *   3. On success, re-pins `sha` and `href` to that commit and stamps
+ *      `provenAt` with the commit's date.
+ *      Hybrid entries whose href fronts a statement keep that href.
  *   4. On failure, keeps the existing permalink (old proof remains valid
  *      forever) and prints a warning so we can investigate.
  *
- * Entries without a `repo` (statements, issue comments) are left untouched.
+ * Entries without a `repo` (statements, issue comments) keep their href, but
+ * get `provenAt` stamped once from the statement's publish date: issue
+ * comments via the GitHub API, x.com posts via their snowflake id. Other
+ * sources (e.g. reddit) need a manual `provenAt`.
  *
  * Run periodically: pnpm proof-links
  * Set GITHUB_TOKEN to avoid unauthenticated rate limits.
@@ -36,11 +41,42 @@ async function github(path) {
   return await response.json()
 }
 
+async function statementDate(href) {
+  const comment = href.match(
+    /github\.com\/([^/]+)\/([^/]+)\/.*#issuecomment-(\d+)/,
+  )
+  if (comment) {
+    const [, owner, repo, id] = comment
+    const { created_at } = await github(
+      `/repos/${owner}/${repo}/issues/comments/${id}`,
+    )
+    return created_at
+  }
+
+  const post = href.match(/(?:x|twitter)\.com\/\w+\/status\/(\d+)/)
+  if (post) {
+    // Snowflake ids carry a millisecond timestamp above the twepoch.
+    const ms = Number((BigInt(post[1]) >> 22n) + 1288834974657n)
+    return new Date(ms).toISOString()
+  }
+
+  throw new Error('cannot date this source; set provenAt manually')
+}
+
 const entries = JSON.parse(await readFile(dataPath, 'utf8'))
 let failures = 0
 
 for (const entry of entries) {
   if (!entry.repo) {
+    if (!entry.provenAt) {
+      try {
+        entry.provenAt = (await statementDate(entry.href)).slice(0, 10)
+        console.log(`ok   ${entry.name} said ${entry.provenAt}`)
+      } catch (error) {
+        failures++
+        console.warn(`warn ${entry.name}: ${error.message}`)
+      }
+    }
     continue
   }
 
@@ -56,16 +92,28 @@ for (const entry of entries) {
     )
     const content = Buffer.from(file.content, 'base64').toString('utf8')
 
-    if (!/kysely/i.test(content)) {
-      throw new Error('file no longer mentions kysely')
+    // Wrapper-importing modules (e.g. Stacks' @stacksjs/database) never say
+    // "kysely"; query-builder calls are equally binding evidence.
+    if (
+      !/kysely/i.test(content) &&
+      !/\.(selectFrom|insertInto|updateTable|deleteFrom)\s*\(/.test(content)
+    ) {
+      throw new Error('file no longer shows kysely usage')
     }
 
     entry.sha = sha
-    entry.href = `https://github.com/${entry.repo}/blob/${sha}/${entry.path}`
-    console.log(`ok   ${entry.name} @ ${sha.slice(0, 7)}`)
+    // Hybrid entries front a statement (href points at a comment, not this
+    // repo) while the pin backs the score; only permalink hrefs re-pin.
+    if (entry.href.includes(`github.com/${entry.repo}/blob/`)) {
+      entry.href = `https://github.com/${entry.repo}/blob/${sha}/${entry.path}`
+    }
+    entry.provenAt = branch.commit.commit.committer.date.slice(0, 10)
+    console.log(`ok   ${entry.name} @ ${sha.slice(0, 7)} (${entry.provenAt})`)
   } catch (error) {
     failures++
-    console.warn(`warn ${entry.name}: ${error.message}; keeping existing permalink`)
+    console.warn(
+      `warn ${entry.name}: ${error.message}; keeping existing permalink`,
+    )
   }
 }
 
