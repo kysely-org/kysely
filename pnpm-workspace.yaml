@@ -64,6 +64,7 @@ updateConfig:
   ignoreDependencies:
     - '@types/prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
     - 'prototype-pollution-vulnerable-lodash.merge-dont-upgrade'
+    - 'typescript-6'
 
 # Prompt before running custom scripts if `node_modules` is out of date.
 # https://pnpm.io/settings#verifydepsbeforerun
