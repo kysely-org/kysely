@@ -105,7 +105,7 @@ jobs:
       fail-fast: false
       matrix:
         # https://endoflife.date/deno
-        deno-version: [2.5.x, 2.7.x]
+        deno-version: [2.9.x]
 
     steps:
       - name: harden runner
