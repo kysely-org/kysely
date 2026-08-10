@@ -926,7 +926,13 @@ for (const dialect of DIALECTS) {
           )
 
           const { migrator: migratorA } = createMigrations(
-            [{ durationMs: 1_000, name: 'migrationA', preUp: () => startedRunning() }],
+            [
+              {
+                durationMs: 1_000,
+                name: 'migrationA',
+                preUp: () => startedRunning(),
+              },
+            ],
             { disableTransactions: true },
           )
           const { migrator: migratorB } = createMigrations(['migrationB'], {

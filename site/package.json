@@ -26,18 +26,18 @@
     "@radix-ui/colors": "3.0.0",
     "clsx": "2.1.1",
     "prism-react-renderer": "2.4.1",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.10.2",
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
-    "@types/react": "19.2.17",
-    "mermaid": "11.16.0",
+    "@types/react": "19.2.18",
+    "mermaid": "11.16.1",
     "pagefind": "1.5.2",
-    "shiki": "4.3.1",
+    "shiki": "4.4.2",
     "typescript": "7.0.2"
   },
   "browserslist": {
@@ -55,5 +55,5 @@
   "engines": {
     "node": ">=22.0"
   },
-  "packageManager": "pnpm@11.13.1+sha512.b2fc7683b8a6525414e7d13e1ba28caaddde96bf66ec540bfaeb7e702b81f3e0be4d1f295edf7f9fe0396740a8dce4509c582ddf79891f4543fea32d37645f25"
+  "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1"
 }
