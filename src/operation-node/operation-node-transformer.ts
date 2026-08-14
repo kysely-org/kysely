@@ -843,6 +843,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'AlterTableNode',
       table: this.transformNode(node.table, queryId),
+      ifExists: node.ifExists,
       renameTo: this.transformNode(node.renameTo, queryId),
       setSchema: this.transformNode(node.setSchema, queryId),
       columnAlterations: this.transformNodeList(
