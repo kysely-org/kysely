@@ -37,7 +37,7 @@
     "@types/react": "19.2.18",
     "mermaid": "11.16.1",
     "pagefind": "1.5.2",
-    "shiki": "4.4.2",
+    "shiki": "4.4.3",
     "typescript": "7.0.2"
   },
   "browserslist": {
