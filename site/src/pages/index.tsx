@@ -349,18 +349,29 @@ function recencyFactor(provenAt?: string): number {
   return 0.5 ** (months / PROOF_HALF_LIFE_MONTHS)
 }
 
+// Closed-source dependents can still show code: an npmx package-code link
+// is the published dist, version-pinned, so it grades as code rather than
+// as a statement (Cypress ships no public repo but ships the queries).
+function isPinnedDist({ href, repo }: ProofEntry): boolean {
+  return !repo && href.includes('/package-code/')
+}
+
 // "In production at" only: pinned code is a stronger claim than a public
 // statement, decayed by evidence age. Built-into cells carry no gauge and
 // no metrics; ranking fellow OSS projects is not this wall's job.
-function proofStrength({ provenAt, repo }: ProofEntry): number {
-  return (repo ? 1 : STATEMENT_WEIGHT) * recencyFactor(provenAt)
+function proofStrength(entry: ProofEntry): number {
+  const weight = entry.repo || isPinnedDist(entry) ? 1 : STATEMENT_WEIGHT
+  return weight * recencyFactor(entry.provenAt)
 }
 
 // Production cells surface the proof's kind and date on hover; built-into
 // chips carry only their name.
-function proofTitle({ href, name, provenAt, repo }: ProofEntry): string {
+function proofTitle(entry: ProofEntry): string {
+  const { href, name, provenAt, repo } = entry
   const kind = !repo
-    ? 'public statement'
+    ? isPinnedDist(entry)
+      ? 'shipped code, version-pinned'
+      : 'public statement'
     : href.includes('/blob/')
       ? 'code, pinned'
       : 'public statement, code-backed'
@@ -384,6 +395,7 @@ const LOGO_WITH_NAME = new Set([
   'Replicas',
   'Stacks',
   'StudioCMS',
+  'Supabase Lite',
   'Teable',
   'Tunarr',
   'wevm curl.md',
