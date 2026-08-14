@@ -13,6 +13,16 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
     return `@${this.numParameters}`
   }
 
+  protected override getExistingParameterPlaceholder(
+    parameter: unknown,
+  ): string | undefined {
+    const parameterIndex = this.getExistingParameterIndex(parameter)
+    if (parameterIndex === undefined) {
+      return undefined
+    }
+    return `@${parameterIndex + 1}`
+  }
+
   protected override visitOffset(node: OffsetNode): void {
     super.visitOffset(node)
     this.append(' rows')
