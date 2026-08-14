@@ -3,19 +3,19 @@
     "name": "AirTrail",
     "repo": "johanohly/AirTrail",
     "path": "src/lib/db/queries.ts",
-    "sha": "85157a6980f218370c16b75555791d674128ff1d",
-    "href": "https://github.com/johanohly/AirTrail/blob/85157a6980f218370c16b75555791d674128ff1d/src/lib/db/queries.ts",
+    "sha": "52cdffb0c1976498f736f222c68c756d6c413429",
+    "href": "https://github.com/johanohly/AirTrail/blob/52cdffb0c1976498f736f222c68c756d6c413429/src/lib/db/queries.ts",
     "group": "built-into",
-    "provenAt": "2026-07-22"
+    "provenAt": "2026-08-09"
   },
   {
     "name": "AWS Blocks",
     "repo": "aws-devtools-labs/aws-blocks",
     "path": "packages/data-common/src/kysely-adapter.ts",
-    "sha": "9ee115ebb691f59e0df153a4dd9dd2a356f4be3e",
-    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/9ee115ebb691f59e0df153a4dd9dd2a356f4be3e/packages/data-common/src/kysely-adapter.ts",
+    "sha": "d2757478e912482f7ff7e7eaefd240b5559b299e",
+    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/d2757478e912482f7ff7e7eaefd240b5559b299e/packages/data-common/src/kysely-adapter.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Best Western",
@@ -27,10 +27,10 @@
     "name": "Better Auth",
     "repo": "better-auth/better-auth",
     "path": "packages/better-auth/src/db/get-migration.ts",
-    "sha": "95e248eb88a2819ae95da2e6632e2958e0771805",
-    "href": "https://github.com/better-auth/better-auth/blob/95e248eb88a2819ae95da2e6632e2958e0771805/packages/better-auth/src/db/get-migration.ts",
+    "sha": "86faaee69b6c2afe237fff8a00602ecc8eccc367",
+    "href": "https://github.com/better-auth/better-auth/blob/86faaee69b6c2afe237fff8a00602ecc8eccc367/packages/better-auth/src/db/get-migration.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "bknd",
@@ -45,10 +45,10 @@
     "name": "Bluesky",
     "repo": "bluesky-social/atproto",
     "path": "packages/ozone/src/set/service.ts",
-    "sha": "f5b411d0dd998820dd363b6cf77f24be061cbd56",
-    "href": "https://github.com/bluesky-social/atproto/blob/f5b411d0dd998820dd363b6cf77f24be061cbd56/packages/ozone/src/set/service.ts",
+    "sha": "f5a0af4465b469203a2a0804e9611474fde50feb",
+    "href": "https://github.com/bluesky-social/atproto/blob/f5a0af4465b469203a2a0804e9611474fde50feb/packages/ozone/src/set/service.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Bold.org",
@@ -66,22 +66,31 @@
     "provenAt": "2026-08-08"
   },
   {
+    "name": "Canton Network",
+    "repo": "canton-network/wallet",
+    "path": "core/signing-store-sql/src/store-sql.ts",
+    "sha": "fba837a8162c68b3d70a2cc007670c4ca4c687fa",
+    "href": "https://github.com/canton-network/wallet/blob/fba837a8162c68b3d70a2cc007670c4ca4c687fa/core/signing-store-sql/src/store-sql.ts",
+    "group": "production",
+    "provenAt": "2026-08-13"
+  },
+  {
     "name": "Carbon",
     "repo": "crbnos/carbon",
     "path": "packages/ee/src/accounting/core/external-mapping.ts",
-    "sha": "65d19c47285d7be5efa177dc83ab01974a2ab43b",
-    "href": "https://github.com/crbnos/carbon/blob/65d19c47285d7be5efa177dc83ab01974a2ab43b/packages/ee/src/accounting/core/external-mapping.ts",
+    "sha": "36fe41bcdc25154e787e7486080a5777029e8e45",
+    "href": "https://github.com/crbnos/carbon/blob/36fe41bcdc25154e787e7486080a5777029e8e45/packages/ee/src/accounting/core/external-mapping.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Civitai",
     "repo": "civitai/civitai",
     "path": "packages/civitai-db-queries/src/tag.db.ts",
-    "sha": "dda8e34d2e2390612f4b4c67dd194b83c4723c68",
-    "href": "https://github.com/civitai/civitai/blob/dda8e34d2e2390612f4b4c67dd194b83c4723c68/packages/civitai-db-queries/src/tag.db.ts",
+    "sha": "98fab5df38ca545a492ddbf6746977a683fcb672",
+    "href": "https://github.com/civitai/civitai/blob/98fab5df38ca545a492ddbf6746977a683fcb672/packages/civitai-db-queries/src/tag.db.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-14"
   },
   {
     "name": "Colanode",
@@ -89,35 +98,41 @@
     "path": "apps/server/src/jobs/cleanup.ts",
     "sha": "d649523637f0f059c936418488165d4a689da27c",
     "href": "https://github.com/colanode/colanode/blob/d649523637f0f059c936418488165d4a689da27c/apps/server/src/jobs/cleanup.ts",
-    "group": "built-into",
+    "group": "production",
     "provenAt": "2026-04-03"
   },
   {
     "name": "Conar",
     "repo": "wannabespace/conar",
     "path": "apps/app/src/entities/connection/queries/total.ts",
-    "sha": "7bb1b88a8bb9822188e2f548f998505f07a2dce0",
-    "href": "https://github.com/wannabespace/conar/blob/7bb1b88a8bb9822188e2f548f998505f07a2dce0/apps/app/src/entities/connection/queries/total.ts",
+    "sha": "880851c098692b5b322e450b312b39c604182cda",
+    "href": "https://github.com/wannabespace/conar/blob/880851c098692b5b322e450b312b39c604182cda/apps/app/src/entities/connection/queries/total.ts",
     "group": "built-into",
-    "provenAt": "2026-07-23"
+    "provenAt": "2026-08-08"
   },
   {
     "name": "Corsair.dev",
     "repo": "corsairdev/corsair",
     "path": "packages/studio/src/server/chat-store.ts",
-    "sha": "c6429b7227c5083aae39a67406af6bb268ecd1ff",
-    "href": "https://github.com/corsairdev/corsair/blob/c6429b7227c5083aae39a67406af6bb268ecd1ff/packages/studio/src/server/chat-store.ts",
+    "sha": "3cb6e4e3770d81e6661cd2d015f4bb3c5b90d25e",
+    "href": "https://github.com/corsairdev/corsair/blob/3cb6e4e3770d81e6661cd2d015f4bb3c5b90d25e/packages/studio/src/server/chat-store.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
+  },
+  {
+    "name": "Cypress",
+    "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.3.0/dist/database/queries.js",
+    "group": "production",
+    "provenAt": "2026-07-27"
   },
   {
     "name": "Deco",
     "repo": "decocms/studio",
     "path": "apps/api/src/storage/virtual.ts",
-    "sha": "cec0838912e0272035493596dc93db27cca42ce0",
-    "href": "https://github.com/decocms/studio/blob/cec0838912e0272035493596dc93db27cca42ce0/apps/api/src/storage/virtual.ts",
+    "sha": "a85cd3c5777633bac6b20478fa9a5db307422a0d",
+    "href": "https://github.com/decocms/studio/blob/a85cd3c5777633bac6b20478fa9a5db307422a0d/apps/api/src/storage/virtual.ts",
     "group": "production",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-08-14"
   },
   {
     "name": "Deno",
@@ -138,46 +153,46 @@
     "name": "Docmost",
     "repo": "docmost/docmost",
     "path": "apps/server/src/database/repos/page/page.repo.ts",
-    "sha": "89378ee766c89c24ad96b94693bae038d08d6744",
-    "href": "https://github.com/docmost/docmost/blob/89378ee766c89c24ad96b94693bae038d08d6744/apps/server/src/database/repos/page/page.repo.ts",
+    "sha": "ea59912c7ef99569817204f07e7b57056f5d751c",
+    "href": "https://github.com/docmost/docmost/blob/ea59912c7ef99569817204f07e7b57056f5d751c/apps/server/src/database/repos/page/page.repo.ts",
     "group": "production",
-    "provenAt": "2026-08-06"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "Documenso",
     "repo": "documenso/documenso",
     "path": "packages/lib/server-only/admin/get-signing-volume.ts",
-    "sha": "f0ab7c112e3c39656b0153b67fbf25fd9616e96f",
-    "href": "https://github.com/documenso/documenso/blob/f0ab7c112e3c39656b0153b67fbf25fd9616e96f/packages/lib/server-only/admin/get-signing-volume.ts",
+    "sha": "a5e37af3e8ec3eee5e3629ff70b157523c519a7c",
+    "href": "https://github.com/documenso/documenso/blob/a5e37af3e8ec3eee5e3629ff70b157523c519a7c/packages/lib/server-only/admin/get-signing-volume.ts",
     "group": "production",
-    "provenAt": "2026-08-05"
+    "provenAt": "2026-08-14"
   },
   {
     "name": "EmbedPDF",
     "repo": "embedpdf/embed-pdf-viewer",
     "path": "cloudpdf/server/src/db/repos/tenants.repo.ts",
-    "sha": "bcf54be907d4fdcb9febbd5e6a3ab348ba668926",
-    "href": "https://github.com/embedpdf/embed-pdf-viewer/blob/bcf54be907d4fdcb9febbd5e6a3ab348ba668926/cloudpdf/server/src/db/repos/tenants.repo.ts",
+    "sha": "5009197974766a147aadbf446d152e84ed723bae",
+    "href": "https://github.com/embedpdf/embed-pdf-viewer/blob/5009197974766a147aadbf446d152e84ed723bae/cloudpdf/server/src/db/repos/tenants.repo.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "EmDash",
     "repo": "emdash-cms/emdash",
     "path": "packages/auth/src/adapters/kysely.ts",
-    "sha": "776d65f7a9aeb42df56a384cf73209240d9aff22",
-    "href": "https://github.com/emdash-cms/emdash/blob/776d65f7a9aeb42df56a384cf73209240d9aff22/packages/auth/src/adapters/kysely.ts",
+    "sha": "6602ae05bc23e17642e4dd1179abb6465e20491d",
+    "href": "https://github.com/emdash-cms/emdash/blob/6602ae05bc23e17642e4dd1179abb6465e20491d/packages/auth/src/adapters/kysely.ts",
     "group": "built-into",
-    "provenAt": "2026-08-06"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Evolu",
     "repo": "evoluhq/evolu",
     "path": "packages/common/src/local-first/Query.ts",
-    "sha": "44ced1feb7ec99e9d2b8ea8b8571b8ce67bd10c7",
-    "href": "https://github.com/evoluhq/evolu/blob/44ced1feb7ec99e9d2b8ea8b8571b8ce67bd10c7/packages/common/src/local-first/Query.ts",
+    "sha": "e96c8ddd5ba25cc611f21b5185284ce0ebd43b34",
+    "href": "https://github.com/evoluhq/evolu/blob/e96c8ddd5ba25cc611f21b5185284ce0ebd43b34/packages/common/src/local-first/Query.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Farcaster",
@@ -198,19 +213,19 @@
     "name": "Hot Updater",
     "repo": "gronxb/hot-updater",
     "path": "packages/server/src/adapters/kysely.ts",
-    "sha": "c268a44e88700e149f57fc6493efc1d27327bda9",
-    "href": "https://github.com/gronxb/hot-updater/blob/c268a44e88700e149f57fc6493efc1d27327bda9/packages/server/src/adapters/kysely.ts",
+    "sha": "59c2c649927e834a28ccc86d517353f33e909a8c",
+    "href": "https://github.com/gronxb/hot-updater/blob/59c2c649927e834a28ccc86d517353f33e909a8c/packages/server/src/adapters/kysely.ts",
     "group": "built-into",
-    "provenAt": "2026-08-06"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Immich",
     "repo": "immich-app/immich",
     "path": "server/src/repositories/album.repository.ts",
-    "sha": "51c2f21497800225e0622d515d0ef463d7af69cc",
-    "href": "https://github.com/immich-app/immich/blob/51c2f21497800225e0622d515d0ef463d7af69cc/server/src/repositories/album.repository.ts",
+    "sha": "af33a78d180f63190ee28cf71adae2277441b6c8",
+    "href": "https://github.com/immich-app/immich/blob/af33a78d180f63190ee28cf71adae2277441b6c8/server/src/repositories/album.repository.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Maersk",
@@ -222,64 +237,64 @@
     "name": "Materialize",
     "repo": "MaterializeInc/materialize",
     "path": "console/src/api/materialize/roles/roleDetails.ts",
-    "sha": "0c1f1c7188787b54e88fe1b4eaffc2e37f2f2ef1",
-    "href": "https://github.com/MaterializeInc/materialize/blob/0c1f1c7188787b54e88fe1b4eaffc2e37f2f2ef1/console/src/api/materialize/roles/roleDetails.ts",
+    "sha": "3a708836669f15a6dcb700b118fc01e1db7f2db8",
+    "href": "https://github.com/MaterializeInc/materialize/blob/3a708836669f15a6dcb700b118fc01e1db7f2db8/console/src/api/materialize/roles/roleDetails.ts",
     "group": "production",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-08-14"
   },
   {
     "name": "inlang",
     "repo": "opral/inlang",
     "path": "packages/sdk/src/import-export/importFiles.ts",
-    "sha": "28538a4d7c246ed1df4a4b5a36ed6b43a5f95815",
-    "href": "https://github.com/opral/inlang/blob/28538a4d7c246ed1df4a4b5a36ed6b43a5f95815/packages/sdk/src/import-export/importFiles.ts",
+    "sha": "dd25231d132409911a82e5c2917094ecb14c3f0c",
+    "href": "https://github.com/opral/inlang/blob/dd25231d132409911a82e5c2917094ecb14c3f0c/packages/sdk/src/import-export/importFiles.ts",
     "group": "built-into",
-    "provenAt": "2026-08-04"
+    "provenAt": "2026-08-11"
   },
   {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/package.json",
-    "sha": "f4878cdca1ca4141555f3bfa2e47df933e8d357b",
-    "href": "https://github.com/mikro-orm/mikro-orm/blob/f4878cdca1ca4141555f3bfa2e47df933e8d357b/packages/sql/package.json",
+    "sha": "80959d2aaa20862b76c37ad9fc3a6be79fb9ba74",
+    "href": "https://github.com/mikro-orm/mikro-orm/blob/80959d2aaa20862b76c37ad9fc3a6be79fb9ba74/packages/sql/package.json",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "Mozilla",
     "repo": "mozilla/fxa",
     "path": "libs/accounts/passkey/src/lib/passkey.repository.ts",
-    "sha": "8d083848faa653761f971911f30c8dac092a1178",
-    "href": "https://github.com/mozilla/fxa/blob/8d083848faa653761f971911f30c8dac092a1178/libs/accounts/passkey/src/lib/passkey.repository.ts",
+    "sha": "8c812edefcc860e3a889f7f3e9b14a926ab056cb",
+    "href": "https://github.com/mozilla/fxa/blob/8c812edefcc860e3a889f7f3e9b14a926ab056cb/libs/accounts/passkey/src/lib/passkey.repository.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Notesnook",
     "repo": "streetwriters/notesnook",
     "path": "packages/core/src/api/lookup.ts",
-    "sha": "b8a02640d6defe55dc47d32f5a4868e8042abc88",
-    "href": "https://github.com/streetwriters/notesnook/blob/b8a02640d6defe55dc47d32f5a4868e8042abc88/packages/core/src/api/lookup.ts",
-    "group": "built-into",
-    "provenAt": "2026-08-04"
+    "sha": "d647eb8187b5d3f939c5c67d6c5483648942e7ed",
+    "href": "https://github.com/streetwriters/notesnook/blob/d647eb8187b5d3f939c5c67d6c5483648942e7ed/packages/core/src/api/lookup.ts",
+    "group": "production",
+    "provenAt": "2026-08-13"
   },
   {
     "name": "OpenClaw",
     "repo": "openclaw/openclaw",
     "path": "src/agents/worktrees/registry.ts",
-    "sha": "c25671cf275a4b5a339db182a5ba8bffc2e73c11",
-    "href": "https://github.com/openclaw/openclaw/blob/c25671cf275a4b5a339db182a5ba8bffc2e73c11/src/agents/worktrees/registry.ts",
+    "sha": "e391505896163d06d97ae8f48caa5ae333e89a7b",
+    "href": "https://github.com/openclaw/openclaw/blob/e391505896163d06d97ae8f48caa5ae333e89a7b/src/agents/worktrees/registry.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-14"
   },
   {
     "name": "Open Collective",
     "repo": "opencollective/opencollective-api",
     "path": "server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
-    "sha": "b744d6da401de03fe4f2e8d6aadc10e34a11f835",
-    "href": "https://github.com/opencollective/opencollective-api/blob/b744d6da401de03fe4f2e8d6aadc10e34a11f835/server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
+    "sha": "685571a7516bf37546d6e60cd234b688b2013252",
+    "href": "https://github.com/opencollective/opencollective-api/blob/685571a7516bf37546d6e60cd234b688b2013252/server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "Open.cx",
@@ -291,19 +306,19 @@
     "name": "OpenSanctions",
     "repo": "opensanctions/opensanctions",
     "path": "ui/lib/db.ts",
-    "sha": "e7e5ed975cd41ab44f79e6b331e90a17e10ef9b5",
-    "href": "https://github.com/opensanctions/opensanctions/blob/e7e5ed975cd41ab44f79e6b331e90a17e10ef9b5/ui/lib/db.ts",
+    "sha": "4f445407a0644dd1b9a147ef7576af7ee964a9b1",
+    "href": "https://github.com/opensanctions/opensanctions/blob/4f445407a0644dd1b9a147ef7576af7ee964a9b1/ui/lib/db.ts",
     "group": "production",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Parabol",
     "repo": "ParabolInc/parabol",
     "path": "packages/server/postgres/select.ts",
-    "sha": "27b544af61ac72da44376178580a0742dc064d09",
-    "href": "https://github.com/ParabolInc/parabol/blob/27b544af61ac72da44376178580a0742dc064d09/packages/server/postgres/select.ts",
+    "sha": "9f07efc560cc2f00d0fe9ea2e2f198338104f76d",
+    "href": "https://github.com/ParabolInc/parabol/blob/9f07efc560cc2f00d0fe9ea2e2f198338104f76d/packages/server/postgres/select.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Prisma Studio",
@@ -318,28 +333,28 @@
     "name": "Profilarr",
     "repo": "Dictionarry-Hub/profilarr",
     "path": "src/lib/server/pcd/entities/qualityProfiles/list.ts",
-    "sha": "ff7d9edb349d770addee4e3a96a4e3fb0208e918",
-    "href": "https://github.com/Dictionarry-Hub/profilarr/blob/ff7d9edb349d770addee4e3a96a4e3fb0208e918/src/lib/server/pcd/entities/qualityProfiles/list.ts",
+    "sha": "a01f2dac69a16357075db4d250606d78f4325e4e",
+    "href": "https://github.com/Dictionarry-Hub/profilarr/blob/a01f2dac69a16357075db4d250606d78f4325e4e/src/lib/server/pcd/entities/qualityProfiles/list.ts",
     "group": "built-into",
-    "provenAt": "2026-08-04"
+    "provenAt": "2026-08-10"
   },
   {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
     "path": "sdk/package.json",
-    "sha": "580dbdc99d0579380629f315a8902fc27419a2b3",
-    "href": "https://github.com/redwoodjs/sdk/blob/580dbdc99d0579380629f315a8902fc27419a2b3/sdk/package.json",
+    "sha": "4fdfe5636b34a9d917570d4321fc05422326ffd3",
+    "href": "https://github.com/redwoodjs/sdk/blob/4fdfe5636b34a9d917570d4321fc05422326ffd3/sdk/package.json",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Reflect",
     "repo": "team-reflect/reflect-open",
     "path": "packages/core/src/indexing/queries.ts",
-    "sha": "fec18517886d735ebdf81a7a26265e4674d6fb2d",
-    "href": "https://github.com/team-reflect/reflect-open/blob/fec18517886d735ebdf81a7a26265e4674d6fb2d/packages/core/src/indexing/queries.ts",
+    "sha": "7cc83ae6efcc90f2f19af520ddc9f1a5268328da",
+    "href": "https://github.com/team-reflect/reflect-open/blob/7cc83ae6efcc90f2f19af520ddc9f1a5268328da/packages/core/src/indexing/queries.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "Replicas",
@@ -351,10 +366,10 @@
     "name": "ROOST Coop",
     "repo": "roostorg/coop",
     "path": "server/graphql/datasources/rolePersistence.ts",
-    "sha": "6e4a158af00c27cdefb01f37c95f7e67f7b27c23",
-    "href": "https://github.com/roostorg/coop/blob/6e4a158af00c27cdefb01f37c95f7e67f7b27c23/server/graphql/datasources/rolePersistence.ts",
+    "sha": "0ee607ed651bd43f66d3311c5361bb3dda59af8d",
+    "href": "https://github.com/roostorg/coop/blob/0ee607ed651bd43f66d3311c5361bb3dda59af8d/server/graphql/datasources/rolePersistence.ts",
     "group": "built-into",
-    "provenAt": "2026-08-06"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "Sesame Care",
@@ -366,28 +381,43 @@
     "name": "Sink",
     "repo": "miantiao-me/Sink",
     "path": "package.json",
-    "sha": "3f8d30ae8c917f269249d6c7c1c3894fc8d8af91",
-    "href": "https://github.com/miantiao-me/Sink/blob/3f8d30ae8c917f269249d6c7c1c3894fc8d8af91/package.json",
+    "sha": "6cbf63f30497ef1838bb9b531035dd61506cc79e",
+    "href": "https://github.com/miantiao-me/Sink/blob/6cbf63f30497ef1838bb9b531035dd61506cc79e/package.json",
     "group": "built-into",
-    "provenAt": "2026-07-19"
+    "provenAt": "2026-08-09"
   },
   {
     "name": "Stacks",
     "repo": "stacksjs/stacks",
     "path": "storage/framework/core/auth/src/rbac-store-bqb.ts",
-    "sha": "9790694a727afd2d33c73eb3d9f8e738b9ebbd5b",
-    "href": "https://github.com/stacksjs/stacks/blob/9790694a727afd2d33c73eb3d9f8e738b9ebbd5b/storage/framework/core/auth/src/rbac-store-bqb.ts",
+    "sha": "a0f7b25e29ffe28ee8dbaf2c1fbeb1bc11698a6d",
+    "href": "https://github.com/stacksjs/stacks/blob/a0f7b25e29ffe28ee8dbaf2c1fbeb1bc11698a6d/storage/framework/core/auth/src/rbac-store-bqb.ts",
     "group": "built-into",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "StudioCMS",
     "repo": "withstudiocms/studiocms",
     "path": "packages/@withstudiocms/sdk/src/modules/auth/index.ts",
-    "sha": "8446b0ea9fd685d5f3e5e842312a3874ba8daf50",
-    "href": "https://github.com/withstudiocms/studiocms/blob/8446b0ea9fd685d5f3e5e842312a3874ba8daf50/packages/@withstudiocms/sdk/src/modules/auth/index.ts",
+    "sha": "a4ac4625872b49347a596bb6e7dc8cb9eb422ff3",
+    "href": "https://github.com/withstudiocms/studiocms/blob/a4ac4625872b49347a596bb6e7dc8cb9eb422ff3/packages/@withstudiocms/sdk/src/modules/auth/index.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-11"
+  },
+  {
+    "name": "Supabase Lite",
+    "href": "https://npmx.dev/package-code/@supabase/lite/v/0.8.0/dist/index.js",
+    "group": "built-into",
+    "provenAt": "2026-08-04"
+  },
+  {
+    "name": "Tailor",
+    "repo": "tailor-platform/sdk",
+    "path": "packages/sdk/src/kysely/index.ts",
+    "sha": "8bf3566c6e8d7ebfe9d4ef0017a6060a8e37d61e",
+    "href": "https://github.com/tailor-platform/sdk/blob/8bf3566c6e8d7ebfe9d4ef0017a6060a8e37d61e/packages/sdk/src/kysely/index.ts",
+    "group": "production",
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Teable",
@@ -402,19 +432,19 @@
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/src/adminRoutes.ts",
-    "sha": "ef6e81c014869894b34df7bef503030c6ccba850",
-    "href": "https://github.com/tldraw/tldraw/blob/ef6e81c014869894b34df7bef503030c6ccba850/apps/dotcom/sync-worker/src/adminRoutes.ts",
+    "sha": "d4b0ac83df7aaf2c4c3f6d6a47702d4f0dca6e99",
+    "href": "https://github.com/tldraw/tldraw/blob/d4b0ac83df7aaf2c4c3f6d6a47702d4f0dca6e99/apps/dotcom/sync-worker/src/adminRoutes.ts",
     "group": "production",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-13"
   },
   {
     "name": "Tunarr",
     "repo": "chrisbenincasa/tunarr",
     "path": "server/src/db/FillerListDB.ts",
-    "sha": "541cff33a47f5b4c0675322592ba456e4c0122e1",
-    "href": "https://github.com/chrisbenincasa/tunarr/blob/541cff33a47f5b4c0675322592ba456e4c0122e1/server/src/db/FillerListDB.ts",
+    "sha": "b9cceaccda81b9f8a232852cd02829a51e5b50ce",
+    "href": "https://github.com/chrisbenincasa/tunarr/blob/b9cceaccda81b9f8a232852cd02829a51e5b50ce/server/src/db/FillerListDB.ts",
     "group": "built-into",
-    "provenAt": "2026-08-07"
+    "provenAt": "2026-08-12"
   },
   {
     "name": "wevm curl.md",
@@ -429,9 +459,9 @@
     "name": "ZenStack",
     "repo": "zenstackhq/zenstack",
     "path": "packages/plugins/policy/src/policy-handler.ts",
-    "sha": "797b5bc27bea5bfa70d088222c3f87b11923b99d",
-    "href": "https://github.com/zenstackhq/zenstack/blob/797b5bc27bea5bfa70d088222c3f87b11923b99d/packages/plugins/policy/src/policy-handler.ts",
+    "sha": "d7c41d8567debef44b8c282c439c3e43803d7568",
+    "href": "https://github.com/zenstackhq/zenstack/blob/d7c41d8567debef44b8c282c439c3e43803d7568/packages/plugins/policy/src/policy-handler.ts",
     "group": "built-into",
-    "provenAt": "2026-08-06"
+    "provenAt": "2026-08-11"
   }
 ]
