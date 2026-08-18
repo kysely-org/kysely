@@ -6,6 +6,7 @@ import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
   type TableExpressionOrList,
+  type ValidateAliasedTable,
   parseTable,
 } from '../parser/table-parser.js'
 import { createQueryId } from '../util/query-id.js'
@@ -292,6 +293,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
+  selectFrom<TE extends keyof DB & string>(from: TE): SelectFrom<DB, TB, TE>
+
+  selectFrom<TE extends `${string} as ${string}`>(
+    from: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectFrom<DB, TB, TE>
+
   selectFrom<TE extends TableExpressionOrList<DB, TB>>(
     from: TE,
   ): SelectFrom<DB, TB, TE>

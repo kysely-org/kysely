@@ -24,6 +24,24 @@ export type TableExpressionOrList<DB, TB extends keyof DB> =
   TableExpression<DB, TB> | ReadonlyArray<TableExpression<DB, TB>>
 
 export type SimpleTableReference<DB> = AnyAliasedTable<DB> | AnyTable<DB>
+
+/**
+ * Validates a `'table as alias'` string _in check position_ instead of in a
+ * type parameter's constraint.
+ *
+ * `AnyAliasedTable<DB>` is a union of one template literal per table, so using
+ * it as a constraint makes the compiler rebuild and renormalize a
+ * literals-plus-templates union on every call. This parses the alias once and
+ * does a single `keyof DB` lookup instead.
+ */
+export type ValidateAliasedTable<DB, TE> = [TE] extends [
+  `${infer T} as ${string}`,
+]
+  ? [T] extends [keyof DB]
+    ? unknown
+    : never
+  : never
+
 export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 export type AnyTable<DB> = keyof DB & string
 

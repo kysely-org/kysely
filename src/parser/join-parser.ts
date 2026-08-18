@@ -22,6 +22,23 @@ export type JoinReferenceExpression<
   AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
 >
 
+/**
+ * Validates a join reference _in check position_ instead of in a type
+ * parameter's constraint.
+ *
+ * When `JoinReferenceExpression` is used as the constraint of `K1`/`K2`, the
+ * compiler resolves the constraint of the deferred conditionals behind it and
+ * fans `ExtractAliasFromTableExpression` out over every member of
+ * `TableExpression<DB, TB>`. Behind a non-distributive conditional the
+ * expensive type is instead evaluated once per call, with `TE` and `K`
+ * already fixed.
+ */
+export type ValidateJoinReference<DB, TB extends keyof DB, TE, K> = [
+  K,
+] extends [JoinReferenceExpression<DB, TB, TE>]
+  ? unknown
+  : never
+
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
 ) => JoinBuilder<any, any>

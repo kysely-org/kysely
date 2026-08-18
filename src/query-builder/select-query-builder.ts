@@ -4,9 +4,14 @@ import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type ValidateJoinReference,
   parseJoin,
 } from '../parser/join-parser.js'
-import { type TableExpression, parseTable } from '../parser/table-parser.js'
+import {
+  type TableExpression,
+  type ValidateAliasedTable,
+  parseTable,
+} from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
@@ -708,6 +713,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * on "doggos"."owner" = "person"."id"
    * ```
    */
+  innerJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
   innerJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -716,6 +747,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
@@ -729,6 +776,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a `left join` instead of an `inner join`.
    */
+  leftJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
   leftJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -737,6 +810,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
@@ -750,6 +839,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a `right join` instead of an `inner join`.
    */
+  rightJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+
+  rightJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+
+  rightJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+
   rightJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -758,6 +873,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+
+  rightJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+
+  rightJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
@@ -773,6 +904,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * This is only supported by some dialects like PostgreSQL, MS SQL Server and SQLite.
    */
+  fullJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
+  fullJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
+  fullJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
   fullJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -781,6 +938,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
+  fullJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+
+  fullJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
@@ -794,6 +967,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a `cross join` instead of an `inner join`.
    */
+  crossJoin<TE extends keyof DB & string>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  crossJoin<TE extends `${string} as ${string}`>(
+    table: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
   crossJoin<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
@@ -834,6 +1015,36 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   innerJoinLateral<
+    TE extends keyof DB & string,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>,
@@ -841,6 +1052,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoinLateral<
@@ -887,6 +1114,36 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   leftJoinLateral<
+    TE extends keyof DB & string,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>,
@@ -894,6 +1151,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE,
+    callback: FN,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoinLateral<
@@ -938,6 +1211,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
+  crossJoinLateral<TE extends keyof DB & string>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  crossJoinLateral<TE extends `${string} as ${string}`>(
+    table: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
   crossJoinLateral<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
@@ -976,6 +1257,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "first_name"
    * ```
    */
+  crossApply<TE extends keyof DB & string>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  crossApply<TE extends `${string} as ${string}`>(
+    table: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
   crossApply<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
@@ -985,6 +1274,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * This is only supported by some dialects like MS SQL Server.
    */
+  outerApply<TE extends keyof DB & string>(
+    table: TE,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  outerApply<TE extends `${string} as ${string}`>(
+    table: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
   outerApply<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
@@ -2811,7 +3108,10 @@ export type SelectQueryBuilderWithInnerJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > =
   TableExpression<DB, TB> extends TE
     ? JoinResultForUnknownTable<O>
@@ -2846,7 +3146,10 @@ export type SelectQueryBuilderWithLeftJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > =
   TableExpression<DB, TB> extends TE
     ? JoinResultForUnknownTable<O>
@@ -2885,7 +3188,10 @@ export type SelectQueryBuilderWithRightJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > =
   TableExpression<DB, TB> extends TE
     ? JoinResultForUnknownTable<O>
@@ -2928,7 +3234,10 @@ export type SelectQueryBuilderWithFullJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > =
   TableExpression<DB, TB> extends TE
     ? JoinResultForUnknownTable<O>

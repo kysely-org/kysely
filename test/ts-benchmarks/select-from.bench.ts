@@ -11,36 +11,36 @@ bench.baseline(() => {})
 
 bench('kysely.selectFrom(table)', () => {
   return kysely.selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([343, 'instantiations'])
+}).types([54, 'instantiations'])
 
 bench('kysely.selectFrom(~table)', () => {
   // @ts-expect-error
   return kysely.selectFrom('my_table2')
-}).types([5086, 'instantiations'])
+}).types([14680, 'instantiations'])
 
 bench('kysely.selectFrom(table as alias)', () => {
   return kysely.selectFrom('my_table as mt')
-}).types([357, 'instantiations'])
+}).types([151, 'instantiations'])
 
 bench('kysely.selectFrom([table])', () => {
   return kysely.selectFrom(['my_table'])
-}).types([380, 'instantiations'])
+}).types([468, 'instantiations'])
 
 bench('kysely.selectFrom([~table])', () => {
   // @ts-expect-error
   return kysely.selectFrom(['my_table2'])
-}).types([5127, 'instantiations'])
+}).types([14732, 'instantiations'])
 
 bench('kysely.selectFrom([table as alias])', () => {
   return kysely.selectFrom(['my_table as mt'])
-}).types([380, 'instantiations'])
+}).types([468, 'instantiations'])
 
 bench('kysely.selectFrom([table, table])', () => {
   return kysely.selectFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b946',
   ])
-}).types([380, 'instantiations'])
+}).types([468, 'instantiations'])
 
 bench('kysely.selectFrom([table, ~table])', () => {
   return kysely.selectFrom([
@@ -48,24 +48,24 @@ bench('kysely.selectFrom([table, ~table])', () => {
     // @ts-expect-error
     'table_000a8a0cb7f265a624c851d3e7f8b9462',
   ])
-}).types([5130, 'instantiations'])
+}).types([14738, 'instantiations'])
 
 bench('kysely.selectFrom([table as alias, table as alias])', () => {
   return kysely.selectFrom([
     'my_table as mt',
     'table_000a8a0cb7f265a624c851d3e7f8b946 as t',
   ])
-}).types([380, 'instantiations'])
+}).types([468, 'instantiations'])
 
 bench('kysely.selectFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.selectFrom(kysely.selectFrom('my_table').as('t'))
-}).types([1224, 'instantiations'])
+}).types([574, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.selectFrom(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([116, 'instantiations'])
+}).types([72, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
   return (
@@ -74,49 +74,49 @@ bench('kysely.$pickTables<tables>.selectFrom(~table)', () => {
       // @ts-expect-error
       .selectFrom('my_table2')
   )
-}).types([209, 'instantiations'])
+}).types([902, 'instantiations'])
 
 bench('kyselyAny.selectFrom(table)', () => {
   return kyselyAny.selectFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([95, 'instantiations'])
+}).types([54, 'instantiations'])
 
 bench('kyselyAny.selectFrom(~table)', () => {
   return kyselyAny.selectFrom('my_table2')
-}).types([95, 'instantiations'])
+}).types([54, 'instantiations'])
 
 bench('kyselyAny.selectFrom(table as alias)', () => {
   return kyselyAny.selectFrom('my_table as mt')
-}).types([95, 'instantiations'])
+}).types([54, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table])', () => {
   return kyselyAny.selectFrom(['my_table'])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])
 
 bench('kyselyAny.selectFrom([~table])', () => {
   return kyselyAny.selectFrom(['my_table2'])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table as alias])', () => {
   return kyselyAny.selectFrom(['my_table as mt'])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table, table])', () => {
   return kyselyAny.selectFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b946',
   ])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table, ~table])', () => {
   return kyselyAny.selectFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b9462',
   ])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])
 
 bench('kyselyAny.selectFrom([table as alias, table as alias])', () => {
   return kyselyAny.selectFrom([
     'my_table as mt',
     'table_000a8a0cb7f265a624c851d3e7f8b946 as t',
   ])
-}).types([132, 'instantiations'])
+}).types([222, 'instantiations'])

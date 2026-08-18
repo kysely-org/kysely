@@ -14,6 +14,7 @@ import {
   parseTableExpressionOrList,
   type TableExpressionOrList,
   type SimpleTableReference,
+  type ValidateAliasedTable,
   parseAliasedTable,
 } from './parser/table-parser.js'
 import type { QueryExecutor } from './query-executor/query-executor.js'
@@ -162,6 +163,16 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
+  selectFrom<TE extends keyof DB & string>(from: TE): SelectFrom<DB, never, TE>
+
+  selectFrom<TE extends `${string} as ${string}`>(
+    from: TE & ValidateAliasedTable<DB, TE>,
+  ): SelectFrom<DB, never, TE>
+
+  selectFrom<TE extends TableExpressionOrList<DB, never>>(
+    from: TE,
+  ): SelectFrom<DB, never, TE>
+
   selectFrom<TE extends TableExpressionOrList<DB, never>>(
     from: TE,
   ): SelectFrom<DB, never, TE> {
@@ -396,6 +407,16 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
+  deleteFrom<TE extends keyof DB & string>(from: TE): DeleteFrom<DB, TE>
+
+  deleteFrom<TE extends `${string} as ${string}`>(
+    from: TE & ValidateAliasedTable<DB, TE>,
+  ): DeleteFrom<DB, TE>
+
+  deleteFrom<TE extends TableExpressionOrList<DB, never>>(
+    from: TE,
+  ): DeleteFrom<DB, TE>
+
   deleteFrom<TE extends TableExpressionOrList<DB, never>>(
     from: TE,
   ): DeleteFrom<DB, TE> {
@@ -432,6 +453,16 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
+  updateTable<TE extends keyof DB & string>(tables: TE): UpdateTable<DB, TE>
+
+  updateTable<TE extends `${string} as ${string}`>(
+    tables: TE & ValidateAliasedTable<DB, TE>,
+  ): UpdateTable<DB, TE>
+
+  updateTable<TE extends TableExpressionOrList<DB, never>>(
+    tables: TE,
+  ): UpdateTable<DB, TE>
+
   updateTable<TE extends TableExpressionOrList<DB, never>>(
     tables: TE,
   ): UpdateTable<DB, TE> {

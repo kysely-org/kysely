@@ -11,36 +11,36 @@ bench.baseline(() => {})
 
 bench('kysely.deleteFrom(table)', () => {
   return kysely.deleteFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([342, 'instantiations'])
+}).types([53, 'instantiations'])
 
 bench('kysely.deleteFrom(~table)', () => {
   // @ts-expect-error
   return kysely.deleteFrom('my_table2')
-}).types([5085, 'instantiations'])
+}).types([14579, 'instantiations'])
 
 bench('kysely.deleteFrom(table as alias)', () => {
   return kysely.deleteFrom('my_table as mt')
-}).types([356, 'instantiations'])
+}).types([150, 'instantiations'])
 
 bench('kysely.deleteFrom([table])', () => {
   return kysely.deleteFrom(['my_table'])
-}).types([379, 'instantiations'])
+}).types([467, 'instantiations'])
 
 bench('kysely.deleteFrom([~table])', () => {
   // @ts-expect-error
   return kysely.deleteFrom(['my_table2'])
-}).types([5126, 'instantiations'])
+}).types([14631, 'instantiations'])
 
 bench('kysely.deleteFrom([table as alias])', () => {
   return kysely.deleteFrom(['my_table as mt'])
-}).types([379, 'instantiations'])
+}).types([467, 'instantiations'])
 
 bench('kysely.deleteFrom([table, table])', () => {
   return kysely.deleteFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b946',
   ])
-}).types([379, 'instantiations'])
+}).types([467, 'instantiations'])
 
 bench('kysely.deleteFrom([table, ~table])', () => {
   return kysely.deleteFrom([
@@ -48,24 +48,24 @@ bench('kysely.deleteFrom([table, ~table])', () => {
     // @ts-expect-error
     'table_000a8a0cb7f265a624c851d3e7f8b9462',
   ])
-}).types([5129, 'instantiations'])
+}).types([14637, 'instantiations'])
 
 bench('kysely.deleteFrom([table as alias, table as alias])', () => {
   return kysely.deleteFrom([
     'my_table as mt',
     'table_000a8a0cb7f265a624c851d3e7f8b946 as t',
   ])
-}).types([379, 'instantiations'])
+}).types([467, 'instantiations'])
 
 bench('kysely.deleteFrom(kysely.selectFrom(table).as(t))', () => {
   return kysely.deleteFrom(kysely.selectFrom('my_table').as('t'))
-}).types([1263, 'instantiations'])
+}).types([579, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.deleteFrom(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
     .deleteFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([115, 'instantiations'])
+}).types([71, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.deleteFrom(~table)', () => {
   return (
@@ -74,49 +74,49 @@ bench('kysely.$pickTables<tables>.deleteFrom(~table)', () => {
       // @ts-expect-error
       .deleteFrom('my_table2')
   )
-}).types([208, 'instantiations'])
+}).types([893, 'instantiations'])
 
 bench('kyselyAny.deleteFrom(table)', () => {
   return kyselyAny.deleteFrom('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([94, 'instantiations'])
+}).types([53, 'instantiations'])
 
 bench('kyselyAny.deleteFrom(~table)', () => {
   return kyselyAny.deleteFrom('my_table2')
-}).types([94, 'instantiations'])
+}).types([53, 'instantiations'])
 
 bench('kyselyAny.deleteFrom(table as alias)', () => {
   return kyselyAny.deleteFrom('my_table as mt')
-}).types([94, 'instantiations'])
+}).types([53, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([table])', () => {
   return kyselyAny.deleteFrom(['my_table'])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([~table])', () => {
   return kyselyAny.deleteFrom(['my_table2'])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([table as alias])', () => {
   return kyselyAny.deleteFrom(['my_table as mt'])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([table, table])', () => {
   return kyselyAny.deleteFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b946',
   ])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([table, ~table])', () => {
   return kyselyAny.deleteFrom([
     'my_table',
     'table_000a8a0cb7f265a624c851d3e7f8b9462',
   ])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])
 
 bench('kyselyAny.deleteFrom([table as alias, table as alias])', () => {
   return kyselyAny.deleteFrom([
     'my_table as mt',
     'table_000a8a0cb7f265a624c851d3e7f8b946 as t',
   ])
-}).types([131, 'instantiations'])
+}).types([221, 'instantiations'])

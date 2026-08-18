@@ -17,25 +17,25 @@ bench.baseline(() => {
 
 bench('kysely..having(column, op, value)', () =>
   query.having('col_1d726898491fbca9a8dac855d2be1be8', '=', 123),
-).types([2210, 'instantiations'])
+).types([2102, 'instantiations'])
 
 bench('kysely..having(~column, op, value)', () =>
   // @ts-expect-error
   query.having('col_1d726898491fbca9a8dac855d2be1be8_', '=', 123),
-).types([3461, 'instantiations'])
+).types([3353, 'instantiations'])
 
 bench('kysely..having(table.column, op, value)', () =>
   query.having('my_table.col_1d726898491fbca9a8dac855d2be1be8', '=', 123),
-).types([2213, 'instantiations'])
+).types([2105, 'instantiations'])
 
 bench('kysely..having(~table.column, op, value)', () =>
   // @ts-expect-error
   query.having('my_table_.col_1d726898491fbca9a8dac855d2be1be8', '=', 123),
-).types([3461, 'instantiations'])
+).types([3353, 'instantiations'])
 
 bench('kysely..having(column, is, null)', () =>
   query.having('col_6f5e1903664b084bf6197f2b86849d5e', 'is', null),
-).types([2216, 'instantiations'])
+).types([2108, 'instantiations'])
 
 bench('kysely..having(column, op, select)', () =>
   query.having(
@@ -46,11 +46,11 @@ bench('kysely..having(column, op, select)', () =>
       .select('t2.col_1d726898491fbca9a8dac855d2be1be8')
       .limit(1),
   ),
-).types([3329, 'instantiations'])
+).types([3078, 'instantiations'])
 
 bench('kysely..having(eb => eb(...))', () =>
   query.having((eb) => eb('col_1d726898491fbca9a8dac855d2be1be8', '=', 123)),
-).types([2799, 'instantiations'])
+).types([2691, 'instantiations'])
 
 bench('kysely..having(eb => eb.and([...]))', () =>
   query.having((eb) =>
@@ -59,7 +59,7 @@ bench('kysely..having(eb => eb.and([...]))', () =>
       eb('col_4d742b2f247bec99b41a60acbebc149a', '=', 456),
     ]),
   ),
-).types([2894, 'instantiations'])
+).types([2786, 'instantiations'])
 
 bench('kysely..having(sql`...`)', () =>
   query.having(sql<boolean>`col = 'foo'`),
@@ -86,19 +86,19 @@ bench('kysely..havingRef(~column, op, column)', () =>
 
 bench('kyselyAny..having(column, op, value)', () =>
   queryAny.having('col_1d726898491fbca9a8dac855d2be1be8', '=', 123),
-).types([707, 'instantiations'])
+).types([709, 'instantiations'])
 
 bench('kyselyAny..having(~column, op, value)', () =>
   queryAny.having('col_1d726898491fbca9a8dac855d2be1be8_', '=', 123),
-).types([707, 'instantiations'])
+).types([709, 'instantiations'])
 
 bench('kyselyAny..having(table.column, op, value)', () =>
   queryAny.having('my_table.col_1d726898491fbca9a8dac855d2be1be8', '=', 123),
-).types([693, 'instantiations'])
+).types([695, 'instantiations'])
 
 bench('kyselyAny..having(eb => eb(...))', () =>
   queryAny.having((eb) => eb('col_1d726898491fbca9a8dac855d2be1be8', '=', 123)),
-).types([979, 'instantiations'])
+).types([981, 'instantiations'])
 
 bench('kyselyAny..having(sql`...`)', () =>
   queryAny.having(sql<boolean>`col = 'foo'`),

@@ -77,7 +77,7 @@ bench('kysely..orderBy(select)', () =>
       )
       .limit(1),
   ),
-).types([556, 'instantiations'])
+).types([308, 'instantiations'])
 
 bench('kysely..orderBy(eb => select)', () =>
   query.orderBy((eb) =>
@@ -88,7 +88,7 @@ bench('kysely..orderBy(eb => select)', () =>
       )
       .limit(1),
   ),
-).types([713, 'instantiations'])
+).types([448, 'instantiations'])
 
 bench('deprecated - kysely..orderBy(column desc)', () =>
   query.orderBy('col_164b7896ec8e770207febe0812c5f052 desc'),
@@ -199,4 +199,4 @@ bench('kyselyAny..orderBy(eb => select)', () =>
       .select('col_164b7896ec8e770207febe0812c5f052')
       .limit(1),
   ),
-).types([395, 'instantiations'])
+).types([378, 'instantiations'])

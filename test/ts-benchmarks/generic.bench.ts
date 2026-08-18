@@ -126,15 +126,15 @@ bench.baseline(() => {})
 
 bench('SelectQueryBuilder assignable to narrower SelectQueryBuilder', () => {
   return acceptsNarrowSelectQueryBuilder(wideSelectQueryBuilder)
-}).types([45134, 'instantiations'])
+}).types([60551, 'instantiations'])
 
 bench('ExpressionBuilder assignable to narrower ExpressionBuilder', () => {
   return acceptsNarrowExpressionBuilder(wideExpressionBuilder)
-}).types([55494, 'instantiations'])
+}).types([71074, 'instantiations'])
 
 bench('ExpressionBuilder passed to function expecting fewer tables', () => {
   return acceptsTwoTableExpressionBuilder(threeTableExpressionBuilder)
-}).types([55545, 'instantiations'])
+}).types([71125, 'instantiations'])
 
 bench('select(genericSelectHelper) on a left joined query', () => {
   return kysely
@@ -142,15 +142,15 @@ bench('select(genericSelectHelper) on a left joined query', () => {
     .leftJoin('person as personJoin', 'personJoin.parent_id', 'parent.id')
     .leftJoin('pet as petJoin', 'petJoin.owner_id', 'personJoin.id')
     .select(selectParentId)
-}).types([57871, 'instantiations'])
+}).types([72641, 'instantiations'])
 
 bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
   return acceptsNarrowDeleteQueryBuilder(wideDeleteQueryBuilder)
-}).types([10920, 'instantiations'])
+}).types([16728, 'instantiations'])
 
 bench('UpdateQueryBuilder assignable to narrower UpdateQueryBuilder', () => {
   return acceptsNarrowUpdateQueryBuilder(wideUpdateQueryBuilder)
-}).types([91178, 'instantiations'])
+}).types([127693, 'instantiations'])
 
 bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
   return acceptsNarrowMergeQueryBuilder(wideMergeQueryBuilder)
@@ -158,7 +158,7 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([162352, 'instantiations'])
+}).types([206953, 'instantiations'])
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)

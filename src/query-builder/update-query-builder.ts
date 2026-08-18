@@ -3,6 +3,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type ValidateJoinReference,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -11,6 +12,7 @@ import {
   type FromTables,
   parseTableExpressionOrList,
   type TableExpressionOrList,
+  type ValidateAliasedTable,
 } from '../parser/table-parser.js'
 import {
   parseSelectArg,
@@ -233,6 +235,14 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * where "pet"."owner_id" = "person"."id"
    * ```
    */
+  from<TE extends keyof DB & string>(
+    table: TE,
+  ): UpdateQueryBuilder<From<DB, TE>, UT, FromTables<DB, TB, TE>, O>
+
+  from<TE extends `${string} as ${string}`>(
+    table: TE & ValidateAliasedTable<DB, TE>,
+  ): UpdateQueryBuilder<From<DB, TE>, UT, FromTables<DB, TB, TE>, O>
+
   from<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): UpdateQueryBuilder<From<DB, TE>, UT, FromTables<DB, TB, TE>, O>
@@ -360,6 +370,32 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * on "doggos"."owner_id" = "person"."id"
    * ```
    */
+  innerJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
+
+  innerJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
+
+  innerJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
+
   innerJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -368,6 +404,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
+
+  innerJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(table: TE, callback: FN): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
+
+  innerJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
 
   innerJoin<
@@ -382,6 +431,32 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a left join instead of an inner join.
    */
+  leftJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
+
+  leftJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
+
+  leftJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
+
   leftJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -390,6 +465,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
+
+  leftJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(table: TE, callback: FN): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
+
+  leftJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
 
   leftJoin<
@@ -404,6 +492,32 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a right join instead of an inner join.
    */
+  rightJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
+
+  rightJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
+
+  rightJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
+
   rightJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -412,6 +526,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
+
+  rightJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(table: TE, callback: FN): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
+
+  rightJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
 
   rightJoin<
@@ -426,6 +553,32 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   /**
    * Just like {@link innerJoin} but adds a full join instead of an inner join.
    */
+  fullJoin<TE extends keyof DB & string, K1 extends string, K2 extends string>(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
+
+  fullJoin<
+    TE extends `${string} as ${string}`,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
+
+  fullJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
+
   fullJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
@@ -434,6 +587,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2,
+  ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
+
+  fullJoin<
+    TE extends keyof DB & string,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(table: TE, callback: FN): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
+
+  fullJoin<
+    TE extends `${string} as ${string}`,
+    const FN extends JoinCallbackExpression<DB, TB, TE>,
+  >(
+    table: TE & ValidateAliasedTable<DB, TE>,
+    callback: FN,
   ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
 
   fullJoin<
@@ -1261,7 +1427,10 @@ export type UpdateQueryBuilderWithInnerJoin<
   UT extends keyof DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? InnerJoinedBuilder<DB, UT, TB, O, A, DB[T]>
@@ -1295,7 +1464,10 @@ export type UpdateQueryBuilderWithLeftJoin<
   UT extends keyof DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? LeftJoinedBuilder<DB, UT, TB, O, A, DB[T]>
@@ -1333,7 +1505,10 @@ export type UpdateQueryBuilderWithRightJoin<
   UT extends keyof DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? RightJoinedBuilder<DB, UT, TB, O, A, DB[T]>
@@ -1375,7 +1550,10 @@ export type UpdateQueryBuilderWithFullJoin<
   UT extends keyof DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? OuterJoinedBuilder<DB, UT, TB, O, A, DB[T]>

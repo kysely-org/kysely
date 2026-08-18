@@ -1,16 +1,14 @@
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import type { ShallowRecord } from '../util/type-utils.js'
-import type {
-  ExtractTableAlias,
-  From,
-  FromTables,
-  TableExpressionOrList,
-} from './table-parser.js'
+import type { ExtractTableAlias, From, FromTables } from './table-parser.js'
 
 export type SelectFrom<
   DB,
   TB extends keyof DB,
-  TE extends TableExpressionOrList<DB, TB>,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
+  TE,
 > = [TE] extends [keyof DB]
   ? // This branch creates a good-looking type for the most common case:
     // selectFrom('person') --> SelectQueryBuilder<DB, 'person', {}>.

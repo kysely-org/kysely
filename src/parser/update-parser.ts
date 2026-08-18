@@ -1,16 +1,15 @@
 import type { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
 import type { ShallowRecord } from '../util/type-utils.js'
-import type {
-  ExtractTableAlias,
-  From,
-  FromTables,
-  TableExpressionOrList,
-} from './table-parser.js'
+import type { ExtractTableAlias, From, FromTables } from './table-parser.js'
 
-export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
+export type UpdateTable<
+  DB,
+  // Intentionally unconstrained. Constraining this to `TableExpression`
+  // rejects the template-literal overload tiers that keep call sites off that
+  // union, and every branch below already validates `TE` on its own.
   TE,
-] extends [keyof DB]
+> = [TE] extends [keyof DB]
   ? // This branch creates a good-looking type for the most common case:
     // updateTable('person') --> UpdateQueryBuilder<DB, 'person', 'person', {}>.
     // ExtractTableAlias is needed for the case where DB == any. Without it:
