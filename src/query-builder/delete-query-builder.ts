@@ -3,6 +3,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type ValidateJoinReference,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -403,9 +404,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
@@ -421,9 +426,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
@@ -439,9 +448,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
@@ -457,9 +470,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
-  >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
+    K1 extends string,
+    K2 extends string,
+  >(
+    table: TE,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
+  ): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,

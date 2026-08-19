@@ -4,6 +4,7 @@ import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type ValidateJoinReference,
   parseJoin,
 } from '../parser/join-parser.js'
 import { type TableExpression, parseTable } from '../parser/table-parser.js'
@@ -710,12 +711,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
@@ -731,12 +732,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
@@ -752,12 +753,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
@@ -775,12 +776,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
@@ -835,12 +836,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoinLateral<
@@ -888,12 +889,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   leftJoinLateral<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoinLateral<

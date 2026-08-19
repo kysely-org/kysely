@@ -3,6 +3,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type ValidateJoinReference,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -362,12 +363,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
 
   innerJoin<
@@ -384,12 +385,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
 
   leftJoin<
@@ -406,12 +407,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
 
   rightJoin<
@@ -428,12 +429,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>,
+    K1 extends string,
+    K2 extends string,
   >(
     table: TE,
-    k1: K1,
-    k2: K2,
+    k1: K1 & ValidateJoinReference<DB, TB, TE, K1>,
+    k2: K2 & ValidateJoinReference<DB, TB, TE, K2>,
   ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
 
   fullJoin<

@@ -5,6 +5,7 @@ import type {
   AnyColumnWithTable,
   DrainOuterGeneric,
 } from '../util/type-utils.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { createJoinBuilder } from './parse-utils.js'
 import {
@@ -21,6 +22,22 @@ export type JoinReferenceExpression<
 > = DrainOuterGeneric<
   AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
 >
+
+/**
+ * Validates a join reference in check position instead of in `K`'s constraint.
+ *
+ * As a constraint, `JoinReferenceExpression` is reached through the constraint
+ * of the deferred conditionals behind it, which fans
+ * `ExtractAliasFromTableExpression` out over every member of
+ * `TableExpression<DB, TB>` - once per join, per distinct `TB`. Behind a
+ * non-distributive conditional the same type is evaluated once per call, with
+ * `TE` and `K` already fixed, so the inferred result is identical.
+ */
+export type ValidateJoinReference<DB, TB extends keyof DB, TE, K> = [
+  K,
+] extends [JoinReferenceExpression<DB, TB, TE>]
+  ? unknown
+  : KyselyTypeError<`This is not a valid join reference for the joined tables: ${K & string}`>
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
