@@ -110,6 +110,31 @@ async function testInsert(db: Kysely<Database>) {
       ),
   )
 
+  // Columns whose update type is `never` are referenceable in an
+  // on-conflict `where` clause.
+  const r7 = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc
+        .column('id')
+        .doUpdateSet({ first_name: 'foo' })
+        .where('modified_at', '=', new Date()),
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r7)
+
+  // Columns whose update type is `never` are not allowed in `doUpdateSet`.
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({ modified_at: new Date() }),
+      ),
+  )
+
   // GeneratedAlways column is not allowed to be inserted
   expectError(db.insertInto('book').values({ id: 1, name: 'foo' }))
 

@@ -15,7 +15,7 @@ import {
   type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import type { Updateable } from '../util/column-type.js'
+import type { Selectable, Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import type { AnyColumn, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
@@ -254,7 +254,10 @@ export class OnConflictBuilder<
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
-  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+  ): OnConflictUpdateBuilder<
+    OnConflictWhereDatabase<DB, TB>,
+    OnConflictTables<TB>
+  > {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -278,6 +281,15 @@ export interface OnConflictBuilderProps {
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
+/**
+ * Same as {@link OnConflictDatabase} but for read-only contexts such as the
+ * `where` clause of an update action. All columns are referenceable, including
+ * those whose update type is `never`.
+ */
+export type OnConflictWhereDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: Selectable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
