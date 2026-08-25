@@ -164,6 +164,28 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (variant === 'sqlite' || variant === 'pglite') {
+      for (const strategy of ['cancel query', 'kill session'] as const) {
+        it(`should release the connection when inflightQueryAbortStrategy '${strategy}' is unsupported`, async () => {
+          // A non-aborted signal is required so execution reaches the
+          // unsupported-strategy check rather than the aborted-signal path.
+          await expect(
+            ctx.db.selectFrom('person').selectAll().execute({
+              inflightQueryAbortStrategy: strategy,
+              signal: new AbortController().signal,
+            }),
+          ).to.eventually.be.rejectedWith(/doesn't support/)
+
+          // The unsupported-strategy error must release the controlled
+          // connection first. On a single-connection dialect a leaked
+          // connection would deadlock this next query. Regression test for the
+          // fix in #1971.
+          await expect(ctx.db.selectFrom('person').selectAll().execute()).to.not
+            .be.eventually.rejected
+        })
+      }
+    }
+
     it('should throw an abort error when aborted during result transformation', async () => {
       const abortController = new AbortController()
 
