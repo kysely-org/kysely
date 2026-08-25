@@ -48,7 +48,8 @@ are not helping us help you.
 
 Don't be an asshole. Don't demand support/service from us.
 
-Please write in your own human voice. LLM-generated walls of text hide the actual signal and waste our time. Three rough sentences from you beat three paragraphs of AI slop.
+Please write in your own human voice. LLM-generated walls of text hide the actual signal and waste our time. Three rough sentences 
+from you beat three paragraphs of LLM slop.
 
 ## ⌨️ With Code!
 
@@ -74,8 +75,9 @@ Pull requests (PRs) are welcome, BUT since:
 
 1. Our time and capacity as maintainers are limited.
 1. Your time is limited.
-1. Your motivation and morale is important to us.
+1. Your motivation and morale are important to us.
 1. Onboarding in a new highly opinionated open-source project can be challenging.
+1. Driverless LLM contribution farming accounts are a thing now.
 
 We need a process in place:
 
@@ -84,11 +86,14 @@ We need a process in place:
    We hate seeing these things drag on for a long time, and we know how frustrating it is on your end.
 1. To make sure there's no pressure on you when you take on a task.
 1. To make sure there's a clear understanding of who is working on what to avoid redundancies and conflicts.
+1. To make sure our limited time is invested on real people using their brains, who might end up becoming valuable team members
+   one day.
 
 #### The Process
 
 Here is the gist of it:
 
+1. If you're a driverless LLM contribution farming account, GTFO. We don't need your "contributions".
 1. If an issue on the subject **doesn't exist** yet, **submit** one. If you want to work on it, **ask** to be **assigned**
    to it in the issue **description**, in the **comments**, OR on **Discord**.
 1. If an issue on the subject **exists** and is labeled with `bug` OR (`enhancement` AND `greenlit`\* OR even `good first issue`\**):
@@ -118,7 +123,10 @@ We will close pull requests where the changes are too far from acceptable. Such 
 even begin to comment on. You can ask for quick informal feedback on Discord in such cases and submit another pull
 request with better changes later.
 
-Please write in your own human voice. LLM-generated walls of text in PR descriptions, reviews, or comments hide the actual signal and waste our time. Three rough sentences from you beat three paragraphs of AI slop.
+Please write in your own human voice. LLM-generated walls of text in PR descriptions, reviews, or comments hide the 
+actual signal and waste our time. Three rough sentences from you beat three paragraphs of LLM slop.
+
+We can and will ban you for not following our guidelines.
 
 #### Style/Design Philosophy
 
