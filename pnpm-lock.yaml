@@ -101,8 +101,8 @@ importers:
         specifier: npm:lodash.merge@4.6.1
         version: lodash.merge@4.6.1
       remeda:
-        specifier: 2.39.0
-        version: 2.39.0
+        specifier: 2.44.0
+        version: 2.44.0
       semver:
         specifier: 7.8.5
         version: 7.8.5
@@ -6420,8 +6420,8 @@ packages:
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
 
-  remeda@2.39.0:
-    resolution: {integrity: sha512-3Ki8dU1o3OVu4dwIQ2Pj+yiuP7OnEbmWAGmJ3yDRqopily5jsj8NWzPvbS89H85d6UdONKEcUnrfuHY6jN9vyw==}
+  remeda@2.44.0:
+    resolution: {integrity: sha512-skNJFQ89qM8Tty8lgcH75UC/lP2FOrGwzszRuoKpS1RfEpbacHQFltIR/A5zUULdylzYQf2LVpXim6s0DMGnng==}
     engines: {node: '>=18.0.0'}
 
   renderkid@3.0.0:
@@ -15320,7 +15320,7 @@ snapshots:
       mdast-util-to-markdown: 2.1.2
       unified: 11.0.5
 
-  remeda@2.39.0: {}
+  remeda@2.44.0: {}
 
   renderkid@3.0.0:
     dependencies:

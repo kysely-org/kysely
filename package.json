@@ -116,7 +116,7 @@
     "playwright": "1.62.1",
     "prettier": "3.9.6",
     "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
-    "remeda": "2.39.0",
+    "remeda": "2.44.0",
     "semver": "7.8.5",
     "sinon": "22.1.0",
     "std-env": "4.2.0",
