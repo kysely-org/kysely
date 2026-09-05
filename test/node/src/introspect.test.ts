@@ -1,4 +1,4 @@
-import { sql } from '../../../dist/index.js'
+import { sql, type SqlBool } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -80,6 +80,15 @@ for (const dialect of DIALECTS) {
     })
 
     describe('getTables', () => {
+      it('should filter tables in the metadata query', async () => {
+        const meta = await ctx.db.introspection.getTables({
+          withInternalKyselyTables: false,
+          filter: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+        })
+
+        expect(meta.map((table) => table.name)).to.eql(['person'])
+      })
+
       it('should get table metadata', async () => {
         const meta = await ctx.db.introspection.getTables()
 

@@ -1,3 +1,6 @@
+import type { Expression } from '../expression/expression.js'
+import type { SqlBool } from '../util/type-utils.js'
+
 /**
  * An interface for getting the database metadata (names of the tables and columns etc.)
  */
@@ -19,6 +22,17 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+
+  /**
+   * An optional SQL expression for filtering the tables returned by the
+   * introspector.
+   */
+  filter?: (
+    refs: Readonly<{
+      table: Expression<string>
+      schema?: Expression<string>
+    }>,
+  ) => Expression<SqlBool>
 }
 
 export interface SchemaMetadata {
