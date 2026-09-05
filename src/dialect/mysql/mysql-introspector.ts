@@ -63,9 +63,9 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
-    if (options.filter) {
+    if (options.where) {
       query = query.where(
-        options.filter({
+        options.where({
           schema: sql.ref<string>('columns.TABLE_SCHEMA'),
           table: sql.ref<string>('columns.TABLE_NAME'),
         }),

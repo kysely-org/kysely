@@ -532,7 +532,7 @@ export class Migrator {
     tableName: string,
   ): Promise<boolean> {
     const tables = await this.#props.db.introspection.getTables({
-      filter: ({ schema, table }) =>
+      where: ({ schema, table }) =>
         schemaName != null && schema
           ? sql<SqlBool>`${schema} = ${schemaName} and ${table} = ${tableName}`
           : sql<SqlBool>`${table} = ${tableName}`,
@@ -540,7 +540,7 @@ export class Migrator {
     })
 
     // we still keep this in case the introspector doesn't implement support for
-    // `filter`.
+    // `where`.
     return tables.some(
       (it) =>
         it.name === tableName && (!schemaName || it.schema === schemaName),

@@ -18,14 +18,14 @@ export interface DatabaseIntrospector {
 
 export interface DatabaseMetadataOptions {
   /**
-   * An optional SQL expression for filtering the tables returned by the
-   * introspector.
+   * An optional SQL `where` expression for filtering the tables returned by
+   * the introspector.
    *
    * The refs argument contains SQL references to the table name and optional
-   * schema name columns within the catalog query this filter will be used
+   * schema name columns within the catalog query this expression will be used
    * in.
    */
-  filter?: (
+  where?: (
     refs: Readonly<{
       table: Expression<string>
       schema?: Expression<string>

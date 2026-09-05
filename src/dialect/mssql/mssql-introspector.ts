@@ -26,11 +26,11 @@ export class MssqlIntrospector implements DatabaseIntrospector {
   async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
-    const tablesFilter = options.filter?.({
+    const tablesWhere = options.where?.({
       schema: sql.ref<string>('table_schemas.name'),
       table: sql.ref<string>('tables.name'),
     })
-    const viewsFilter = options.filter?.({
+    const viewsWhere = options.where?.({
       schema: sql.ref<string>('view_schemas.name'),
       table: sql.ref<string>('views.name'),
     })
@@ -68,7 +68,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
           .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE),
       )
-      .$if(!!tablesFilter, (qb) => qb.where(tablesFilter!))
+      .$if(!!tablesWhere, (qb) => qb.where(tablesWhere!))
       .select([
         'tables.name as table_name',
         (eb) =>
@@ -121,7 +121,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
               .onRef('comments.minor_id', '=', 'columns.column_id')
               .on('comments.name', '=', 'MS_Description'),
           )
-          .$if(!!viewsFilter, (qb) => qb.where(viewsFilter!))
+          .$if(!!viewsWhere, (qb) => qb.where(viewsWhere!))
           .select([
             'views.name as table_name',
             'views.type as table_type',

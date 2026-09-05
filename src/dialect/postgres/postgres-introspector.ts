@@ -91,9 +91,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         .where('c.relname', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
-    if (options.filter) {
+    if (options.where) {
       query = query.where(
-        options.filter({
+        options.where({
           schema: sql.ref<string>('ns.nspname'),
           table: sql.ref<string>('c.relname'),
         }),

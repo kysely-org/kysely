@@ -895,16 +895,16 @@ for (const dialect of DIALECTS) {
         })
       }
 
-      it('should filter tables by name in the metadata query', async () => {
+      it('should apply a where expression to the metadata query', async () => {
         const meta = await ctx.db.introspection.getTables({
           withInternalKyselyTables: false,
-          filter: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+          where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
         })
 
         expect(meta.map((table) => table.name)).to.eql(['person'])
       })
 
-      it('should filter tables by name and schema in the metadata query', async () => {
+      it('should apply a where expression using the table and schema', async () => {
         const schemaName =
           sqlSpec === 'postgres' || sqlSpec === 'mssql'
             ? 'some_schema'
@@ -913,7 +913,7 @@ for (const dialect of DIALECTS) {
               : undefined
         const meta = await ctx.db.introspection.getTables({
           withInternalKyselyTables: false,
-          filter: ({ schema, table }) => {
+          where: ({ schema, table }) => {
             if (schemaName) {
               if (!schema) {
                 throw new Error('expected the introspector to provide a schema')
@@ -933,7 +933,7 @@ for (const dialect of DIALECTS) {
         expect(meta[0].schema).to.equal(schemaName)
       })
 
-      it('should apply the filter together with the internal table option', async () => {
+      it('should apply the where expression together with the internal table option', async () => {
         const internalTableName = 'kysely_migration'
 
         await ctx.db.schema
@@ -943,13 +943,11 @@ for (const dialect of DIALECTS) {
 
         try {
           const excluded = await ctx.db.introspection.getTables({
-            filter: ({ table }) =>
-              sql<SqlBool>`${table} = ${internalTableName}`,
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
             withInternalKyselyTables: false,
           })
           const included = await ctx.db.introspection.getTables({
-            filter: ({ table }) =>
-              sql<SqlBool>`${table} = ${internalTableName}`,
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
             withInternalKyselyTables: true,
           })
 

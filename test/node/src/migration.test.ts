@@ -82,9 +82,9 @@ for (const dialect of DIALECTS) {
         expect(migrations2[2].executedAt).to.equal(undefined)
       })
 
-      it('should support introspectors that ignore filter', async () => {
+      it('should support introspectors that ignore the where option', async () => {
         const introspector = ctx.db.introspection
-        const filterIgnoringIntrospector = {
+        const whereIgnoringIntrospector = {
           getSchemas: () => introspector.getSchemas(),
           getTables: (options) =>
             introspector.getTables({
@@ -96,7 +96,7 @@ for (const dialect of DIALECTS) {
 
         sandbox
           .stub(ctx.db, 'introspection')
-          .get(() => filterIgnoringIntrospector)
+          .get(() => whereIgnoringIntrospector)
 
         try {
           const { migrator } = createMigrations(['migration1'])
