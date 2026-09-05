@@ -177,8 +177,8 @@ importers:
         specifier: 3.10.2
         version: 3.10.2(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)(react-dom@19.2.8)(react@19.2.8)(supports-color@10.2.2)
       '@signalwire/docusaurus-plugin-llms-txt':
-        specifier: 1.2.2
-        version: 1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)
+        specifier: 2.0.0-alpha.7
+        version: 2.0.0-alpha.7(@docusaurus/core@3.10.2)(supports-color@10.2.2)
       '@types/react':
         specifier: 19.2.18
         version: 19.2.18
@@ -2266,8 +2266,8 @@ packages:
   '@sideway/pinpoint@2.0.0':
     resolution: {integrity: sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==}
 
-  '@signalwire/docusaurus-plugin-llms-txt@1.2.2':
-    resolution: {integrity: sha512-Qo5ZBDZpyXFlcrWwise77vs6B0R3m3/qjIIm1IHf4VzW6sVYgaR/y46BJwoAxMrV3WJkn0CVGpyYC+pMASFBZw==}
+  '@signalwire/docusaurus-plugin-llms-txt@2.0.0-alpha.7':
+    resolution: {integrity: sha512-v9EcYXVNvMydIWVIzI1H2iC4/BNdystE0jJAQIFu68SHy1a13dESz9hn5YJE9Izx18QPny1jhXym/3wEP9+8LA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@docusaurus/core': ^3.0.0
@@ -2811,7 +2811,6 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
-    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
@@ -6765,10 +6764,6 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
-  strip-ansi@7.1.0:
-    resolution: {integrity: sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==}
-    engines: {node: '>=12'}
-
   strip-ansi@7.2.0:
     resolution: {integrity: sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==}
     engines: {node: '>=12'}
@@ -10444,7 +10439,7 @@ snapshots:
 
   '@sideway/pinpoint@2.0.0': {}
 
-  '@signalwire/docusaurus-plugin-llms-txt@1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)':
+  '@signalwire/docusaurus-plugin-llms-txt@2.0.0-alpha.7(@docusaurus/core@3.10.2)(supports-color@10.2.2)':
     dependencies:
       '@docusaurus/core': 3.10.2(@mdx-js/react@3.1.1)(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(debug@4.4.3)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)(react-dom@19.2.8)(react@19.2.8)(supports-color@10.2.2)(typescript@7.0.2)
       fs-extra: 11.3.1
@@ -15709,7 +15704,7 @@ snapshots:
     dependencies:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
-      strip-ansi: 7.1.0
+      strip-ansi: 7.2.0
 
   string_decoder@1.1.1:
     dependencies:
@@ -15733,10 +15728,6 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
-
-  strip-ansi@7.1.0:
-    dependencies:
-      ansi-regex: 6.2.2
 
   strip-ansi@7.2.0:
     dependencies:

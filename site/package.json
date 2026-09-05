@@ -33,7 +33,7 @@
     "@docusaurus/module-type-aliases": "3.10.2",
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
-    "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
+    "@signalwire/docusaurus-plugin-llms-txt": "2.0.0-alpha.7",
     "@types/react": "19.2.18",
     "mermaid": "11.16.1",
     "pagefind": "1.5.2",
