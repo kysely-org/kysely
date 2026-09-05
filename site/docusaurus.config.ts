@@ -4,7 +4,7 @@ import type {
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
-import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
+import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt/public'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
@@ -68,8 +68,14 @@ export default {
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
-        content: {
-          // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
+        markdown: {
+          enableFiles: true,
+          relativePaths: false,
+          includeDocs: true,
+          includeVersionedDocs: false,
+          includeBlog: false,
+          includePages: true,
+          includeGeneratedIndex: false,
           contentSelectors: [
             '.theme-doc-markdown', // Docusaurus main content area
             'main .container .col', // Bootstrap-style layout
@@ -79,17 +85,134 @@ export default {
             'main', // Fallback to main element
             '.code-example',
           ],
-          enableLlmsFullTxt: true,
-          includeGeneratedIndex: false,
-          includePages: true,
-          includeVersionedDocs: false,
-          relativePaths: false,
         },
-        depth: 3,
+        llmsTxt: {
+          enableLlmsFullTxt: true,
+          includeDocs: true,
+          includeVersionedDocs: false,
+          includeBlog: false,
+          includePages: true,
+          includeGeneratedIndex: false,
+          autoSectionDepth: 3,
+          siteTitle: 'Kysely',
+          siteDescription:
+            'The most powerful type-safe SQL query builder for TypeScript',
+          sections: [
+            {
+              id: 'getting-started',
+              name: 'Getting Started',
+              description: 'Quick start guides and fundamentals',
+              position: 1,
+              routes: [{ route: '/docs/getting-started/**' }],
+            },
+            {
+              id: 'introduction',
+              name: 'Introduction',
+              description: 'Overview and core concepts',
+              position: 2,
+              routes: [{ route: '/docs/intro/**' }],
+            },
+            {
+              id: 'guides',
+              name: 'Guides & Recipes',
+              description: 'Practical guides and common patterns',
+              position: 3,
+              routes: [{ route: '/docs/recipes/**' }],
+            },
+            {
+              id: 'examples',
+              name: 'Examples',
+              description: 'Code examples for common operations',
+              position: 4,
+              routes: [{ route: '/docs/examples/**' }],
+            },
+            {
+              id: 'integrations',
+              name: 'Integrations',
+              description: 'Third-party integrations and runtimes',
+              position: 5,
+              routes: [{ route: '/docs/integrations/**' }],
+            },
+            {
+              id: 'runtimes',
+              name: 'Runtimes',
+              description: 'Running Kysely in different environments',
+              position: 6,
+              routes: [{ route: '/docs/runtimes/**' }],
+            },
+            {
+              id: 'migrations',
+              name: 'Migrations',
+              description: 'Database migration management',
+              position: 7,
+              routes: [{ route: '/docs/migrations/**' }],
+            },
+            {
+              id: 'plugins',
+              name: 'Plugin System',
+              description: 'Extending Kysely with plugins',
+              position: 8,
+              routes: [{ route: '/docs/plugins/**' }],
+            },
+            {
+              id: 'dialects',
+              name: 'Dialects',
+              description: 'Database dialect configuration',
+              position: 9,
+              routes: [{ route: '/docs/dialects/**' }],
+            },
+            {
+              id: 'execution',
+              name: 'Execution & Internals',
+              description: 'Query execution and internal details',
+              position: 10,
+              routes: [{ route: '/docs/execution/**' }],
+            },
+            {
+              id: 'generating-types',
+              name: 'Generating Types',
+              description: 'Type generation from database schema',
+              position: 11,
+              routes: [{ route: '/docs/generating-types/**' }],
+            },
+            {
+              id: 'playground',
+              name: 'Playground',
+              description: 'Interactive playground',
+              position: 12,
+              routes: [{ route: '/docs/playground/**' }],
+            },
+          ],
+          optionalLinks: [
+            {
+              title: 'GitHub Repository',
+              url: 'https://github.com/kysely-org/kysely',
+              description: 'Source code, issues, and pull requests',
+            },
+            {
+              title: 'Discord Community',
+              url: 'https://discord.gg/xyBJ3GwvAm',
+              description: 'Join the Kysely community for help and discussions',
+            },
+            {
+              title: 'Bluesky',
+              url: 'https://bsky.app/profile/kysely.dev',
+              description: 'Follow Kysely on Bluesky for updates',
+            },
+            {
+              title: 'API Documentation',
+              url: 'https://kysely-org.github.io/kysely-apidoc',
+              description: 'Complete TypeScript API reference',
+            },
+            {
+              title: 'Playground',
+              url: 'https://play.kysely.dev',
+              description: 'Try Kysely in your browser',
+            },
+          ],
+        },
+        runOnPostBuild: true,
         onRouteError: 'throw',
-        siteDescription:
-          'The most powerful type-safe SQL query builder for TypeScript',
-        siteTitle: 'Kysely',
       } satisfies LLMsTXTPluginOptions,
     ],
     [
