@@ -94,8 +94,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     if (options.filter) {
       query = query.where(
         options.filter({
-          table: sql.ref<string>('c.relname'),
           schema: sql.ref<string>('ns.nspname'),
+          table: sql.ref<string>('c.relname'),
         }),
       )
     }

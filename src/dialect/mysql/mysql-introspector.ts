@@ -66,8 +66,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     if (options.filter) {
       query = query.where(
         options.filter({
-          table: sql.ref<string>('columns.TABLE_NAME'),
           schema: sql.ref<string>('columns.TABLE_SCHEMA'),
+          table: sql.ref<string>('columns.TABLE_NAME'),
         }),
       )
     }

@@ -543,7 +543,10 @@ export class Migrator {
     // `filter`.
     return tables.some(
       (it) =>
-        it.name === tableName && (!schemaName || it.schema === schemaName),
+        it.name === tableName &&
+        (!schemaName || it.schema === schemaName) &&
+        !it.isView &&
+        !it.isForeign,
     )
   }
 

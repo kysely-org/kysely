@@ -27,12 +27,12 @@ export class MssqlIntrospector implements DatabaseIntrospector {
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     const tablesFilter = options.filter?.({
-      table: sql.ref<string>('tables.name'),
       schema: sql.ref<string>('table_schemas.name'),
+      table: sql.ref<string>('tables.name'),
     })
     const viewsFilter = options.filter?.({
-      table: sql.ref<string>('views.name'),
       schema: sql.ref<string>('view_schemas.name'),
+      table: sql.ref<string>('views.name'),
     })
 
     const rawColumns = await this.#db
