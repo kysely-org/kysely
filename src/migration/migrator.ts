@@ -545,8 +545,7 @@ export class Migrator {
       (it) =>
         it.name === tableName &&
         (!schemaName || it.schema === schemaName) &&
-        !it.isView &&
-        !it.isForeign,
+        !it.isView,
     )
   }
 
