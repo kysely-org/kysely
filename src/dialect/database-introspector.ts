@@ -18,14 +18,12 @@ export interface DatabaseIntrospector {
 
 export interface DatabaseMetadataOptions {
   /**
-   * If this is true, the metadata contains the internal kysely tables
-   * such as the migration tables.
-   */
-  withInternalKyselyTables: boolean
-
-  /**
    * An optional SQL expression for filtering the tables returned by the
    * introspector.
+   *
+   * The refs argument contains SQL references to the table name and optional
+   * schema name columns within the catalog query this filter will be used
+   * in.
    */
   filter?: (
     refs: Readonly<{
@@ -33,6 +31,12 @@ export interface DatabaseMetadataOptions {
       schema?: Expression<string>
     }>,
   ) => Expression<SqlBool>
+
+  /**
+   * If this is true, the metadata contains the internal kysely tables
+   * such as the migration tables.
+   */
+  withInternalKyselyTables: boolean
 }
 
 export interface SchemaMetadata {
