@@ -1,6 +1,7 @@
 import type {
   DatabaseIntrospector,
   DatabaseMetadataOptions,
+  DatabaseSchemaMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
@@ -19,12 +20,21 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getSchemas(): Promise<SchemaMetadata[]> {
-    let rawSchemas = await this.#db
+  async getSchemas(
+    options: DatabaseSchemaMetadataOptions = {},
+  ): Promise<SchemaMetadata[]> {
+    let query = this.#db
       .selectFrom('information_schema.schemata')
       .select('schema_name')
       .$castTo<RawSchemaMetadata>()
-      .execute()
+
+    if (options.where) {
+      query = query.where(
+        options.where({ schema: sql.ref<string>('schema_name') }),
+      )
+    }
+
+    const rawSchemas = await query.execute()
 
     return rawSchemas.map((it) => ({ name: it.SCHEMA_NAME }))
   }
