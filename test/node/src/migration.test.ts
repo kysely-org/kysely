@@ -99,7 +99,16 @@ for (const dialect of DIALECTS) {
           .get(() => whereIgnoringIntrospector)
 
         try {
-          const { migrator } = createMigrations(['migration1'])
+          const { migrator } = createMigrations(
+            ['migration1'],
+            sqlSpec === 'postgres' || sqlSpec === 'mssql'
+              ? {
+                  migrationLockTableName: CUSTOM_MIGRATION_LOCK_TABLE,
+                  migrationTableName: CUSTOM_MIGRATION_TABLE,
+                  migrationTableSchema: CUSTOM_MIGRATION_SCHEMA,
+                }
+              : undefined,
+          )
 
           expect(await migrator.getMigrations()).to.have.length(1)
           expect((await migrator.migrateUp()).error).to.be.undefined

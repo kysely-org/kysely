@@ -2,6 +2,7 @@ import type { Kysely } from '../../kysely.js'
 import type {
   DatabaseIntrospector,
   DatabaseMetadataOptions,
+  DatabaseSchemaMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
@@ -19,8 +20,16 @@ export class MssqlIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getSchemas(): Promise<SchemaMetadata[]> {
-    return await this.#db.selectFrom('sys.schemas').select('name').execute()
+  async getSchemas(
+    options: DatabaseSchemaMetadataOptions = {},
+  ): Promise<SchemaMetadata[]> {
+    let query = this.#db.selectFrom('sys.schemas').select('name')
+
+    if (options.where) {
+      query = query.where(options.where({ schema: sql.ref<string>('name') }))
+    }
+
+    return await query.execute()
   }
 
   async getTables(
