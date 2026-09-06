@@ -528,6 +528,8 @@ export class Migrator {
       where: ({ schema }) => sql<SqlBool>`${schema} = ${schemaName}`,
     })
 
+    // we still keep this in case the introspector doesn't implement support for
+    // `where`.
     return schemas.some((it) => it.name === schemaName)
   }
 
