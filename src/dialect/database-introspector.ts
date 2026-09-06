@@ -52,6 +52,14 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+
+  /**
+   * If this is true, tables from non-default databases are also returned.
+   *
+   * This option only affects MySQL and defaults to false. System databases are
+   * excluded regardless of this option.
+   */
+  withNonDefaultDatabases?: boolean
 }
 
 export interface SchemaMetadata {

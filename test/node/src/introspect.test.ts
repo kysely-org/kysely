@@ -974,6 +974,74 @@ for (const dialect of DIALECTS) {
           await ctx.db.schema.dropTable(internalTableName).execute()
         }
       })
+
+      if (sqlSpec === 'mysql') {
+        it('should optionally introspect tables outside the default database', async () => {
+          const otherDatabase = 'kysely_test_other'
+
+          await ctx.db.schema.createSchema(otherDatabase).execute()
+
+          try {
+            await ctx.db.schema
+              .withSchema(otherDatabase)
+              .createTable('person')
+              .addColumn('other_id', 'integer', (col) => col.notNull())
+              .execute()
+
+            const defaultDatabaseMeta = await ctx.db.introspection.getTables({
+              where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+              withInternalKyselyTables: false,
+            })
+            const meta = await ctx.db.introspection.getTables({
+              where: ({ schema, table }) => {
+                if (!schema) {
+                  throw new Error(
+                    'expected the introspector to provide a schema',
+                  )
+                }
+
+                return sql<SqlBool>`${schema} in (${'kysely_test'}, ${otherDatabase}) and ${table} = ${'person'}`
+              },
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases: true,
+            })
+
+            expect(defaultDatabaseMeta.map((table) => table.schema)).to.eql([
+              'kysely_test',
+            ])
+            expect(meta).to.have.length(2)
+            expect(meta.map((table) => table.schema)).to.eql([
+              'kysely_test',
+              otherDatabase,
+            ])
+            expect(meta[1].columns.map((column) => column.name)).to.eql([
+              'other_id',
+            ])
+          } finally {
+            await ctx.db.schema.dropSchema(otherDatabase).execute()
+          }
+        })
+
+        it('should exclude tables in system databases', async () => {
+          const systemDatabases = [
+            'information_schema',
+            'mysql',
+            'performance_schema',
+            'sys',
+          ]
+
+          for (const withNonDefaultDatabases of [false, true]) {
+            const meta = await ctx.db.introspection.getTables({
+              where: ({ schema }) =>
+                sql<SqlBool>`${schema} in (${sql.join(systemDatabases)})`,
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases,
+            })
+
+            expect(meta).to.eql([])
+          }
+        })
+      }
     })
 
     async function createView() {
