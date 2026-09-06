@@ -405,7 +405,7 @@ export class Migrator {
       return
     }
 
-    const schemaExists = await this.#doesSchemaExist()
+    const schemaExists = await this.#doesSchemaExist(this.#migrationTableSchema)
 
     if (schemaExists) {
       return
@@ -416,7 +416,9 @@ export class Migrator {
         this.#props.db.schema.createSchema(this.#migrationTableSchema),
       )
     } catch (error) {
-      const schemaExists = await this.#doesSchemaExist()
+      const schemaExists = await this.#doesSchemaExist(
+        this.#migrationTableSchema,
+      )
 
       // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
       // query doesn't throw if the schema already exits. That's why we check if
@@ -521,10 +523,14 @@ export class Migrator {
     }
   }
 
-  async #doesSchemaExist(): Promise<boolean> {
-    const schemas = await this.#props.db.introspection.getSchemas()
+  async #doesSchemaExist(schemaName: string): Promise<boolean> {
+    const schemas = await this.#props.db.introspection.getSchemas({
+      where: ({ schema }) => sql<SqlBool>`${schema} = ${schemaName}`,
+    })
 
-    return schemas.some((it) => it.name === this.#migrationTableSchema)
+    // we still keep this in case the introspector doesn't implement support for
+    // `where`.
+    return schemas.some((it) => it.name === schemaName)
   }
 
   async #doesTableExist(
