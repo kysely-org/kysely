@@ -62,6 +62,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.TABLE_NAME',
         'columns.TABLE_SCHEMA',
         'tables.TABLE_TYPE',
+        'tables.TABLE_COMMENT',
         'tables.ENGINE',
         'columns.IS_NULLABLE',
         'columns.DATA_TYPE',
@@ -105,11 +106,15 @@ export class MysqlIntrospector implements DatabaseIntrospector {
 
       if (!table) {
         table = freeze({
-          name: it.TABLE_NAME,
-          isView: it.TABLE_TYPE === 'VIEW',
-          isForeign: it.ENGINE === 'FEDERATED',
-          schema: it.TABLE_SCHEMA,
           columns: [],
+          comment:
+            it.TABLE_TYPE === 'VIEW' || it.TABLE_COMMENT === ''
+              ? undefined
+              : it.TABLE_COMMENT,
+          isForeign: it.ENGINE === 'FEDERATED',
+          isView: it.TABLE_TYPE === 'VIEW',
+          name: it.TABLE_NAME,
+          schema: it.TABLE_SCHEMA,
         })
 
         tables.push(table)
@@ -137,6 +142,7 @@ interface RawColumnMetadata {
   TABLE_NAME: string
   TABLE_SCHEMA: string
   TABLE_TYPE: string
+  TABLE_COMMENT: string
   ENGINE: string
   IS_NULLABLE: 'YES' | 'NO'
   DATA_TYPE: string

@@ -68,9 +68,17 @@ export class MssqlIntrospector implements DatabaseIntrospector {
       )
       .leftJoin('sys.extended_properties as comments', (join) =>
         join
+          .on('comments.class', '=', 1)
           .onRef('comments.major_id', '=', 'tables.object_id')
           .onRef('comments.minor_id', '=', 'columns.column_id')
           .on('comments.name', '=', 'MS_Description'),
+      )
+      .leftJoin('sys.extended_properties as table_comments', (join) =>
+        join
+          .on('table_comments.class', '=', 1)
+          .onRef('table_comments.major_id', '=', 'tables.object_id')
+          .on('table_comments.minor_id', '=', 0)
+          .on('table_comments.name', '=', 'MS_Description'),
       )
       .$if(!options.withInternalKyselyTables, (qb) =>
         qb
@@ -100,6 +108,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         'types.name as type_name',
         'type_schemas.name as type_schema_name',
         'comments.value as column_comment',
+        'table_comments.value as table_comment',
       ])
       .unionAll(
         this.#db
@@ -126,9 +135,17 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           )
           .leftJoin('sys.extended_properties as comments', (join) =>
             join
+              .on('comments.class', '=', 1)
               .onRef('comments.major_id', '=', 'views.object_id')
               .onRef('comments.minor_id', '=', 'columns.column_id')
               .on('comments.name', '=', 'MS_Description'),
+          )
+          .leftJoin('sys.extended_properties as table_comments', (join) =>
+            join
+              .on('table_comments.class', '=', 1)
+              .onRef('table_comments.major_id', '=', 'views.object_id')
+              .on('table_comments.minor_id', '=', 0)
+              .on('table_comments.name', '=', 'MS_Description'),
           )
           .$if(!!viewsWhere, (qb) => qb.where(viewsWhere!))
           .select([
@@ -146,6 +163,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'types.name as type_name',
             'type_schemas.name as type_schema_name',
             'comments.value as column_comment',
+            'table_comments.value as table_comment',
           ]),
       )
       .orderBy('table_schema_name')
@@ -162,6 +180,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         tableDictionary[key] ||
         freeze({
           columns: [],
+          comment: rawColumn.table_comment ?? undefined,
           isForeign: false,
           isView: rawColumn.table_type === 'V ',
           name: rawColumn.table_name,
@@ -234,6 +253,7 @@ interface MssqlSysTables {
     system_type_id: number
   }
   'sys.extended_properties': {
+    class: number
     major_id: number
     minor_id: number
     name: string

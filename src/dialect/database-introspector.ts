@@ -67,10 +67,11 @@ export interface SchemaMetadata {
 }
 
 export interface TableMetadata {
-  readonly name: string
-  readonly isView: boolean
-  readonly isForeign: boolean
   readonly columns: ColumnMetadata[]
+  readonly comment?: string
+  readonly isForeign: boolean
+  readonly isView: boolean
+  readonly name: string
   readonly schema?: string
 }
 

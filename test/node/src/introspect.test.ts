@@ -101,6 +101,7 @@ for (const dialect of DIALECTS) {
         if (sqlSpec === 'postgres') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -173,6 +174,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isView: false,
               isForeign: false,
@@ -217,6 +219,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               name: 'toy',
               isView: false,
               isForeign: false,
@@ -261,6 +264,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A view of toy names',
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -278,6 +282,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'MixedCaseTable',
               isForeign: false,
               isView: false,
@@ -295,6 +300,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -321,6 +327,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet_partition',
               isForeign: false,
               isView: false,
@@ -341,6 +348,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'mysql') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -406,6 +414,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -446,6 +455,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               name: 'toy',
               isForeign: false,
               isView: false,
@@ -486,6 +496,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -505,6 +516,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'mssql') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'person',
@@ -576,6 +588,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'pet',
@@ -620,6 +633,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               isForeign: false,
               isView: false,
               name: 'toy',
@@ -664,6 +678,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A view of toy names',
               isForeign: false,
               isView: true,
               name: 'toy_names',
@@ -676,11 +691,12 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
-                  comment: undefined,
+                  comment: 'A toy name',
                 },
               ],
             },
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'pet',
@@ -710,6 +726,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'sqlite') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -774,6 +791,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -813,6 +831,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy',
               isForeign: false,
               isView: false,
@@ -852,6 +871,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -892,6 +912,7 @@ for (const dialect of DIALECTS) {
             )
 
             expect(testTable).to.eql({
+              comment: undefined,
               name: testTableName,
               isForeign: false,
               isView: false,
@@ -1045,10 +1066,23 @@ for (const dialect of DIALECTS) {
     })
 
     async function createView() {
-      ctx.db.schema
+      await ctx.db.schema
         .createView('toy_names')
         .as(ctx.db.selectFrom('toy').select('name'))
         .execute()
+
+      if (sqlSpec === 'postgres') {
+        await sql`COMMENT ON VIEW toy_names IS 'A view of toy names';`.execute(
+          ctx.db,
+        )
+      } else if (sqlSpec === 'mssql') {
+        await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'A view of toy names', N'SCHEMA', N'dbo', N'VIEW', 'toy_names'`.execute(
+          ctx.db,
+        )
+        await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'A toy name', N'SCHEMA', N'dbo', N'VIEW', 'toy_names', N'COLUMN', N'name'`.execute(
+          ctx.db,
+        )
+      }
     }
 
     async function dropView() {
