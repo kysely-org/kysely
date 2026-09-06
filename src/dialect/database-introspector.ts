@@ -8,12 +8,27 @@ export interface DatabaseIntrospector {
   /**
    * Get schema metadata.
    */
-  getSchemas(): Promise<SchemaMetadata[]>
+  getSchemas(options?: DatabaseSchemaMetadataOptions): Promise<SchemaMetadata[]>
 
   /**
    * Get tables and views metadata.
    */
   getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
+}
+
+export interface DatabaseSchemaMetadataOptions {
+  /**
+   * An optional SQL `where` expression for filtering the schemas returned by
+   * the introspector.
+   *
+   * The refs argument contains an SQL reference to the schema name column
+   * within the catalog query this expression will be used in.
+   */
+  where?: (
+    refs: Readonly<{
+      schema: Expression<string>
+    }>,
+  ) => Expression<SqlBool>
 }
 
 export interface DatabaseMetadataOptions {
