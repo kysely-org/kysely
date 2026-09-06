@@ -25,8 +25,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   ): Promise<SchemaMetadata[]> {
     let query = this.#db
       .selectFrom('information_schema.schemata')
-      .select('schema_name')
-      .$castTo<RawSchemaMetadata>()
+      .select('schema_name as name')
+      .$castTo<SchemaMetadata>()
 
     if (options.where) {
       query = query.where(
@@ -34,9 +34,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       )
     }
 
-    const rawSchemas = await query.execute()
-
-    return rawSchemas.map((it) => ({ name: it.SCHEMA_NAME }))
+    return await query.execute()
   }
 
   async getTables(
@@ -116,10 +114,6 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       return tables
     }, [])
   }
-}
-
-interface RawSchemaMetadata {
-  SCHEMA_NAME: string
 }
 
 interface RawColumnMetadata {

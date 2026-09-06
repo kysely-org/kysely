@@ -25,16 +25,14 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   ): Promise<SchemaMetadata[]> {
     let query = this.#db
       .selectFrom('pg_catalog.pg_namespace')
-      .select('nspname')
-      .$castTo<RawSchemaMetadata>()
+      .select('nspname as name')
+      .$castTo<SchemaMetadata>()
 
     if (options.where) {
       query = query.where(options.where({ schema: sql.ref<string>('nspname') }))
     }
 
-    const rawSchemas = await query.execute()
-
-    return rawSchemas.map((it) => ({ name: it.nspname }))
+    return await query.execute()
   }
 
   async getTables(
@@ -154,10 +152,6 @@ export class PostgresIntrospector implements DatabaseIntrospector {
 
     return tables
   }
-}
-
-interface RawSchemaMetadata {
-  nspname: string
 }
 
 interface RawColumnMetadata {
