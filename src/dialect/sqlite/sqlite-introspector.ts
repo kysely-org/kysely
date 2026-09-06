@@ -70,6 +70,13 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         .where('name', '!=', DEFAULT_MIGRATION_TABLE)
         .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
+
+    if (options.where) {
+      tablesQuery = tablesQuery.where(
+        options.where({ table: sql.ref<string>('name') }),
+      )
+    }
+
     return tablesQuery
   }
 
