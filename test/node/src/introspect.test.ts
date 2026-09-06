@@ -1023,12 +1023,19 @@ for (const dialect of DIALECTS) {
         })
 
         it('should exclude tables in system databases', async () => {
+          const systemDatabases = [
+            'information_schema',
+            'mysql',
+            'performance_schema',
+            'sys',
+          ]
+
           for (const defaultDatabaseOnly of [true, false]) {
             const meta = await ctx.db.introspection.getTables({
               defaultDatabaseOnly,
               withInternalKyselyTables: false,
               where: ({ schema }) =>
-                sql<SqlBool>`${schema} = ${'information_schema'}`,
+                sql<SqlBool>`${schema} in (${sql.join(systemDatabases)})`,
             })
 
             expect(meta).to.eql([])
