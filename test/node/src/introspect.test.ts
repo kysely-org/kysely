@@ -989,12 +989,10 @@ for (const dialect of DIALECTS) {
               .execute()
 
             const defaultDatabaseMeta = await ctx.db.introspection.getTables({
-              withInternalKyselyTables: false,
               where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+              withInternalKyselyTables: false,
             })
             const meta = await ctx.db.introspection.getTables({
-              defaultDatabaseOnly: false,
-              withInternalKyselyTables: false,
               where: ({ schema, table }) => {
                 if (!schema) {
                   throw new Error(
@@ -1004,6 +1002,8 @@ for (const dialect of DIALECTS) {
 
                 return sql<SqlBool>`${schema} in (${'kysely_test'}, ${otherDatabase}) and ${table} = ${'person'}`
               },
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases: true,
             })
 
             expect(defaultDatabaseMeta.map((table) => table.schema)).to.eql([
@@ -1030,12 +1030,12 @@ for (const dialect of DIALECTS) {
             'sys',
           ]
 
-          for (const defaultDatabaseOnly of [true, false]) {
+          for (const withNonDefaultDatabases of [false, true]) {
             const meta = await ctx.db.introspection.getTables({
-              defaultDatabaseOnly,
-              withInternalKyselyTables: false,
               where: ({ schema }) =>
                 sql<SqlBool>`${schema} in (${sql.join(systemDatabases)})`,
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases,
             })
 
             expect(meta).to.eql([])

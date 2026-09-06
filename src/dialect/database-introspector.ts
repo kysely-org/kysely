@@ -33,14 +33,6 @@ export interface DatabaseSchemaMetadataOptions {
 
 export interface DatabaseMetadataOptions {
   /**
-   * If this is true, only tables from the default database are returned.
-   *
-   * This option only affects MySQL and defaults to true. System databases are
-   * excluded regardless of this option.
-   */
-  defaultDatabaseOnly?: boolean
-
-  /**
    * An optional SQL `where` expression for filtering the tables returned by
    * the introspector.
    *
@@ -60,6 +52,14 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+
+  /**
+   * If this is true, tables from non-default databases are also returned.
+   *
+   * This option only affects MySQL and defaults to false. System databases are
+   * excluded regardless of this option.
+   */
+  withNonDefaultDatabases?: boolean
 }
 
 export interface SchemaMetadata {

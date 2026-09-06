@@ -74,7 +74,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       .orderBy('columns.ORDINAL_POSITION')
       .$castTo<RawColumnMetadata>()
 
-    if (options.defaultDatabaseOnly ?? true) {
+    if (!options.withNonDefaultDatabases) {
       query = query.where('columns.TABLE_SCHEMA', '=', sql`database()`)
     }
 
