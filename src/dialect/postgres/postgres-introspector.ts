@@ -91,6 +91,15 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         .where('c.relname', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
+    if (options.where) {
+      query = query.where(
+        options.where({
+          schema: sql.ref<string>('ns.nspname'),
+          table: sql.ref<string>('c.relname'),
+        }),
+      )
+    }
+
     const rawColumns = await query.execute()
 
     return this.#parseTableMetadata(rawColumns)

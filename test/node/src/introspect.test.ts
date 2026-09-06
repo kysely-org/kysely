@@ -1,4 +1,4 @@
-import { sql } from '../../../dist/index.js'
+import { sql, type SqlBool } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -894,6 +894,71 @@ for (const dialect of DIALECTS) {
           })
         })
       }
+
+      it('should apply a where expression to the metadata query', async () => {
+        const meta = await ctx.db.introspection.getTables({
+          withInternalKyselyTables: false,
+          where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+        })
+
+        expect(meta.map((table) => table.name)).to.eql(['person'])
+      })
+
+      it('should apply a where expression using the table and schema', async () => {
+        const schemaName =
+          sqlSpec === 'postgres' || sqlSpec === 'mssql'
+            ? 'some_schema'
+            : sqlSpec === 'mysql'
+              ? 'kysely_test'
+              : undefined
+        const meta = await ctx.db.introspection.getTables({
+          withInternalKyselyTables: false,
+          where: ({ schema, table }) => {
+            if (schemaName) {
+              if (!schema) {
+                throw new Error('expected the introspector to provide a schema')
+              }
+
+              return sql<SqlBool>`${schema} = ${schemaName} and ${table} = ${'pet'}`
+            }
+
+            expect(schema).to.be.undefined
+
+            return sql<SqlBool>`${table} = ${'pet'}`
+          },
+        })
+
+        expect(meta).to.have.length(1)
+        expect(meta[0].name).to.equal('pet')
+        expect(meta[0].schema).to.equal(schemaName)
+      })
+
+      it('should apply the where expression together with the internal table option', async () => {
+        const internalTableName = 'kysely_migration'
+
+        await ctx.db.schema
+          .createTable(internalTableName)
+          .addColumn('name', 'varchar(255)', (col) => col.notNull())
+          .execute()
+
+        try {
+          const excluded = await ctx.db.introspection.getTables({
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
+            withInternalKyselyTables: false,
+          })
+          const included = await ctx.db.introspection.getTables({
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
+            withInternalKyselyTables: true,
+          })
+
+          expect(excluded).to.eql([])
+          expect(included.map((table) => table.name)).to.eql([
+            internalTableName,
+          ])
+        } finally {
+          await ctx.db.schema.dropTable(internalTableName).execute()
+        }
+      })
     })
 
     async function createView() {
