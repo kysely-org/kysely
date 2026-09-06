@@ -25,6 +25,10 @@ for (const dialect of DIALECTS) {
       }
 
       await createView()
+
+      if (sqlSpec === 'postgres') {
+        await createMaterializedView()
+      }
     })
 
     beforeEach(async () => {
@@ -36,6 +40,10 @@ for (const dialect of DIALECTS) {
     })
 
     after(async () => {
+      if (sqlSpec === 'postgres') {
+        await dropMaterializedView()
+      }
+
       await dropView()
 
       if (sqlSpec === 'postgres') {
@@ -266,6 +274,24 @@ for (const dialect of DIALECTS) {
             {
               comment: 'A view of toy names',
               name: 'toy_names',
+              isForeign: false,
+              isView: true,
+              schema: 'public',
+              columns: [
+                {
+                  name: 'name',
+                  dataType: 'varchar',
+                  dataTypeSchema: 'pg_catalog',
+                  isNullable: true,
+                  isAutoIncrementing: false,
+                  hasDefaultValue: false,
+                  comment: undefined,
+                },
+              ],
+            },
+            {
+              comment: undefined,
+              name: 'toy_names_materialized',
               isForeign: false,
               isView: true,
               schema: 'public',
@@ -1065,7 +1091,7 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    async function createView() {
+    async function createView(): Promise<void> {
       await ctx.db.schema
         .createView('toy_names')
         .as(ctx.db.selectFrom('toy').select('name'))
@@ -1085,11 +1111,11 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    async function dropView() {
+    async function dropView(): Promise<void> {
       ctx.db.schema.dropView('toy_names').ifExists().execute()
     }
 
-    async function createSchema() {
+    async function createSchema(): Promise<void> {
       await ctx.db.schema.createSchema('some_schema').execute()
 
       if (sqlSpec === 'postgres') {
@@ -1132,7 +1158,7 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    async function dropSchema() {
+    async function dropSchema(): Promise<void> {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
       await ctx.db.schema
         .dropTable('some_schema.MixedCaseTable')
@@ -1151,6 +1177,22 @@ for (const dialect of DIALECTS) {
           .execute()
         await ctx.db.schema.dropSchema('dtype_schema').ifExists().execute()
       }
+    }
+
+    async function createMaterializedView(): Promise<void> {
+      await ctx.db.schema
+        .createView('toy_names_materialized')
+        .materialized()
+        .as(ctx.db.selectFrom('toy').select('name'))
+        .execute()
+    }
+
+    async function dropMaterializedView(): Promise<void> {
+      await ctx.db.schema
+        .dropView('toy_names_materialized')
+        .materialized()
+        .ifExists()
+        .execute()
     }
   })
 }

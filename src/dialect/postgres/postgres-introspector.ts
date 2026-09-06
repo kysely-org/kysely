@@ -77,6 +77,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('c.relkind', 'in', [
         'r' /*regular table*/,
         'v' /*view*/,
+        'm' /*materialized view*/,
         'p' /*partitioned table*/,
         'f' /*foreign table*/,
       ])
@@ -133,7 +134,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           columns: [],
           comment: column.table_description ?? undefined,
           isForeign: column.table_type === 'f',
-          isView: column.table_type === 'v',
+          isView: column.table_type === 'v' || column.table_type === 'm',
           name: column.table,
           schema: column.schema,
         })
