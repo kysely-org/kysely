@@ -63,6 +63,15 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
+    if (options.where) {
+      query = query.where(
+        options.where({
+          schema: sql.ref<string>('columns.TABLE_SCHEMA'),
+          table: sql.ref<string>('columns.TABLE_NAME'),
+        }),
+      )
+    }
+
     const rawColumns = await query.execute()
     return this.#parseTableMetadata(rawColumns)
   }

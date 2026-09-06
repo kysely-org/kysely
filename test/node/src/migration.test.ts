@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'pathe'
 import { createSandbox, type SinonSpy } from 'sinon'
-import type { Kysely } from '../../../dist/index.js'
+import type { DatabaseIntrospector, Kysely } from '../../../dist/index.js'
 import {
   FileMigrationProvider,
   type Migration,
@@ -80,6 +80,35 @@ for (const dialect of DIALECTS) {
         expect(migrations2[1].executedAt).to.be.instanceOf(Date)
         expect(migrations2[2].name).to.equal('migration3')
         expect(migrations2[2].executedAt).to.equal(undefined)
+      })
+
+      it('should support introspectors that ignore the where option', async () => {
+        const introspector = ctx.db.introspection
+        const whereIgnoringIntrospector = {
+          getSchemas: () => introspector.getSchemas(),
+          getTables: (options) =>
+            introspector.getTables({
+              withInternalKyselyTables:
+                options?.withInternalKyselyTables ?? false,
+            }),
+        } satisfies DatabaseIntrospector
+        const sandbox = createSandbox()
+
+        sandbox
+          .stub(ctx.db, 'introspection')
+          .get(() => whereIgnoringIntrospector)
+
+        try {
+          const { migrator } = createMigrations(['migration1'])
+
+          expect(await migrator.getMigrations()).to.have.length(1)
+          expect((await migrator.migrateUp()).error).to.be.undefined
+          expect(
+            (await migrator.getMigrations())[0].executedAt,
+          ).to.be.instanceOf(Date)
+        } finally {
+          sandbox.restore()
+        }
       })
     })
 

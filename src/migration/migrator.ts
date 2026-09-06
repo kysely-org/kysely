@@ -6,10 +6,12 @@ import type { Kysely } from '../kysely.js'
 import type { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
+import { sql } from '../raw-builder/sql.js'
 import type { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
 import type { CreateTableBuilder } from '../schema/create-table-builder.js'
 import { logOnce } from '../util/log-once.js'
 import { freeze, isObject } from '../util/object-utils.js'
+import type { SqlBool } from '../util/type-utils.js'
 import type { Migration } from './migration.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
@@ -65,7 +67,10 @@ export class Migrator {
    * The returned array is sorted by migration name.
    */
   async getMigrations(): Promise<ReadonlyArray<MigrationInfo>> {
-    const tableExists = await this.#doesTableExist(this.#migrationTable)
+    const tableExists = await this.#doesTableExist(
+      this.#migrationTableSchema,
+      this.#migrationTable,
+    )
 
     const executedMigrations = tableExists
       ? await this.#props.db
@@ -423,7 +428,10 @@ export class Migrator {
   }
 
   async #ensureMigrationTableExists(): Promise<void> {
-    const tableExists = await this.#doesTableExist(this.#migrationTable)
+    const tableExists = await this.#doesTableExist(
+      this.#migrationTableSchema,
+      this.#migrationTable,
+    )
 
     if (tableExists) {
       return
@@ -442,7 +450,10 @@ export class Migrator {
           .addColumn('timestamp', 'varchar(255)', (col) => col.notNull()),
       )
     } catch (error) {
-      const tableExists = await this.#doesTableExist(this.#migrationTable)
+      const tableExists = await this.#doesTableExist(
+        this.#migrationTableSchema,
+        this.#migrationTable,
+      )
 
       // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
       // query doesn't throw if the table already exits. That's why we check if
@@ -454,7 +465,10 @@ export class Migrator {
   }
 
   async #ensureMigrationLockTableExists(): Promise<void> {
-    const tableExists = await this.#doesTableExist(this.#migrationLockTable)
+    const tableExists = await this.#doesTableExist(
+      this.#migrationTableSchema,
+      this.#migrationLockTable,
+    )
 
     if (tableExists) {
       return
@@ -471,7 +485,10 @@ export class Migrator {
           ),
       )
     } catch (error) {
-      const tableExists = await this.#doesTableExist(this.#migrationLockTable)
+      const tableExists = await this.#doesTableExist(
+        this.#migrationTableSchema,
+        this.#migrationLockTable,
+      )
 
       // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
       // query doesn't throw if the table already exits. That's why we check if
@@ -510,15 +527,23 @@ export class Migrator {
     return schemas.some((it) => it.name === this.#migrationTableSchema)
   }
 
-  async #doesTableExist(tableName: string): Promise<boolean> {
-    const schema = this.#migrationTableSchema
-
+  async #doesTableExist(
+    schemaName: string | undefined,
+    tableName: string,
+  ): Promise<boolean> {
     const tables = await this.#props.db.introspection.getTables({
+      where: ({ schema, table }) =>
+        schemaName != null && schema
+          ? sql<SqlBool>`${schema} = ${schemaName} and ${table} = ${tableName}`
+          : sql<SqlBool>`${table} = ${tableName}`,
       withInternalKyselyTables: true,
     })
 
+    // we still keep this in case the introspector doesn't implement support for
+    // `where`.
     return tables.some(
-      (it) => it.name === tableName && (!schema || it.schema === schema),
+      (it) =>
+        it.name === tableName && (!schemaName || it.schema === schemaName),
     )
   }
 

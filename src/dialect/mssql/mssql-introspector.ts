@@ -9,6 +9,7 @@ import {
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
+import { sql } from '../../raw-builder/sql.js'
 import { freeze } from '../../util/object-utils.js'
 
 export class MssqlIntrospector implements DatabaseIntrospector {
@@ -25,6 +26,15 @@ export class MssqlIntrospector implements DatabaseIntrospector {
   async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
+    const tablesWhere = options.where?.({
+      schema: sql.ref<string>('table_schemas.name'),
+      table: sql.ref<string>('tables.name'),
+    })
+    const viewsWhere = options.where?.({
+      schema: sql.ref<string>('view_schemas.name'),
+      table: sql.ref<string>('views.name'),
+    })
+
     const rawColumns = await this.#db
       .selectFrom('sys.tables as tables')
       .leftJoin(
@@ -58,6 +68,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
           .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE),
       )
+      .$if(!!tablesWhere, (qb) => qb.where(tablesWhere!))
       .select([
         'tables.name as table_name',
         (eb) =>
@@ -110,6 +121,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
               .onRef('comments.minor_id', '=', 'columns.column_id')
               .on('comments.name', '=', 'MS_Description'),
           )
+          .$if(!!viewsWhere, (qb) => qb.where(viewsWhere!))
           .select([
             'views.name as table_name',
             'views.type as table_type',
