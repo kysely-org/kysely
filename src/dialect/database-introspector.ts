@@ -1,3 +1,6 @@
+import type { Expression } from '../expression/expression.js'
+import type { SqlBool } from '../util/type-utils.js'
+
 /**
  * An interface for getting the database metadata (names of the tables and columns etc.)
  */
@@ -14,6 +17,21 @@ export interface DatabaseIntrospector {
 }
 
 export interface DatabaseMetadataOptions {
+  /**
+   * An optional SQL `where` expression for filtering the tables returned by
+   * the introspector.
+   *
+   * The refs argument contains SQL references to the table name and optional
+   * schema name columns within the catalog query this expression will be used
+   * in.
+   */
+  where?: (
+    refs: Readonly<{
+      table: Expression<string>
+      schema?: Expression<string>
+    }>,
+  ) => Expression<SqlBool>
+
   /**
    * If this is true, the metadata contains the internal kysely tables
    * such as the migration tables.
