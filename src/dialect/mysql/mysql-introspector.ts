@@ -13,6 +13,14 @@ import type { Kysely } from '../../kysely.js'
 import { freeze } from '../../util/object-utils.js'
 import { sql } from '../../raw-builder/sql.js'
 
+const SYSTEM_DATABASES = [
+  'information_schema',
+  'mysql',
+  'performance_schema',
+  'sys',
+  'ndbinfo',
+] as const
+
 export class MysqlIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
 
@@ -60,10 +68,15 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.EXTRA',
         'columns.COLUMN_COMMENT',
       ])
-      .where('columns.TABLE_SCHEMA', '=', sql`database()`)
+      .where('columns.TABLE_SCHEMA', 'not in', SYSTEM_DATABASES)
+      .orderBy('columns.TABLE_SCHEMA')
       .orderBy('columns.TABLE_NAME')
       .orderBy('columns.ORDINAL_POSITION')
       .$castTo<RawColumnMetadata>()
+
+    if (options.defaultDatabaseOnly ?? true) {
+      query = query.where('columns.TABLE_SCHEMA', '=', sql`database()`)
+    }
 
     if (!options.withInternalKyselyTables) {
       query = query
@@ -86,7 +99,9 @@ export class MysqlIntrospector implements DatabaseIntrospector {
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
-      let table = tables.find((tbl) => tbl.name === it.TABLE_NAME)
+      let table = tables.find(
+        (tbl) => tbl.name === it.TABLE_NAME && tbl.schema === it.TABLE_SCHEMA,
+      )
 
       if (!table) {
         table = freeze({
