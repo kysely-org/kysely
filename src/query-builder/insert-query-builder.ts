@@ -63,11 +63,13 @@ import type {
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
 import { OrActionNode } from '../operation-node/or-action-node.js'
+import { StandardSchemaV1Plugin } from '../plugin/standard-schema/standard-schema-plugin.js'
 import type {
   Executable,
   ExecuteTakeFirstOrThrowOptions,
 } from '../util/executable.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { StandardSchemaV1 } from '../util/standard-schema.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
   implements
@@ -1260,6 +1262,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     ? InsertQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new InsertQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * TODO: ...
+   */
+  $parseResult<O2 extends Record<keyof O, unknown>>(
+    schema: StandardSchemaV1<O, O2>,
+  ): Executable<O2> & Streamable<O2> {
+    return this.withPlugin(new StandardSchemaV1Plugin(schema)) as never
   }
 
   /**
