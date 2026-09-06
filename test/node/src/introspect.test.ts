@@ -77,6 +77,21 @@ for (const dialect of DIALECTS) {
           expect(schemas).to.eql([])
         }
       })
+
+      it('should apply a where expression to the metadata query', async () => {
+        const schemaName =
+          sqlSpec === 'postgres' || sqlSpec === 'mssql'
+            ? 'some_schema'
+            : sqlSpec === 'mysql'
+              ? 'kysely_test'
+              : undefined
+        const schemas = await ctx.db.introspection.getSchemas({
+          where: ({ schema }) =>
+            sql<SqlBool>`${schema} = ${schemaName ?? 'some_schema'}`,
+        })
+
+        expect(schemas).to.eql(schemaName ? [{ name: schemaName }] : [])
+      })
     })
 
     describe('getTables', () => {
