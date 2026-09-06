@@ -62,6 +62,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
+        sql<string | null>`obj_description(c.oid, 'pg_class')`.as(
+          'table_description',
+        ),
         sql<string | null>`col_description(a.attrelid, a.attnum)`.as(
           'column_description',
         ),
@@ -128,6 +131,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           columns: [],
+          comment: column.table_description ?? undefined,
           isForeign: column.table_type === 'f',
           isView: column.table_type === 'v',
           name: column.table,
@@ -165,4 +169,5 @@ interface RawColumnMetadata {
   type_schema: string
   auto_incrementing: string | null
   column_description: string | null
+  table_description: string | null
 }
