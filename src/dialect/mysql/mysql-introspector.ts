@@ -26,7 +26,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     let query = this.#db
       .selectFrom('information_schema.schemata')
       .select('schema_name as name')
-      .$castTo<SchemaMetadata>()
+      .$narrowType<SchemaMetadata>()
 
     if (options.where) {
       query = query.where(

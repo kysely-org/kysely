@@ -26,7 +26,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     let query = this.#db
       .selectFrom('pg_catalog.pg_namespace')
       .select('nspname as name')
-      .$castTo<SchemaMetadata>()
+      .$narrowType<SchemaMetadata>()
 
     if (options.where) {
       query = query.where(options.where({ schema: sql.ref<string>('nspname') }))
