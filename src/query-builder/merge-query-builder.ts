@@ -53,6 +53,7 @@ import type {
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type {
+  IsAny,
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
@@ -74,6 +75,11 @@ import { UpdateQueryBuilder } from './update-query-builder.js'
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
   implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>
 {
+  // Keep the schema mapped for table-subset assignability on TypeScript 5.
+  declare protected readonly '~DB': IsAny<DB> extends true
+    ? DB
+    : { [T in keyof DB]: DB[T] }
+
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
