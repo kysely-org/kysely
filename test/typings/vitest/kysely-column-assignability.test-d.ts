@@ -170,3 +170,41 @@ test('rejects incompatible ColumnType update types', () => {
   // @ts-expect-error the update types differ
   accept<ControlledTransaction<Target>>(source.controlled)
 })
+
+test('rejects widening writable columns to accept null', () => {
+  type Source = DatabaseA
+  type Target = { a: { id: number | null } }
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the target permits writing null to the nonnullable source column
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
+
+test('rejects forgetting required insert columns', () => {
+  type Source = { a: { id: number; name: string } }
+  type Target = DatabaseA
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the target permits inserts without the required source name
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
