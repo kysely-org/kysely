@@ -49,6 +49,8 @@ import type { UpdateTable } from './parser/update-parser.js'
 import type { MergeInto } from './parser/merge-into-parser.js'
 
 export class QueryCreator<DB> {
+  declare protected readonly '~DB': DB
+
   readonly #props: QueryCreatorProps
 
   constructor(props: QueryCreatorProps) {
