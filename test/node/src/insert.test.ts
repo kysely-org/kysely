@@ -677,6 +677,54 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (sqlSpec === 'postgres' && variant !== 'pglite') {
+      it('should select instead of insert on conflict when using `on conflict do select where`', async () => {
+        const [{ id, ...existingPet }] = await ctx.db
+          .selectFrom('pet')
+          .selectAll()
+          .limit(1)
+          .execute()
+
+        const query = ctx.db
+          .insertInto('pet')
+          .values(existingPet)
+          .onConflict((oc) =>
+            oc
+              .column('name')
+              .where('name', '=', 'Catto')
+              .doSelect()
+              .forNoKeyUpdate()
+              .where('excluded.name', '!=', 'Doggo'),
+          )
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") where "name" = $4 do select for no key update where "excluded"."name" != $5 returning *',
+            parameters: [
+              existingPet.name,
+              existingPet.owner_id,
+              existingPet.species,
+              'Catto',
+              'Doggo',
+            ],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+        expect(result[0]).to.containSubset({
+          id,
+          species: 'cat',
+          name: 'Catto',
+        })
+      })
+    }
+
     it('should insert multiple rows', async () => {
       const query = ctx.db.insertInto('person').values([
         {

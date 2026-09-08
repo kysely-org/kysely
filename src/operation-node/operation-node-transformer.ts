@@ -645,6 +645,9 @@ export class OperationNodeTransformer {
       indexWhere: this.transformNode(node.indexWhere, queryId),
       updates: this.transformNodeList(node.updates, queryId),
       updateWhere: this.transformNode(node.updateWhere, queryId),
+      doSelect: node.doSelect,
+      selectWhere: this.transformNode(node.selectWhere, queryId),
+      selectLockStrength: node.selectLockStrength,
       doNothing: node.doNothing,
     } satisfies AllProps<OnConflictNode>
   }
