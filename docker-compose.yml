@@ -34,7 +34,7 @@ services:
       - ./test/scripts/mysql-init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
   postgres:
-    image: 'postgres'
+    image: 'postgres:19beta3'
     environment:
       POSTGRES_DB: kysely_test
       POSTGRES_PASSWORD: kysely

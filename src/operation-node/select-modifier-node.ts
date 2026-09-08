@@ -1,11 +1,14 @@
 import type { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
 
-export type SelectModifier =
+export type SelectLockStrength =
   | 'ForUpdate'
   | 'ForNoKeyUpdate'
   | 'ForShare'
   | 'ForKeyShare'
+
+export type SelectModifier =
+  | SelectLockStrength
   | 'NoWait'
   | 'SkipLocked'
   | 'Distinct'
