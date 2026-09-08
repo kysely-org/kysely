@@ -268,22 +268,28 @@ jobs:
       - name: run cloudflare workers test
         run: pnpm test:cloudflare-workers
 
-  older-typescript-version:
+  typescript-version:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-older-typescript-version-${{ matrix.typescript-version }}-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-typescript-version-${{ matrix.typescript-version }}-${{ github.event.pull_request.number || github.sha }}
 
-    name: Older TypeScript version
+    name: TypeScript (${{ matrix.typescript-version }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        typescript-version: [
-            ~5.4.0, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
-            ~5.8.0, # 28.2.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/
-            ~5.9.0, # 1.8.2025 https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/
-          ]
+        include:
+          - typescript-version: ~5.4.0
+            tsd-version: 0.31.2
+          - typescript-version: ~5.8.0
+            tsd-version: 0.32.0
+          - typescript-version: ~5.9.0
+            tsd-version: 0.33.0
+          - typescript-version: ~6.0.0
+            tsd-version: ''
+          - typescript-version: ~7.0.0
+            tsd-version: ''
 
     steps:
       - name: harden runner
@@ -308,25 +314,34 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
-      - name: run build with newer typescript
+      - name: run build with the main typescript compiler
         run: pnpm build
 
-      - name: set typeScript and tsd versions
+      - name: install typescript and matching tsd
         env:
           TS_VERSION: ${{ matrix.typescript-version }}
+          TSD_VERSION: ${{ matrix.tsd-version }}
         run: |
-          echo "TS_VERSION=$TS_VERSION" >> $GITHUB_ENV
-          TSD_VERSION=$(echo '{"~5.4.0":"0.31.2", "~5.8.0":"0.32.0", "~5.9.0":"0.33.0"}' | jq -r --arg key "$TS_VERSION" '.[$key]')
-          echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
-
-      - name: install typescript (${{ env.TS_VERSION }}) and tsd (${{ env.TSD_VERSION }})
-        run: pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+          if [ -n "$TSD_VERSION" ]; then
+            pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+          else
+            pnpm i -D "typescript@$TS_VERSION"
+          fi
 
       - name: make `tsconfig` backwards compatible
+        id: typecheck-setup
         run: pnpm script:override-tsconfig-target
 
-      - name: run tests with older typescript version
-        run: pnpm test:typings && pnpm test:node:build
+      - name: run vitest typing tests
+        run: pnpm test:typings:vitest
+
+      - name: run tsd typing tests
+        if: ${{ !cancelled() && steps.typecheck-setup.outcome == 'success' && matrix.tsd-version != '' }}
+        run: pnpm test:typings
+
+      - name: build node tests with the selected typescript compiler
+        if: ${{ !cancelled() && steps.typecheck-setup.outcome == 'success' }}
+        run: pnpm test:node:build
 
   jsdocs:
     concurrency:
