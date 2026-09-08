@@ -77,6 +77,10 @@ test('rejects a database with { a } where { b } is required', () => {
   queryB(a)
 })
 
+test('accepts a database with { a, b } where { a } is required', () => {
+  queryA(ab)
+})
+
 test('accepts a database that declares both tables', () => {
   queryAB(ab)
 })
