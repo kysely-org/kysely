@@ -98,6 +98,11 @@ test('rejects a transaction with { a } where { b } is required', () => {
   queryBInTransaction(transactionA)
 })
 
+test('accepts a transaction with { a, b } where { a } is required', () => {
+  queryA(transactionAB)
+  queryAInTransaction(transactionAB)
+})
+
 test('accepts a transaction that declares both tables', () => {
   queryAB(transactionAB)
   queryABInTransaction(transactionAB)
