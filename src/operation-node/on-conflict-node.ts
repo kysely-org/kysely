@@ -3,6 +3,7 @@ import type { ColumnNode } from './column-node.js'
 import type { ColumnUpdateNode } from './column-update-node.js'
 import type { IdentifierNode } from './identifier-node.js'
 import type { OperationNode } from './operation-node.js'
+import type { SelectLockStrength } from './select-modifier-node.js'
 import { WhereNode } from './where-node.js'
 
 export type OnConflictNodeProps = Omit<
@@ -18,6 +19,9 @@ export interface OnConflictNode extends OperationNode {
   readonly indexWhere?: WhereNode
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
   readonly updateWhere?: WhereNode
+  readonly doSelect?: boolean
+  readonly selectWhere?: WhereNode
+  readonly selectLockStrength?: SelectLockStrength
   readonly doNothing?: boolean
 }
 
@@ -44,8 +48,17 @@ type OnConflictNodeFactory = Readonly<{
     node: OnConflictNode,
     operation: OperationNode,
   ): Readonly<OnConflictNode>
+  cloneWithSelectWhere(
+    node: OnConflictNode,
+    operation: OperationNode,
+  ): Readonly<OnConflictNode>
+  cloneWithSelectOrWhere(
+    node: OnConflictNode,
+    operation: OperationNode,
+  ): Readonly<OnConflictNode>
   cloneWithoutIndexWhere(node: OnConflictNode): Readonly<OnConflictNode>
   cloneWithoutUpdateWhere(node: OnConflictNode): Readonly<OnConflictNode>
+  cloneWithoutSelectWhere(node: OnConflictNode): Readonly<OnConflictNode>
 }>
 /**
  * @internal
@@ -105,6 +118,24 @@ export const OnConflictNode: OnConflictNodeFactory =
       })
     },
 
+    cloneWithSelectWhere(node, operation) {
+      return freeze({
+        ...node,
+        selectWhere: node.selectWhere
+          ? WhereNode.cloneWithOperation(node.selectWhere, 'And', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
+    cloneWithSelectOrWhere(node, operation) {
+      return freeze({
+        ...node,
+        selectWhere: node.selectWhere
+          ? WhereNode.cloneWithOperation(node.selectWhere, 'Or', operation)
+          : WhereNode.create(operation),
+      })
+    },
+
     cloneWithoutIndexWhere(node) {
       return freeze({
         ...node,
@@ -116,6 +147,13 @@ export const OnConflictNode: OnConflictNodeFactory =
       return freeze({
         ...node,
         updateWhere: undefined,
+      })
+    },
+
+    cloneWithoutSelectWhere(node) {
+      return freeze({
+        ...node,
+        selectWhere: undefined,
       })
     },
   })

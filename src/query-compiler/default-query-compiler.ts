@@ -931,6 +931,18 @@ export class DefaultQueryCompiler
 
     if (node.doNothing === true) {
       this.append(' do nothing')
+    } else if (node.doSelect) {
+      this.append(' do select')
+
+      if (node.selectLockStrength) {
+        this.append(' ')
+        this.append(SELECT_MODIFIER_SQL[node.selectLockStrength!])
+      }
+
+      if (node.selectWhere) {
+        this.append(' ')
+        this.visitNode(node.selectWhere)
+      }
     } else if (node.updates) {
       this.append(' do update set ')
       this.compileList(node.updates)
