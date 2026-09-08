@@ -98,6 +98,11 @@ test('rejects a transaction with { a } where { b } is required', () => {
   queryBInTransaction(transactionA)
 })
 
+test('accepts a transaction with { a, b } where { a } is required', () => {
+  queryA(transactionAB)
+  queryAInTransaction(transactionAB)
+})
+
 test('accepts a transaction that declares both tables', () => {
   queryAB(transactionAB)
   queryABInTransaction(transactionAB)
@@ -123,6 +128,12 @@ test('rejects a controlled transaction with { a } where { b } is required', () =
   queryBInTransaction(controlledTransactionA)
   // @ts-expect-error the source transaction does not declare table b
   queryBInControlledTransaction(controlledTransactionA)
+})
+
+test('accepts a controlled transaction with { a, b } where { a } is required', () => {
+  queryA(controlledTransactionAB)
+  queryAInTransaction(controlledTransactionAB)
+  queryAInControlledTransaction(controlledTransactionAB)
 })
 
 test('accepts a controlled transaction that declares both tables', () => {
