@@ -130,6 +130,12 @@ test('rejects a controlled transaction with { a } where { b } is required', () =
   queryBInControlledTransaction(controlledTransactionA)
 })
 
+test('accepts a controlled transaction with { a, b } where { a } is required', () => {
+  queryA(controlledTransactionAB)
+  queryAInTransaction(controlledTransactionAB)
+  queryAInControlledTransaction(controlledTransactionAB)
+})
+
 test('accepts a controlled transaction that declares both tables', () => {
   queryAB(controlledTransactionAB)
   queryABInTransaction(controlledTransactionAB)
