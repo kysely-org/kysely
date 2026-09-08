@@ -333,7 +333,9 @@ jobs:
         run: pnpm script:override-tsconfig-target
 
       - name: run vitest typing tests
-        run: pnpm test:typings:vitest
+        run: |
+          node node_modules/typescript/bin/tsc --version
+          pnpm test:typings:vitest
 
       - name: run tsd typing tests
         if: ${{ !cancelled() && steps.typecheck-setup.outcome == 'success' && matrix.tsd-version != '' }}
