@@ -98,6 +98,10 @@ export class Kysely<DB>
   extends QueryCreator<DB>
   implements QueryExecutorProvider, AsyncDisposable
 {
+  // TODO: Remove when TypeScript 6.0 is the minimum supported version.
+  // TypeScript 5.x needs this inherited marker redeclared for table-subset assignability.
+  declare protected readonly '~DB': QueryCreator<DB>['~DB']
+
   readonly #props: KyselyProps
 
   constructor(args: KyselyConfig)
