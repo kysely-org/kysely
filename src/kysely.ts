@@ -799,6 +799,20 @@ export class Transaction<DB> extends Kysely<DB> {
    *
    * @deprecated use {@link $extendTables} instead.
    */
+  // Base return overloads allow assignment to parent classes with fewer tables.
+  // Keep the transaction overload first for calls and last for ReturnType.
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>>
+
+  override withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  >
+
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>>
+
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
@@ -810,6 +824,18 @@ export class Transaction<DB> extends Kysely<DB> {
    */
   override $extendTables<
     T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Kysely<DrainOuterGeneric<DB & T>>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Transaction<DrainOuterGeneric<DB & T>>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
     return new Transaction({ ...this.#props })
   }
@@ -819,6 +845,18 @@ export class Transaction<DB> extends Kysely<DB> {
    */
   override $omitTables<T extends keyof DB>(): Transaction<
     DB extends object ? Omit<DB, T> : DB
+  >
+
+  override $omitTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
   > {
     return new Transaction({ ...this.#props })
   }
@@ -826,6 +864,18 @@ export class Transaction<DB> extends Kysely<DB> {
   /**
    * Similar to {@link Kysely.$pickTables} but returns the transaction.
    */
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
+  override $pickTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
   override $pickTables<T extends keyof DB>(): Transaction<
     DB extends object ? Pick<DB, T> : DB
   > {
@@ -1372,6 +1422,20 @@ export class ControlledTransaction<
     })
   }
 
+  // Base return overloads allow assignment to Kysely with fewer tables.
+  // Keep the controlled transaction overload first for calls and last for ReturnType.
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  override withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  >
+
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
@@ -1380,9 +1444,35 @@ export class ControlledTransaction<
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): Kysely<DrainOuterGeneric<DB & T>>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  override $extendTables<
+    T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
     return new ControlledTransaction({ ...this.#props })
   }
+
+  override $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
+
+  override $omitTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  override $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
 
   override $omitTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Omit<DB, T> : DB,
