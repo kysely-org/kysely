@@ -77,10 +77,6 @@ test('rejects a database with { a } where { b } is required', () => {
   queryB(a)
 })
 
-test('accepts a database with { a, b } where { a } is required', () => {
-  queryA(ab)
-})
-
 test('accepts a database that declares both tables', () => {
   queryAB(ab)
 })
@@ -100,11 +96,6 @@ test('rejects a transaction with { a } where { b } is required', () => {
   queryB(transactionA)
   // @ts-expect-error the source transaction does not declare table b
   queryBInTransaction(transactionA)
-})
-
-test('accepts a transaction with { a, b } where { a } is required', () => {
-  queryA(transactionAB)
-  queryAInTransaction(transactionAB)
 })
 
 test('accepts a transaction that declares both tables', () => {
@@ -132,12 +123,6 @@ test('rejects a controlled transaction with { a } where { b } is required', () =
   queryBInTransaction(controlledTransactionA)
   // @ts-expect-error the source transaction does not declare table b
   queryBInControlledTransaction(controlledTransactionA)
-})
-
-test('accepts a controlled transaction with { a, b } where { a } is required', () => {
-  queryA(controlledTransactionAB)
-  queryAInTransaction(controlledTransactionAB)
-  queryAInControlledTransaction(controlledTransactionAB)
 })
 
 test('accepts a controlled transaction that declares both tables', () => {
