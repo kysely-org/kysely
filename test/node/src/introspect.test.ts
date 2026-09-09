@@ -79,6 +79,25 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    describe('getTypes', () => {
+      it('should get type metadata', async () => {
+        const types = await ctx.db.introspection.getTypes()
+
+        if (sqlSpec === 'postgres') {
+          expect(types).to.containSubset([
+            {
+              name: 'species',
+              schema: 'dtype_schema',
+              kind: 'enum',
+              values: ['cat', 'dog', 'frog'],
+            },
+          ])
+        } else {
+          expect(types).to.eql([])
+        }
+      })
+    })
+
     describe('getTables', () => {
       it('should get table metadata', async () => {
         const meta = await ctx.db.introspection.getTables()
