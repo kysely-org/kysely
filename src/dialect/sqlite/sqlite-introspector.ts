@@ -3,6 +3,7 @@ import type {
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
+  TypeMetadata,
 } from '../database-introspector.js'
 import type { Kysely } from '../../kysely.js'
 import {
@@ -45,6 +46,10 @@ export class SqliteIntrospector implements DatabaseIntrospector {
 
   async getSchemas(): Promise<SchemaMetadata[]> {
     // Sqlite doesn't support schemas.
+    return []
+  }
+
+  async getTypes(): Promise<TypeMetadata[]> {
     return []
   }
 
