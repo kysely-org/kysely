@@ -208,3 +208,79 @@ test('rejects forgetting required insert columns', () => {
   // @ts-expect-error the target permits inserts without the required source name
   accept<ControlledTransaction<Target>>(source.controlled)
 })
+
+test('rejects nullable selects where nonnullable selects are required', () => {
+  type Source = { a: { id: ColumnType<number | null, number, number> } }
+  type Target = { a: { id: ColumnType<number, number, number> } }
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the source can select null but the target promises number
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the source can select null but the target promises number
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the source can select null but the target promises number
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the source can select null but the target promises number
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the source can select null but the target promises number
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the source can select null but the target promises number
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
+
+test('rejects broader select unions', () => {
+  type Source = { a: { id: ColumnType<1 | 2, number, number> } }
+  type Target = { a: { id: ColumnType<1, number, number> } }
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the source can select 2 but the target promises 1
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
+
+test('rejects widening only update types to allow null', () => {
+  type Source = { a: { id: ColumnType<number, number, number> } }
+  type Target = { a: { id: ColumnType<number, number, number | null> } }
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the target permits updating the source column to null
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the target permits updating the source column to null
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the target permits updating the source column to null
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the target permits updating the source column to null
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the target permits updating the source column to null
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the target permits updating the source column to null
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
+
+test('rejects widening only update unions', () => {
+  type Source = { a: { id: ColumnType<number, number, 1> } }
+  type Target = { a: { id: ColumnType<number, number, 1 | 2> } }
+  const source = null! as Instances<Source>
+
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<Kysely<Target>>(source.db)
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<Kysely<Target>>(source.transaction)
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<Transaction<Target>>(source.transaction)
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<Kysely<Target>>(source.controlled)
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<Transaction<Target>>(source.controlled)
+  // @ts-expect-error the target permits updating the source column to 2
+  accept<ControlledTransaction<Target>>(source.controlled)
+})
