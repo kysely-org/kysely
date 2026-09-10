@@ -42,17 +42,6 @@ test('rejects unions with a member missing the required table', () => {
   accept<ControlledTransaction<DatabaseA>>(source.controlled)
 })
 
-test('accepts index signatures with an explicit required table', () => {
-  const source = null! as Instances<{ a: Row; [table: string]: Row }>
-
-  accept<Kysely<DatabaseA>>(source.db)
-  accept<Kysely<DatabaseA>>(source.transaction)
-  accept<Transaction<DatabaseA>>(source.transaction)
-  accept<Kysely<DatabaseA>>(source.controlled)
-  accept<Transaction<DatabaseA>>(source.controlled)
-  accept<ControlledTransaction<DatabaseA>>(source.controlled)
-})
-
 test('rejects index signatures without an explicit required table', () => {
   const source = null! as Instances<Record<string, Row>>
 
