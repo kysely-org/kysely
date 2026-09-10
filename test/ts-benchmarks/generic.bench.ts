@@ -130,11 +130,11 @@ bench('SelectQueryBuilder assignable to narrower SelectQueryBuilder', () => {
 
 bench('ExpressionBuilder assignable to narrower ExpressionBuilder', () => {
   return acceptsNarrowExpressionBuilder(wideExpressionBuilder)
-}).types([51424, 'instantiations'])
+}).types([51325, 'instantiations'])
 
 bench('ExpressionBuilder passed to function expecting fewer tables', () => {
   return acceptsTwoTableExpressionBuilder(threeTableExpressionBuilder)
-}).types([51471, 'instantiations'])
+}).types([51372, 'instantiations'])
 
 bench('select(genericSelectHelper) on a left joined query', () => {
   return kysely
@@ -162,4 +162,4 @@ bench('Transaction assignable to Kysely', () => {
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)
-}).types([20073, 'instantiations'])
+}).types([20270, 'instantiations'])
