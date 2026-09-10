@@ -34,7 +34,6 @@ import { CaseNode } from './operation-node/case-node.js'
 import { parseExpression } from './parser/expression-parser.js'
 import type { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
-import type { DrainOuterGeneric } from './util/type-utils.js'
 import type { QueryCompiler } from './query-compiler/query-compiler.js'
 import type {
   ReleaseSavepoint,
@@ -514,7 +513,7 @@ export class Kysely<DB>
    * ```
    */
   $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
+    DB & T
   > {
     return new Kysely({ ...this.#props })
   }
@@ -595,9 +594,7 @@ export class Kysely<DB>
    * @deprecated use {@link $extendTables} instead.
    */
   // TODO: remove in 0.30
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
-  > {
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<DB & T> {
     return this.$extendTables()
   }
 
@@ -738,19 +735,19 @@ export class Transaction<DB> extends Kysely<DB> {
   // Keep the transaction overload first for calls and last for ReturnType.
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>>
+  >(): Transaction<DB & T>
 
   override withTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
+    DB & T
   >
 
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>>
+  >(): Transaction<DB & T>
 
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>> {
+  >(): Transaction<DB & T> {
     return new Transaction({ ...this.#props })
   }
 
@@ -759,19 +756,19 @@ export class Transaction<DB> extends Kysely<DB> {
    */
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>>
+  >(): Transaction<DB & T>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): Kysely<DrainOuterGeneric<DB & T>>
+  >(): Kysely<DB & T>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>>
+  >(): Transaction<DB & T>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): Transaction<DrainOuterGeneric<DB & T>> {
+  >(): Transaction<DB & T> {
     return new Transaction({ ...this.#props })
   }
 
@@ -1311,37 +1308,37 @@ export class ControlledTransaction<
   // Keep the controlled transaction overload first for calls and last for ReturnType.
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ControlledTransaction<DB & T, S>
 
   override withTables<T extends Record<string, Record<string, any>>>(): Kysely<
-    DrainOuterGeneric<DB & T>
+    DB & T
   >
 
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ControlledTransaction<DB & T, S>
 
   override withTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+  >(): ControlledTransaction<DB & T, S> {
     return new ControlledTransaction({ ...this.#props })
   }
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ControlledTransaction<DB & T, S>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): Kysely<DrainOuterGeneric<DB & T>>
+  >(): Kysely<DB & T>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ControlledTransaction<DB & T, S>
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+  >(): ControlledTransaction<DB & T, S> {
     return new ControlledTransaction({ ...this.#props })
   }
 
