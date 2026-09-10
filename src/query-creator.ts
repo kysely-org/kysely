@@ -48,12 +48,19 @@ import type { DeleteFrom } from './parser/delete-from-parser.js'
 import type { UpdateTable } from './parser/update-parser.js'
 import type { MergeInto } from './parser/merge-into-parser.js'
 import type { IsAny } from './util/type-utils.js'
+import type { Insertable, Selectable, Updateable } from './util/column-type.js'
 
 export class QueryCreator<DB> {
-  // Keep the schema mapped for table-subset assignability on TypeScript 5.
+  // Preserve the target's read guarantees and allowed writes when assigning.
   declare protected readonly '~DB': IsAny<DB> extends true
-    ? DB
-    : { [T in keyof DB]: DB[T] }
+    ? any
+    : {
+        [T in keyof DB]: {
+          select: () => Selectable<DB[T]>
+          insert: (row: Insertable<DB[T]>) => void
+          update: (row: Updateable<DB[T]>) => void
+        }
+      }
 
   readonly #props: QueryCreatorProps
 
