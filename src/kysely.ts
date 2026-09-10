@@ -1405,6 +1405,20 @@ export class ControlledTransaction<
   override $pickTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Pick<DB, T> : DB,
     S
+  >
+
+  override $pickTables<T extends keyof DB>(): Kysely<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
+  override $pickTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  >
+
+  override $pickTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
   > {
     return new ControlledTransaction({ ...this.#props })
   }
