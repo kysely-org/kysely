@@ -32,6 +32,7 @@ test('accepts narrower column writes while preserving nullable reads', () => {
   accept<Kysely<Target>>(source.db)
   accept<Kysely<Target>>(source.transaction)
   accept<Transaction<Target>>(source.transaction)
+  accept<Kysely<Target>>(source.controlled)
   accept<Transaction<Target>>(source.controlled)
   accept<ControlledTransaction<Target>>(source.controlled)
   accept<MergeQueryBuilder<Target, 'a', MergeResult>>(source.db.mergeInto('a'))
