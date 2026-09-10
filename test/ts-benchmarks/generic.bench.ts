@@ -130,11 +130,11 @@ bench('SelectQueryBuilder assignable to narrower SelectQueryBuilder', () => {
 
 bench('ExpressionBuilder assignable to narrower ExpressionBuilder', () => {
   return acceptsNarrowExpressionBuilder(wideExpressionBuilder)
-}).types([51325, 'instantiations'])
+}).types([51424, 'instantiations'])
 
 bench('ExpressionBuilder passed to function expecting fewer tables', () => {
   return acceptsTwoTableExpressionBuilder(threeTableExpressionBuilder)
-}).types([51372, 'instantiations'])
+}).types([51471, 'instantiations'])
 
 bench('select(genericSelectHelper) on a left joined query', () => {
   return kysely
