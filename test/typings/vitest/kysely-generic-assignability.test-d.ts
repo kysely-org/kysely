@@ -8,6 +8,8 @@ import {
   accept,
   a,
   type DatabaseA,
+  type DatabaseAB,
+  type DatabaseB,
   type Instances,
 } from './assignability.fixtures.js'
 
@@ -67,5 +69,32 @@ test('rejects replacing a generic schema with only its constraint', () => {
     accept<Transaction<DB>>(a.controlled)
     // @ts-expect-error DB may require more than a
     accept<ControlledTransaction<DB>>(a.controlled)
+  }
+})
+
+test('preserves generic table extensions when assigning to parent classes', () => {
+  function check<DB>(source: Instances<DB>) {
+    accept<Kysely<DB & DatabaseB>>(
+      source.transaction.$extendTables<DatabaseB>(),
+    )
+    accept<Kysely<DB & DatabaseB>>(source.controlled.$extendTables<DatabaseB>())
+    accept<Transaction<DB & DatabaseB>>(
+      source.controlled.$extendTables<DatabaseB>(),
+    )
+    accept<Kysely<DB & DatabaseB>>(source.transaction.withTables<DatabaseB>())
+    accept<Transaction<DB & DatabaseB>>(
+      source.controlled.withTables<DatabaseB>(),
+    )
+  }
+})
+
+test('preserves generic table selections when assigning to parent classes', () => {
+  function check<DB extends DatabaseAB>(source: Instances<DB>) {
+    accept<Kysely<Pick<DB, 'a'>>>(source.transaction.$pickTables<'a'>())
+    accept<Kysely<Pick<DB, 'a'>>>(source.controlled.$pickTables<'a'>())
+    accept<Transaction<Pick<DB, 'a'>>>(source.controlled.$pickTables<'a'>())
+    accept<Kysely<Omit<DB, 'b'>>>(source.transaction.$omitTables<'b'>())
+    accept<Kysely<Omit<DB, 'b'>>>(source.controlled.$omitTables<'b'>())
+    accept<Transaction<Omit<DB, 'b'>>>(source.controlled.$omitTables<'b'>())
   }
 })
