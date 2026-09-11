@@ -9,20 +9,18 @@ import type {
   ReadonlyRecursiveCommonTableExpression,
 } from './readonly-with-parser.js'
 
-// Preserve read guarantees without constraining insert or update types.
-declare class ReadonlyQueryCreatorSchema<DB> {
-  protected readonly '~DB': IsAny<DB> extends true
-    ? any
-    : { [T in keyof DB]: Selectable<DB[T]> }
-}
-
 /**
  * Similar to {@link QueryCreator} but read-only.
  */
-export interface ReadonlyQueryCreator<DB>
-  extends
-    ReadonlyQueryCreatorSchema<DB>,
-    Pick<QueryCreator<DB>, 'selectFrom' | 'selectNoFrom'> {
+export declare class ReadonlyQueryCreator<DB> {
+  // Preserve read guarantees without constraining insert or update types.
+  protected readonly '~DB': IsAny<DB> extends true
+    ? any
+    : { [T in keyof DB]: Selectable<DB[T]> }
+
+  selectFrom: QueryCreator<DB>['selectFrom']
+  selectNoFrom: QueryCreator<DB>['selectNoFrom']
+
   /**
    * @deprecated not allowed with a read-only Kysely instance.
    */
