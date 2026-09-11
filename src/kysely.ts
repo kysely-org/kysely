@@ -1470,6 +1470,10 @@ export class ControlledTransaction<
     DB extends object ? Omit<DB, T> : DB
   >
 
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
   override $omitTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Omit<DB, T> : DB,
     S
