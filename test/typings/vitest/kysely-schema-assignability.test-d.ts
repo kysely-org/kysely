@@ -116,6 +116,23 @@ test('rejects widening the schema type to {}', () => {
   accept<ControlledTransaction<{}>>(source.controlled)
 })
 
+test('rejects erasing table knowledge to unknown', () => {
+  const source = null! as Instances<DatabaseA>
+
+  // @ts-expect-error
+  accept<Kysely<unknown>>(source.db)
+  // @ts-expect-error
+  accept<Kysely<unknown>>(source.transaction)
+  // @ts-expect-error
+  accept<Transaction<unknown>>(source.transaction)
+  // @ts-expect-error
+  accept<Kysely<unknown>>(source.controlled)
+  // @ts-expect-error
+  accept<Transaction<unknown>>(source.controlled)
+  // @ts-expect-error
+  accept<ControlledTransaction<unknown>>(source.controlled)
+})
+
 test('rejects {} where a table is required', () => {
   const source = null! as Instances<{}>
 
@@ -131,6 +148,90 @@ test('rejects {} where a table is required', () => {
   accept<Transaction<DatabaseA>>(source.controlled)
   // @ts-expect-error {} does not guarantee that a exists
   accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('rejects unknown schemas where a table is required', () => {
+  const source = null! as Instances<unknown>
+
+  // @ts-expect-error unknown does not establish that a exists
+  accept<Kysely<DatabaseA>>(source.db)
+  // @ts-expect-error unknown does not establish that a exists
+  accept<Kysely<DatabaseA>>(source.transaction)
+  // @ts-expect-error unknown does not establish that a exists
+  accept<Transaction<DatabaseA>>(source.transaction)
+  // @ts-expect-error unknown does not establish that a exists
+  accept<Kysely<DatabaseA>>(source.controlled)
+  // @ts-expect-error unknown does not establish that a exists
+  accept<Transaction<DatabaseA>>(source.controlled)
+  // @ts-expect-error unknown does not establish that a exists
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('rejects optional tables where a required table is needed', () => {
+  const source = null! as Instances<{ a?: Row }>
+
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<Kysely<DatabaseA>>(source.db)
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<Kysely<DatabaseA>>(source.transaction)
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<Transaction<DatabaseA>>(source.transaction)
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<Kysely<DatabaseA>>(source.controlled)
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<Transaction<DatabaseA>>(source.controlled)
+  // @ts-expect-error an optional table does not guarantee that a exists
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('accepts unrelated optional tables alongside a required table', () => {
+  const source = null! as Instances<DatabaseA & Partial<DatabaseB>>
+
+  accept<Kysely<DatabaseA>>(source.db)
+  accept<Kysely<DatabaseA>>(source.transaction)
+  accept<Transaction<DatabaseA>>(source.transaction)
+  accept<Kysely<DatabaseA>>(source.controlled)
+  accept<Transaction<DatabaseA>>(source.controlled)
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('rejects schema unions whose members have incompatible columns', () => {
+  const source = null! as Instances<DatabaseA | { a: { id: string } }>
+
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<Kysely<DatabaseA>>(source.db)
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<Kysely<DatabaseA>>(source.transaction)
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<Transaction<DatabaseA>>(source.transaction)
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<Kysely<DatabaseA>>(source.controlled)
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<Transaction<DatabaseA>>(source.controlled)
+  // @ts-expect-error one union member returns string ids instead of number ids
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('accepts readonly schema table mappings', () => {
+  const source = null! as Instances<Readonly<DatabaseAB>>
+
+  accept<Kysely<DatabaseA>>(source.db)
+  accept<Kysely<DatabaseA>>(source.transaction)
+  accept<Transaction<DatabaseA>>(source.transaction)
+  accept<Kysely<DatabaseA>>(source.controlled)
+  accept<Transaction<DatabaseA>>(source.controlled)
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
+test('accepts mutable schemas where readonly table mappings are requested', () => {
+  const source = null! as Instances<DatabaseA>
+
+  accept<Kysely<Readonly<DatabaseA>>>(source.db)
+  accept<Kysely<Readonly<DatabaseA>>>(source.transaction)
+  accept<Transaction<Readonly<DatabaseA>>>(source.transaction)
+  accept<Kysely<Readonly<DatabaseA>>>(source.controlled)
+  accept<Transaction<Readonly<DatabaseA>>>(source.controlled)
+  accept<ControlledTransaction<Readonly<DatabaseA>>>(source.controlled)
 })
 
 test('accepts any as an explicit schema escape hatch', () => {
