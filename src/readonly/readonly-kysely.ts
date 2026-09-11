@@ -196,6 +196,7 @@ export interface ReadonlyTransactionBuilder<DB> {
  */
 export interface ReadonlyTransaction<DB>
   extends
+    ReadonlyQueryCreator<DB>,
     Pick<
       ReadonlyKysely<DB>,
       | 'case'
