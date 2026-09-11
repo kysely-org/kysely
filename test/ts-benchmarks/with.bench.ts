@@ -114,3 +114,61 @@ bench('kyselyAny.with(cte, updateQuery)', () => {
 bench('kyselyAny.with(cte, deleteQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.deleteFrom('my_table').returningAll())
 }).types([11332, 'instantiations'])
+
+// Consume the returned query creator so these also measure CTE schema composition.
+bench('select from a CTE in a large schema', () => {
+  return kysely
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+    .compile()
+}).types([7701, 'instantiations'])
+
+bench('chain three CTEs in a large schema', () => {
+  return kysely
+    .with('cte1', (qc) => qc.selectFrom('my_table').select('id'))
+    .with('cte2', (qc) => qc.selectFrom('cte1').selectAll())
+    .with('cte3', (qc) => qc.selectFrom('cte2').selectAll())
+    .selectFrom('cte3')
+    .selectAll()
+    .compile()
+}).types([9151, 'instantiations'])
+
+bench('select from a CTE that shadows a table in a large schema', () => {
+  return kysely
+    .with('my_table', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('my_table')
+    .select('id')
+    .compile()
+}).types([7821, 'instantiations'])
+
+declare const indexedKysely: Kysely<{
+  a: { id: number }
+  [table: string]: { id: number }
+}>
+
+bench('select from a CTE in an index-signature schema', () => {
+  return indexedKysely
+    .with('cte', (qc) => qc.selectFrom('a').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+    .compile()
+}).types([3005, 'instantiations'])
+
+bench('chain three CTEs in an index-signature schema', () => {
+  return indexedKysely
+    .with('cte1', (qc) => qc.selectFrom('a').select('id'))
+    .with('cte2', (qc) => qc.selectFrom('cte1').selectAll())
+    .with('cte3', (qc) => qc.selectFrom('cte2').selectAll())
+    .selectFrom('cte3')
+    .selectAll()
+    .compile()
+}).types([3994, 'instantiations'])
+
+bench('select from a CTE in an any schema', () => {
+  return kyselyAny
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+    .compile()
+}).types([1921, 'instantiations'])

@@ -1,5 +1,6 @@
 import { bench } from '@ark/attest'
 import type {
+  ControlledTransaction,
   DeleteQueryBuilder,
   ExpressionBuilder,
   Generated,
@@ -163,3 +164,23 @@ bench('Transaction assignable to Kysely', () => {
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)
 }).types([22917, 'instantiations'])
+
+type IndexedSchema = { a: A; [table: string]: A }
+declare const indexedTransaction: Transaction<IndexedSchema>
+declare const indexedControlledTransaction: ControlledTransaction<IndexedSchema>
+declare function acceptsRequiredTable(db: Kysely<{ a: A }>): void
+declare function acceptsRequiredTableTransaction(
+  db: Transaction<{ a: A }>,
+): void
+
+bench('index-signature Transaction assignable to Kysely', () => {
+  return acceptsRequiredTable(indexedTransaction)
+}).types([105306, 'instantiations'])
+
+bench('index-signature ControlledTransaction assignable to Kysely', () => {
+  return acceptsRequiredTable(indexedControlledTransaction)
+}).types([105335, 'instantiations'])
+
+bench('index-signature ControlledTransaction assignable to Transaction', () => {
+  return acceptsRequiredTableTransaction(indexedControlledTransaction)
+}).types([114015, 'instantiations'])
