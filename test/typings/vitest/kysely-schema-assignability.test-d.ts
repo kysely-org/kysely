@@ -47,11 +47,22 @@ test('accepts index signatures with an explicit required table', () => {
   const source = null! as Instances<{ a: Row; [table: string]: Row }>
 
   accept<Kysely<DatabaseA>>(source.db)
-  accept<Kysely<DatabaseA>>(source.transaction)
   accept<Transaction<DatabaseA>>(source.transaction)
-  accept<Kysely<DatabaseA>>(source.controlled)
-  accept<Transaction<DatabaseA>>(source.controlled)
   accept<ControlledTransaction<DatabaseA>>(source.controlled)
+
+  // TODO: Support these index-signature assignments to parent classes.
+  // We currently consider this uncommon schema pattern not worth the extra
+  // type complexity and instantiation cost needed to support it.
+  // To fix these assignments:
+  // - In QueryCreatorWithCommonTableExpression, replace the DB intersection
+  //   operand with:
+  //   string extends CN ? (DB extends object ? Omit<DB, CN> : DB) : DB
+  // - Add a Transaction<DB extends object ? Pick<DB, T> : DB> return overload
+  //   to ControlledTransaction.$pickTables, between its Kysely and final
+  //   ControlledTransaction overloads.
+  // accept<Kysely<DatabaseA>>(source.transaction)
+  // accept<Kysely<DatabaseA>>(source.controlled)
+  // accept<Transaction<DatabaseA>>(source.controlled)
 })
 
 test('rejects index signatures without an explicit required table', () => {
