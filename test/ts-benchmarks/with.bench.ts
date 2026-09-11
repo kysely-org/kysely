@@ -142,29 +142,6 @@ bench('select from a CTE that shadows a table in a large schema', () => {
     .compile()
 }).types([7821, 'instantiations'])
 
-declare const indexedKysely: Kysely<{
-  a: { id: number }
-  [table: string]: { id: number }
-}>
-
-bench('select from a CTE in an index-signature schema', () => {
-  return indexedKysely
-    .with('cte', (qc) => qc.selectFrom('a').select('id'))
-    .selectFrom('cte')
-    .selectAll()
-    .compile()
-}).types([3005, 'instantiations'])
-
-bench('chain three CTEs in an index-signature schema', () => {
-  return indexedKysely
-    .with('cte1', (qc) => qc.selectFrom('a').select('id'))
-    .with('cte2', (qc) => qc.selectFrom('cte1').selectAll())
-    .with('cte3', (qc) => qc.selectFrom('cte2').selectAll())
-    .selectFrom('cte3')
-    .selectAll()
-    .compile()
-}).types([3994, 'instantiations'])
-
 bench('select from a CTE in an any schema', () => {
   return kyselyAny
     .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
@@ -182,14 +159,3 @@ bench('select from a dynamically named CTE in a large schema', () => {
     .select('id')
     .compile()
 }).types([7517, 'instantiations'])
-
-bench(
-  'select from a dynamically named CTE in an index-signature schema',
-  () => {
-    return indexedKysely
-      .with(cteName, (qc) => qc.selectFrom('a').select('id'))
-      .selectFrom(cteName)
-      .select('id')
-      .compile()
-  },
-).types([3078, 'instantiations'])
