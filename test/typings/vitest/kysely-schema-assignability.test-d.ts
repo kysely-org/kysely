@@ -110,6 +110,17 @@ test('rejects {} where a table is required', () => {
   accept<ControlledTransaction<DatabaseA>>(source.controlled)
 })
 
+test('accepts any as an explicit schema escape hatch', () => {
+  const source = null! as Instances<any>
+
+  accept<Kysely<DatabaseA>>(source.db)
+  accept<Kysely<DatabaseA>>(source.transaction)
+  accept<Transaction<DatabaseA>>(source.transaction)
+  accept<Kysely<DatabaseA>>(source.controlled)
+  accept<Transaction<DatabaseA>>(source.controlled)
+  accept<ControlledTransaction<DatabaseA>>(source.controlled)
+})
+
 test('accepts concrete schemas where any is requested', () => {
   const source = null! as Instances<DatabaseA>
 
