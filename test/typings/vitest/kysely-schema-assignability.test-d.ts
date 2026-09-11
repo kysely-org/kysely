@@ -1,7 +1,8 @@
-import { test } from 'vitest'
+import { expectTypeOf, test } from 'vitest'
 import type {
   ControlledTransaction,
   Kysely,
+  QueryCreator,
   Transaction,
 } from '../../../dist/index.js'
 import {
@@ -157,4 +158,21 @@ test('accepts interface and type alias schemas with the same structure', () => {
   accept<Kysely<InterfaceDatabase>>(a.db)
   accept<Transaction<InterfaceDatabase>>(a.transaction)
   accept<ControlledTransaction<InterfaceDatabase>>(a.controlled)
+})
+
+test('preserves any through common table expressions', () => {
+  const db = null! as Kysely<any>
+  const query = db.with('a', (qb) => qb.selectFrom('b').select('id'))
+  expectTypeOf(query).toEqualTypeOf<QueryCreator<any>>()
+})
+
+test('uses the CTE row when its name overlaps an existing table', () => {
+  const query = a.db.with('a', (qb) =>
+    qb.selectFrom('a').select('id as cte_id'),
+  )
+  expectTypeOf(query.selectFrom('a').selectAll().execute()).toEqualTypeOf<
+    Promise<{ cte_id: number }[]>
+  >()
+  // @ts-expect-error the CTE shadows the table's original columns
+  query.selectFrom('a').select('id')
 })

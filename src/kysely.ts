@@ -1376,6 +1376,10 @@ export class ControlledTransaction<
     DB extends object ? Pick<DB, T> : DB
   >
 
+  override $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
   override $pickTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Pick<DB, T> : DB,
     S

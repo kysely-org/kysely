@@ -39,7 +39,11 @@ export type QueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE,
 > = QueryCreator<
-  DB & {
+  (keyof DB & ExtractTableFromCommonTableExpressionName<CN> extends never
+    ? DB
+    : DB extends object
+      ? Omit<DB, ExtractTableFromCommonTableExpressionName<CN>>
+      : DB) & {
     [
       K in ExtractTableFromCommonTableExpressionName<CN>
     ]: ExtractRowFromCommonTableExpression<CTE>
