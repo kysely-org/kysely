@@ -1,4 +1,4 @@
-import { test } from 'vitest'
+import { expectTypeOf, test } from 'vitest'
 import type {
   ControlledTransaction,
   Kysely,
@@ -85,4 +85,61 @@ test('preserves generic table extensions when assigning to parent classes', () =
       source.controlled.withTables<DatabaseB>(),
     )
   }
+})
+
+// TODO: Investigate generic table selection assignability later. Couldn't find a
+// solution that doesn't heavily regress type benchmarks, especially on TS7.
+// test('preserves generic table selections when assigning to parent classes', () => {
+//   function check<DB extends DatabaseAB>(source: Instances<DB>) {
+//     accept<Kysely<Pick<DB, 'a'>>>(source.transaction.$pickTables<'a'>())
+//     accept<Kysely<Pick<DB, 'a'>>>(source.controlled.$pickTables<'a'>())
+//     accept<Transaction<Pick<DB, 'a'>>>(source.controlled.$pickTables<'a'>())
+//   }
+// })
+
+// TODO: Investigate generic table omission assignability later. Couldn't find a
+// solution that doesn't significantly regress type benchmarks on TS6 and TS7.
+// test('preserves generic table omissions when assigning to parent classes', () => {
+//   function check<DB extends DatabaseAB>(source: Instances<DB>) {
+//     accept<Kysely<Omit<DB, 'b'>>>(source.transaction.$omitTables<'b'>())
+//     accept<Kysely<Omit<DB, 'b'>>>(source.controlled.$omitTables<'b'>())
+//     accept<Transaction<Omit<DB, 'b'>>>(source.controlled.$omitTables<'b'>())
+//   }
+// })
+
+test('preserves any schemas through table helpers', () => {
+  const db = null! as Kysely<any>
+  const tx = null! as Transaction<any>
+  const controlled = null! as ControlledTransaction<any, ['s']>
+  expectTypeOf(db.$pickTables<'a'>()).toEqualTypeOf<Kysely<any>>()
+  expectTypeOf(db.$omitTables<'a'>()).toEqualTypeOf<Kysely<any>>()
+  expectTypeOf(tx.$pickTables<'a'>()).toEqualTypeOf<Transaction<any>>()
+  expectTypeOf(tx.$omitTables<'a'>()).toEqualTypeOf<Transaction<any>>()
+  expectTypeOf(controlled.$pickTables<'a'>()).toEqualTypeOf<
+    ControlledTransaction<any, ['s']>
+  >()
+  expectTypeOf(controlled.$omitTables<'a'>()).toEqualTypeOf<
+    ControlledTransaction<any, ['s']>
+  >()
+  expectTypeOf<ReturnType<typeof db.$pickTables<'a'>>>().toEqualTypeOf<
+    Kysely<any>
+  >()
+  expectTypeOf<ReturnType<typeof db.$omitTables<'a'>>>().toEqualTypeOf<
+    Kysely<any>
+  >()
+  expectTypeOf<ReturnType<typeof tx.$pickTables<'a'>>>().toEqualTypeOf<
+    Transaction<any>
+  >()
+  expectTypeOf<ReturnType<typeof tx.$omitTables<'a'>>>().toEqualTypeOf<
+    Transaction<any>
+  >()
+  expectTypeOf<ReturnType<typeof controlled.$pickTables<'a'>>>().toEqualTypeOf<
+    ControlledTransaction<any, ['s']>
+  >()
+  expectTypeOf<ReturnType<typeof controlled.$omitTables<'a'>>>().toEqualTypeOf<
+    ControlledTransaction<any, ['s']>
+  >()
+  db.$pickTables<'a'>().selectFrom('other').selectAll()
+  tx.$pickTables<'a'>().selectFrom('other').selectAll()
+  controlled.$pickTables<'a'>().selectFrom('other').selectAll()
 })
