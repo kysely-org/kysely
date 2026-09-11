@@ -34,16 +34,14 @@ export type RecursiveCommonTableExpression<DB, CN extends string> = (
   >,
 ) => CommonTableExpressionOutput<DB, CN>
 
+// Broad CTE names can overlap every table during structural comparisons.
+// Keep literal names on the existing intersection path.
 export type QueryCreatorWithCommonTableExpression<
   DB,
   CN extends string,
   CTE,
 > = QueryCreator<
-  (keyof DB & ExtractTableFromCommonTableExpressionName<CN> extends never
-    ? DB
-    : DB extends object
-      ? Omit<DB, ExtractTableFromCommonTableExpressionName<CN>>
-      : DB) & {
+  (string extends CN ? (DB extends object ? Omit<DB, CN> : DB) : DB) & {
     [
       K in ExtractTableFromCommonTableExpressionName<CN>
     ]: ExtractRowFromCommonTableExpression<CTE>

@@ -172,3 +172,24 @@ bench('select from a CTE in an any schema', () => {
     .selectAll()
     .compile()
 }).types([1921, 'instantiations'])
+
+declare const cteName: string
+
+bench('select from a dynamically named CTE in a large schema', () => {
+  return kysely
+    .with(cteName, (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom(cteName)
+    .select('id')
+    .compile()
+}).types([7517, 'instantiations'])
+
+bench(
+  'select from a dynamically named CTE in an index-signature schema',
+  () => {
+    return indexedKysely
+      .with(cteName, (qc) => qc.selectFrom('a').select('id'))
+      .selectFrom(cteName)
+      .select('id')
+      .compile()
+  },
+).types([3078, 'instantiations'])

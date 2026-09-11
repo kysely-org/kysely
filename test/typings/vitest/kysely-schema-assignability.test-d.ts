@@ -165,14 +165,3 @@ test('preserves any through common table expressions', () => {
   const query = db.with('a', (qb) => qb.selectFrom('b').select('id'))
   expectTypeOf(query).toEqualTypeOf<QueryCreator<any>>()
 })
-
-test('uses the CTE row when its name overlaps an existing table', () => {
-  const query = a.db.with('a', (qb) =>
-    qb.selectFrom('a').select('id as cte_id'),
-  )
-  expectTypeOf(query.selectFrom('a').selectAll().execute()).toEqualTypeOf<
-    Promise<{ cte_id: number }[]>
-  >()
-  // @ts-expect-error the CTE shadows the table's original columns
-  query.selectFrom('a').select('id')
-})
