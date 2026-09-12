@@ -1,4 +1,9 @@
 import type {
+  ReadonlyKysely,
+  ReadonlyTransaction,
+  ReadonlyControlledTransaction,
+} from '../../../dist/readonly/index.js'
+import type {
   ControlledTransaction,
   Kysely,
   Transaction,
@@ -20,3 +25,9 @@ export declare const b: Instances<DatabaseB>
 export declare const ab: Instances<DatabaseAB>
 
 export declare function accept<T>(value: T): void
+
+export type ReadonlyInstances<DB> = {
+  db: ReadonlyKysely<DB>
+  transaction: ReadonlyTransaction<DB>
+  controlled: ReadonlyControlledTransaction<DB>
+}
