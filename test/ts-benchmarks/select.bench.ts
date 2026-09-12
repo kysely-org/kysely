@@ -75,9 +75,9 @@ bench('kyselyAny..selectAll()', () => queryAny.selectAll()).types([
 
 bench('kyselyAny..selectAll(table)', () =>
   queryAny.selectAll('my_table'),
-).types([68, 'instantiations'])
+).types([70, 'instantiations'])
 
 bench('kyselyAny..selectAll(~table)', () =>
   // @ts-expect-error
   queryAny.selectAll('NO_SUCH_TABLE'),
-).types([170, 'instantiations'])
+).types([172, 'instantiations'])
