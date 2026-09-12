@@ -32,6 +32,8 @@ test('does not expose readonly constructors through their declaring modules', ()
   new readonlyKyselyModule.ReadonlyKysely<DatabaseA>()
   // @ts-expect-error ReadonlyTransaction has no runtime constructor
   new readonlyKyselyModule.ReadonlyTransaction<DatabaseA>()
+  // @ts-expect-error ReadonlyControlledTransaction has no runtime constructor
+  new readonlyKyselyModule.ReadonlyControlledTransaction<DatabaseA>()
 })
 
 test('accepts identical readonly schemas', () => {

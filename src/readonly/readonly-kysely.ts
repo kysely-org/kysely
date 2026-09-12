@@ -26,7 +26,11 @@ import type { ReadonlyAccessMode } from './readonly-driver.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
 // These classes describe types only; there are no runtime constructors.
-export type { ReadonlyKysely, ReadonlyTransaction }
+export type {
+  ReadonlyKysely,
+  ReadonlyTransaction,
+  ReadonlyControlledTransaction,
+}
 
 /**
  * A helper type that allows you to expose a type-level read-only {@link Kysely} version
@@ -294,13 +298,15 @@ export interface ReadonlyControlledTransactionBuilder<DB> {
 /**
  * Similar to {@link ControlledTransaction} but read-only.
  */
-export interface ReadonlyControlledTransaction<DB, S extends string[] = []>
-  extends
-    ReadonlyTransaction<DB>,
-    Pick<
-      ControlledTransaction<DB, S>,
-      'commit' | 'isCommitted' | 'isRolledBack' | 'rollback'
-    > {
+declare class ReadonlyControlledTransaction<
+  DB,
+  S extends string[] = [],
+> extends ReadonlyTransaction<DB> {
+  commit: ControlledTransaction<DB, S>['commit']
+  get isCommitted(): ControlledTransaction<DB, S>['isCommitted']
+  get isRolledBack(): ControlledTransaction<DB, S>['isRolledBack']
+  rollback: ControlledTransaction<DB, S>['rollback']
+
   /**
    * Similar to {@link ControlledTransaction.releaseSavepoint} but read-only.
    */
