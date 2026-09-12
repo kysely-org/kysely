@@ -25,7 +25,7 @@ import type { ReadonlyQueryResult } from './readonly-database-connection.js'
 import type { ReadonlyAccessMode } from './readonly-driver.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
-// These classes describe types only; there are no runtime constructors.
+// There are no runtime constructors for these readonly types.
 export type {
   ReadonlyKysely,
   ReadonlyTransaction,

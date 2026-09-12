@@ -27,7 +27,6 @@ type DatabaseOf<T> =
               ? DB
               : never
 
-// Compare the table shape independently of intersection versus object syntax.
 type SchemaOf<T, DB = DatabaseOf<T>> = { [K in keyof DB]: DB[K] }
 
 type Extra = { c: { id: Generated<number> } }

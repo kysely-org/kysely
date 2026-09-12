@@ -31,7 +31,6 @@ import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import type { Selectable, SelectType } from '../util/column-type.js'
 
-// Merge a class for the protected marker with an interface for call signatures.
 // Declare the schema before the callable interface so it is compared first.
 // This avoids lost variance reliability in older TypeScript versions.
 declare class FunctionModule<DB, TB extends keyof DB> {
@@ -41,8 +40,7 @@ declare class FunctionModule<DB, TB extends keyof DB> {
     : { [T in TB]: Selectable<DB[T]> }
 }
 
-// Merged declarations must both be exported or both local. Keep them local and
-// export only the type so we don't expose a class that doesn't exist at runtime.
+// There is no FunctionModule constructor at runtime.
 export type { FunctionModule }
 
 /**

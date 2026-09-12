@@ -9,7 +9,7 @@ import type {
   ReadonlyRecursiveCommonTableExpression,
 } from './readonly-with-parser.js'
 
-// This class describes a type only; there is no runtime constructor.
+// There is no ReadonlyQueryCreator constructor at runtime.
 export type { ReadonlyQueryCreator }
 
 /**
