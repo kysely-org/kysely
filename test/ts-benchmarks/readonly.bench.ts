@@ -21,19 +21,19 @@ bench.baseline(() => {})
 
 bench('ReadonlyKysely passed to a function requiring fewer tables', () => {
   return acceptsPerson(db)
-}).types([50815, 'instantiations'])
+}).types([50398, 'instantiations'])
 
 bench('ReadonlyKysely passed to a function accepting nullable reads', () => {
   return acceptsNullableName(db)
-}).types([50890, 'instantiations'])
+}).types([50473, 'instantiations'])
 
 bench('ReadonlyTransaction passed to a function requiring fewer tables', () => {
   return acceptsPerson(transaction)
-}).types([47854, 'instantiations'])
+}).types([47743, 'instantiations'])
 
 bench(
   'ReadonlyTransaction passed to a function accepting nullable reads',
   () => {
     return acceptsNullableName(transaction)
   },
-).types([47929, 'instantiations'])
+).types([47818, 'instantiations'])
