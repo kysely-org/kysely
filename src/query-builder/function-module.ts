@@ -19,6 +19,7 @@ import {
 import { parseSelectAll } from '../parser/select-parser.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 import type {
+  IsAny,
   IsNever,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
@@ -29,6 +30,17 @@ import type { SelectQueryBuilderExpression } from '../query-builder/select-query
 import { isString } from '../util/object-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import type { Selectable, SelectType } from '../util/column-type.js'
+
+// Declare the schema before the callable interface so it is compared first.
+// This avoids lost variance reliability in older TypeScript versions.
+declare class FunctionModule<DB, TB extends keyof DB> {
+  // Optional because the function object does not need a runtime marker.
+  protected readonly '~DB'?: IsAny<DB> extends true
+    ? any
+    : { [T in TB]: Selectable<DB[T]> }
+}
+
+export type { FunctionModule }
 
 /**
  * Helpers for type safe SQL function calls.
@@ -102,7 +114,7 @@ import type { Selectable, SelectType } from '../util/column-type.js'
  * having count("pet"."id") > $3
  * ```
  */
-export interface FunctionModule<DB, TB extends keyof DB> {
+interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Creates a function call.
    *

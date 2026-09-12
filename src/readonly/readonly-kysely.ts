@@ -58,13 +58,14 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * db.deleteFrom('person') // typescript compiler error!
  * ```
  */
-export interface ReadonlyKysely<DB>
-  extends
-    ReadonlyQueryCreator<DB>,
-    Pick<
-      Kysely<DB>,
-      'case' | 'destroy' | 'dynamic' | 'fn' | 'introspection' | 'isTransaction'
-    > {
+export declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
+  case: Kysely<DB>['case']
+  destroy: Kysely<DB>['destroy']
+  get dynamic(): Kysely<DB>['dynamic']
+  readonly fn: Kysely<DB>['fn']
+  get introspection(): Kysely<DB>['introspection']
+  get isTransaction(): Kysely<DB>['isTransaction']
+
   /**
    * Similar to {@link Kysely.connection} but read-only.
    */
@@ -194,36 +195,29 @@ export interface ReadonlyTransactionBuilder<DB> {
 /**
  * Similar to {@link Transaction} but read-only.
  */
-export interface ReadonlyTransaction<DB>
-  extends
-    ReadonlyQueryCreator<DB>,
-    Pick<
-      ReadonlyKysely<DB>,
-      | 'case'
-      | 'deleteFrom'
-      | 'dynamic'
-      | 'executeQuery'
-      | 'fn'
-      | 'getExecutor'
-      | 'insertInto'
-      | 'introspection'
-      | 'mergeInto'
-      | 'replaceInto'
-      | 'schema'
-      | 'selectFrom'
-      | 'selectNoFrom'
-      | 'updateTable'
-      | 'with'
-      | 'withRecursive'
-    >,
-    Pick<
-      Transaction<DB>,
-      | 'connection'
-      | 'destroy'
-      | 'isTransaction'
-      | 'startTransaction'
-      | 'transaction'
-    > {
+export declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  connection(): never
+
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  destroy: Transaction<DB>['destroy']
+
+  get isTransaction(): true
+
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  startTransaction(): never
+
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  transaction(): never
+
   /**
    * Similar to {@link Transaction.withoutPlugins} but read-only.
    */
