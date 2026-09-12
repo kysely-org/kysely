@@ -19,7 +19,6 @@ import type {
   AbortableQueryOptions,
 } from '../util/abort.js'
 import type { KyselyTypeError } from '../util/type-error.js'
-import type { DrainOuterGeneric } from '../util/type-utils.js'
 import type { ReadonlyCompiledQuery } from './readonly-compiled-query.js'
 import type { ReadonlyQueryResult } from './readonly-database-connection.js'
 import type { ReadonlyAccessMode } from './readonly-driver.js'
@@ -136,7 +135,7 @@ declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
    * @deprecated use {@link $extendTables} instead.
    */
   withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
-    DrainOuterGeneric<DB & T>
+    DB & T
   >
 
   /**
@@ -144,7 +143,7 @@ declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
    */
   $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ReadonlyKysely<DrainOuterGeneric<DB & T>>
+  >(): ReadonlyKysely<DB & T>
 
   /**
    * Similar to {@link Kysely.$omitTables} but read-only.
@@ -247,14 +246,30 @@ declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
    */
   withTables<
     T extends Record<string, Record<string, any>>,
-  >(): ReadonlyTransaction<DrainOuterGeneric<DB & T>>
+  >(): ReadonlyTransaction<DB & T>
+
+  withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
+    DB & T
+  >
+
+  withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyTransaction<DB & T>
 
   /**
    * Similar to {@link Transaction.$extendTables} but read-only.
    */
   $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ReadonlyTransaction<DrainOuterGeneric<DB & T>>
+  >(): ReadonlyTransaction<DB & T>
+
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyKysely<DB & T>
+
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyTransaction<DB & T>
 
   /**
    * Similar to {@link Transaction.$omitTables} but read-only.
@@ -263,9 +278,25 @@ declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
     DB extends object ? Omit<DB, T> : DB
   >
 
+  $omitTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  $omitTables<T extends keyof DB>(): ReadonlyTransaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
   /**
    * Similar to {@link Transaction.$pickTables} but read-only.
    */
+  $pickTables<T extends keyof DB>(): ReadonlyTransaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
+  $pickTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
   $pickTables<T extends keyof DB>(): ReadonlyTransaction<
     DB extends object ? Pick<DB, T> : DB
   >
@@ -354,14 +385,14 @@ declare class ReadonlyControlledTransaction<
    */
   withTables<
     T extends Record<string, Record<string, any>>,
-  >(): ReadonlyControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ReadonlyControlledTransaction<DB & T, S>
 
   /**
    * Similar to {@link ControlledTransaction.$extendTables} but read-only.
    */
   $extendTables<
     T extends Record<string, Record<string, any>>,
-  >(): ReadonlyControlledTransaction<DrainOuterGeneric<DB & T>, S>
+  >(): ReadonlyControlledTransaction<DB & T, S>
 
   /**
    * Similar to {@link ControlledTransaction.$omitTables} but read-only.

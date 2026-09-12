@@ -1,3 +1,7 @@
+import type {
+  ReadonlyKysely,
+  ReadonlyTransaction,
+} from '../../../dist/readonly/index.js'
 import { expectTypeOf, test } from 'vitest'
 import type {
   ControlledTransaction,
@@ -10,6 +14,7 @@ import {
   type DatabaseA,
   type DatabaseB,
   type Instances,
+  type ReadonlyInstances,
 } from './assignability.fixtures.js'
 
 test('accepts the same generic schema across classes', () => {
@@ -142,4 +147,24 @@ test('preserves any schemas through table helpers', () => {
   db.$pickTables<'a'>().selectFrom('other').selectAll()
   tx.$pickTables<'a'>().selectFrom('other').selectAll()
   controlled.$pickTables<'a'>().selectFrom('other').selectAll()
+})
+
+test('readonly: preserves generic table extensions when assigning to parent classes', () => {
+  function check<DB>(source: ReadonlyInstances<DB>) {
+    accept<ReadonlyKysely<DB & DatabaseB>>(
+      source.transaction.$extendTables<DatabaseB>(),
+    )
+    accept<ReadonlyKysely<DB & DatabaseB>>(
+      source.controlled.$extendTables<DatabaseB>(),
+    )
+    accept<ReadonlyTransaction<DB & DatabaseB>>(
+      source.controlled.$extendTables<DatabaseB>(),
+    )
+    accept<ReadonlyKysely<DB & DatabaseB>>(
+      source.transaction.withTables<DatabaseB>(),
+    )
+    accept<ReadonlyTransaction<DB & DatabaseB>>(
+      source.controlled.withTables<DatabaseB>(),
+    )
+  }
 })
