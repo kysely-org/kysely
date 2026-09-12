@@ -1,5 +1,7 @@
 import type { CTEBuilderCallback } from '../query-builder/cte-builder.js'
 import type { QueryCreator } from '../query-creator.js'
+import type { Selectable } from '../util/column-type.js'
+import type { IsAny } from '../util/type-utils.js'
 import type { KyselyTypeError } from '../util/type-error.js'
 import type {
   ReadonlyCommonTableExpression,
@@ -7,13 +9,21 @@ import type {
   ReadonlyRecursiveCommonTableExpression,
 } from './readonly-with-parser.js'
 
+// There is no ReadonlyQueryCreator constructor at runtime.
+export type { ReadonlyQueryCreator }
+
 /**
  * Similar to {@link QueryCreator} but read-only.
  */
-export interface ReadonlyQueryCreator<DB> extends Pick<
-  QueryCreator<DB>,
-  'selectFrom' | 'selectNoFrom'
-> {
+declare class ReadonlyQueryCreator<DB> {
+  // Preserve read guarantees without constraining insert or update types.
+  protected readonly '~DB': IsAny<DB> extends true
+    ? any
+    : { [T in keyof DB]: Selectable<DB[T]> }
+
+  selectFrom: QueryCreator<DB>['selectFrom']
+  selectNoFrom: QueryCreator<DB>['selectNoFrom']
+
   /**
    * @deprecated not allowed with a read-only Kysely instance.
    */
