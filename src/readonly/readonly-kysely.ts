@@ -25,6 +25,9 @@ import type { ReadonlyQueryResult } from './readonly-database-connection.js'
 import type { ReadonlyAccessMode } from './readonly-driver.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
+// These classes describe types only; there are no runtime constructors.
+export type { ReadonlyKysely, ReadonlyTransaction }
+
 /**
  * A helper type that allows you to expose a type-level read-only {@link Kysely} version
  * to your service's consumers.
@@ -58,7 +61,7 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * db.deleteFrom('person') // typescript compiler error!
  * ```
  */
-export declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
+declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
   case: Kysely<DB>['case']
   destroy: Kysely<DB>['destroy']
   get dynamic(): Kysely<DB>['dynamic']
@@ -195,7 +198,7 @@ export interface ReadonlyTransactionBuilder<DB> {
 /**
  * Similar to {@link Transaction} but read-only.
  */
-export declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
+declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
   /**
    * @deprecated calling the connection method for a Transaction is not supported
    */

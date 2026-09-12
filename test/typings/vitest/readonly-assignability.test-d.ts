@@ -10,6 +10,8 @@ import type {
   ReadonlyTransaction,
   ReadonlyControlledTransaction,
 } from '../../../dist/readonly/index.js'
+import * as readonlyKyselyModule from '../../../dist/readonly/readonly-kysely.js'
+import * as readonlyQueryCreatorModule from '../../../dist/readonly/readonly-query-creator.js'
 import {
   accept,
   type DatabaseA,
@@ -22,6 +24,15 @@ type Instances<DB> = {
   transaction: ReadonlyTransaction<DB>
   controlled: ReadonlyControlledTransaction<DB>
 }
+
+test('does not expose readonly constructors through their declaring modules', () => {
+  // @ts-expect-error ReadonlyQueryCreator has no runtime constructor
+  new readonlyQueryCreatorModule.ReadonlyQueryCreator<DatabaseA>()
+  // @ts-expect-error ReadonlyKysely has no runtime constructor
+  new readonlyKyselyModule.ReadonlyKysely<DatabaseA>()
+  // @ts-expect-error ReadonlyTransaction has no runtime constructor
+  new readonlyKyselyModule.ReadonlyTransaction<DatabaseA>()
+})
 
 test('accepts identical readonly schemas', () => {
   const source = null! as Instances<DatabaseA>

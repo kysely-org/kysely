@@ -9,10 +9,13 @@ import type {
   ReadonlyRecursiveCommonTableExpression,
 } from './readonly-with-parser.js'
 
+// This class describes a type only; there is no runtime constructor.
+export type { ReadonlyQueryCreator }
+
 /**
  * Similar to {@link QueryCreator} but read-only.
  */
-export declare class ReadonlyQueryCreator<DB> {
+declare class ReadonlyQueryCreator<DB> {
   // Preserve read guarantees without constraining insert or update types.
   protected readonly '~DB': IsAny<DB> extends true
     ? any
