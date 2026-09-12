@@ -6,8 +6,9 @@ import type { AbortableOperationOptions } from '../../util/abort.js'
  */
 export interface MysqlDialectConfig {
   /**
-   * A `mysql2` `Client` constructor, to be used for connecting to the database
-   * outside of the `pool` to avoid waiting for an idle connection.
+   * A `createConnection` function (from either `mysql2` or `mysql2/promise`),
+   * to be used for connecting to the database outside of the `pool` to avoid
+   * waiting for an idle connection.
    *
    * This is useful for cancelling queries on the database side.
    */
@@ -15,19 +16,24 @@ export interface MysqlDialectConfig {
   // a connection URI. Without it, mysql2's overloaded `createConnection` isn't
   // assignable to this type under TypeScript < 5.6.
   controlConnection?: {
-    (connectionUri: string): MysqlConnection
-    (config: object): MysqlConnection
+    (connectionUri: string): MysqlConnection | Promise<MysqlPromiseConnection>
+    (config: object): MysqlConnection | Promise<MysqlPromiseConnection>
   }
 
   /**
-   * A mysql2 Pool instance or a function that returns one.
+   * A mysql2 Pool instance (from either `mysql2` or `mysql2/promise`) or a
+   * function that returns one.
    *
    * If a function is provided, it's called once when the first query is executed.
    *
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
   pool:
-    MysqlPool | ((options?: AbortableOperationOptions) => Promise<MysqlPool>)
+    | MysqlPool
+    | MysqlPromisePool
+    | ((
+        options?: AbortableOperationOptions,
+      ) => Promise<MysqlPool | MysqlPromisePool>)
 
   /**
    * Called once for each created connection.
@@ -61,6 +67,18 @@ export interface MysqlPool {
   end(callback: (error: unknown) => void): void
 }
 
+/**
+ * This interface is the subset of `mysql2/promise`'s `Pool` class that
+ * kysely needs.
+ *
+ * It's a thin promise wrapper around the callback pool, which it exposes
+ * as its `pool` property. The dialect unwraps it and uses the callback
+ * pool directly.
+ */
+export interface MysqlPromisePool {
+  pool: MysqlPool
+}
+
 export interface MysqlConnection {
   config: object
   connect(callback?: (error: unknown) => void): void
@@ -74,6 +92,19 @@ export interface MysqlConnection {
     callback?: (error: unknown, result: MysqlQueryResult) => void,
   ): { stream: (options: MysqlStreamOptions) => MysqlStream }
   threadId: number
+}
+
+/**
+ * This interface is the subset of `mysql2/promise`'s `Connection` class that
+ * kysely needs.
+ *
+ * It's a thin promise wrapper around the callback connection. It's already
+ * connected when the `createConnection` promise resolves, so the dialect
+ * uses its promise-based API directly.
+ */
+export interface MysqlPromiseConnection {
+  destroy(): void
+  query(sql: string, values?: unknown[]): Promise<unknown>
 }
 
 export type MysqlConectionConstructor = new (opts?: object) => MysqlConnection

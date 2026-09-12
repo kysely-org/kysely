@@ -70,6 +70,13 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         .where('name', '!=', DEFAULT_MIGRATION_TABLE)
         .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
+
+    if (options.where) {
+      tablesQuery = tablesQuery.where(
+        options.where({ table: sql.ref<string>('name') }),
+      )
+    }
+
     return tablesQuery
   }
 
@@ -124,9 +131,6 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       }
 
       return {
-        name: name,
-        isView: type === 'view',
-        isForeign: false,
         columns: columns.map((col) => ({
           name: col.name,
           dataType: col.type,
@@ -135,6 +139,10 @@ export class SqliteIntrospector implements DatabaseIntrospector {
           hasDefaultValue: col.dflt_value != null,
           comment: undefined,
         })),
+        comment: undefined,
+        isForeign: false,
+        isView: type === 'view',
+        name,
       }
     })
   }

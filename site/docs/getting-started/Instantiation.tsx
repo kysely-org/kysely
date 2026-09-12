@@ -146,7 +146,7 @@ const dialect = new ${dialectClassName}({
   if (dialect === 'mysql') {
     const poolFactoryName = 'createPool'
 
-    return `import { ${poolFactoryName} } from '${driverNPMPackageName}' // do not use 'mysql2/promises'!
+    return `import { ${poolFactoryName} } from '${driverNPMPackageName}/promise' // or just '${driverNPMPackageName}' — both work
 import { Kysely, ${dialectClassName} } from 'kysely'
 
 const dialect = new ${dialectClassName}({

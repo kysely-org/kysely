@@ -1,6 +1,7 @@
 import type {
   DatabaseIntrospector,
   DatabaseMetadataOptions,
+  DatabaseSchemaMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
@@ -19,14 +20,19 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getSchemas(): Promise<SchemaMetadata[]> {
-    let rawSchemas = await this.#db
+  async getSchemas(
+    options: DatabaseSchemaMetadataOptions = {},
+  ): Promise<SchemaMetadata[]> {
+    let query = this.#db
       .selectFrom('pg_catalog.pg_namespace')
-      .select('nspname')
-      .$castTo<RawSchemaMetadata>()
-      .execute()
+      .select('nspname as name')
+      .$narrowType<SchemaMetadata>()
 
-    return rawSchemas.map((it) => ({ name: it.nspname }))
+    if (options.where) {
+      query = query.where(options.where({ schema: sql.ref<string>('nspname') }))
+    }
+
+    return await query.execute()
   }
 
   async getTables(
@@ -56,6 +62,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
+        sql<string | null>`obj_description(c.oid, 'pg_class')`.as(
+          'table_description',
+        ),
         sql<string | null>`col_description(a.attrelid, a.attnum)`.as(
           'column_description',
         ),
@@ -68,6 +77,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('c.relkind', 'in', [
         'r' /*regular table*/,
         'v' /*view*/,
+        'm' /*materialized view*/,
         'p' /*partitioned table*/,
         'f' /*foreign table*/,
       ])
@@ -89,6 +99,15 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       query = query
         .where('c.relname', '!=', DEFAULT_MIGRATION_TABLE)
         .where('c.relname', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+    }
+
+    if (options.where) {
+      query = query.where(
+        options.where({
+          schema: sql.ref<string>('ns.nspname'),
+          table: sql.ref<string>('c.relname'),
+        }),
+      )
     }
 
     const rawColumns = await query.execute()
@@ -113,8 +132,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           columns: [],
+          comment: column.table_description ?? undefined,
           isForeign: column.table_type === 'f',
-          isView: column.table_type === 'v',
+          isView: column.table_type === 'v' || column.table_type === 'm',
           name: column.table,
           schema: column.schema,
         })
@@ -139,10 +159,6 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 }
 
-interface RawSchemaMetadata {
-  nspname: string
-}
-
 interface RawColumnMetadata {
   column: string
   table: string
@@ -154,4 +170,5 @@ interface RawColumnMetadata {
   type_schema: string
   auto_incrementing: string | null
   column_description: string | null
+  table_description: string | null
 }

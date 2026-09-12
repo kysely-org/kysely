@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "exactOptionalPropertyTypes": true,
-    "target": "es2022"
+    "target": "es2022",
+    "types": ["node"]
   }
 }

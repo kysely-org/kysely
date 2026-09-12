@@ -54,7 +54,7 @@ For example here's how you'd map `tinyint(1)` to a boolean:
 
 ```ts
 import { Kysely, MysqlDialect } from 'kysely'
-import { createPool } from 'mysql2'
+import { createPool } from 'mysql2/promise' // or just 'mysql2' — both work
 
 export const db = new Kysely<Database>({
   dialect: new MysqlDialect({
