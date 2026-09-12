@@ -49,14 +49,11 @@ test('accepts identical readonly schemas', () => {
 test('accepts readonly schemas with extra tables', () => {
   const source = null! as Instances<DatabaseAB>
   accept<ReadonlyKysely<DatabaseA>>(source.db)
-  // TODO: Accept compatible schemas when assigning to readonly parents.
-  // The table-helper return types still block these assignments. Investigate
-  // removing DrainOuterGeneric from table extensions and adding parent-return
-  // overloads, checking instantiation costs before enabling these cases.
-  // accept<ReadonlyKysely<DatabaseA>>(source.transaction)
+  accept<ReadonlyKysely<DatabaseA>>(source.transaction)
   accept<ReadonlyTransaction<DatabaseA>>(source.transaction)
+  // TODO: Controlled transaction table helpers still block this assignment.
   // accept<ReadonlyKysely<DatabaseA>>(source.controlled)
-  // accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
+  accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
   accept<ReadonlyControlledTransaction<DatabaseA>>(source.controlled)
 })
 
@@ -121,14 +118,11 @@ test('rejects readonly schemas with incompatible column types', () => {
 test('accepts readonly column widening', () => {
   const source = null! as Instances<DatabaseA>
   accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.db)
-  // TODO: Accept compatible schemas when assigning to readonly parents.
-  // The table-helper return types still block these assignments. Investigate
-  // removing DrainOuterGeneric from table extensions and adding parent-return
-  // overloads, checking instantiation costs before enabling these cases.
-  // accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.transaction)
+  accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.transaction)
   accept<ReadonlyTransaction<{ a: { id: number | null } }>>(source.transaction)
+  // TODO: Controlled transaction table helpers still block this assignment.
   // accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.controlled)
-  // accept<ReadonlyTransaction<{ a: { id: number | null } }>>(source.controlled)
+  accept<ReadonlyTransaction<{ a: { id: number | null } }>>(source.controlled)
   accept<ReadonlyControlledTransaction<{ a: { id: number | null } }>>(
     source.controlled,
   )
@@ -140,14 +134,11 @@ test('accepts readonly schemas with identical reads and different write types', 
   const source = null! as Instances<Source>
 
   accept<ReadonlyKysely<Target>>(source.db)
-  // TODO: Accept compatible schemas when assigning to readonly parents.
-  // The table-helper return types still block these assignments. Investigate
-  // removing DrainOuterGeneric from table extensions and adding parent-return
-  // overloads, checking instantiation costs before enabling these cases.
-  // accept<ReadonlyKysely<Target>>(source.transaction)
+  accept<ReadonlyKysely<Target>>(source.transaction)
   accept<ReadonlyTransaction<Target>>(source.transaction)
+  // TODO: Controlled transaction table helpers still block this assignment.
   // accept<ReadonlyKysely<Target>>(source.controlled)
-  // accept<ReadonlyTransaction<Target>>(source.controlled)
+  accept<ReadonlyTransaction<Target>>(source.controlled)
   accept<ReadonlyControlledTransaction<Target>>(source.controlled)
 })
 
@@ -215,9 +206,9 @@ test('accepts any as an explicit readonly schema escape hatch', () => {
   const concrete = null! as Instances<DatabaseA>
 
   accept<ReadonlyKysely<DatabaseA>>(source.db)
-  // TODO: Table-helper return types also block these parent-class assignments.
-  // accept<ReadonlyKysely<DatabaseA>>(source.transaction)
+  accept<ReadonlyKysely<DatabaseA>>(source.transaction)
   accept<ReadonlyTransaction<DatabaseA>>(source.transaction)
+  // TODO: Controlled transaction table helpers still block this assignment.
   // accept<ReadonlyKysely<DatabaseA>>(source.controlled)
   // accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
   accept<ReadonlyControlledTransaction<DatabaseA>>(source.controlled)

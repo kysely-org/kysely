@@ -199,3 +199,37 @@ test('ControlledTransaction retains schemas in uninstantiated ReturnType', () =>
   expectTypeOf<SchemaOf<Picked>>().toEqualTypeOf<{ a: Row; b: Row }>()
   expectTypeOf<SchemaOf<Omitted>>().toEqualTypeOf<{}>()
 })
+
+test('ReadonlyKysely retains schemas in uninstantiated ReturnType', () => {
+  const source = null! as ReadonlyKysely<DatabaseAB>
+  type Picked = ReturnType<typeof source.$pickTables>
+  type Omitted = ReturnType<typeof source.$omitTables>
+  expectTypeOf<SchemaOf<Picked>>().toEqualTypeOf<{ a: Row; b: Row }>()
+  expectTypeOf<SchemaOf<Omitted>>().toEqualTypeOf<{}>()
+})
+
+test('ReadonlyTransaction retains schemas in uninstantiated ReturnType', () => {
+  const source = null! as ReadonlyTransaction<DatabaseAB>
+  type Picked = ReturnType<typeof source.$pickTables>
+  type Omitted = ReturnType<typeof source.$omitTables>
+  expectTypeOf<SchemaOf<Picked>>().toEqualTypeOf<{ a: Row; b: Row }>()
+  expectTypeOf<SchemaOf<Omitted>>().toEqualTypeOf<{}>()
+})
+
+test('ReadonlyControlledTransaction retains schemas in uninstantiated ReturnType', () => {
+  const source = null! as ReadonlyControlledTransaction<DatabaseAB>
+  type Picked = ReturnType<typeof source.$pickTables>
+  type Omitted = ReturnType<typeof source.$omitTables>
+  expectTypeOf<SchemaOf<Picked>>().toEqualTypeOf<{ a: Row; b: Row }>()
+  expectTypeOf<SchemaOf<Omitted>>().toEqualTypeOf<{}>()
+})
+
+test('readonly transaction table helper calls retain transaction results', () => {
+  const source = null! as ReadonlyTransaction<DatabaseAB>
+  expectTypeOf(
+    source.$extendTables<Extra>().isTransaction,
+  ).toEqualTypeOf<true>()
+  expectTypeOf(source.withTables<Extra>().isTransaction).toEqualTypeOf<true>()
+  expectTypeOf(source.$pickTables<'a'>().isTransaction).toEqualTypeOf<true>()
+  expectTypeOf(source.$omitTables<'b'>().isTransaction).toEqualTypeOf<true>()
+})
