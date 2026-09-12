@@ -233,3 +233,45 @@ test('readonly transaction table helper calls retain transaction results', () =>
   expectTypeOf(source.$pickTables<'a'>().isTransaction).toEqualTypeOf<true>()
   expectTypeOf(source.$omitTables<'b'>().isTransaction).toEqualTypeOf<true>()
 })
+
+test('readonly controlled table helper calls retain controlled operations', () => {
+  const source = null! as ReadonlyControlledTransaction<
+    DatabaseAB,
+    ['one', 'two']
+  >
+  expectTypeOf(source.$extendTables<Extra>().commit().execute()).toEqualTypeOf<
+    Promise<void>
+  >()
+  expectTypeOf(source.withTables<Extra>().commit().execute()).toEqualTypeOf<
+    Promise<void>
+  >()
+  expectTypeOf(source.$pickTables<'a'>().commit().execute()).toEqualTypeOf<
+    Promise<void>
+  >()
+  expectTypeOf(source.$omitTables<'b'>().commit().execute()).toEqualTypeOf<
+    Promise<void>
+  >()
+})
+
+test('readonly controlled table helper ReturnType retains savepoints', () => {
+  const source = null! as ReadonlyControlledTransaction<
+    DatabaseAB,
+    ['one', 'two']
+  >
+  type ExtendedResult = ReturnType<typeof source.$extendTables<Extra>>
+  type WithTablesResult = ReturnType<typeof source.withTables<Extra>>
+  type PickedResult = ReturnType<typeof source.$pickTables<'a'>>
+  type OmittedResult = ReturnType<typeof source.$omitTables<'b'>>
+  expectTypeOf<
+    Parameters<ExtendedResult['rollbackToSavepoint']>[0]
+  >().toEqualTypeOf<'one' | 'two'>()
+  expectTypeOf<
+    Parameters<WithTablesResult['rollbackToSavepoint']>[0]
+  >().toEqualTypeOf<'one' | 'two'>()
+  expectTypeOf<
+    Parameters<PickedResult['rollbackToSavepoint']>[0]
+  >().toEqualTypeOf<'one' | 'two'>()
+  expectTypeOf<
+    Parameters<OmittedResult['rollbackToSavepoint']>[0]
+  >().toEqualTypeOf<'one' | 'two'>()
+})

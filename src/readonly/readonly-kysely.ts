@@ -387,9 +387,25 @@ declare class ReadonlyControlledTransaction<
     T extends Record<string, Record<string, any>>,
   >(): ReadonlyControlledTransaction<DB & T, S>
 
+  withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
+    DB & T
+  >
+
+  withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyControlledTransaction<DB & T, S>
+
   /**
    * Similar to {@link ControlledTransaction.$extendTables} but read-only.
    */
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyControlledTransaction<DB & T, S>
+
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ReadonlyKysely<DB & T>
+
   $extendTables<
     T extends Record<string, Record<string, any>>,
   >(): ReadonlyControlledTransaction<DB & T, S>
@@ -402,9 +418,31 @@ declare class ReadonlyControlledTransaction<
     S
   >
 
+  $omitTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  $omitTables<T extends keyof DB>(): ReadonlyTransaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  $omitTables<T extends keyof DB>(): ReadonlyControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
+
   /**
    * Similar to {@link ControlledTransaction.$pickTables} but read-only.
    */
+  $pickTables<T extends keyof DB>(): ReadonlyControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  >
+
+  $pickTables<T extends keyof DB>(): ReadonlyKysely<
+    DB extends object ? Pick<DB, T> : DB
+  >
+
   $pickTables<T extends keyof DB>(): ReadonlyControlledTransaction<
     DB extends object ? Pick<DB, T> : DB,
     S

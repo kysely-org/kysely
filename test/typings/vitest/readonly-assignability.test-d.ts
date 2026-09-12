@@ -51,8 +51,7 @@ test('accepts readonly schemas with extra tables', () => {
   accept<ReadonlyKysely<DatabaseA>>(source.db)
   accept<ReadonlyKysely<DatabaseA>>(source.transaction)
   accept<ReadonlyTransaction<DatabaseA>>(source.transaction)
-  // TODO: Controlled transaction table helpers still block this assignment.
-  // accept<ReadonlyKysely<DatabaseA>>(source.controlled)
+  accept<ReadonlyKysely<DatabaseA>>(source.controlled)
   accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
   accept<ReadonlyControlledTransaction<DatabaseA>>(source.controlled)
 })
@@ -120,8 +119,7 @@ test('accepts readonly column widening', () => {
   accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.db)
   accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.transaction)
   accept<ReadonlyTransaction<{ a: { id: number | null } }>>(source.transaction)
-  // TODO: Controlled transaction table helpers still block this assignment.
-  // accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.controlled)
+  accept<ReadonlyKysely<{ a: { id: number | null } }>>(source.controlled)
   accept<ReadonlyTransaction<{ a: { id: number | null } }>>(source.controlled)
   accept<ReadonlyControlledTransaction<{ a: { id: number | null } }>>(
     source.controlled,
@@ -136,8 +134,7 @@ test('accepts readonly schemas with identical reads and different write types', 
   accept<ReadonlyKysely<Target>>(source.db)
   accept<ReadonlyKysely<Target>>(source.transaction)
   accept<ReadonlyTransaction<Target>>(source.transaction)
-  // TODO: Controlled transaction table helpers still block this assignment.
-  // accept<ReadonlyKysely<Target>>(source.controlled)
+  accept<ReadonlyKysely<Target>>(source.controlled)
   accept<ReadonlyTransaction<Target>>(source.controlled)
   accept<ReadonlyControlledTransaction<Target>>(source.controlled)
 })
@@ -208,9 +205,8 @@ test('accepts any as an explicit readonly schema escape hatch', () => {
   accept<ReadonlyKysely<DatabaseA>>(source.db)
   accept<ReadonlyKysely<DatabaseA>>(source.transaction)
   accept<ReadonlyTransaction<DatabaseA>>(source.transaction)
-  // TODO: Controlled transaction table helpers still block this assignment.
-  // accept<ReadonlyKysely<DatabaseA>>(source.controlled)
-  // accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
+  accept<ReadonlyKysely<DatabaseA>>(source.controlled)
+  accept<ReadonlyTransaction<DatabaseA>>(source.controlled)
   accept<ReadonlyControlledTransaction<DatabaseA>>(source.controlled)
 
   accept<ReadonlyKysely<any>>(concrete.db)
