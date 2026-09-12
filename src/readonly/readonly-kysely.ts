@@ -25,6 +25,13 @@ import type { ReadonlyQueryResult } from './readonly-database-connection.js'
 import type { ReadonlyAccessMode } from './readonly-driver.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
+// There are no runtime constructors for these readonly types.
+export type {
+  ReadonlyKysely,
+  ReadonlyTransaction,
+  ReadonlyControlledTransaction,
+}
+
 /**
  * A helper type that allows you to expose a type-level read-only {@link Kysely} version
  * to your service's consumers.
@@ -58,13 +65,14 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * db.deleteFrom('person') // typescript compiler error!
  * ```
  */
-export interface ReadonlyKysely<DB>
-  extends
-    ReadonlyQueryCreator<DB>,
-    Pick<
-      Kysely<DB>,
-      'case' | 'destroy' | 'dynamic' | 'fn' | 'introspection' | 'isTransaction'
-    > {
+declare class ReadonlyKysely<DB> extends ReadonlyQueryCreator<DB> {
+  case: Kysely<DB>['case']
+  destroy: Kysely<DB>['destroy']
+  get dynamic(): Kysely<DB>['dynamic']
+  readonly fn: Kysely<DB>['fn']
+  get introspection(): Kysely<DB>['introspection']
+  get isTransaction(): Kysely<DB>['isTransaction']
+
   /**
    * Similar to {@link Kysely.connection} but read-only.
    */
@@ -194,35 +202,29 @@ export interface ReadonlyTransactionBuilder<DB> {
 /**
  * Similar to {@link Transaction} but read-only.
  */
-export interface ReadonlyTransaction<DB>
-  extends
-    Pick<
-      ReadonlyKysely<DB>,
-      | 'case'
-      | 'deleteFrom'
-      | 'dynamic'
-      | 'executeQuery'
-      | 'fn'
-      | 'getExecutor'
-      | 'insertInto'
-      | 'introspection'
-      | 'mergeInto'
-      | 'replaceInto'
-      | 'schema'
-      | 'selectFrom'
-      | 'selectNoFrom'
-      | 'updateTable'
-      | 'with'
-      | 'withRecursive'
-    >,
-    Pick<
-      Transaction<DB>,
-      | 'connection'
-      | 'destroy'
-      | 'isTransaction'
-      | 'startTransaction'
-      | 'transaction'
-    > {
+declare class ReadonlyTransaction<DB> extends ReadonlyKysely<DB> {
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  connection(): never
+
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  destroy: Transaction<DB>['destroy']
+
+  get isTransaction(): true
+
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  startTransaction(): never
+
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  transaction(): never
+
   /**
    * Similar to {@link Transaction.withoutPlugins} but read-only.
    */
@@ -296,13 +298,15 @@ export interface ReadonlyControlledTransactionBuilder<DB> {
 /**
  * Similar to {@link ControlledTransaction} but read-only.
  */
-export interface ReadonlyControlledTransaction<DB, S extends string[] = []>
-  extends
-    ReadonlyTransaction<DB>,
-    Pick<
-      ControlledTransaction<DB, S>,
-      'commit' | 'isCommitted' | 'isRolledBack' | 'rollback'
-    > {
+declare class ReadonlyControlledTransaction<
+  DB,
+  S extends string[] = [],
+> extends ReadonlyTransaction<DB> {
+  commit: ControlledTransaction<DB, S>['commit']
+  get isCommitted(): ControlledTransaction<DB, S>['isCommitted']
+  get isRolledBack(): ControlledTransaction<DB, S>['isRolledBack']
+  rollback: ControlledTransaction<DB, S>['rollback']
+
   /**
    * Similar to {@link ControlledTransaction.releaseSavepoint} but read-only.
    */
