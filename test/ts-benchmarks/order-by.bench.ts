@@ -33,7 +33,7 @@ bench('kysely..orderBy(column)', () =>
 bench('kysely..orderBy(~column)', () =>
   // @ts-expect-error
   query.orderBy('col_164b7896ec8e770207febe0812c5f052_'),
-).types([201, 'instantiations'])
+).types([202, 'instantiations'])
 
 bench('kysely..orderBy(O)', () => query.orderBy('e862ca')).types([
   77,
@@ -47,7 +47,7 @@ bench('kysely..orderBy(column, asc)', () =>
 bench('kysely..orderBy(~column, asc)', () =>
   // @ts-expect-error
   query.orderBy('col_164b7896ec8e770207febe0812c5f052_', 'asc'),
-).types([125, 'instantiations'])
+).types([126, 'instantiations'])
 
 bench('kysely..orderBy(column, ~asc)', () =>
   // @ts-expect-error
@@ -66,7 +66,7 @@ bench('kysely..orderBy(column, ob)', async () =>
 
 bench('kysely..orderBy(sql)', () =>
   query.orderBy(sql`col_164b7896ec8e770207febe0812c5f052 asc nulls first`),
-).types([106, 'instantiations'])
+).types([107, 'instantiations'])
 
 bench('kysely..orderBy(select)', () =>
   query.orderBy(
@@ -88,15 +88,15 @@ bench('kysely..orderBy(eb => select)', () =>
       )
       .limit(1),
   ),
-).types([713, 'instantiations'])
+).types([714, 'instantiations'])
 
 bench('deprecated - kysely..orderBy(column desc)', () =>
   query.orderBy('col_164b7896ec8e770207febe0812c5f052 desc'),
-).types([182, 'instantiations'])
+).types([183, 'instantiations'])
 
 bench('deprecated - kysely..orderBy([column])', () =>
   query.orderBy(['col_164b7896ec8e770207febe0812c5f052']),
-).types([164, 'instantiations'])
+).types([165, 'instantiations'])
 
 bench('kysely..orderBy(column).orderBy(column)', () =>
   query
@@ -109,7 +109,7 @@ bench('deprecated - kysely..orderBy([column, column])', () =>
     'col_164b7896ec8e770207febe0812c5f052',
     'col_6f7a0a5f582c69dd4c6be0a819e862cb',
   ]),
-).types([164, 'instantiations'])
+).types([165, 'instantiations'])
 
 bench('kysely..orderBy(column).orderBy(column, desc)', () =>
   query
@@ -122,7 +122,7 @@ bench('deprecated - kysely..orderBy([column, column desc])', () =>
     'col_6f7a0a5f582c69dd4c6be0a819e862cb',
     'col_164b7896ec8e770207febe0812c5f052 desc',
   ]),
-).types([164, 'instantiations'])
+).types([165, 'instantiations'])
 
 bench('kysely..orderBy(column).orderBy(column).orderBy(column)', () =>
   query
@@ -137,7 +137,7 @@ bench('deprecated - kysely..orderBy([column, column, column])', () =>
     'col_6f7a0a5f582c69dd4c6be0a819e862cb',
     'col_af4e225b70a9bbd83cc3bc0e7ef24cfa',
   ]),
-).types([164, 'instantiations'])
+).types([165, 'instantiations'])
 
 //
 
@@ -179,7 +179,7 @@ bench('kyselyAny..orderBy(column, ob)', async () =>
 
 bench('kyselyAny..orderBy(sql)', () =>
   queryAny.orderBy(sql`col_164b7896ec8e770207febe0812c5f052 asc nulls first`),
-).types([106, 'instantiations'])
+).types([107, 'instantiations'])
 
 bench('kyselyAny..orderBy(select)', () =>
   queryAny.orderBy(
@@ -199,4 +199,4 @@ bench('kyselyAny..orderBy(eb => select)', () =>
       .select('col_164b7896ec8e770207febe0812c5f052')
       .limit(1),
   ),
-).types([395, 'instantiations'])
+).types([396, 'instantiations'])

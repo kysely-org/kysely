@@ -14,8 +14,8 @@ bench.baseline(() => {})
 
 bench('ReadonlyKysely passed to a function requiring fewer tables', () => {
   return acceptsPerson(db)
-}).types([73921, 'instantiations'])
+}).types([49916, 'instantiations'])
 
 bench('ReadonlyKysely passed to a function accepting nullable reads', () => {
   return acceptsNullableName(db)
-}).types([73921, 'instantiations'])
+}).types([49991, 'instantiations'])

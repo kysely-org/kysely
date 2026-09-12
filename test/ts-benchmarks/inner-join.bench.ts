@@ -66,7 +66,7 @@ bench('kysely..innerJoin(table, cb)', () =>
       'table_000a8a0cb7f265a624c851d3e7f8b946.col_454ff479a3b5a9ef082d9be9ac02a6f4',
     ),
   ),
-).types([2246, 'instantiations'])
+).types([2314, 'instantiations'])
 
 bench('kysely..innerJoin(table, cb with ~column)', () =>
   query.innerJoin('table_000a8a0cb7f265a624c851d3e7f8b946', (join) =>
@@ -77,7 +77,7 @@ bench('kysely..innerJoin(table, cb with ~column)', () =>
       'table_000a8a0cb7f265a624c851d3e7f8b946.col_454ff479a3b5a9ef082d9be9ac02a6f4',
     ),
   ),
-).types([2302, 'instantiations'])
+).types([2371, 'instantiations'])
 
 //
 
@@ -129,7 +129,7 @@ bench('kyselyAny..innerJoin(table, cb)', () =>
       'table_000a8a0cb7f265a624c851d3e7f8b946.col_454ff479a3b5a9ef082d9be9ac02a6f4',
     ),
   ),
-).types([1499, 'instantiations'])
+).types([1567, 'instantiations'])
 
 bench('kyselyAny..innerJoin(table, cb with ~column)', () =>
   queryAny.innerJoin('table_000a8a0cb7f265a624c851d3e7f8b946', (join) =>
@@ -139,4 +139,4 @@ bench('kyselyAny..innerJoin(table, cb with ~column)', () =>
       'table_000a8a0cb7f265a624c851d3e7f8b946.col_454ff479a3b5a9ef082d9be9ac02a6f4',
     ),
   ),
-).types([1499, 'instantiations'])
+).types([1567, 'instantiations'])
