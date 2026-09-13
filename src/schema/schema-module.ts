@@ -33,6 +33,8 @@ import { RefreshMaterializedViewBuilder } from './refresh-materialized-view-buil
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import { AlterTypeBuilder } from './alter-type-builder.js'
 import { AlterTypeNode } from '../operation-node/alter-type-node.js'
+import type { QueryCreator } from '../query-creator.js'
+
 /**
  * Provides methods for building database schema.
  */
@@ -369,7 +371,7 @@ export class SchemaModule {
   }
 
   /**
-   * See {@link QueryCreator.withSchema}
+   * See {@link QueryCreator.prototype.withSchema}
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
