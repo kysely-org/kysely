@@ -532,7 +532,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'postgres' && variant !== 'pglite') {
+    if (variant === 'postgres' || variant === 'sqlite') {
       it('should update multiple rows and stream returned results', async () => {
         const stream = ctx.db
           .updateTable('person')
@@ -547,13 +547,53 @@ for (const dialect of DIALECTS) {
         }
 
         expect(people).to.have.length(DEFAULT_DATA_SET.length)
-        expect(people).to.eql(
+        expect(people).to.have.deep.members(
           DEFAULT_DATA_SET.map(({ first_name, gender }) => ({
             first_name,
             last_name: 'Nobody',
             gender,
           })),
         )
+      })
+    }
+
+    if (variant === 'sqlite') {
+      it('should apply all writes when streaming stops early', async () => {
+        const rows: { first_name: string | null }[] = []
+        const stream = ctx.db
+          .updateTable('person')
+          .set('last_name', 'Updated')
+          .returning('first_name')
+          .stream()
+
+        for await (const row of stream) {
+          rows.push(row)
+          break
+        }
+
+        expect(rows).to.have.length(1)
+        expect(await stream.next()).to.eql({ done: true, value: undefined })
+        expect(
+          await ctx.db.selectFrom('person').select('last_name').execute(),
+        ).to.eql(DEFAULT_DATA_SET.map(() => ({ last_name: 'Updated' })))
+      })
+
+      it('should reject streaming writes without returning rows before executing them', async () => {
+        const stream = ctx.db
+          .updateTable('person')
+          .set('last_name', 'Updated')
+          .stream()
+
+        await expect(stream.next()).to.be.rejectedWith(
+          'Sqlite driver only supports streaming of queries that return rows',
+        )
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('id')
+            .where('last_name', '=', 'Updated')
+            .execute(),
+        ).to.eql([])
       })
     }
 

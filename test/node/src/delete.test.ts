@@ -901,7 +901,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'postgres' && variant !== 'pglite') {
+    if (variant === 'postgres' || variant === 'sqlite') {
       it('should delete all rows and stream returned results', async () => {
         const stream = ctx.db
           .deleteFrom('person')
@@ -915,7 +915,7 @@ for (const dialect of DIALECTS) {
         }
 
         expect(people).to.have.length(DEFAULT_DATA_SET.length)
-        expect(people).to.eql(
+        expect(people).to.have.deep.members(
           DEFAULT_DATA_SET.map(({ first_name, last_name, gender }) => ({
             first_name,
             last_name,
