@@ -3,7 +3,6 @@ import type {
   QueryResult,
 } from '../../driver/database-connection.js'
 import type { Driver } from '../../driver/driver.js'
-import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
@@ -129,19 +128,20 @@ class SqliteConnection implements DatabaseConnection {
 
   async *streamQuery<R>(
     compiledQuery: CompiledQuery,
-    _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
-    const { sql, parameters, query } = compiledQuery
+    const { sql, parameters } = compiledQuery
 
-    const stmt = this.#db.prepare(sql)
+    const statement = this.#db.prepare(sql)
 
-    if (!SelectQueryNode.is(query)) {
-      throw new Error('Sqlite driver only supports streaming of select queries')
+    if (!statement.reader) {
+      throw new Error(
+        'Sqlite driver only supports streaming of queries that return rows',
+      )
     }
 
-    const iter = stmt.iterate(parameters)
+    const rows = statement.iterate(parameters)
 
-    for (const row of iter) {
+    for (const row of rows) {
       yield {
         rows: [row as R],
       }
