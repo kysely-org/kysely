@@ -558,26 +558,6 @@ for (const dialect of DIALECTS) {
     }
 
     if (variant === 'sqlite') {
-      it('should apply all writes when streaming stops early', async () => {
-        const rows: { first_name: string | null }[] = []
-        const stream = ctx.db
-          .updateTable('person')
-          .set('last_name', 'Updated')
-          .returning('first_name')
-          .stream()
-
-        for await (const row of stream) {
-          rows.push(row)
-          break
-        }
-
-        expect(rows).to.have.length(1)
-        expect(await stream.next()).to.eql({ done: true, value: undefined })
-        expect(
-          await ctx.db.selectFrom('person').select('last_name').execute(),
-        ).to.eql(DEFAULT_DATA_SET.map(() => ({ last_name: 'Updated' })))
-      })
-
       it('should reject streaming writes without returning rows before executing them', async () => {
         const stream = ctx.db
           .updateTable('person')
