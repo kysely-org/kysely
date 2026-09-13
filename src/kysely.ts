@@ -642,7 +642,109 @@ export class Kysely<DB>
   }
 }
 
-export class Transaction<DB> extends Kysely<DB> {
+/**
+ * A {@link Kysely} instance that runs all its queries inside a transaction.
+ *
+ * You get one from {@link Kysely.transaction} or {@link Kysely.startTransaction}.
+ *
+ * A `Transaction<DB>` can be used anywhere a `Kysely<DB>` is expected. The
+ * opposite is not true - a plain `Kysely` instance is not a transaction.
+ *
+ * This is an intersection of {@link TransactionMethods} and {@link Kysely}
+ * rather than a subclass of `Kysely` for type check performance reasons.
+ *
+ * `Transaction` is still a class at runtime, so `db instanceof Transaction`
+ * works.
+ */
+export type Transaction<DB> = TransactionMethods<DB> & Kysely<DB>
+
+/**
+ * The methods a {@link Transaction} has on top of the {@link Kysely} ones.
+ */
+export interface TransactionMethods<DB> {
+  /**
+   * Always `true` for a transaction.
+   *
+   * The type is `true` instead of `boolean` to make `Kysely<DB>` unassignable
+   * to `Transaction<DB>` while allowing assignment the other way around.
+   */
+  readonly isTransaction: true
+
+  /**
+   * @deprecated calling the transaction method for a Transaction is not supported
+   */
+  transaction(): never
+
+  /**
+   * @deprecated calling the controlled transaction method for a Transaction is not supported
+   */
+  startTransaction(): never
+
+  /**
+   * @deprecated calling the connection method for a Transaction is not supported
+   */
+  connection(): never
+
+  /**
+   * @deprecated calling the destroy method for a Transaction is not supported
+   */
+  destroy(): never
+
+  /**
+   * Similar to {@link Kysely.withPlugin} but returns the transaction.
+   */
+  withPlugin(plugin: KyselyPlugin): Transaction<DB>
+
+  /**
+   * Similar to {@link Kysely.withoutPlugins} but returns the transaction.
+   */
+  withoutPlugins(): Transaction<DB>
+
+  /**
+   * Similar to {@link Kysely.withSchema} but returns the transaction.
+   */
+  withSchema(schema: string): Transaction<DB>
+
+  /**
+   * Similar to {@link Kysely.withTables} but returns the transaction.
+   *
+   * @deprecated use {@link $extendTables} instead.
+   */
+  withTables<T extends Record<string, Record<string, any>>>(): Transaction<
+    DrainOuterGeneric<DB & T>
+  >
+
+  /**
+   * Similar to {@link Kysely.$extendTables} but returns the transaction.
+   */
+  $extendTables<T extends Record<string, Record<string, any>>>(): Transaction<
+    DrainOuterGeneric<DB & T>
+  >
+
+  /**
+   * Similar to {@link Kysely.$omitTables} but returns the transaction.
+   */
+  $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
+
+  /**
+   * Similar to {@link Kysely.$pickTables} but returns the transaction.
+   */
+  $pickTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Pick<DB, T> : DB
+  >
+}
+
+/**
+ * The static side of the {@link Transaction} class.
+ */
+export interface TransactionConstructor {
+  new <DB>(props: KyselyProps): Transaction<DB>
+  readonly prototype: Transaction<any>
+}
+
+class TransactionImpl<DB> extends Kysely<DB> implements TransactionMethods<DB> {
   readonly #props: KyselyProps
 
   constructor(props: KyselyProps) {
@@ -650,74 +752,50 @@ export class Transaction<DB> extends Kysely<DB> {
     this.#props = props
   }
 
-  // The return type is `true` instead of `boolean` to make Kysely<DB>
-  // unassignable to Transaction<DB> while allowing assignment the
-  // other way around.
   override get isTransaction(): true {
     return true
   }
 
-  /**
-   * @deprecated calling the transaction method for a Transaction is not supported
-   */
   override transaction(): never {
     throw new Error(
       'calling the transaction method for a Transaction is not supported',
     )
   }
 
-  /**
-   * @deprecated calling the controlled transaction method for a Transaction is not supported
-   */
   override startTransaction(): never {
     throw new Error(
       'calling the controlled transaction method for a Transaction is not supported',
     )
   }
 
-  /**
-   * @deprecated calling the connection method for a Transaction is not supported
-   */
   override connection(): never {
     throw new Error(
       'calling the connection method for a Transaction is not supported',
     )
   }
 
-  /**
-   * @deprecated calling the destroy method for a Transaction is not supported
-   */
   override destroy(): never {
     throw new Error(
       'calling the destroy method for a Transaction is not supported',
     )
   }
 
-  /**
-   * Similar to {@link Kysely.withPlugin} but returns the transaction.
-   */
   override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
-    return new Transaction({
+    return new TransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),
     })
   }
 
-  /**
-   * Similar to {@link Kysely.withoutPlugins} but returns the transaction.
-   */
   override withoutPlugins(): Transaction<DB> {
-    return new Transaction({
+    return new TransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),
     })
   }
 
-  /**
-   * Similar to {@link Kysely.withSchema} but returns the transaction.
-   */
   override withSchema(schema: string): Transaction<DB> {
-    return new Transaction({
+    return new TransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
         new WithSchemaPlugin(schema),
@@ -725,44 +803,32 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
-  /**
-   * Similar to {@link Kysely.withTables} but returns the transaction.
-   *
-   * @deprecated use {@link $extendTables} instead.
-   */
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
-    return new Transaction({ ...this.#props })
+    return new TransactionImpl({ ...this.#props })
   }
 
-  /**
-   * Similar to {@link Kysely.$extendTables} but returns the transaction.
-   */
   override $extendTables<
     T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
-    return new Transaction({ ...this.#props })
+    return new TransactionImpl({ ...this.#props })
   }
 
-  /**
-   * Similar to {@link Kysely.$omitTables} but returns the transaction.
-   */
   override $omitTables<T extends keyof DB>(): Transaction<
     DB extends object ? Omit<DB, T> : DB
   > {
-    return new Transaction({ ...this.#props })
+    return new TransactionImpl({ ...this.#props })
   }
 
-  /**
-   * Similar to {@link Kysely.$pickTables} but returns the transaction.
-   */
   override $pickTables<T extends keyof DB>(): Transaction<
     DB extends object ? Pick<DB, T> : DB
   > {
-    return new Transaction({ ...this.#props })
+    return new TransactionImpl({ ...this.#props })
   }
 }
+
+export const Transaction: TransactionConstructor = TransactionImpl
 
 export interface KyselyProps {
   readonly config: KyselyConfig
@@ -969,40 +1035,33 @@ export class ControlledTransactionBuilder<DB> {
   }
 }
 
-export class ControlledTransaction<
+/**
+ * A {@link Transaction} you commit and roll back yourself.
+ *
+ * You get one from {@link Kysely.startTransaction}. Once it is committed or
+ * rolled back it can't be used anymore - all queries will throw an error.
+ *
+ * Like {@link Transaction}, this is an intersection instead of a subclass for
+ * type check performance reasons.
+ *
+ * It is still a class at runtime so `trx instanceof ControlledTransaction` works.
+ */
+export type ControlledTransaction<
   DB,
   S extends string[] = [],
-> extends Transaction<DB> {
-  readonly #props: ControlledTransactionProps
-  readonly #compileQuery: QueryCompiler['compileQuery']
-  readonly #state: ControlledTransctionState
+> = ControlledTransactionMethods<DB, S> & Transaction<DB>
 
-  constructor(props: ControlledTransactionProps) {
-    const state = { isCommitted: false, isRolledBack: false }
-    props = {
-      ...props,
-      executor: new NotCommittedOrRolledBackAssertingExecutor(
-        props.executor,
-        state,
-      ),
-    }
-    const { connection, ...transactionProps } = props
-    super(transactionProps)
+/**
+ * The methods a {@link ControlledTransaction} has on top of the
+ * {@link Transaction} ones.
+ *
+ * @typeParam S - The names of the savepoints that are currently open, in the
+ *    order they were created.
+ */
+export interface ControlledTransactionMethods<DB, S extends string[] = []> {
+  readonly isCommitted: boolean
 
-    this.#props = freeze(props)
-    this.#state = state
-
-    const queryId = createQueryId()
-    this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
-  }
-
-  get isCommitted(): boolean {
-    return this.#state.isCommitted
-  }
-
-  get isRolledBack(): boolean {
-    return this.#state.isRolledBack
-  }
+  readonly isRolledBack: boolean
 
   /**
    * Commits the transaction.
@@ -1028,17 +1087,7 @@ export class ControlledTransaction<
    * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
-  commit(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#state)
-
-    return new Command(async (): Promise<void> => {
-      await this.#props.driver.commitTransaction(
-        this.#props.connection.connection,
-      )
-      this.#state.isCommitted = true
-      this.#props.connection.release()
-    })
-  }
+  commit(): Command<void>
 
   /**
    * Rolls back the transaction.
@@ -1064,17 +1113,7 @@ export class ControlledTransaction<
    * async function doSomething(kysely: Kysely<Database>) {}
    * ```
    */
-  rollback(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#state)
-
-    return new Command(async (): Promise<void> => {
-      await this.#props.driver.rollbackTransaction(
-        this.#props.connection.connection,
-      )
-      this.#state.isRolledBack = true
-      this.#props.connection.release()
-    })
-  }
+  rollback(): Command<void>
 
   /**
    * Creates a savepoint with a given name.
@@ -1107,21 +1146,7 @@ export class ControlledTransaction<
    */
   savepoint<SN extends string>(
     savepointName: SN extends S ? never : SN,
-  ): Command<ControlledTransaction<DB, [...S, SN]>> {
-    assertNotCommittedOrRolledBack(this.#state)
-
-    return new Command(
-      async (): Promise<ControlledTransaction<DB, [...S, SN]>> => {
-        await this.#props.driver.savepoint?.(
-          this.#props.connection.connection,
-          savepointName,
-          this.#compileQuery,
-        )
-
-        return new ControlledTransaction({ ...this.#props })
-      },
-    )
-  }
+  ): Command<ControlledTransaction<DB, [...S, SN]>>
 
   /**
    * Rolls back to a savepoint with a given name.
@@ -1157,23 +1182,7 @@ export class ControlledTransaction<
     savepointName: SN,
   ): RollbackToSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
-    : never {
-    assertNotCommittedOrRolledBack(this.#state)
-
-    return new Command(
-      async (): Promise<
-        ControlledTransaction<DB, RollbackToSavepoint<S, SN>>
-      > => {
-        await this.#props.driver.rollbackToSavepoint?.(
-          this.#props.connection.connection,
-          savepointName,
-          this.#compileQuery,
-        )
-
-        return new ControlledTransaction({ ...this.#props })
-      },
-    ) as never
-  }
+    : never
 
   /**
    * Releases a savepoint with a given name.
@@ -1214,6 +1223,149 @@ export class ControlledTransaction<
     savepointName: SN,
   ): ReleaseSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
+    : never
+
+  withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S>
+
+  withoutPlugins(): ControlledTransaction<DB, S>
+
+  withSchema(schema: string): ControlledTransaction<DB, S>
+
+  withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  $extendTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S>
+
+  $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
+
+  $pickTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Pick<DB, T> : DB,
+    S
+  >
+}
+
+/**
+ * The static side of the {@link ControlledTransaction} class.
+ */
+export interface ControlledTransactionConstructor {
+  new <DB, S extends string[] = []>(
+    props: ControlledTransactionProps,
+  ): ControlledTransaction<DB, S>
+  readonly prototype: ControlledTransaction<any, any>
+}
+
+class ControlledTransactionImpl<DB, S extends string[] = []>
+  extends TransactionImpl<DB>
+  implements ControlledTransactionMethods<DB, S>
+{
+  readonly #props: ControlledTransactionProps
+  readonly #compileQuery: QueryCompiler['compileQuery']
+  readonly #state: ControlledTransctionState
+
+  constructor(props: ControlledTransactionProps) {
+    const state = { isCommitted: false, isRolledBack: false }
+    props = {
+      ...props,
+      executor: new NotCommittedOrRolledBackAssertingExecutor(
+        props.executor,
+        state,
+      ),
+    }
+    const { connection, ...transactionProps } = props
+    super(transactionProps)
+
+    this.#props = freeze(props)
+    this.#state = state
+
+    const queryId = createQueryId()
+    this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
+  }
+
+  get isCommitted(): boolean {
+    return this.#state.isCommitted
+  }
+
+  get isRolledBack(): boolean {
+    return this.#state.isRolledBack
+  }
+
+  commit(): Command<void> {
+    assertNotCommittedOrRolledBack(this.#state)
+
+    return new Command(async (): Promise<void> => {
+      await this.#props.driver.commitTransaction(
+        this.#props.connection.connection,
+      )
+      this.#state.isCommitted = true
+      this.#props.connection.release()
+    })
+  }
+
+  rollback(): Command<void> {
+    assertNotCommittedOrRolledBack(this.#state)
+
+    return new Command(async (): Promise<void> => {
+      await this.#props.driver.rollbackTransaction(
+        this.#props.connection.connection,
+      )
+      this.#state.isRolledBack = true
+      this.#props.connection.release()
+    })
+  }
+
+  savepoint<SN extends string>(
+    savepointName: SN extends S ? never : SN,
+  ): Command<ControlledTransaction<DB, [...S, SN]>> {
+    assertNotCommittedOrRolledBack(this.#state)
+
+    return new Command(
+      async (): Promise<ControlledTransaction<DB, [...S, SN]>> => {
+        await this.#props.driver.savepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+        )
+
+        // The savepoint name juggling in `rollbackToSavepoint` and
+        // `releaseSavepoint` doesn't survive being related to itself with `S`
+        // instantiated as `[...S, SN]`.
+        return new ControlledTransactionImpl({ ...this.#props }) as never
+      },
+    )
+  }
+
+  rollbackToSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): RollbackToSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
+    : never {
+    assertNotCommittedOrRolledBack(this.#state)
+
+    return new Command(
+      async (): Promise<
+        ControlledTransaction<DB, RollbackToSavepoint<S, SN>>
+      > => {
+        await this.#props.driver.rollbackToSavepoint?.(
+          this.#props.connection.connection,
+          savepointName,
+          this.#compileQuery,
+        )
+
+        return new ControlledTransactionImpl({ ...this.#props })
+      },
+    ) as never
+  }
+
+  releaseSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): ReleaseSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
     : never {
     assertNotCommittedOrRolledBack(this.#state)
 
@@ -1225,27 +1377,27 @@ export class ControlledTransaction<
           this.#compileQuery,
         )
 
-        return new ControlledTransaction({ ...this.#props })
+        return new ControlledTransactionImpl({ ...this.#props })
       },
     ) as never
   }
 
   override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
+    return new ControlledTransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),
     })
   }
 
   override withoutPlugins(): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
+    return new ControlledTransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),
     })
   }
 
   override withSchema(schema: string): ControlledTransaction<DB, S> {
-    return new ControlledTransaction({
+    return new ControlledTransactionImpl({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
         new WithSchemaPlugin(schema),
@@ -1256,29 +1408,32 @@ export class ControlledTransaction<
   override withTables<
     T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
-    return new ControlledTransaction({ ...this.#props })
+    return new ControlledTransactionImpl({ ...this.#props })
   }
 
   override $extendTables<
     T extends Record<string, Record<string, any>>,
   >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
-    return new ControlledTransaction({ ...this.#props })
+    return new ControlledTransactionImpl({ ...this.#props })
   }
 
   override $omitTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Omit<DB, T> : DB,
     S
   > {
-    return new ControlledTransaction({ ...this.#props })
+    return new ControlledTransactionImpl({ ...this.#props })
   }
 
   override $pickTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Pick<DB, T> : DB,
     S
   > {
-    return new ControlledTransaction({ ...this.#props })
+    return new ControlledTransactionImpl({ ...this.#props })
   }
 }
+
+export const ControlledTransaction: ControlledTransactionConstructor =
+  ControlledTransactionImpl
 
 interface ControlledTransctionState {
   isCommitted: boolean

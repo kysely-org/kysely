@@ -1,5 +1,6 @@
 import { bench } from '@ark/attest'
 import type {
+  ControlledTransaction,
   DeleteQueryBuilder,
   ExpressionBuilder,
   Generated,
@@ -91,14 +92,6 @@ declare function acceptsNarrowMergeQueryBuilder(
   qb: WheneableMergeQueryBuilder<{ a: A; b: B }, 'a', 'a', unknown>,
 ): void
 
-// Handing a transaction to a function that takes a `Kysely` is one of the most
-// common things users do, and it is not cheap: `Transaction` and `Kysely` are
-// different generic types, so the compiler compares them member by member, and
-// `$extendTables`/`$omitTables`/`$pickTables` each return a handle over a
-// transformed `DB`, which makes that comparison recurse.
-declare const transaction: Transaction<{ a: A; b: B }>
-declare function acceptsKysely(db: Kysely<{ a: A; b: B }>): void
-
 // `MergeQueryBuilder.using()` returns a computed type, the same shape that makes
 // the join result types expensive.
 declare const wideMergeInto: MergeQueryBuilder<
@@ -119,6 +112,13 @@ declare function selectParentId(
     'parent' | 'petJoin'
   >,
 ): readonly ['parent.id']
+
+declare const plainKysely: Kysely<{ a: A; b: B }>
+declare const transaction: Transaction<{ a: A; b: B }>
+declare function acceptsKysely(db: Kysely<{ a: A; b: B }>): void
+
+declare const controlledTransaction: ControlledTransaction<{ a: A; b: B }>
+declare function acceptsTransaction(trx: Transaction<{ a: A; b: B }>): void
 
 console.log('generic.bench.ts:\n')
 
@@ -146,7 +146,7 @@ bench('select(genericSelectHelper) on a left joined query', () => {
 
 bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
   return acceptsNarrowDeleteQueryBuilder(wideDeleteQueryBuilder)
-}).types([10920, 'instantiations'])
+}).types([10919, 'instantiations'])
 
 bench('UpdateQueryBuilder assignable to narrower UpdateQueryBuilder', () => {
   return acceptsNarrowUpdateQueryBuilder(wideUpdateQueryBuilder)
@@ -156,10 +156,22 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
   return acceptsNarrowMergeQueryBuilder(wideMergeQueryBuilder)
 }).types([7573, 'instantiations'])
 
-bench('Transaction assignable to Kysely', () => {
-  return acceptsKysely(transaction)
-}).types([162352, 'instantiations'])
-
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)
 }).types([22733, 'instantiations'])
+
+bench('Kysely assignable to Kysely', () => {
+  return acceptsKysely(plainKysely)
+}).types([11784, 'instantiations'])
+
+bench('Transaction assignable to Kysely', () => {
+  return acceptsKysely(transaction)
+}).types([11832, 'instantiations'])
+
+bench('ControlledTransaction assignable to Kysely', () => {
+  return acceptsKysely(controlledTransaction)
+}).types([11846, 'instantiations'])
+
+bench('ControlledTransaction assignable to Transaction', () => {
+  return acceptsTransaction(controlledTransaction)
+}).types([330097, 'instantiations'])
