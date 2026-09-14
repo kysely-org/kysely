@@ -47,8 +47,14 @@ import type { SelectFrom } from './parser/select-from-parser.js'
 import type { DeleteFrom } from './parser/delete-from-parser.js'
 import type { UpdateTable } from './parser/update-parser.js'
 import type { MergeInto } from './parser/merge-into-parser.js'
+import type { IsAny } from './util/type-utils.js'
 
 export class QueryCreator<DB> {
+  // Keep the schema mapped for table-subset assignability on TypeScript 5.
+  declare protected readonly '~DB': IsAny<DB> extends true
+    ? DB
+    : { [T in keyof DB]: DB[T] }
+
   readonly #props: QueryCreatorProps
 
   constructor(props: QueryCreatorProps) {
