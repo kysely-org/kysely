@@ -11,6 +11,13 @@ export interface DatabaseIntrospector {
    * Get tables and views metadata.
    */
   getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
+
+  /**
+   * Get named database types.
+   *
+   * Dialects that don't support named types return an empty array.
+   */
+  getTypes(): Promise<TypeMetadata[]>
 }
 
 export interface DatabaseMetadataOptions {
@@ -24,6 +31,26 @@ export interface DatabaseMetadataOptions {
 export interface SchemaMetadata {
   readonly name: string
 }
+
+export interface TypeMetadata {
+  readonly name: string
+  readonly schema?: string
+  readonly kind: TypeMetadataKind
+  readonly values?: string[]
+  readonly baseType?: string
+  readonly baseTypeSchema?: string
+}
+
+export type TypeMetadataKind =
+  | 'base'
+  | 'enum'
+  | 'composite'
+  | 'domain'
+  | 'range'
+  | 'multirange'
+  | 'pseudo'
+  | 'array'
+  | 'unknown'
 
 export interface TableMetadata {
   readonly name: string

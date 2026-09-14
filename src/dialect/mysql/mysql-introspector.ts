@@ -3,6 +3,7 @@ import type {
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
+  TypeMetadata,
 } from '../database-introspector.js'
 import {
   DEFAULT_MIGRATION_LOCK_TABLE,
@@ -27,6 +28,10 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       .execute()
 
     return rawSchemas.map((it) => ({ name: it.SCHEMA_NAME }))
+  }
+
+  async getTypes(): Promise<TypeMetadata[]> {
+    return []
   }
 
   async getTables(
