@@ -131,6 +131,37 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it('OnConflictSelectBuilder should clear where', () => {
+      const query = ctx.db
+        .insertInto('person')
+        .onConflict((b) =>
+          b
+            .doSelect()
+            .where('gender', '=', 'male')
+            .clearWhere(),
+          )
+          .returningAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `insert into "person" on conflict do select returning *`,
+          parameters: [],
+        },
+        mysql: {
+          sql: 'insert into `person` on conflict do select returning *',
+          parameters: [],
+        },
+        mssql: {
+          sql: `insert into "person" on conflict do select returning *`,
+          parameters: [],
+        },
+        sqlite: {
+          sql: `insert into "person" on conflict do select returning *`,
+          parameters: [],
+        },
+      })
+    })
+
     it('UpdateQueryBuilder should clear where', () => {
       const query = ctx.db
         .updateTable('person')

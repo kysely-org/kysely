@@ -264,6 +264,44 @@ export class OnConflictBuilder<
   }
 
   /**
+   * Adds the "do select" conflict action.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const email = 'jon@doe.com'
+   * const first_name = 'John'
+   *
+   * const newOrExisting = await db
+   *   .insertInto('person')
+   *   .values({ first_name, email })
+   *   .onConflict((oc) => oc
+   *     .column('email')
+   *     .doSelect()
+   *   )
+   #   .returning(["id", "first_name", "email"]))
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "email")
+   * values ($1, $2)
+   * on conflict ("email") do select
+   * returning "id", "first_name", "email"
+   * ```
+   */
+  doSelect(): OnConflictSelectBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
+        doSelect: true,
+      }),
+    })
+  }
+
+  /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    */
@@ -362,6 +400,135 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
         this.#props.onConflictNode,
       ),
+    })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
+  toOperationNode(): OnConflictNode {
+    return this.#props.onConflictNode
+  }
+}
+
+export class OnConflictSelectBuilder<DB, TB extends keyof DB>
+  implements WhereInterface<DB, TB>, OperationNodeSource
+{
+  readonly #props: OnConflictBuilderProps
+
+  constructor(props: OnConflictBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  /**
+   * Specify a where condition for the select operation.
+   *
+   * See {@link WhereInterface.where} for more info.
+   */
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
+  >(
+    lhs: RE,
+    op: ComparisonOperatorExpression,
+    rhs: VE,
+  ): OnConflictSelectBuilder<DB, TB>
+
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E,
+  ): OnConflictSelectBuilder<DB, TB>
+
+  where(...args: any[]): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithSelectWhere(
+        this.#props.onConflictNode,
+        parseValueBinaryOperationOrExpression(args),
+      ),
+    })
+  }
+
+  /**
+   * Specify a where condition for the select operation.
+   *
+   * See {@link WhereInterface.whereRef} for more info.
+   */
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>,
+  >(
+    lhs: LRE,
+    op: ComparisonOperatorExpression,
+    rhs: RRE,
+  ): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithSelectWhere(
+        this.#props.onConflictNode,
+        parseReferentialBinaryOperation(lhs, op, rhs),
+      ),
+    })
+  }
+
+  clearWhere(): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutSelectWhere(
+        this.#props.onConflictNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds the `for update` modifier to the `do select` clause
+   */
+  forUpdate(): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
+        selectLockStrength: 'ForUpdate',
+      }),
+    })
+  }
+
+  /**
+   * Adds the `for no key update` modifier to the `do select` clause
+   */
+  forNoKeyUpdate(): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
+        selectLockStrength: 'ForNoKeyUpdate',
+      }),
+    })
+  }
+
+  /**
+   * Adds the `for share` modifier to the `do select` clause
+   */
+  forShare(): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
+        selectLockStrength: 'ForShare',
+      }),
+    })
+  }
+
+  /**
+   * Adds the `for key share` modifier to the `do select` clause
+   */
+  forKeyShare(): OnConflictSelectBuilder<DB, TB> {
+    return new OnConflictSelectBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
+        selectLockStrength: 'ForKeyShare',
+      }),
     })
   }
 
