@@ -10,6 +10,7 @@ import {
   type AbortableOperationOptions,
   type ControlledTransaction,
   type ControlledTransactionBuilder,
+  type ControlledTransactionMethods,
   createQueryId,
   DeleteQueryNode,
   type InferResult,
@@ -421,14 +422,14 @@ async function testReadonlyControlledTransaction(
     | (keyof typeof tx & string)
   >(keyof(rtx))
 
+  // The table helpers only change the database, so the open savepoints are
+  // still the ones `tx` was declared with.
   expectType<
     ReadonlyControlledTransaction<
       DatabaseOf<
         ReturnType<typeof tx.$extendTables<{ moshe: { haim: true } }>>
       >,
-      SavepointsOf<
-        ReturnType<typeof tx.$extendTables<{ moshe: { haim: true } }>>
-      >
+      ['haim', 'moshe']
     >
   >(rtx.$extendTables<{ moshe: { haim: true } }>())
   expectNotDeprecated(rtx.$extendTables)
@@ -436,7 +437,7 @@ async function testReadonlyControlledTransaction(
   expectType<
     ReadonlyControlledTransaction<
       DatabaseOf<ReturnType<typeof tx.$omitTables<'person_metadata'>>>,
-      SavepointsOf<ReturnType<typeof tx.$omitTables<'person_metadata'>>>
+      ['haim', 'moshe']
     >
   >(rtx.$omitTables<'person_metadata'>())
   expectNotDeprecated(rtx.$omitTables)
@@ -444,7 +445,7 @@ async function testReadonlyControlledTransaction(
   expectType<
     ReadonlyControlledTransaction<
       DatabaseOf<ReturnType<typeof tx.$pickTables<'person_metadata'>>>,
-      SavepointsOf<ReturnType<typeof tx.$pickTables<'person_metadata'>>>
+      ['haim', 'moshe']
     >
   >(rtx.$pickTables<'person_metadata'>())
   expectNotDeprecated(rtx.$pickTables)
@@ -497,11 +498,7 @@ async function testReadonlyControlledTransaction(
 
   expectType<
     ReadonlyControlledTransaction<
-      DatabaseOf<
-        Awaited<
-          ReturnType<ReturnType<typeof tx.releaseSavepoint<'moshe'>>['execute']>
-        >
-      >,
+      Database,
       SavepointsOf<
         Awaited<
           ReturnType<ReturnType<typeof tx.releaseSavepoint<'moshe'>>['execute']>
@@ -520,13 +517,7 @@ async function testReadonlyControlledTransaction(
 
   expectType<
     ReadonlyControlledTransaction<
-      DatabaseOf<
-        Awaited<
-          ReturnType<
-            ReturnType<typeof tx.rollbackToSavepoint<'haim'>>['execute']
-          >
-        >
-      >,
+      Database,
       SavepointsOf<
         Awaited<
           ReturnType<
@@ -541,9 +532,7 @@ async function testReadonlyControlledTransaction(
 
   expectType<
     ReadonlyControlledTransaction<
-      DatabaseOf<
-        Awaited<ReturnType<ReturnType<typeof tx.savepoint<'rivka'>>['execute']>>
-      >,
+      Database,
       SavepointsOf<
         Awaited<ReturnType<ReturnType<typeof tx.savepoint<'rivka'>>['execute']>>
       >
@@ -591,14 +580,14 @@ async function testReadonlyControlledTransaction(
   expectNotDeprecated(rtx.withoutPlugins)
 }
 
-type DatabaseOf<K> = K extends
-  | Kysely<infer DB>
-  | Transaction<infer DB>
-  | ControlledTransaction<infer DB, any>
-  ? DB
-  : never
+// `Transaction` and `ControlledTransaction` are intersections, and TypeScript
+// can't infer type arguments from an intersection. Both of them contain a
+// `Kysely<DB>` to infer the database from, and the open savepoints can be
+// inferred from `ControlledTransactionMethods`.
+type DatabaseOf<K> = K extends Kysely<infer DB> ? DB : never
 
-type SavepointsOf<T> = T extends ControlledTransaction<any, infer S> ? S : never
+type SavepointsOf<T> =
+  T extends ControlledTransactionMethods<any, infer S> ? S : never
 
 declare function keyof<T>(thing: T): keyof T & string
 
