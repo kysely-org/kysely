@@ -250,7 +250,7 @@ export class OnConflictBuilder<
    */
   doUpdateSet(
     update: UpdateObjectExpression<
-      OnConflictDatabase<DB, TB>,
+      OnConflictUpdateDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
@@ -276,8 +276,14 @@ export interface OnConflictBuilderProps {
   readonly onConflictNode: OnConflictNode
 }
 
-export type OnConflictDatabase<DB, TB extends keyof DB> = {
+export type OnConflictUpdateDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
+// Predicates read rows, including columns that cannot be updated. Preserve
+// their original column types so reference expressions use the select types.
+export type OnConflictDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
