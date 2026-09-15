@@ -43,7 +43,7 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import type { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
-  type OnConflictDatabase,
+  type OnConflictWhereDatabase,
   type OnConflictDoNothingBuilder,
   type OnConflictTables,
   type OnConflictUpdateBuilder,
@@ -885,7 +885,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
       builder: OnConflictBuilder<DB, TB>,
     ) =>
       | OnConflictUpdateBuilder<
-          OnConflictDatabase<DB, TB>,
+          OnConflictWhereDatabase<DB, TB>,
           OnConflictTables<TB>
         >
       | OnConflictDoNothingBuilder<DB, TB>,

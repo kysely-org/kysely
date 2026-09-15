@@ -254,7 +254,10 @@ export class OnConflictBuilder<
       OnConflictTables<TB>,
       OnConflictTables<TB>
     >,
-  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
+  ): OnConflictUpdateBuilder<
+    OnConflictWhereDatabase<DB, TB>,
+    OnConflictTables<TB>
+  > {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -278,6 +281,12 @@ export interface OnConflictBuilderProps {
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
   [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+}
+
+// Predicates read rows, including columns that cannot be updated. Preserve
+// their original column types so reference expressions use the select types.
+export type OnConflictWhereDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
