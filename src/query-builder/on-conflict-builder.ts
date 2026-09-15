@@ -277,15 +277,15 @@ export interface OnConflictBuilderProps {
 }
 
 export type OnConflictUpdateDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: OnConflictRow<
+  [K in keyof DB | 'excluded']: OnConflictTable<
     K extends keyof DB ? DB[K] : DB[TB]
   >
 }
 
 // Update values are optional, but the columns referenced by update expressions
 // are not. Only include undefined when it is part of the column's update type.
-type OnConflictRow<R> = {
-  [C in UpdateKeys<R>]: UpdateType<R[C]>
+type OnConflictTable<T> = {
+  [C in UpdateKeys<T>]: UpdateType<T[C]>
 }
 
 // Predicates read rows, including columns that cannot be updated. Preserve
