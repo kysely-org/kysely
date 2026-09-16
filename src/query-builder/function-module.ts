@@ -667,12 +667,16 @@ interface FunctionModule<DB, TB extends keyof DB> {
    */
   any<RE extends StringReference<DB, TB>>(
     expr: RE,
-  ): Exclude<
-    ExtractTypeFromReferenceExpression<DB, TB, RE>,
-    null
-  > extends ReadonlyArray<infer I>
-    ? ExpressionWrapper<DB, TB, I>
-    : KyselyTypeError<'any(expr) call failed: expr must be an array'>
+  ): IsNever<TB> extends true
+    ? // No column reference can be passed when TB is never. Avoid constraining
+      // assignability with the return type of this uncallable overload.
+      unknown
+    : Exclude<
+          ExtractTypeFromReferenceExpression<DB, TB, RE>,
+          null
+        > extends ReadonlyArray<infer I>
+      ? ExpressionWrapper<DB, TB, I>
+      : KyselyTypeError<'any(expr) call failed: expr must be an array'>
 
   any<T>(
     subquery: SelectQueryBuilderExpression<Record<string, T>>,
