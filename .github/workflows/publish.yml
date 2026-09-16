@@ -46,7 +46,7 @@ jobs:
           TAG="$REF_NAME"
 
           BRANCH=0.28.x
-          DIST_TAG=prev
+          DIST_TAG=release-0.28
 
           # Check if tag points to a commit that exists on the expected branch
           TAG_COMMIT=$(git rev-list -n 1 "$TAG")
