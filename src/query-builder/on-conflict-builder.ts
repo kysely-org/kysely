@@ -15,7 +15,7 @@ import {
   type UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import type { Updateable } from '../util/column-type.js'
+import type { UpdateKeys, UpdateType } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import type { AnyColumn, SqlBool } from '../util/type-utils.js'
 import type { WhereInterface } from './where-interface.js'
@@ -277,7 +277,15 @@ export interface OnConflictBuilderProps {
 }
 
 export type OnConflictUpdateDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+  [K in keyof DB | 'excluded']: OnConflictTable<
+    K extends keyof DB ? DB[K] : DB[TB]
+  >
+}
+
+// Update values are optional, but the columns referenced by update expressions
+// are not. Only include undefined when it is part of the column's update type.
+type OnConflictTable<T> = {
+  [C in UpdateKeys<T>]: UpdateType<T[C]>
 }
 
 // Predicates read rows, including columns that cannot be updated. Preserve
