@@ -105,7 +105,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Use Deno ${{ matrix.deno-version }}
         uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
@@ -151,7 +151,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm install
@@ -186,7 +186,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm install
@@ -216,7 +216,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm install
@@ -262,7 +262,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm install
@@ -305,7 +305,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Use Deno
         uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
@@ -340,7 +340,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm i
@@ -370,7 +370,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm i
@@ -398,7 +398,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: 'pnpm'
-          node-version: lts/*
+          node-version: 24.x
 
       - name: Install dependencies
         run: pnpm i
