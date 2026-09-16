@@ -4,6 +4,7 @@ import type {
   Expression,
   ExpressionBuilder,
   Kysely,
+  OnConflictUpdateDatabase,
 } from '../../../dist/index.js'
 import {
   accept,
@@ -121,4 +122,63 @@ test('rejects incompatible conflict expression helpers', () => {
         id,
       }),
     )
+})
+
+type ConvertedDatabase = {
+  a: { id: number; converted: ColumnType<Date, string, string> }
+}
+
+test('accepts helpers scoped to compatible columns alongside converted columns', () => {
+  const db = null! as Kysely<ConvertedDatabase>
+  const id = (eb: ExpressionBuilder<{ a: { id: number } }, 'a'>) =>
+    eb.ref('a.id')
+
+  db.insertInto('a').onConflict((oc) =>
+    oc.doUpdateSet((eb) => ({
+      id: id(eb),
+      converted: eb.ref('excluded.converted'),
+    })),
+  )
+  db.insertInto('a').onConflict((oc) => oc.doUpdateSet({ id }))
+})
+
+test('accepts converted-column helpers using the conflict update schema', () => {
+  const db = null! as Kysely<ConvertedDatabase>
+  const converted = (
+    eb: ExpressionBuilder<
+      OnConflictUpdateDatabase<ConvertedDatabase, 'a'>,
+      'excluded'
+    >,
+  ) => eb.ref('excluded.converted')
+
+  db.insertInto('a').onConflict((oc) =>
+    oc.doUpdateSet({ converted }).where((eb) => {
+      accept<ExpressionBuilder<ConvertedDatabase, 'a'>>(eb)
+      accept<Expression<Date>>(eb.ref('excluded.converted'))
+      return eb('a.converted', '=', new Date())
+    }),
+  )
+})
+
+test('requires compatible select types when reusing full-schema helpers in SET', () => {
+  const db = null! as Kysely<ConvertedDatabase>
+  const id = (eb: ExpressionBuilder<ConvertedDatabase, 'a'>) => eb.ref('a.id')
+  const predicate = (eb: ExpressionBuilder<ConvertedDatabase, 'a'>) =>
+    eb('a.converted', '=', new Date())
+
+  db.insertInto('a').onConflict((oc) =>
+    oc
+      .doUpdateSet({
+        // @ts-expect-error the helper's full schema selects Date; SET references string
+        id,
+      })
+      .where(predicate),
+  )
+  db.insertInto('a').onConflict((oc) =>
+    oc.doUpdateSet((eb) => {
+      // @ts-expect-error even unused columns must match the helper's declared schema
+      id(eb)
+      return { converted: eb.ref('excluded.converted') }
+    }),
+  )
 })
