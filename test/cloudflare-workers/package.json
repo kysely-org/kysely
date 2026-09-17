@@ -9,6 +9,6 @@
     "hono": "4.13.7"
   },
   "devDependencies": {
-    "wrangler": "4.131.2"
+    "wrangler": "4.132.0"
   }
 }
