@@ -42,8 +42,8 @@ importers:
         specifier: 10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: 26.2.0
-        version: 26.2.0
+        specifier: 26.6.1
+        version: 26.6.1
       '@types/pg':
         specifier: 8.23.1
         version: 8.23.1
@@ -79,7 +79,7 @@ importers:
         version: 12.0.1
       mysql2:
         specifier: 3.24.4
-        version: 3.24.4(@types/node@26.2.0)
+        version: 3.24.4(@types/node@26.6.1)
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -198,7 +198,7 @@ importers:
     devDependencies:
       wrangler:
         specifier: 4.131.2
-        version: 4.131.2(@types/node@26.2.0)
+        version: 4.131.2(@types/node@26.6.1)
 
   test/ts-benchmarks:
     devDependencies:
@@ -2584,6 +2584,9 @@ packages:
 
   '@types/node@26.2.0':
     resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
+
+  '@types/node@26.6.1':
+    resolution: {integrity: sha512-VqGJBMCtdhqkBUCcBLvywI0NJ+KLuVzgNnlBUNFOQjqVxzo2lxLUNg1DSey8+u2u6ktswSAxg+s68QLzWHNOuA==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -7015,6 +7018,9 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
+  undici-types@8.9.0:
+    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
+
   undici@7.29.0:
     resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
     engines: {node: '>=20.18.1'}
@@ -7764,17 +7770,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-define-polyfill-provider@0.6.5(@babel/core@7.29.6)(supports-color@8.1.1)':
-    dependencies:
-      '@babel/core': 7.29.6(supports-color@10.2.2)
-      '@babel/helper-compilation-targets': 7.29.7
-      '@babel/helper-plugin-utils': 7.29.7
-      debug: 4.4.3(supports-color@8.1.1)
-      lodash.debounce: 4.0.8
-      resolve: 1.22.10
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/helper-globals@7.29.7': {}
 
   '@babel/helper-member-expression-to-functions@7.27.1(supports-color@10.2.2)':
@@ -8247,7 +8242,7 @@ snapshots:
       '@babel/core': 7.29.6(supports-color@10.2.2)
       '@babel/helper-module-imports': 7.29.7(supports-color@10.2.2)
       '@babel/helper-plugin-utils': 7.29.7
-      babel-plugin-polyfill-corejs2: 0.4.14(@babel/core@7.29.6)(supports-color@8.1.1)
+      babel-plugin-polyfill-corejs2: 0.4.14(@babel/core@7.29.6)(supports-color@10.2.2)
       babel-plugin-polyfill-corejs3: 0.13.0(@babel/core@7.29.6)(supports-color@10.2.2)
       babel-plugin-polyfill-regenerator: 0.6.5(@babel/core@7.29.6)(supports-color@10.2.2)
       semver: 6.3.1
@@ -10064,7 +10059,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       '@types/yargs': 17.0.33
       chalk: 4.1.2
 
@@ -10548,16 +10543,16 @@ snapshots:
 
   '@types/better-sqlite3@9.6.0':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/bonjour@3.5.13':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/chai-as-promised@8.0.2':
     dependencies:
@@ -10571,11 +10566,11 @@ snapshots:
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
       '@types/express-serve-static-core': 5.0.7
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/d3-array@3.2.2': {}
 
@@ -10718,14 +10713,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
 
   '@types/express-serve-static-core@5.0.7':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
@@ -10753,7 +10748,7 @@ snapshots:
 
   '@types/http-proxy@1.17.16':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
@@ -10793,16 +10788,20 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/node@26.6.1':
+    dependencies:
+      undici-types: 8.9.0
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       '@types/pg': 8.23.1
 
   '@types/pg@8.23.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       pg-protocol: 1.16.0
       pg-types: 2.2.0
 
@@ -10835,20 +10834,20 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/retry@0.12.2': {}
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/semver@7.8.0': {}
 
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/serve-index@1.9.4':
     dependencies:
@@ -10857,7 +10856,7 @@ snapshots:
   '@types/serve-static@1.15.8':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       '@types/send': 0.17.5
 
   '@types/sinon@22.0.0':
@@ -10868,7 +10867,7 @@ snapshots:
 
   '@types/sockjs@0.3.36':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -10879,7 +10878,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -11236,15 +11235,6 @@ snapshots:
       '@babel/compat-data': 7.29.7
       '@babel/core': 7.29.6(supports-color@10.2.2)
       '@babel/helper-define-polyfill-provider': 0.6.5(@babel/core@7.29.6)(supports-color@10.2.2)
-      semver: 6.3.1
-    transitivePeerDependencies:
-      - supports-color
-
-  babel-plugin-polyfill-corejs2@0.4.14(@babel/core@7.29.6)(supports-color@8.1.1):
-    dependencies:
-      '@babel/compat-data': 7.29.7
-      '@babel/core': 7.29.6(supports-color@10.2.2)
-      '@babel/helper-define-polyfill-provider': 0.6.5(@babel/core@7.29.6)(supports-color@8.1.1)
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -12371,7 +12361,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       require-like: 0.1.2
 
   event-target-shim@5.0.1: {}
@@ -13181,7 +13171,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -13195,7 +13185,7 @@ snapshots:
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -14001,10 +13991,10 @@ snapshots:
       tapable: 2.3.3
       webpack: 5.104.1(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)
 
-  miniflare@5.20260911.1-alpha(@types/node@26.2.0):
+  miniflare@5.20260911.1-alpha(@types/node@26.6.1):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      sharp: 0.35.4(@types/node@26.2.0)
+      sharp: 0.35.4(@types/node@26.6.1)
       undici: 7.29.0
       workerd: 1.20260911.1
       ws: 8.21.0
@@ -14066,9 +14056,9 @@ snapshots:
       dns-packet: 5.6.1
       thunky: 1.1.0
 
-  mysql2@3.24.4(@types/node@26.2.0):
+  mysql2@3.24.4(@types/node@26.6.1):
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       aws-ssl-profiles: 1.1.2
       generate-function: 2.3.1
       iconv-lite: 0.7.3
@@ -15417,7 +15407,7 @@ snapshots:
 
   shallowequal@1.1.0: {}
 
-  sharp@0.35.4(@types/node@26.2.0):
+  sharp@0.35.4(@types/node@26.6.1):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -15448,7 +15438,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.4
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
 
   shebang-command@2.0.0:
     dependencies:
@@ -15727,7 +15717,7 @@ snapshots:
       '@azure/identity': 4.13.1(supports-color@8.1.1)
       '@azure/keyvault-keys': 4.10.2(supports-color@8.1.1)
       '@js-joda/core': 6.0.1
-      '@types/node': 26.2.0
+      '@types/node': 26.6.1
       bl: 6.1.5
       iconv-lite: 0.7.2
       js-md4: 0.3.2
@@ -15885,6 +15875,8 @@ snapshots:
       '@typescript/typescript-win32-x64': 7.0.2
 
   undici-types@8.3.0: {}
+
+  undici-types@8.9.0: {}
 
   undici@7.29.0: {}
 
@@ -16199,13 +16191,13 @@ snapshots:
 
   workerpool@10.0.3: {}
 
-  wrangler@4.131.2(@types/node@26.2.0):
+  wrangler@4.131.2(@types/node@26.6.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260911.1)
       blake3-wasm: 2.1.5
       esbuild: 0.28.1
-      miniflare: 5.20260911.1-alpha(@types/node@26.2.0)
+      miniflare: 5.20260911.1-alpha(@types/node@26.6.1)
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.24
       workerd: 1.20260911.1
