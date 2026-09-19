@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1" />
+    <title>Kysely social preview card</title>
+    <!--
+      Editable source for static/img/social-card.png.
+      Open this file in a browser and capture a 1200 × 630 viewport at 1× scale.
+      Uses the existing logo and the homepage's system font and dark palette.
+    -->
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+
+      body {
+        background: #131313;
+        color: #e8e8e8;
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          'Noto Sans',
+          sans-serif;
+        padding: 72px 80px 48px;
+      }
+
+      .brand {
+        align-items: center;
+        display: flex;
+        gap: 28px;
+      }
+
+      .brand img {
+        height: 112px;
+        width: 112px;
+      }
+
+      h1 {
+        font-size: 104px;
+        font-weight: 750;
+        letter-spacing: -4px;
+        line-height: 1;
+        margin: 0;
+      }
+
+      p {
+        font-size: 56px;
+        font-weight: 600;
+        letter-spacing: -1.6px;
+        line-height: 1.2;
+        margin: 58px 0 0;
+      }
+
+      .accent {
+        color: #38bdf8;
+      }
+
+      footer {
+        border-top: 1px solid #2e2e2e;
+        bottom: 48px;
+        color: #9b9b9b;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 24px;
+        left: 80px;
+        padding-top: 24px;
+        position: absolute;
+        right: 80px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <img src="../static/img/logo.svg" alt="" width="112" height="112" />
+      <h1>Kysely</h1>
+    </div>
+    <p>
+      <span class="accent">Type-safe</span> SQL query builder<br />for
+      TypeScript
+    </p>
+    <footer>kysely.dev</footer>
+  </body>
+</html>
