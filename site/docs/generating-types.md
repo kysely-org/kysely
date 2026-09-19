@@ -1,3 +1,7 @@
+---
+description: 'Generate Kysely database types from your database schema or Prisma models using tools such as kysely-codegen, prisma-kysely, and Kanel.'
+---
+
 # Generating types
 
 To work with Kysely, you're required to provide a database schema type definition to the Kysely constructor.

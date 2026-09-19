@@ -1,3 +1,7 @@
+---
+description: 'Prevent duplicate joins in dynamic Kysely queries by configuring DeduplicateJoinsPlugin globally or for an individual query.'
+---
+
 # Deduplicate joins
 
 When building dynamic queries, you sometimes end up in situations where the same join

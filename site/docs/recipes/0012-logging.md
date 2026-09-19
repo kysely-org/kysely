@@ -1,3 +1,7 @@
+---
+description: 'Configure Kysely query and error logging with built-in log levels or a custom callback for SQL, parameters, and execution duration.'
+---
+
 # Logging
 
 It is possible to set up logs for all queries using the `log` property when instantiating `Kysely`.

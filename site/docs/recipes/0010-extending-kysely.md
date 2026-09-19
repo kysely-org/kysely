@@ -1,3 +1,7 @@
+---
+description: 'Extend Kysely with custom type-safe expressions and helpers using Expression, AliasedExpression, and the sql template tag.'
+---
+
 # Extending kysely
 
 In many cases, Kysely doesn't provide a built-in type-safe method for a feature. It's often because adding

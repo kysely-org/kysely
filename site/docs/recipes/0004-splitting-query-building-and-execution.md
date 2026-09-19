@@ -1,3 +1,7 @@
+---
+description: 'Compile Kysely queries without a database connection using DummyDriver, infer result types, and execute compiled queries separately.'
+---
+
 # Splitting query building and execution
 
 Kysely is primarily a type-safe sql query builder.

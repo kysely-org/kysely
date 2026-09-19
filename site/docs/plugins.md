@@ -1,3 +1,7 @@
+---
+description: 'Configure Kysely plugins for camelCase identifiers, duplicate joins, empty IN lists, and null comparisons.'
+---
+
 # Plugin system
 
 Plugins are classes that implement [KyselyPlugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html). Plugins are then added to the `Kysely` instance as follows:

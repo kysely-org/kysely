@@ -1,3 +1,7 @@
+---
+description: 'Select columns conditionally with the Kysely $if method while preserving type inference for optional fields in query results.'
+---
+
 # Conditional selects
 
 Sometimes you may want to select some fields based on a runtime condition.
