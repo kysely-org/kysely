@@ -261,6 +261,15 @@
     "provenAt": "2026-09-18"
   },
   {
+    "name": "LogTide",
+    "repo": "logtide-dev/logtide",
+    "path": "packages/backend/src/modules/admin/service.ts",
+    "sha": "3c0c0bbf41ce59da72d2ebe11caf77d86d5554e2",
+    "href": "https://github.com/logtide-dev/logtide/blob/3c0c0bbf41ce59da72d2ebe11caf77d86d5554e2/packages/backend/src/modules/admin/service.ts",
+    "group": "built-into",
+    "provenAt": "2026-08-22"
+  },
+  {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/package.json",
