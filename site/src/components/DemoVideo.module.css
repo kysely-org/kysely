@@ -6,7 +6,7 @@
 
 /*
  * Crops the recording's VS Code activity bar (left) and status bar (bottom)
- * so the code and autocompletion fill the frame. Source video is 824x610;
+ * so the code and autocompletion fill the frame. Video and poster are 800x592;
  * the native title bar is kept.
  */
 .cropBox {
@@ -20,6 +20,7 @@
 }
 
 .video {
+  aspect-ratio: 800 / 592;
   display: block;
   height: auto;
   left: -6.67%;
@@ -27,4 +28,3 @@
   top: 0;
   width: 106.67%;
 }
-
