@@ -370,35 +370,35 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
   }
 
   .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-shortcut {
+    align-items: center;
+    border: 1px solid var(--navbar-divider);
+    border-radius: 4px;
     display: flex;
-    gap: 0;
+    gap: 2px;
+    height: 22px;
     margin: 0;
-    padding: 0;
+    padding: 0 6px;
   }
 
   .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-key {
     -webkit-font-smoothing: antialiased;
     background: transparent;
-    border: 1px solid var(--navbar-divider);
-    border-radius: 4px 0 0 4px;
-    border-right: none;
+    align-items: center;
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
     color: currentColor;
+    display: inline-flex;
     font-family: inherit;
     font-size: 12px;
-    height: 22px;
-    line-height: 22px;
-    margin: 2px 0 0;
+    font-weight: 500;
+    height: auto;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
     min-width: 0;
-    padding: 0 0 2px 6px;
+    padding: 0;
     width: auto;
-  }
-
-  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-key + .pf-trigger-key {
-    border: 1px solid var(--navbar-divider);
-    border-left: none;
-    border-radius: 0 4px 4px 0;
-    padding: 0 6px 2px 2px;
   }
 }
 
