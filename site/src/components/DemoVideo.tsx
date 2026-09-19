@@ -54,14 +54,14 @@ export function DemoVideo() {
           <video
             key={colorMode}
             className={styles.video}
-            height="610"
+            height="592"
             loop
             muted
             playsInline
             poster={sources.poster}
             preload="none"
             ref={videoRef}
-            width="824"
+            width="800"
           >
             <source src={sources.webm} type="video/webm" />
             <source src={sources.mp4} type="video/mp4" />
