@@ -390,6 +390,7 @@ const LOGO_WITH_NAME = new Set([
   'inlang',
   'Materialize',
   'Notesnook',
+  'Open Mercato',
   'OpenClaw',
   'Prisma Studio',
   'Replicas',

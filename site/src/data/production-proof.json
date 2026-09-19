@@ -288,6 +288,15 @@
     "provenAt": "2026-08-13"
   },
   {
+    "name": "Open Mercato",
+    "repo": "open-mercato/open-mercato",
+    "path": "packages/core/src/modules/query_index/lib/engine.ts",
+    "sha": "ab23d45ffc3aeca5e7d994eb57d5526c5b0a4712",
+    "href": "https://github.com/open-mercato/open-mercato/blob/ab23d45ffc3aeca5e7d994eb57d5526c5b0a4712/packages/core/src/modules/query_index/lib/engine.ts",
+    "group": "built-into",
+    "provenAt": "2026-09-18"
+  },
+  {
     "name": "OpenClaw",
     "repo": "openclaw/openclaw",
     "path": "src/agents/worktrees/registry.ts",
