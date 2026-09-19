@@ -125,6 +125,7 @@ export default {
   projectName: 'kysely',
   tagline: 'The most powerful type-safe SQL query builder for TypeScript',
   themeConfig: {
+    image: 'img/social-card.png',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
