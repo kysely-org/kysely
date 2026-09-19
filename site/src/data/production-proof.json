@@ -447,6 +447,15 @@
     "provenAt": "2026-08-13"
   },
   {
+    "name": "TrueForge",
+    "repo": "truefoundry/trueforge",
+    "path": "packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
+    "sha": "651c574e6ebf8bc2f4c39a00c7f749b4c22d9f88",
+    "href": "https://github.com/truefoundry/trueforge/blob/651c574e6ebf8bc2f4c39a00c7f749b4c22d9f88/packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
+    "group": "built-into",
+    "provenAt": "2026-09-18"
+  },
+  {
     "name": "Tunarr",
     "repo": "chrisbenincasa/tunarr",
     "path": "server/src/db/FillerListDB.ts",
