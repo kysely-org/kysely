@@ -1,3 +1,7 @@
+---
+description: 'Compose type-safe SQL expressions with the Kysely expression builder, including function calls, subqueries, and conditional filters.'
+---
+
 # Expressions
 
 An [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expression.html) is the basic type-safe query building block in Kysely. Pretty much all methods accept expressions as inputs. Most internal classes like [SelectQueryBuilder](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html) and [RawBuilder](https://kysely-org.github.io/kysely-apidoc/interfaces/RawBuilder.html) (the return value of the [sql tag](https://kysely-org.github.io/kysely-apidoc/functions/sql-1.html)) are expressions themselves.

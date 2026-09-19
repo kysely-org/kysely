@@ -1,3 +1,7 @@
+---
+description: 'Nest related rows as JSON objects and arrays in Kysely queries using helpers for PostgreSQL, MySQL, and SQLite.'
+---
+
 # Relations
 
 <h3>

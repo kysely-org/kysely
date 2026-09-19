@@ -1,3 +1,7 @@
+---
+description: 'Fix the TypeScript TS2589 excessively deep type instantiation error in Kysely queries using $assertType without losing type safety.'
+---
+
 # Dealing with the `Type instantiation is excessively deep and possibly infinite` error
 
 Kysely uses complex type magic to achieve its type safety. This complexity is sometimes

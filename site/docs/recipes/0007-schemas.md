@@ -1,3 +1,7 @@
+---
+description: 'Work with named database schemas in Kysely using qualified table names and withSchema for grouped tables and multitenant applications.'
+---
+
 # Working with schemas
 
 First of all, when we talk about schemas in this document, we mean custom

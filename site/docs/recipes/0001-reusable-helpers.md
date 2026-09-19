@@ -1,3 +1,7 @@
+---
+description: 'Build reusable, type-safe Kysely query helpers with expressions, the expression builder, subqueries, and the sql template tag.'
+---
+
 # Reusable helpers
 
 :::info

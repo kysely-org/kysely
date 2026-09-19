@@ -1,3 +1,7 @@
+---
+description: 'Understand compile-time and runtime data types in Kysely, and align your TypeScript column types with values returned by your database driver.'
+---
+
 # Data types
 
 When talking about data types in Kysely we need to make a distinction between the two kinds of types:

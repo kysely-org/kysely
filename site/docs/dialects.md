@@ -1,3 +1,7 @@
+---
+description: 'Find built-in and community Kysely dialects for PostgreSQL, MySQL, SQL Server, SQLite, and other databases.'
+---
+
 # Dialects
 
 A dialect is the glue between Kysely and the underlying database engine. Check the [API docs](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) to learn how to build your own.
