@@ -1,4 +1,5 @@
 import React, { JSX, useEffect, useRef, useState } from 'react'
+import Head from '@docusaurus/Head'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
@@ -27,9 +28,14 @@ const TEST_FOLDER_BASE_URL =
 
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext()
+  const title = `${siteConfig.title} — Type-safe SQL query builder for TypeScript`
 
   return (
-    <Layout title={siteConfig.title} description={siteConfig.tagline}>
+    <Layout description={siteConfig.tagline}>
+      <Head>
+        <title>{title}</title>
+        <meta property="og:title" content={title} />
+      </Head>
       <div className={styles.landing}>
         <SectionHero />
         <SectionStats />
