@@ -123,7 +123,8 @@ export default {
     ],
   ],
   projectName: 'kysely',
-  tagline: 'The most powerful type-safe SQL query builder for TypeScript',
+  tagline:
+    'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime dependencies.',
   themeConfig: {
     image: 'img/social-card.png',
     colorMode: {
@@ -180,13 +181,6 @@ export default {
         },
       } satisfies MermaidConfig,
     },
-    metadata: [
-      {
-        content:
-          'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime dependencies.',
-        name: 'description',
-      },
-    ],
     navbar: {
       items: [
         {
