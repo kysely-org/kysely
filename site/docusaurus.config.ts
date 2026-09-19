@@ -9,6 +9,9 @@ import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
 
+const tagline =
+  'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime dependencies.'
+
 function socialNavbarItem(
   label: string,
   href: string,
@@ -123,8 +126,7 @@ export default {
     ],
   ],
   projectName: 'kysely',
-  tagline:
-    'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Deno, Maersk, and Cal.com. Modern TypeScript, zero runtime dependencies.',
+  tagline,
   themeConfig: {
     image: 'img/social-card.png',
     colorMode: {
@@ -181,6 +183,12 @@ export default {
         },
       } satisfies MermaidConfig,
     },
+    metadata: [
+      {
+        content: tagline,
+        name: 'description',
+      },
+    ],
     navbar: {
       items: [
         {
