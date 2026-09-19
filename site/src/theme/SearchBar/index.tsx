@@ -330,11 +330,12 @@ export default function SearchBar(): React.JSX.Element {
   if (!isReady) {
     // Static stand-in during SSR and while the bundle loads; also what
     // `docusaurus start` shows, where no Pagefind bundle exists. Clones the
-    // live trigger's markup so the swap is pixel-identical.
+    // live trigger's markup and lowercase English label so the swap is
+    // pixel-identical (Pagefind uses its "keyboard_search" translation).
     return (
-      <button aria-label="Search" className="pf-trigger-btn" type="button">
+      <button aria-label="search" className="pf-trigger-btn" type="button">
         <span aria-hidden="true" className="pf-trigger-icon" />
-        <span className="pf-trigger-text">Search</span>
+        <span className="pf-trigger-text">search</span>
         <span aria-hidden="true" className="pf-trigger-shortcut">
           <span className="pf-trigger-key">{modifierKey}</span>
           <span className="pf-trigger-key">K</span>
