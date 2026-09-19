@@ -252,6 +252,15 @@
     "provenAt": "2026-08-11"
   },
   {
+    "name": "Langfuse",
+    "repo": "langfuse/langfuse",
+    "path": "packages/shared/src/server/query-ast/catalog.ts",
+    "sha": "ef0add7b2598200bd44573178d9d1cc5f7cc770b",
+    "href": "https://github.com/langfuse/langfuse/blob/ef0add7b2598200bd44573178d9d1cc5f7cc770b/packages/shared/src/server/query-ast/catalog.ts",
+    "group": "built-into",
+    "provenAt": "2026-09-18"
+  },
+  {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/package.json",
