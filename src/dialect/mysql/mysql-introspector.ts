@@ -1,6 +1,7 @@
 import type {
   DatabaseIntrospector,
   DatabaseMetadataOptions,
+  DatabaseSchemaMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
@@ -12,6 +13,14 @@ import type { Kysely } from '../../kysely.js'
 import { freeze } from '../../util/object-utils.js'
 import { sql } from '../../raw-builder/sql.js'
 
+const SYSTEM_DATABASES = [
+  'information_schema',
+  'mysql',
+  'performance_schema',
+  'sys',
+  'ndbinfo',
+] as const
+
 export class MysqlIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
 
@@ -19,14 +28,21 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getSchemas(): Promise<SchemaMetadata[]> {
-    let rawSchemas = await this.#db
+  async getSchemas(
+    options: DatabaseSchemaMetadataOptions = {},
+  ): Promise<SchemaMetadata[]> {
+    let query = this.#db
       .selectFrom('information_schema.schemata')
-      .select('schema_name')
-      .$castTo<RawSchemaMetadata>()
-      .execute()
+      .select('schema_name as name')
+      .$narrowType<SchemaMetadata>()
 
-    return rawSchemas.map((it) => ({ name: it.SCHEMA_NAME }))
+    if (options.where) {
+      query = query.where(
+        options.where({ schema: sql.ref<string>('schema_name') }),
+      )
+    }
+
+    return await query.execute()
   }
 
   async getTables(
@@ -46,21 +62,36 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.TABLE_NAME',
         'columns.TABLE_SCHEMA',
         'tables.TABLE_TYPE',
+        'tables.TABLE_COMMENT',
         'tables.ENGINE',
         'columns.IS_NULLABLE',
         'columns.DATA_TYPE',
         'columns.EXTRA',
         'columns.COLUMN_COMMENT',
       ])
-      .where('columns.TABLE_SCHEMA', '=', sql`database()`)
+      .where('columns.TABLE_SCHEMA', 'not in', SYSTEM_DATABASES)
+      .orderBy('columns.TABLE_SCHEMA')
       .orderBy('columns.TABLE_NAME')
       .orderBy('columns.ORDINAL_POSITION')
       .$castTo<RawColumnMetadata>()
+
+    if (!options.withNonDefaultDatabases) {
+      query = query.where('columns.TABLE_SCHEMA', '=', sql`database()`)
+    }
 
     if (!options.withInternalKyselyTables) {
       query = query
         .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_TABLE)
         .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+    }
+
+    if (options.where) {
+      query = query.where(
+        options.where({
+          schema: sql.ref<string>('columns.TABLE_SCHEMA'),
+          table: sql.ref<string>('columns.TABLE_NAME'),
+        }),
+      )
     }
 
     const rawColumns = await query.execute()
@@ -69,15 +100,21 @@ export class MysqlIntrospector implements DatabaseIntrospector {
 
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
-      let table = tables.find((tbl) => tbl.name === it.TABLE_NAME)
+      let table = tables.find(
+        (tbl) => tbl.name === it.TABLE_NAME && tbl.schema === it.TABLE_SCHEMA,
+      )
 
       if (!table) {
         table = freeze({
-          name: it.TABLE_NAME,
-          isView: it.TABLE_TYPE === 'VIEW',
-          isForeign: it.ENGINE === 'FEDERATED',
-          schema: it.TABLE_SCHEMA,
           columns: [],
+          comment:
+            it.TABLE_TYPE === 'VIEW' || it.TABLE_COMMENT === ''
+              ? undefined
+              : it.TABLE_COMMENT,
+          isForeign: it.ENGINE === 'FEDERATED',
+          isView: it.TABLE_TYPE === 'VIEW',
+          name: it.TABLE_NAME,
+          schema: it.TABLE_SCHEMA,
         })
 
         tables.push(table)
@@ -99,16 +136,13 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   }
 }
 
-interface RawSchemaMetadata {
-  SCHEMA_NAME: string
-}
-
 interface RawColumnMetadata {
   COLUMN_NAME: string
   COLUMN_DEFAULT: any
   TABLE_NAME: string
   TABLE_SCHEMA: string
   TABLE_TYPE: string
+  TABLE_COMMENT: string
   ENGINE: string
   IS_NULLABLE: 'YES' | 'NO'
   DATA_TYPE: string
