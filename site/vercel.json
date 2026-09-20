@@ -19,7 +19,7 @@
       "headers": { "Content-Type": "text/markdown; charset=utf-8" }
     },
     {
-      "src": "^/docs/((?!category(?:/|$))[^.]+?)/?$",
+      "src": "^/docs/([^.]+?)/?$",
       "methods": ["GET", "HEAD"],
       "has": [{ "type": "header", "key": "accept", "value": "text/markdown" }],
       "dest": "/docs/$1.md",

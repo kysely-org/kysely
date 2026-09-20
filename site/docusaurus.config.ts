@@ -80,15 +80,11 @@ export default {
           // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
           contentSelectors: [
             '.theme-doc-markdown', // Docusaurus main content area
-            'main .container .col', // Bootstrap-style layout
-            'main .theme-doc-wrapper', // Docusaurus wrapper
-            'article', // Semantic article element
-            'main .container', // Broader container
-            'main', // Fallback to main element
+            'main', // Full category indexes, including all cards
             '.code-example',
           ],
           enableLlmsFullTxt: true,
-          includeGeneratedIndex: false,
+          includeGeneratedIndex: true,
           includePages: true,
           includeVersionedDocs: false,
           relativePaths: false,
