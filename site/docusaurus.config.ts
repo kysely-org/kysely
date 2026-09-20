@@ -8,6 +8,9 @@ import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaur
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
+import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
+
+const url = 'https://kysely.dev'
 
 const tagline =
   'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Mozilla, Bluesky, and Materialize. Modern TypeScript, zero runtime dependencies.'
@@ -87,6 +90,7 @@ export default {
           includePages: true,
           includeVersionedDocs: false,
           relativePaths: false,
+          remarkPlugins: [[remarkAgentDocs, { url }]],
         },
         depth: 3,
         onRouteError: 'throw',
@@ -246,5 +250,5 @@ export default {
   clientModules: ['./src/clientModules/navbarScroll.ts'],
   themes: ['@docusaurus/theme-mermaid'],
   title: 'Kysely',
-  url: 'https://kysely.dev',
+  url,
 } satisfies Config
