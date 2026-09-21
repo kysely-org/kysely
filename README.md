@@ -99,7 +99,7 @@ The docs also cover [generating database types](https://kysely.dev/docs/generati
 ## Who uses Kysely?
 
 Kysely runs in production at [Mozilla](https://github.com/mozilla/fxa/blob/8c812edefcc860e3a889f7f3e9b14a926ab056cb/libs/accounts/passkey/src/lib/passkey.repository.ts), [Bluesky](https://github.com/bluesky-social/atproto/blob/f5a0af4465b469203a2a0804e9611474fde50feb/packages/ozone/src/set/service.ts) and [Materialize](https://github.com/MaterializeInc/materialize/blob/3a708836669f15a6dcb700b118fc01e1db7f2db8/console/src/api/materialize/roles/roleDetails.ts).
-It's also built into tools including [Better Auth](https://github.com/better-auth/better-auth/blob/86faaee69b6c2afe237fff8a00602ecc8eccc367/packages/better-auth/src/db/get-migration.ts), [MikroORM](https://github.com/mikro-orm/mikro-orm/blob/80959d2aaa20862b76c37ad9fc3a6be79fb9ba74/packages/sql/package.json) and [Prisma Studio](https://github.com/prisma/studio/blob/550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b/data/mysql-core/dml.ts).
+It's also built into tools including [Better Auth](https://github.com/better-auth/better-auth/blob/86faaee69b6c2afe237fff8a00602ecc8eccc367/packages/better-auth/src/db/get-migration.ts), [MikroORM](https://github.com/mikro-orm/mikro-orm/blob/80959d2aaa20862b76c37ad9fc3a6be79fb9ba74/packages/sql/package.json) and [OpenClaw](https://github.com/openclaw/openclaw/blob/e391505896163d06d97ae8f48caa5ae333e89a7b/src/agents/worktrees/registry.ts).
 Each name links to public evidence; see more projects on [kysely.dev](https://kysely.dev).
 
 ## Community
