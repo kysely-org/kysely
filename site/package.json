@@ -37,10 +37,10 @@
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
     "@types/react": "19.3.0",
     "afdocs": "0.20.0",
-    "hono": "4.13.7",
+    "hono": "catalog:http",
     "mermaid": "11.16.1",
     "pagefind": "1.5.2",
-    "pathe": "2.0.3",
+    "pathe": "catalog:node",
     "shiki": "4.4.3",
     "typescript": "7.0.2"
   },
