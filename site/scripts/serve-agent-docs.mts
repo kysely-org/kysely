@@ -5,64 +5,76 @@ import { Hono } from 'hono'
 import { extname } from 'pathe'
 import vercel from '../vercel.json' with { type: 'json' }
 
-const { routes } = vercel
-
 // Fail if new routing features would otherwise be ignored by this CI server.
 const supportedKeys = ['src', 'dest', 'headers', 'methods', 'has', 'continue']
-for (const route of routes) {
+const routes = vercel.routes.map((route) => {
   if (
     Object.keys(route).some((key) => !supportedKeys.includes(key)) ||
     route.has?.some((condition) => condition.type !== 'header')
   ) {
     throw new Error('Update the afdocs server to support the new Vercel rules')
   }
-}
+
+  return {
+    pattern: new RegExp(route.src),
+    methods: route.methods && new Set(route.methods),
+    conditions: (route.has ?? []).map(({ key, value }) => ({
+      key,
+      pattern: new RegExp(`^(?:${value})$`),
+    })),
+    headers: Object.entries(route.headers).filter(
+      (entry): entry is [string, string] => entry[1] !== undefined,
+    ),
+    dest: route.dest,
+    continue: route.continue,
+  }
+})
 
 const root = fileURLToPath(new URL('../build/', import.meta.url))
-const app = new Hono()
-app.use('*', serveStatic({ root }))
-const serveHtml = serveStatic({
-  root,
-  rewriteRequestPath: (path) => `${path.replace(/\/$/, '')}.html`,
-})
-app.use('*', (c, next) => (extname(c.req.path) ? next() : serveHtml(c, next)))
+type Env = { Variables: { filePath: string } }
+const app = new Hono<Env>()
+app.use('*', async (c, next) => {
+  let pathname = c.req.path
+  const headers = new Headers()
 
-serve({
-  hostname: '127.0.0.1',
-  port: 3000,
-  fetch: async (request) => {
-    const url = new URL(request.url)
-    const headers = new Headers()
-
-    for (const route of routes) {
-      const pattern = new RegExp(route.src)
-      if (
-        !pattern.test(url.pathname) ||
-        (route.methods && !route.methods.includes(request.method)) ||
-        route.has?.some((condition) => {
-          const value = request.headers.get(condition.key)
-          return (
-            value === null ||
-            !new RegExp(`^(?:${condition.value})$`).test(value)
-          )
-        })
-      ) {
-        continue
-      }
-
-      for (const [key, value] of Object.entries(route.headers)) {
-        if (value !== undefined) headers.set(key, value)
-      }
-      if (route.dest) {
-        url.pathname = url.pathname.replace(pattern, route.dest)
-      }
-      if (!route.continue) {
-        break
-      }
+  for (const route of routes) {
+    if (
+      !route.pattern.test(pathname) ||
+      (route.methods && !route.methods.has(c.req.method)) ||
+      route.conditions.some((condition) => {
+        const value = c.req.header(condition.key)
+        return value === undefined || !condition.pattern.test(value)
+      })
+    ) {
+      continue
     }
 
-    const response = await app.fetch(new Request(url, request))
-    headers.forEach((value, key) => response.headers.set(key, value))
-    return response
-  },
+    for (const [key, value] of route.headers) {
+      headers.set(key, value)
+    }
+    if (route.dest) {
+      pathname = pathname.replace(route.pattern, route.dest)
+    }
+    if (!route.continue) {
+      break
+    }
+  }
+
+  c.set('filePath', decodeURI(pathname))
+  await next()
+  headers.forEach((value, key) => c.header(key, value))
 })
+
+app.use(
+  '*',
+  serveStatic<Env>({ root, rewriteRequestPath: (_, c) => c.get('filePath') }),
+)
+const serveHtml = serveStatic<Env>({
+  root,
+  rewriteRequestPath: (_, c) => `${c.get('filePath').replace(/\/$/, '')}.html`,
+})
+app.use('*', (c, next) =>
+  extname(c.get('filePath')) ? next() : serveHtml(c, next),
+)
+
+serve({ fetch: app.fetch, hostname: '127.0.0.1', port: 3000 })
