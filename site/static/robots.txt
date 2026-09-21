@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 
 Sitemap: https://kysely.dev/sitemap.xml
