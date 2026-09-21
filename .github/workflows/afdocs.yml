@@ -64,7 +64,7 @@ jobs:
         id: scan
         working-directory: site
         run: |
-          node scripts/serve-agent-docs.mjs > afdocs-server.log 2>&1 &
+          node scripts/serve-agent-docs.mts > afdocs-server.log 2>&1 &
           docs_server_pid=$!
           trap 'kill "$docs_server_pid" 2>/dev/null || true' EXIT
           curl --fail --silent --show-error --retry 20 --retry-connrefused \

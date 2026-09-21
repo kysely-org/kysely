@@ -171,12 +171,18 @@ importers:
       '@docusaurus/types':
         specifier: 3.10.2
         version: 3.10.2(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)(react-dom@19.3.0)(react@19.3.0)(supports-color@10.2.2)
+      '@hono/node-server':
+        specifier: 2.1.1
+        version: 2.1.1(hono@4.13.7)
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
+      hono:
+        specifier: 4.13.7
+        version: 4.13.7
       mermaid:
         specifier: 11.16.1
         version: 11.16.1
@@ -1840,6 +1846,12 @@ packages:
 
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
+
+  '@hono/node-server@2.1.1':
+    resolution: {integrity: sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      hono: ^4
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -9943,6 +9955,10 @@ snapshots:
   '@hapi/topo@5.1.0':
     dependencies:
       '@hapi/hoek': 9.3.0
+
+  '@hono/node-server@2.1.1(hono@4.13.7)':
+    dependencies:
+      hono: 4.13.7
 
   '@iconify/types@2.0.0': {}
 
