@@ -183,6 +183,9 @@ importers:
       pagefind:
         specifier: 1.5.2
         version: 1.5.2
+      pathe:
+        specifier: 2.0.3
+        version: 2.0.3
       shiki:
         specifier: 4.4.3
         version: 4.4.3

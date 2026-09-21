@@ -1,7 +1,7 @@
 import { readFile, stat } from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { extname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extname, resolve, sep } from 'pathe'
 
 const buildDir = fileURLToPath(new URL('../build/', import.meta.url))
 const { routes } = JSON.parse(

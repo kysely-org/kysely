@@ -37,6 +37,7 @@
     "@types/react": "19.3.0",
     "mermaid": "11.16.1",
     "pagefind": "1.5.2",
+    "pathe": "2.0.3",
     "shiki": "4.4.3",
     "typescript": "7.0.2"
   },
