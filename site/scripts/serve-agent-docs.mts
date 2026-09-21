@@ -33,7 +33,7 @@ const routes = vercel.routes.map((route) => {
 const root = fileURLToPath(new URL('../build/', import.meta.url))
 type Env = { Variables: { filePath: string } }
 const app = new Hono<Env>()
-app.use('*', async (c, next) => {
+app.use(async (c, next) => {
   let pathname = c.req.path
   const headers = new Headers()
 
@@ -66,15 +66,12 @@ app.use('*', async (c, next) => {
 })
 
 app.use(
-  '*',
   serveStatic<Env>({ root, rewriteRequestPath: (_, c) => c.get('filePath') }),
 )
 const serveHtml = serveStatic<Env>({
   root,
   rewriteRequestPath: (_, c) => `${c.get('filePath').replace(/\/$/, '')}.html`,
 })
-app.use('*', (c, next) =>
-  extname(c.get('filePath')) ? next() : serveHtml(c, next),
-)
+app.use((c, next) => (extname(c.get('filePath')) ? next() : serveHtml(c, next)))
 
 serve({ fetch: app.fetch, hostname: '127.0.0.1', port: 3000 })
