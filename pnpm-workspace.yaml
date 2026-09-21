@@ -19,6 +19,12 @@ auditConfig:
   ignoreGhsas:
     - GHSA-h726-x36v-rx45 # prototype-pollution-vulnerable-lodash.merge-dont-upgrade
 
+catalogs:
+  http:
+    hono: 4.13.7
+  node:
+    pathe: 2.0.3
+
 # Deduplicate peer dependencies.
 # see: https://github.com/pnpm/pnpm/issues/11070
 dedupePeers: true

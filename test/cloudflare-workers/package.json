@@ -6,7 +6,7 @@
     "test": "node --experimental-strip-types test.ts"
   },
   "dependencies": {
-    "hono": "4.13.7"
+    "hono": "catalog:http"
   },
   "devDependencies": {
     "wrangler": "4.131.2"
