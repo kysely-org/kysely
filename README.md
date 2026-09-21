@@ -14,6 +14,8 @@ Write queries with autocompletion and inferred result types while keeping contro
 [![NPM Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
 [![JSR Downloads](https://jsr.io/badges/@kysely/kysely/weekly-downloads)](https://jsr.io/@kysely/kysely)
 
+![Kysely providing table and column autocompletion and inferring query result types in an editor](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
+
 ## SQL, with TypeScript
 
 With a [configured `Kysely<Database>` instance](https://kysely.dev/docs/getting-started) named `db`, select people aged 18 and older and their pets:
@@ -80,8 +82,6 @@ These types describe your database; they don't create its tables. You can [gener
 - **Opt-in conventions.** [Plugins](https://kysely.dev/docs/plugins) can transform queries before compilation and results after execution. Use camelCase in TypeScript and snake_case in your database, for example.
 - **Documentation ships with the API.** Inline JSDoc includes examples that are [type-checked in CI](https://github.com/kysely-org/kysely/blob/master/.github/workflows/test.yml). Read it through IDE hovers, the [API reference](https://kysely-org.github.io/kysely-apidoc/), or your coding agent alongside the installed library.
 - **Zero runtime dependencies.** Kysely's core avoids environment-specific APIs. Choose a [dialect and driver](https://kysely.dev/docs/dialects) for your database and runtime: Node.js, Bun, Deno, AWS Lambda, Cloudflare Workers or browsers. Extend database support through community or custom dialects.
-
-![Kysely providing table and column autocompletion and inferring query result types in an editor](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
 
 ## Getting started
 
