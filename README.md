@@ -2,7 +2,7 @@
 
 # [Kysely](https://kysely.dev)
 
-Kysely (pronounced “Key-Seh-Lee”) is a type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
+Kysely (pronounced “Key-Seh-Lee”) is a [mature](https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767), type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
 Write queries with autocompletion and inferred result types while keeping control of the SQL you run.
 
 **[Getting started](https://kysely.dev/docs/getting-started) · [Playground](https://play.kysely.dev) · [API reference](https://kysely-org.github.io/kysely-apidoc/)**
@@ -73,10 +73,13 @@ These types describe your database; they don't create its tables. You can [gener
 
 ## Why Kysely?
 
-- **SQL you already know.** Build queries with joins, subqueries, common table expressions and other familiar SQL constructs. [Explore the examples](https://kysely.dev/docs/category/examples).
-- **Types that follow your query.** Get autocompletion for tables and columns in scope, and result types that reflect your selections and aliases. API documentation and examples are available right in your IDE.
-- **Queries you can compose.** Build [reusable expressions and helpers](https://kysely.dev/docs/recipes/reusable-helpers), add [conditional filters](https://kysely.dev/docs/examples/where/conditional-where-calls), or use the [parameterized `sql` template tag](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) when you need custom SQL.
-- **Fits your stack.** Kysely has zero runtime dependencies. Choose a [dialect and driver](https://kysely.dev/docs/dialects) for your database and JavaScript runtime, including Node.js, Bun, Deno, Cloudflare Workers and browsers.
+- **What you see is what you get.** A thin layer over SQL with familiar naming and structure, and predictable 1:1 query compilation. You decide which joins, subqueries and columns go into the SQL you run.
+- **Type safety within queries and in their results.** Catch nonexistent tables, misspelled columns and mistyped values at compile time. When you rename a column in your database types, TypeScript points out the queries that need updating. Autocompletion and inferred result types follow your selections, joins and aliases.
+- **Composition through plain TypeScript.** Extract expressions, subqueries and CTEs into [reusable typed functions](https://kysely.dev/docs/recipes/reusable-helpers). Fetch [related rows as typed, nested JSON](https://kysely.dev/docs/recipes/relations) in one query and one database round trip using SQL subqueries and JSON helpers.
+- **SQL's full range of expression.** Build `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `WITH` and more through [SQL-oriented APIs](https://kysely.dev/docs/category/examples). Compose custom SQL into structured queries with the [parameterized `sql` template tag](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
+- **Opt-in conventions.** [Plugins](https://kysely.dev/docs/plugins) can transform queries before compilation and results after execution. Use camelCase in TypeScript and snake_case in your database, for example.
+- **Documentation ships with the API.** Inline JSDoc includes examples that are [type-checked in CI](https://github.com/kysely-org/kysely/blob/master/.github/workflows/test.yml). Read it through IDE hovers, the [API reference](https://kysely-org.github.io/kysely-apidoc/), or your coding agent alongside the installed library.
+- **Zero runtime dependencies.** Kysely's core avoids environment-specific APIs. Choose a [dialect and driver](https://kysely.dev/docs/dialects) for your database and runtime: Node.js, Bun, Deno, AWS Lambda, Cloudflare Workers or browsers. Extend database support through community or custom dialects.
 
 ![Kysely providing table and column autocompletion and inferring query result types in an editor](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
 
