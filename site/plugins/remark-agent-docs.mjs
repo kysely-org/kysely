@@ -1,6 +1,6 @@
 export default function remarkAgentDocs({ url }) {
   return (tree) => {
-    // The homepage's HTML extraction already includes the shared Root hint.
+    // Avoid duplicating the hint if it was already included in the content.
     const firstNode = tree.children[0]
     if (
       firstNode?.type === 'paragraph' &&

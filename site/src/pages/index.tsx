@@ -42,7 +42,7 @@ export default function Home(): JSX.Element {
           fetchPriority="high"
         />
       </Head>
-      <div className={styles.landing}>
+      <main className={styles.landing}>
         <SectionHero />
         <SectionStats />
         <SectionProduction />
@@ -50,7 +50,7 @@ export default function Home(): JSX.Element {
         <SectionComposition />
         <SectionFeatures />
         <SectionQuotes />
-      </div>
+      </main>
     </Layout>
   )
 }

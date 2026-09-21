@@ -10,6 +10,7 @@ import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
+import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
 
 const url = 'https://kysely.dev'
 
@@ -76,7 +77,10 @@ export default {
       '@signalwire/docusaurus-plugin-llms-txt',
       {
         content: {
-          beforeDefaultRehypePlugins: [rehypeRemoveComments],
+          beforeDefaultRehypePlugins: [
+            rehypeRemoveComments,
+            rehypeRemoveMarkdownExcluded,
+          ],
           // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
           contentSelectors: [
             '.theme-doc-markdown', // Docusaurus main content area
