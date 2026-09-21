@@ -30,6 +30,8 @@ export function SectionQuotes() {
           <div
             key={columnCount}
             className={clsx(styles.masonry, styles[`masonry${columnCount}`])}
+            // Keep one copy in curated order when generating Markdown.
+            data-markdown-exclude={columnCount !== 1 ? 'true' : undefined}
           >
             {Array.from({ length: columnCount }, (_, columnIndex) => (
               <div key={columnIndex} className={styles.masonryColumn}>
