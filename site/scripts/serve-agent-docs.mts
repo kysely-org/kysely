@@ -6,11 +6,20 @@ import { extname } from 'pathe'
 import vercel from '../vercel.json' with { type: 'json' }
 
 // Fail if new routing features would otherwise be ignored by this CI server.
-const supportedKeys = ['src', 'dest', 'headers', 'methods', 'has', 'continue']
+const supportedKeys = [
+  'src',
+  'dest',
+  'headers',
+  'methods',
+  'has',
+  'continue',
+  'status',
+]
 const routes = vercel.routes.map((route) => {
   if (
     Object.keys(route).some((key) => !supportedKeys.includes(key)) ||
-    route.has?.some((condition) => condition.type !== 'header')
+    route.has?.some((condition) => condition.type !== 'header') ||
+    (route.status !== undefined && route.status !== 308)
   ) {
     throw new Error('Update the afdocs server to support the new Vercel rules')
   }
@@ -27,6 +36,7 @@ const routes = vercel.routes.map((route) => {
     ),
     dest: route.dest,
     continue: route.continue,
+    status: route.status,
   }
 })
 
@@ -34,7 +44,8 @@ const root = fileURLToPath(new URL('../build/', import.meta.url))
 type Env = { Variables: { filePath: string } }
 const app = new Hono<Env>()
 app.use(async (c, next) => {
-  let pathname = c.req.path
+  const url = new URL(c.req.url)
+  let pathname = url.pathname
   const headers = new Headers()
 
   for (const route of routes) {
@@ -50,7 +61,14 @@ app.use(async (c, next) => {
     }
 
     for (const [key, value] of route.headers) {
-      headers.set(key, value)
+      headers.set(key, pathname.replace(route.pattern, value))
+    }
+    if (route.status === 308) {
+      const location = headers.get('Location')
+      if (!location) {
+        throw new Error('A redirect route must specify a Location header')
+      }
+      return c.redirect(location + url.search, 308)
     }
     if (route.dest) {
       pathname = pathname.replace(route.pattern, route.dest)

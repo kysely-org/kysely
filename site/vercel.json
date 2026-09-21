@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "routes": [
     {
+      "src": "^/(.*)$",
+      "has": [
+        { "type": "header", "key": "host", "value": "www\\.kysely\\.dev" }
+      ],
+      "status": 308,
+      "headers": { "Location": "https://kysely.dev/$1" }
+    },
+    {
       "src": "^/(?:docs(?:/.*)?|(?:index\\.html)?)$",
       "headers": { "Vary": "Accept" },
       "continue": true
