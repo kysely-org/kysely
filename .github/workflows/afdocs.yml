@@ -72,7 +72,7 @@ jobs:
           # afdocs requires a numeric limit. Use the entire build's page count.
           page_count=$(node -e "console.log(require('node:fs').readdirSync('build', { recursive: true }).filter(path => path.endsWith('.html')).length)")
           # CDN cache headers cannot be verified against the local build.
-          pnpm dlx afdocs@0.20.0 check "$DOCS_URL" \
+          pnpm exec afdocs check "$DOCS_URL" \
             --canonical-origin https://kysely.dev \
             --llms-txt-url "${DOCS_URL%/}/llms.txt" \
             --sampling deterministic \
