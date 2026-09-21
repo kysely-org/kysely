@@ -96,6 +96,14 @@ export default {
         },
         depth: 3,
         onRouteError: 'throw',
+        optionalLinks: [
+          {
+            title: 'Kysely API reference',
+            url: 'https://kysely-org.github.io/kysely-apidoc/',
+            description:
+              'Reference documentation for Kysely classes, methods, and types, with code examples.',
+          },
+        ],
         siteDescription:
           'The most powerful type-safe SQL query builder for TypeScript',
         siteTitle: 'Kysely',
