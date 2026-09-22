@@ -21,7 +21,7 @@ auditConfig:
 
 catalogs:
   http:
-    hono: 4.13.7
+    hono: 4.13.8
   node:
     pathe: 2.0.3
 
