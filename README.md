@@ -5,6 +5,10 @@
 Kysely (pronounced “Key-Seh-Lee”) is a [mature](https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767), type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
 Write queries with autocompletion and inferred result types while keeping control of the SQL you run.
 
+```sh
+npm i kysely
+```
+
 **[Getting started](https://kysely.dev/docs/getting-started) · [Playground](https://play.kysely.dev) · [API reference](https://kysely-org.github.io/kysely-apidoc/)**
 
 [![NPM Version](https://img.shields.io/npm/v/kysely?style=flat&label=latest)](https://github.com/kysely-org/kysely/releases/latest)
@@ -85,11 +89,7 @@ These types describe your database; they don't create its tables. You can [gener
 
 ## Getting started
 
-Install Kysely, then follow the guide for your database to choose a driver and configure your first query:
-
-```sh
-npm install kysely
-```
+Follow the guide for your database to choose a driver and configure your first query:
 
 **[PostgreSQL](https://kysely.dev/docs/getting-started?dialect=postgresql) · [MySQL](https://kysely.dev/docs/getting-started?dialect=mysql) · [SQL Server](https://kysely.dev/docs/getting-started?dialect=mssql) · [SQLite](https://kysely.dev/docs/getting-started?dialect=sqlite) · [PGlite](https://kysely.dev/docs/getting-started?dialect=pglite)**
 
