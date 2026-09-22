@@ -2,7 +2,7 @@
 
 # [Kysely](https://kysely.dev)
 
-Kysely (pronounced “Key-Seh-Lee”) is a [mature](https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767), type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
+Kysely (pronounced “Key-Seh-Lee”, Finnish for “query”) is a [mature](https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767), type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
 Write queries with autocompletion and inferred result types while keeping control of the SQL you run.
 
 ```sh
