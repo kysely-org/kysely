@@ -6,7 +6,12 @@ import {
   type Driver,
   DummyDriver,
   Kysely,
+  MssqlDriver,
+  MysqlDriver,
+  PGliteDriver,
+  PostgresDriver,
   SqliteDialect,
+  SqliteDriver,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -89,6 +94,37 @@ for (const dialect of DIALECTS) {
 
     after(async () => {
       await destroyTest(ctx)
+    })
+
+    it('should release the connection without rolling back if the transaction fails to begin', async () => {
+      const driverProto = {
+        postgres: PostgresDriver,
+        mysql: MysqlDriver,
+        mssql: MssqlDriver,
+        sqlite: SqliteDriver,
+        pglite: PGliteDriver,
+      }[variant].prototype
+      const beginError = new Error('begin failed')
+      const beginStub = sandbox
+        .stub(driverProto, 'beginTransaction')
+        .rejects(beginError)
+      const acquireSpy = sandbox.spy(driverProto, 'acquireConnection')
+      const releaseSpy = sandbox.spy(driverProto, 'releaseConnection')
+      const rollbackSpy = sandbox.spy(driverProto, 'rollbackTransaction')
+
+      const error = await ctx.db
+        .startTransaction()
+        .execute()
+        .catch((error: unknown) => error)
+
+      expect(error).to.equal(beginError)
+      expect(beginStub.calledOnce, 'begin called once').to.be.true
+      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
+      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+      expect(releaseSpy.firstCall.args[0]).to.equal(
+        await acquireSpy.firstCall.returnValue,
+      )
+      expect(rollbackSpy.notCalled, 'rollback not called').to.be.true
     })
 
     it('should be able to start and commit a transaction', async () => {
