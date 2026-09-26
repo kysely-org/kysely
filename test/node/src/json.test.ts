@@ -148,19 +148,24 @@ for (const dialect of DIALECTS) {
     })
 
     it('should escape single quotes in json object keys', async () => {
+      const value = (value: string) =>
+        sqlSpec === 'postgres'
+          ? expressionBuilder().cast<string>(sql.val(value), 'text')
+          : sql.val(value)
+
       const result = await db
         .selectNoFrom(
           jsonBuildObject({
-            "single'quote": sql.lit('first'),
-            "double''quote": sql.lit('second'),
-            "'+(select 'injected')+'": sql.lit('third'),
+            "single'quote": value('first'),
+            "double''quote": value('last'),
+            "'+(select 'injected')+'": value('third'),
           }).as('object'),
         )
         .executeTakeFirstOrThrow()
 
       expect(result.object).to.eql({
         "single'quote": 'first',
-        "double''quote": 'second',
+        "double''quote": 'last',
         "'+(select 'injected')+'": 'third',
       })
     })
