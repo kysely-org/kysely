@@ -957,7 +957,12 @@ export class ControlledTransactionBuilder<DB> {
 
     const connection = await provideControlledConnection(this.#props.executor)
 
-    await this.#props.driver.beginTransaction(connection.connection, settings)
+    try {
+      await this.#props.driver.beginTransaction(connection.connection, settings)
+    } catch (error) {
+      connection.release()
+      throw error
+    }
 
     return new ControlledTransaction({
       ...props,
