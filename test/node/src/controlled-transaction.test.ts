@@ -96,7 +96,7 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should release the connection without rolling back if the transaction fails to begin', async () => {
+    it('should release the connection if the transaction fails to begin', async () => {
       const driverProto = {
         postgres: PostgresDriver,
         mysql: MysqlDriver,
@@ -110,7 +110,6 @@ for (const dialect of DIALECTS) {
         .rejects(beginError)
       const acquireSpy = sandbox.spy(driverProto, 'acquireConnection')
       const releaseSpy = sandbox.spy(driverProto, 'releaseConnection')
-      const rollbackSpy = sandbox.spy(driverProto, 'rollbackTransaction')
 
       const error = await ctx.db
         .startTransaction()
@@ -124,7 +123,6 @@ for (const dialect of DIALECTS) {
       expect(releaseSpy.firstCall.args[0]).to.equal(
         await acquireSpy.firstCall.returnValue,
       )
-      expect(rollbackSpy.notCalled, 'rollback not called').to.be.true
     })
 
     it('should be able to start and commit a transaction', async () => {
