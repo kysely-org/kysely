@@ -96,35 +96,6 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should release the connection if the transaction fails to begin', async () => {
-      const driverProto = {
-        postgres: PostgresDriver,
-        mysql: MysqlDriver,
-        mssql: MssqlDriver,
-        sqlite: SqliteDriver,
-        pglite: PGliteDriver,
-      }[variant].prototype
-      const beginError = new Error('begin failed')
-      const beginStub = sandbox
-        .stub(driverProto, 'beginTransaction')
-        .rejects(beginError)
-      const acquireSpy = sandbox.spy(driverProto, 'acquireConnection')
-      const releaseSpy = sandbox.spy(driverProto, 'releaseConnection')
-
-      const error = await ctx.db
-        .startTransaction()
-        .execute()
-        .catch((error: unknown) => error)
-
-      expect(error).to.equal(beginError)
-      expect(beginStub.calledOnce, 'begin called once').to.be.true
-      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
-      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-      expect(releaseSpy.firstCall.args[0]).to.equal(
-        await acquireSpy.firstCall.returnValue,
-      )
-    })
-
     it('should be able to start and commit a transaction', async () => {
       const trx = await ctx.db.startTransaction().execute()
 
@@ -716,6 +687,35 @@ for (const dialect of DIALECTS) {
 
       await expect(insertSomethingElse(trx)).to.be.rejectedWith(
         'Transaction is already rolled back',
+      )
+    })
+
+    it('should release the connection if the transaction fails to begin', async () => {
+      const driverProto = {
+        postgres: PostgresDriver,
+        mysql: MysqlDriver,
+        mssql: MssqlDriver,
+        sqlite: SqliteDriver,
+        pglite: PGliteDriver,
+      }[variant].prototype
+      const beginError = new Error('begin failed')
+      const beginStub = sandbox
+        .stub(driverProto, 'beginTransaction')
+        .rejects(beginError)
+      const acquireSpy = sandbox.spy(driverProto, 'acquireConnection')
+      const releaseSpy = sandbox.spy(driverProto, 'releaseConnection')
+
+      const error = await ctx.db
+        .startTransaction()
+        .execute()
+        .catch((error: unknown) => error)
+
+      expect(error).to.equal(beginError)
+      expect(beginStub.calledOnce, 'begin called once').to.be.true
+      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
+      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+      expect(releaseSpy.firstCall.args[0]).to.equal(
+        await acquireSpy.firstCall.returnValue,
       )
     })
   })
