@@ -149,11 +149,11 @@ for (const dialect of DIALECTS) {
 
     it('should escape single quotes in json object keys', async () => {
       const result = await db
-        .selectNoFrom((eb) =>
+        .selectNoFrom(
           jsonBuildObject({
-            "single'quote": eb.val('first'),
-            "double''quote": eb.val('second'),
-            "'+(select 'injected')+'": eb.val('third'),
+            "single'quote": sql.lit('first'),
+            "double''quote": sql.lit('second'),
+            "'+(select 'injected')+'": sql.lit('third'),
           }).as('object'),
         )
         .executeTakeFirstOrThrow()
