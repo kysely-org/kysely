@@ -147,6 +147,24 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
+    it('should escape single quotes in json object keys', async () => {
+      const result = await db
+        .selectNoFrom((eb) =>
+          jsonBuildObject({
+            "single'quote": eb.val('first'),
+            "double''quote": eb.val('second'),
+            "'+(select 'injected')+'": eb.val('third'),
+          }).as('object'),
+        )
+        .executeTakeFirstOrThrow()
+
+      expect(result.object).to.eql({
+        "single'quote": 'first',
+        "double''quote": 'second',
+        "'+(select 'injected')+'": 'third',
+      })
+    })
+
     it('should insert a row with a json value', async () => {
       const result = await db
         .insertInto('json_table')
