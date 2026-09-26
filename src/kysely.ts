@@ -983,15 +983,16 @@ export class ControlledTransaction<
   readonly #state: ControlledTransctionState
 
   constructor(props: ControlledTransactionProps) {
-    const state = { isCommitted: false, isRolledBack: false }
+    const state = props.state ?? { isCommitted: false, isRolledBack: false }
     props = {
       ...props,
+      state,
       executor: new NotCommittedOrRolledBackAssertingExecutor(
         props.executor,
         state,
       ),
     }
-    const { connection, ...transactionProps } = props
+    const { connection, state: transactionState, ...transactionProps } = props
     super(transactionProps)
 
     this.#props = freeze(props)
@@ -1011,6 +1012,10 @@ export class ControlledTransaction<
 
   /**
    * Commits the transaction.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before committing.
    *
    * See {@link rollback}.
    *
@@ -1036,17 +1041,21 @@ export class ControlledTransaction<
   commit(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (): Promise<void> => {
-      await this.#props.driver.commitTransaction(
-        this.#props.connection.connection,
-      )
-      this.#state.isCommitted = true
-      this.#props.connection.release()
-    })
+    return new Command(() =>
+      this.#props.executor.provideConnection(async (connection) => {
+        await this.#props.driver.commitTransaction(connection)
+        this.#state.isCommitted = true
+        this.#props.connection.release()
+      }),
+    )
   }
 
   /**
    * Rolls back the transaction.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before rolling back.
    *
    * See {@link commit} and {@link rollbackToSavepoint}.
    *
@@ -1072,13 +1081,13 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     assertNotCommittedOrRolledBack(this.#state)
 
-    return new Command(async (): Promise<void> => {
-      await this.#props.driver.rollbackTransaction(
-        this.#props.connection.connection,
-      )
-      this.#state.isRolledBack = true
-      this.#props.connection.release()
-    })
+    return new Command(() =>
+      this.#props.executor.provideConnection(async (connection) => {
+        await this.#props.driver.rollbackTransaction(connection)
+        this.#state.isRolledBack = true
+        this.#props.connection.release()
+      }),
+    )
   }
 
   /**
@@ -1292,6 +1301,7 @@ interface ControlledTransctionState {
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: ControlledConnection
+  readonly state?: ControlledTransctionState
 }
 
 export class Command<T> {
@@ -1362,7 +1372,10 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
-    return this.#executor.provideConnection(consumer, options)
+    return this.#executor.provideConnection(async (connection) => {
+      assertNotCommittedOrRolledBack(this.#state)
+      return await consumer(connection)
+    }, options)
   }
 
   executeQuery<R>(
@@ -1370,7 +1383,9 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery, options)
+    return this.#executor
+      .withConnectionProvider(this)
+      .executeQuery(compiledQuery, options)
   }
 
   stream<R>(
@@ -1379,7 +1394,9 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize, options)
+    return this.#executor
+      .withConnectionProvider(this)
+      .stream(compiledQuery, chunkSize, options)
   }
 
   withConnectionProvider(

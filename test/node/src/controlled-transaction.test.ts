@@ -1,8 +1,10 @@
 import * as sinon from 'sinon'
+import { setImmediate } from 'node:timers/promises'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
   ControlledTransaction,
+  type DatabaseConnection,
   type Driver,
   DummyDriver,
   Kysely,
@@ -24,6 +26,7 @@ import {
   limit,
 } from './test-setup.js'
 import { PGlite } from '@electric-sql/pglite'
+import { Deferred } from '../../../dist/util/deferred.js'
 
 for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
@@ -742,13 +745,16 @@ describe('custom dialect: controlled transaction', () => {
 })
 
 describe('controlled transaction', () => {
-  it('should release the connection if the transaction fails to begin', async () => {
-    const driver: Driver = new DummyDriver()
-    const beginError = new Error('begin failed')
-    sinon.stub(driver, 'beginTransaction').rejects(beginError)
-    const acquireSpy = sinon.spy(driver, 'acquireConnection')
-    const releaseSpy = sinon.spy(driver, 'releaseConnection')
-    const db = new Kysely<Database>({
+  const sandbox = sinon.createSandbox()
+  let driver: Driver
+  let connection: DatabaseConnection
+  let db: Kysely<Database>
+
+  beforeEach(async () => {
+    driver = new DummyDriver()
+    connection = await driver.acquireConnection()
+    sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    db = new Kysely<Database>({
       dialect: {
         createAdapter: () => new PostgresAdapter(),
         createDriver: () => driver,
@@ -756,23 +762,186 @@ describe('controlled transaction', () => {
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
     })
-
-    try {
-      const error = await db
-        .startTransaction()
-        .execute()
-        .catch((error: unknown) => error)
-
-      expect(error).to.equal(beginError)
-      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
-      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-      expect(releaseSpy.firstCall.args[0]).to.equal(
-        await acquireSpy.firstCall.returnValue,
-      )
-    } finally {
-      await db.destroy()
-    }
   })
+
+  afterEach(async () => {
+    sandbox.restore()
+    await db.destroy()
+  })
+
+  it('should release the connection if the transaction fails to begin', async () => {
+    const beginError = new Error('begin failed')
+    sandbox.stub(driver, 'beginTransaction').rejects(beginError)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+
+    const error = await db
+      .startTransaction()
+      .execute()
+      .catch((error: unknown) => error)
+
+    expect(error).to.equal(beginError)
+    expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+    expect(releaseSpy.firstCall.args[0]).to.equal(connection)
+  })
+
+  for (const command of ['commit', 'rollback'] as const) {
+    for (const fails of [false, true]) {
+      it(`should wait for an ongoing query to ${fails ? 'fail' : 'finish'} before ${command}`, async () => {
+        const queryStarted = new Deferred<void>()
+        const queryFinished = new Deferred<void>()
+        const queryError = new Error('query failed')
+        sandbox.stub(connection, 'executeQuery').callsFake(async () => {
+          queryStarted.resolve()
+          await queryFinished.promise
+          if (fails) throw queryError
+          return { rows: [] }
+        })
+        const commandSpy = sandbox.spy(driver, `${command}Transaction`)
+        const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+        const trx = await db.startTransaction().execute()
+        const query = trx.selectFrom('person').selectAll().execute()
+        const queryResult = query.catch((error: unknown) => error)
+        await queryStarted.promise
+
+        const completion = trx[command]().execute()
+        await setImmediate()
+        expect(commandSpy.notCalled, 'command waits for query').to.be.true
+        expect(releaseSpy.notCalled, 'connection is held').to.be.true
+
+        queryFinished.resolve()
+        expect(await queryResult).to.eql(fails ? queryError : [])
+        await completion
+        expect(commandSpy.calledOnce).to.be.true
+        expect(releaseSpy.calledOnce).to.be.true
+      })
+    }
+
+    it(`should reject queued work after ${command}, including through derived handles`, async () => {
+      const commandStarted = new Deferred<void>()
+      const commandFinished = new Deferred<void>()
+      const commandStub = sandbox
+        .stub(driver, `${command}Transaction`)
+        .callsFake(async () => {
+          commandStarted.resolve()
+          await commandFinished.promise
+        })
+      const querySpy = sandbox.spy(connection, 'executeQuery')
+      const streamSpy = sandbox.spy(connection, 'streamQuery')
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const trx = await db.startTransaction().execute()
+      const derived = trx.withSchema('public')
+      const otherCommand = trx[command === 'commit' ? 'rollback' : 'commit']()
+      const otherCommandSpy = sandbox.spy(
+        driver,
+        command === 'commit' ? 'rollbackTransaction' : 'commitTransaction',
+      )
+      const completion = derived[command]().execute()
+      await commandStarted.promise
+
+      const queuedWork = Promise.allSettled([
+        trx.selectFrom('person').selectAll().execute(),
+        derived
+          .selectFrom('person')
+          .selectAll()
+          .execute({ signal: new AbortController().signal }),
+        trx.selectFrom('person').selectAll().stream().next(),
+        otherCommand.execute(),
+      ])
+      commandFinished.resolve()
+      await completion
+
+      for (const result of await queuedWork) {
+        expect(result.status).to.equal('rejected')
+        if (result.status === 'rejected') {
+          expect(result.reason.message).to.equal(
+            `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`,
+          )
+        }
+      }
+      expect(querySpy.notCalled).to.be.true
+      expect(streamSpy.notCalled).to.be.true
+      expect(otherCommandSpy.notCalled).to.be.true
+      expect(commandStub.calledOnce).to.be.true
+      expect(releaseSpy.calledOnce).to.be.true
+      expect(trx.isCommitted).to.equal(command === 'commit')
+      expect(trx.isRolledBack).to.equal(command === 'rollback')
+    })
+
+    it(`should allow retrying a failed ${command}`, async () => {
+      const commandError = new Error(`${command} failed`)
+      const commandStub = sandbox.stub(driver, `${command}Transaction`)
+      commandStub.onFirstCall().rejects(commandError)
+      commandStub.onSecondCall().resolves()
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const trx = await db.startTransaction().execute()
+      const completion = trx[command]()
+
+      expect(
+        await completion.execute().catch((error: unknown) => error),
+      ).to.equal(commandError)
+      expect(trx.isCommitted).to.be.false
+      expect(trx.isRolledBack).to.be.false
+      expect(releaseSpy.notCalled).to.be.true
+
+      await completion.execute()
+      expect(commandStub.calledTwice).to.be.true
+      expect(releaseSpy.calledOnce).to.be.true
+    })
+
+    it(`should wait for a stream to close before ${command}`, async () => {
+      let streamClosed = false
+      sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+        try {
+          yield { rows: [{ id: 1 }] }
+        } finally {
+          streamClosed = true
+        }
+      })
+      const commandSpy = sandbox.spy(driver, `${command}Transaction`)
+      const trx = await db.startTransaction().execute()
+      const stream = trx.selectFrom('person').selectAll().stream()
+      await stream.next()
+
+      const completion = trx[command]().execute()
+      await setImmediate()
+      expect(commandSpy.notCalled).to.be.true
+
+      await stream.return!()
+      await completion
+      expect(streamClosed).to.be.true
+      expect(commandSpy.calledOnce).to.be.true
+    })
+
+    it(`should wait for an aborted query's database work before ${command}`, async () => {
+      const queryStarted = new Deferred<void>()
+      const queryFinished = new Deferred<void>()
+      sandbox.stub(connection, 'executeQuery').callsFake(async () => {
+        queryStarted.resolve()
+        await queryFinished.promise
+        return { rows: [] }
+      })
+      const commandSpy = sandbox.spy(driver, `${command}Transaction`)
+      const trx = await db.startTransaction().execute()
+      const controller = new AbortController()
+      const query = trx
+        .selectFrom('person')
+        .selectAll()
+        .execute({ signal: controller.signal })
+      const queryResult = query.catch((error: unknown) => error)
+      await queryStarted.promise
+      const abortError = new Error('request aborted')
+      controller.abort(abortError)
+      expect(await queryResult).to.equal(abortError)
+
+      const completion = trx[command]().execute()
+      await setImmediate()
+      expect(commandSpy.notCalled).to.be.true
+
+      queryFinished.resolve()
+      await completion
+      expect(commandSpy.calledOnce).to.be.true
+    })
+  }
 })
 
 async function insertSomething(db: Kysely<Database>) {
