@@ -147,29 +147,6 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should escape single quotes in json object keys', async () => {
-      const value = (value: string) =>
-        sqlSpec === 'postgres'
-          ? expressionBuilder().cast<string>(sql.val(value), 'text')
-          : sql.val(value)
-
-      const result = await db
-        .selectNoFrom(
-          jsonBuildObject({
-            "single'quote": value('first'),
-            "double''quote": value('last'),
-            "'+(select 'injected')+'": value('third'),
-          }).as('object'),
-        )
-        .executeTakeFirstOrThrow()
-
-      expect(result.object).to.eql({
-        "single'quote": 'first',
-        "double''quote": 'last',
-        "'+(select 'injected')+'": 'third',
-      })
-    })
-
     it('should insert a row with a json value', async () => {
       const result = await db
         .insertInto('json_table')
@@ -507,6 +484,29 @@ for (const dialect of DIALECTS) {
           },
         },
       ])
+    })
+
+    it('should escape single quotes in json object keys', async () => {
+      const value = (value: string) =>
+        sqlSpec === 'postgres'
+          ? expressionBuilder().cast<string>(sql.val(value), 'text')
+          : sql.val(value)
+
+      const result = await db
+        .selectNoFrom(
+          jsonBuildObject({
+            "single'quote": value('first'),
+            "double''quote": value('last'),
+            "'+(select 'injected')+'": value('third'),
+          }).as('object'),
+        )
+        .executeTakeFirstOrThrow()
+
+      expect(result.object).to.eql({
+        "single'quote": 'first',
+        "double''quote": 'last',
+        "'+(select 'injected')+'": 'third',
+      })
     })
 
     it('should dehydrate numeric strings to numbers', async () => {
