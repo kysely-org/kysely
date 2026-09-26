@@ -218,7 +218,9 @@ export function jsonObjectFrom<O>(
  *
  * ```sql
  * select "id", json_query(
- *   '{"'+'first'+'":"'+"first_name"+'","'+'last'+'":"'+"last_name"+'","'+'full'+'":"'+concat("first_name", ' ', "last_name")+'"}'
+ *   '{"'+string_escape(N'first', 'json')+'":"'+string_escape("first_name", 'json')+
+ *   '","'+string_escape(N'last', 'json')+'":"'+string_escape("last_name", 'json')+
+ *   '","'+string_escape(N'full', 'json')+'":"'+string_escape(concat("first_name", ' ', "last_name"), 'json')+'"}'
  * ) as "name"
  * from "person"
  * ```
@@ -233,7 +235,10 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   }>
 > {
   return sql`json_query('{${sql.join(
-    Object.keys(obj).map((k) => sql`"'+${sql.lit(k)}+'":"'+${obj[k]}+'"`),
+    Object.keys(obj).map(
+      (k) =>
+        sql`"'+string_escape(N${sql.lit(k)}, 'json')+'":"'+string_escape(${obj[k]}, 'json')+'"`,
+    ),
     sql`,`,
   )}}')`
 }

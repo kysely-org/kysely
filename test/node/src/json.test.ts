@@ -509,6 +509,45 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    for (const [name, value] of [
+      ['double quotes', 'a"b'],
+      ['backslashes', 'a\\nb\\'],
+      ['control characters', '\b\f\n\r\t\u0001\u001f'],
+      ['Unicode', 'שלום😀'],
+      ['JSON injection text', 'value","injected":"yes'],
+      ['empty strings', ''],
+      ['dots', 'a.b'],
+      ['long strings', 'a'.repeat(4000)],
+    ]) {
+      it(`should preserve ${name} in json object keys and values`, async () => {
+        const result = await db
+          .selectNoFrom((eb) =>
+            jsonBuildObject({
+              [value]:
+                sqlSpec === 'postgres'
+                  ? eb.cast<string>(sql.val(value), 'text')
+                  : sql.val(value),
+            }).as('object'),
+          )
+          .executeTakeFirstOrThrow()
+
+        expect(result.object).to.eql({ [value]: value })
+      })
+    }
+
+    if (sqlSpec === 'mssql') {
+      it('should preserve NUL characters in json object keys and values', async () => {
+        const value = 'a\0b'
+        const result = await db
+          .selectNoFrom(
+            jsonBuildObject({ [value]: sql.val(value) }).as('object'),
+          )
+          .executeTakeFirstOrThrow()
+
+        expect(result.object).to.eql({ [value]: value })
+      })
+    }
+
     it('should dehydrate numeric strings to numbers', async () => {
       const bigNumber = sql<NumericString | number>`9007199254740991`.as(
         'bigNumber',
