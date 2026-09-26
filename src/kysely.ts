@@ -1010,6 +1010,10 @@ export class ControlledTransaction<
   /**
    * Commits the transaction.
    *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before committing.
+   *
    * See {@link rollback}.
    *
    * ### Examples
@@ -1034,13 +1038,13 @@ export class ControlledTransaction<
   commit(): Command<void> {
     assertNotCommittedOrRolledBack(this.#props.state)
 
-    return new Command(async (): Promise<void> => {
-      await this.#props.driver.commitTransaction(
-        this.#props.connection.connection,
-      )
-      this.#props.state.isCommitted = true
-      this.#props.connection.release()
-    })
+    return new Command(() =>
+      this.#props.executor.provideConnection(async (connection) => {
+        await this.#props.driver.commitTransaction(connection)
+        this.#props.state.isCommitted = true
+        this.#props.connection.release()
+      }),
+    )
   }
 
   /**
@@ -1048,6 +1052,10 @@ export class ControlledTransaction<
    *
    * The connection is released even if the rollback fails, so the transaction
    * cannot be used afterwards in either case.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before rolling back.
    *
    * See {@link commit} and {@link rollbackToSavepoint}.
    *
@@ -1073,17 +1081,17 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     assertNotCommittedOrRolledBack(this.#props.state)
 
-    return new Command(async (): Promise<void> => {
-      // A failed rollback can't be meaningfully retried (e.g. dead connection).
-      try {
-        await this.#props.driver.rollbackTransaction(
-          this.#props.connection.connection,
-        )
-      } finally {
-        this.#props.state.isRolledBack = true
-        this.#props.connection.release()
-      }
-    })
+    return new Command(() =>
+      this.#props.executor.provideConnection(async (connection) => {
+        // A failed rollback can't be meaningfully retried (e.g. dead connection).
+        try {
+          await this.#props.driver.rollbackTransaction(connection)
+        } finally {
+          this.#props.state.isRolledBack = true
+          this.#props.connection.release()
+        }
+      }),
+    )
   }
 
   /**
@@ -1368,7 +1376,10 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
-    return this.#executor.provideConnection(consumer, options)
+    return this.#executor.provideConnection(async (connection) => {
+      assertNotCommittedOrRolledBack(this.#state)
+      return await consumer(connection)
+    }, options)
   }
 
   executeQuery<R>(
@@ -1376,7 +1387,9 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery, options)
+    return this.#executor
+      .withConnectionProvider(this)
+      .executeQuery(compiledQuery, options)
   }
 
   stream<R>(
@@ -1385,7 +1398,9 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize, options)
+    return this.#executor
+      .withConnectionProvider(this)
+      .stream(compiledQuery, chunkSize, options)
   }
 
   withConnectionProvider(
