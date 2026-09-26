@@ -6,12 +6,10 @@ import {
   type Driver,
   DummyDriver,
   Kysely,
-  MssqlDriver,
-  MysqlDriver,
-  PGliteDriver,
-  PostgresDriver,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
   SqliteDialect,
-  SqliteDriver,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -689,35 +687,6 @@ for (const dialect of DIALECTS) {
         'Transaction is already rolled back',
       )
     })
-
-    it('should release the connection if the transaction fails to begin', async () => {
-      const driverProto = {
-        postgres: PostgresDriver,
-        mysql: MysqlDriver,
-        mssql: MssqlDriver,
-        sqlite: SqliteDriver,
-        pglite: PGliteDriver,
-      }[variant].prototype
-      const beginError = new Error('begin failed')
-      const beginStub = sandbox
-        .stub(driverProto, 'beginTransaction')
-        .rejects(beginError)
-      const acquireSpy = sandbox.spy(driverProto, 'acquireConnection')
-      const releaseSpy = sandbox.spy(driverProto, 'releaseConnection')
-
-      const error = await ctx.db
-        .startTransaction()
-        .execute()
-        .catch((error: unknown) => error)
-
-      expect(error).to.equal(beginError)
-      expect(beginStub.calledOnce, 'begin called once').to.be.true
-      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
-      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-      expect(releaseSpy.firstCall.args[0]).to.equal(
-        await acquireSpy.firstCall.returnValue,
-      )
-    })
   })
 }
 
@@ -769,6 +738,40 @@ describe('custom dialect: controlled transaction', () => {
     ).to.be.rejectedWith(
       'The `releaseSavepoint` method is not supported by this driver',
     )
+  })
+})
+
+describe('controlled transaction', () => {
+  it('should release the connection if the transaction fails to begin', async () => {
+    const driver: Driver = new DummyDriver()
+    const beginError = new Error('begin failed')
+    sinon.stub(driver, 'beginTransaction').rejects(beginError)
+    const acquireSpy = sinon.spy(driver, 'acquireConnection')
+    const releaseSpy = sinon.spy(driver, 'releaseConnection')
+    const db = new Kysely<Database>({
+      dialect: {
+        createAdapter: () => new PostgresAdapter(),
+        createDriver: () => driver,
+        createIntrospector: (db) => new PostgresIntrospector(db),
+        createQueryCompiler: () => new PostgresQueryCompiler(),
+      },
+    })
+
+    try {
+      const error = await db
+        .startTransaction()
+        .execute()
+        .catch((error: unknown) => error)
+
+      expect(error).to.equal(beginError)
+      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
+      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+      expect(releaseSpy.firstCall.args[0]).to.equal(
+        await acquireSpy.firstCall.returnValue,
+      )
+    } finally {
+      await db.destroy()
+    }
   })
 })
 
