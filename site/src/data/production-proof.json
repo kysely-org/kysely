@@ -2,20 +2,20 @@
   {
     "name": "AirTrail",
     "repo": "johanohly/AirTrail",
-    "path": "src/lib/db/queries.ts",
-    "sha": "52cdffb0c1976498f736f222c68c756d6c413429",
-    "href": "https://github.com/johanohly/AirTrail/blob/52cdffb0c1976498f736f222c68c756d6c413429/src/lib/db/queries.ts",
+    "path": "src/lib/server/oauth/server.ts",
+    "sha": "a34046640607ee72e1f9aed5538f84091b035246",
+    "href": "https://github.com/johanohly/AirTrail/blob/a34046640607ee72e1f9aed5538f84091b035246/src/lib/server/oauth/server.ts",
     "group": "built-into",
-    "provenAt": "2026-08-09"
+    "provenAt": "2026-09-26"
   },
   {
     "name": "AWS Blocks",
     "repo": "aws-devtools-labs/aws-blocks",
     "path": "packages/data-common/src/kysely-adapter.ts",
-    "sha": "d2757478e912482f7ff7e7eaefd240b5559b299e",
-    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/d2757478e912482f7ff7e7eaefd240b5559b299e/packages/data-common/src/kysely-adapter.ts",
+    "sha": "b0be240cd9a3416138b92dab6096fae4fe712fd8",
+    "href": "https://github.com/aws-devtools-labs/aws-blocks/blob/b0be240cd9a3416138b92dab6096fae4fe712fd8/packages/data-common/src/kysely-adapter.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Best Western",
@@ -26,29 +26,29 @@
   {
     "name": "Better Auth",
     "repo": "better-auth/better-auth",
-    "path": "packages/better-auth/src/db/get-migration.ts",
-    "sha": "86faaee69b6c2afe237fff8a00602ecc8eccc367",
-    "href": "https://github.com/better-auth/better-auth/blob/86faaee69b6c2afe237fff8a00602ecc8eccc367/packages/better-auth/src/db/get-migration.ts",
+    "path": "packages/kysely-adapter/src/kysely-adapter.ts",
+    "sha": "70dd1b8193ac91b4a8a5960c27b6fb39c304f8d8",
+    "href": "https://github.com/better-auth/better-auth/blob/70dd1b8193ac91b4a8a5960c27b6fb39c304f8d8/packages/kysely-adapter/src/kysely-adapter.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "bknd",
     "repo": "bknd-io/bknd",
-    "path": "app/src/data/entities/query/Repository.ts",
+    "path": "app/src/data/entities/mutation/Mutator.ts",
     "sha": "8c596781ff83d4dde330b97a4721ae1d458ab715",
-    "href": "https://github.com/bknd-io/bknd/blob/8c596781ff83d4dde330b97a4721ae1d458ab715/app/src/data/entities/query/Repository.ts",
+    "href": "https://github.com/bknd-io/bknd/blob/8c596781ff83d4dde330b97a4721ae1d458ab715/app/src/data/entities/mutation/Mutator.ts",
     "group": "built-into",
     "provenAt": "2026-03-28"
   },
   {
     "name": "Bluesky",
     "repo": "bluesky-social/atproto",
-    "path": "packages/ozone/src/set/service.ts",
-    "sha": "f5a0af4465b469203a2a0804e9611474fde50feb",
-    "href": "https://github.com/bluesky-social/atproto/blob/f5a0af4465b469203a2a0804e9611474fde50feb/packages/ozone/src/set/service.ts",
+    "path": "packages/bsky/src/data-plane/server/indexing/plugins/post.ts",
+    "sha": "136e2145b893773a94e9620df37be5215cdb57a3",
+    "href": "https://github.com/bluesky-social/atproto/blob/136e2145b893773a94e9620df37be5215cdb57a3/packages/bsky/src/data-plane/server/indexing/plugins/post.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Bold.org",
@@ -60,79 +60,79 @@
     "name": "Cal.com",
     "repo": "calcom/cal.diy",
     "path": "packages/trpc/server/routers/viewer/bookings/get.handler.ts",
-    "sha": "176037d0afbe572f870a3c702985e7cd83fe6c0c",
-    "href": "https://github.com/calcom/cal.diy/blob/176037d0afbe572f870a3c702985e7cd83fe6c0c/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
+    "sha": "54343aa685ae8f33159d2f485ec4a57bad5c574a",
+    "href": "https://github.com/calcom/cal.diy/blob/54343aa685ae8f33159d2f485ec4a57bad5c574a/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
     "group": "production",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-09-20"
   },
   {
     "name": "Canton Network",
     "repo": "canton-network/wallet",
-    "path": "core/signing-store-sql/src/store-sql.ts",
-    "sha": "fba837a8162c68b3d70a2cc007670c4ca4c687fa",
-    "href": "https://github.com/canton-network/wallet/blob/fba837a8162c68b3d70a2cc007670c4ca4c687fa/core/signing-store-sql/src/store-sql.ts",
+    "path": "core/wallet-store-sql/src/store-sql.ts",
+    "sha": "cb5a66807198737878326174f7e1726edf5dbf3b",
+    "href": "https://github.com/canton-network/wallet/blob/cb5a66807198737878326174f7e1726edf5dbf3b/core/wallet-store-sql/src/store-sql.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Carbon",
     "repo": "crbnos/carbon",
-    "path": "packages/ee/src/accounting/core/external-mapping.ts",
-    "sha": "36fe41bcdc25154e787e7486080a5777029e8e45",
-    "href": "https://github.com/crbnos/carbon/blob/36fe41bcdc25154e787e7486080a5777029e8e45/packages/ee/src/accounting/core/external-mapping.ts",
+    "path": "packages/database/supabase/functions/issue/index.ts",
+    "sha": "42ddad0c01469ad52500bf0981e5742f0b67380f",
+    "href": "https://github.com/crbnos/carbon/blob/42ddad0c01469ad52500bf0981e5742f0b67380f/packages/database/supabase/functions/issue/index.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Civitai",
     "repo": "civitai/civitai",
-    "path": "packages/civitai-db-queries/src/tag.db.ts",
-    "sha": "98fab5df38ca545a492ddbf6746977a683fcb672",
-    "href": "https://github.com/civitai/civitai/blob/98fab5df38ca545a492ddbf6746977a683fcb672/packages/civitai-db-queries/src/tag.db.ts",
+    "path": "apps/moderator/src/lib/server/user-actions.service.ts",
+    "sha": "6186c44f9178fd1a80f044e86f7b8f93233bbf31",
+    "href": "https://github.com/civitai/civitai/blob/6186c44f9178fd1a80f044e86f7b8f93233bbf31/apps/moderator/src/lib/server/user-actions.service.ts",
     "group": "production",
-    "provenAt": "2026-08-14"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Colanode",
     "repo": "colanode/colanode",
-    "path": "apps/server/src/jobs/cleanup.ts",
+    "path": "packages/client/src/services/workspaces/node-service.ts",
     "sha": "d649523637f0f059c936418488165d4a689da27c",
-    "href": "https://github.com/colanode/colanode/blob/d649523637f0f059c936418488165d4a689da27c/apps/server/src/jobs/cleanup.ts",
+    "href": "https://github.com/colanode/colanode/blob/d649523637f0f059c936418488165d4a689da27c/packages/client/src/services/workspaces/node-service.ts",
     "group": "production",
     "provenAt": "2026-04-03"
   },
   {
     "name": "Conar",
     "repo": "wannabespace/conar",
-    "path": "apps/app/src/entities/connection/queries/total.ts",
-    "sha": "880851c098692b5b322e450b312b39c604182cda",
-    "href": "https://github.com/wannabespace/conar/blob/880851c098692b5b322e450b312b39c604182cda/apps/app/src/entities/connection/queries/total.ts",
+    "path": "apps/app/src/entities/connection/queries/indexes/list.ts",
+    "sha": "df6b212aa429c62d15611fd87bbfc63c5a20edc5",
+    "href": "https://github.com/wannabespace/conar/blob/df6b212aa429c62d15611fd87bbfc63c5a20edc5/apps/app/src/entities/connection/queries/indexes/list.ts",
     "group": "built-into",
-    "provenAt": "2026-08-08"
+    "provenAt": "2026-09-23"
   },
   {
     "name": "Corsair.dev",
     "repo": "corsairdev/corsair",
-    "path": "packages/studio/src/server/chat-store.ts",
-    "sha": "3cb6e4e3770d81e6661cd2d015f4bb3c5b90d25e",
-    "href": "https://github.com/corsairdev/corsair/blob/3cb6e4e3770d81e6661cd2d015f4bb3c5b90d25e/packages/studio/src/server/chat-store.ts",
+    "path": "packages/corsair/db/orm.ts",
+    "sha": "6b913c3b202836d4dd3c0e16f0b58b5d6d097507",
+    "href": "https://github.com/corsairdev/corsair/blob/6b913c3b202836d4dd3c0e16f0b58b5d6d097507/packages/corsair/db/orm.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Cypress",
-    "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.3.0/dist/database/queries.js",
+    "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.4.0/dist/database/queries.js",
     "group": "production",
-    "provenAt": "2026-07-27"
+    "provenAt": "2026-09-16"
   },
   {
     "name": "Deco",
     "repo": "decocms/studio",
-    "path": "apps/api/src/storage/virtual.ts",
-    "sha": "a85cd3c5777633bac6b20478fa9a5db307422a0d",
-    "href": "https://github.com/decocms/studio/blob/a85cd3c5777633bac6b20478fa9a5db307422a0d/apps/api/src/storage/virtual.ts",
+    "path": "apps/api/src/storage/task-board.ts",
+    "sha": "5925240329cf08825529907fe192a11cec4801a0",
+    "href": "https://github.com/decocms/studio/blob/5925240329cf08825529907fe192a11cec4801a0/apps/api/src/storage/task-board.ts",
     "group": "production",
-    "provenAt": "2026-08-14"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Deno",
@@ -152,47 +152,56 @@
   {
     "name": "Docmost",
     "repo": "docmost/docmost",
-    "path": "apps/server/src/database/repos/page/page.repo.ts",
-    "sha": "ea59912c7ef99569817204f07e7b57056f5d751c",
-    "href": "https://github.com/docmost/docmost/blob/ea59912c7ef99569817204f07e7b57056f5d751c/apps/server/src/database/repos/page/page.repo.ts",
+    "path": "apps/server/src/database/repos/page/page-permission.repo.ts",
+    "sha": "7bef7b1a00d31991f009865ec14c8d06540eb1f0",
+    "href": "https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts",
     "group": "production",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-20"
   },
   {
     "name": "Documenso",
     "repo": "documenso/documenso",
-    "path": "packages/lib/server-only/admin/get-signing-volume.ts",
-    "sha": "a5e37af3e8ec3eee5e3629ff70b157523c519a7c",
-    "href": "https://github.com/documenso/documenso/blob/a5e37af3e8ec3eee5e3629ff70b157523c519a7c/packages/lib/server-only/admin/get-signing-volume.ts",
+    "path": "packages/lib/server-only/admin/get-organisation-detailed-insights.ts",
+    "sha": "a1d4bec1430a937395db9a4aae28979cd71c2831",
+    "href": "https://github.com/documenso/documenso/blob/a1d4bec1430a937395db9a4aae28979cd71c2831/packages/lib/server-only/admin/get-organisation-detailed-insights.ts",
     "group": "production",
-    "provenAt": "2026-08-14"
+    "provenAt": "2026-09-26"
+  },
+  {
+    "name": "Domain Locker",
+    "repo": "lissy93/domain-locker",
+    "path": "src/server/db/repos/domains.ts",
+    "sha": "3605ce55726fbcb560ee7d7419e71009505d5be9",
+    "href": "https://github.com/lissy93/domain-locker/blob/3605ce55726fbcb560ee7d7419e71009505d5be9/src/server/db/repos/domains.ts",
+    "group": "built-into",
+    "provenAt": "2026-09-23"
   },
   {
     "name": "EmbedPDF",
     "repo": "embedpdf/embed-pdf-viewer",
-    "path": "cloudpdf/server/src/db/repos/tenants.repo.ts",
-    "sha": "5009197974766a147aadbf446d152e84ed723bae",
-    "href": "https://github.com/embedpdf/embed-pdf-viewer/blob/5009197974766a147aadbf446d152e84ed723bae/cloudpdf/server/src/db/repos/tenants.repo.ts",
+    "path": "cloudpdf/server/src/services/LayerService.ts",
+    "sha": "2516e2786ee894383220ecd436fbd248182ef444",
+    "href": "https://github.com/embedpdf/embed-pdf-viewer/blob/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/server/src/services/LayerService.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-22"
   },
   {
     "name": "EmDash",
     "repo": "emdash-cms/emdash",
-    "path": "packages/auth/src/adapters/kysely.ts",
-    "sha": "6602ae05bc23e17642e4dd1179abb6465e20491d",
-    "href": "https://github.com/emdash-cms/emdash/blob/6602ae05bc23e17642e4dd1179abb6465e20491d/packages/auth/src/adapters/kysely.ts",
+    "path": "packages/core/src/database/repositories/media-usage.ts",
+    "sha": "0e8977c221dd8e5111511eb226faa3d164c829ef",
+    "href": "https://github.com/emdash-cms/emdash/blob/0e8977c221dd8e5111511eb226faa3d164c829ef/packages/core/src/database/repositories/media-usage.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Evolu",
     "repo": "evoluhq/evolu",
     "path": "packages/common/src/local-first/Query.ts",
-    "sha": "e96c8ddd5ba25cc611f21b5185284ce0ebd43b34",
-    "href": "https://github.com/evoluhq/evolu/blob/e96c8ddd5ba25cc611f21b5185284ce0ebd43b34/packages/common/src/local-first/Query.ts",
+    "sha": "36f9f81917519dfeeb12cd84e4a7e64606bc96d3",
+    "href": "https://github.com/evoluhq/evolu/blob/36f9f81917519dfeeb12cd84e4a7e64606bc96d3/packages/common/src/local-first/Query.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Farcaster",
@@ -213,19 +222,19 @@
     "name": "Hot Updater",
     "repo": "gronxb/hot-updater",
     "path": "packages/server/src/adapters/kysely.ts",
-    "sha": "59c2c649927e834a28ccc86d517353f33e909a8c",
-    "href": "https://github.com/gronxb/hot-updater/blob/59c2c649927e834a28ccc86d517353f33e909a8c/packages/server/src/adapters/kysely.ts",
+    "sha": "2d59b39a0089823ce0d9f2a705b56ffcf2a3e5ca",
+    "href": "https://github.com/gronxb/hot-updater/blob/2d59b39a0089823ce0d9f2a705b56ffcf2a3e5ca/packages/server/src/adapters/kysely.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Immich",
     "repo": "immich-app/immich",
-    "path": "server/src/repositories/album.repository.ts",
-    "sha": "af33a78d180f63190ee28cf71adae2277441b6c8",
-    "href": "https://github.com/immich-app/immich/blob/af33a78d180f63190ee28cf71adae2277441b6c8/server/src/repositories/album.repository.ts",
+    "path": "server/src/repositories/asset.repository.ts",
+    "sha": "0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd",
+    "href": "https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Maersk",
@@ -236,83 +245,83 @@
   {
     "name": "Materialize",
     "repo": "MaterializeInc/materialize",
-    "path": "console/src/api/materialize/roles/roleDetails.ts",
-    "sha": "3a708836669f15a6dcb700b118fc01e1db7f2db8",
-    "href": "https://github.com/MaterializeInc/materialize/blob/3a708836669f15a6dcb700b118fc01e1db7f2db8/console/src/api/materialize/roles/roleDetails.ts",
+    "path": "console/src/api/materialize/cluster/replicaUtilizationHistory.ts",
+    "sha": "adb829aee5913d08eaccce2aee2e0df31c0a2dfd",
+    "href": "https://github.com/MaterializeInc/materialize/blob/adb829aee5913d08eaccce2aee2e0df31c0a2dfd/console/src/api/materialize/cluster/replicaUtilizationHistory.ts",
     "group": "production",
-    "provenAt": "2026-08-14"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "inlang",
     "repo": "opral/inlang",
     "path": "packages/sdk/src/import-export/importFiles.ts",
-    "sha": "dd25231d132409911a82e5c2917094ecb14c3f0c",
-    "href": "https://github.com/opral/inlang/blob/dd25231d132409911a82e5c2917094ecb14c3f0c/packages/sdk/src/import-export/importFiles.ts",
+    "sha": "71753086db041f50af044e24ce1e8c4ea2827235",
+    "href": "https://github.com/opral/inlang/blob/71753086db041f50af044e24ce1e8c4ea2827235/packages/sdk/src/import-export/importFiles.ts",
     "group": "built-into",
-    "provenAt": "2026-08-11"
+    "provenAt": "2026-09-25"
   },
   {
     "name": "Langfuse",
     "repo": "langfuse/langfuse",
     "path": "packages/shared/src/server/query-ast/catalog.ts",
-    "sha": "ef0add7b2598200bd44573178d9d1cc5f7cc770b",
-    "href": "https://github.com/langfuse/langfuse/blob/ef0add7b2598200bd44573178d9d1cc5f7cc770b/packages/shared/src/server/query-ast/catalog.ts",
+    "sha": "536c2d6905d4311cc7c2b177454a084907328c43",
+    "href": "https://github.com/langfuse/langfuse/blob/536c2d6905d4311cc7c2b177454a084907328c43/packages/shared/src/server/query-ast/catalog.ts",
     "group": "built-into",
-    "provenAt": "2026-09-18"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/package.json",
-    "sha": "80959d2aaa20862b76c37ad9fc3a6be79fb9ba74",
-    "href": "https://github.com/mikro-orm/mikro-orm/blob/80959d2aaa20862b76c37ad9fc3a6be79fb9ba74/packages/sql/package.json",
+    "sha": "fa50ca94dc0d9207dc5b413b4598cd4a30b2508a",
+    "href": "https://github.com/mikro-orm/mikro-orm/blob/fa50ca94dc0d9207dc5b413b4598cd4a30b2508a/packages/sql/package.json",
     "group": "built-into",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Mozilla",
     "repo": "mozilla/fxa",
     "path": "libs/accounts/passkey/src/lib/passkey.repository.ts",
-    "sha": "8c812edefcc860e3a889f7f3e9b14a926ab056cb",
-    "href": "https://github.com/mozilla/fxa/blob/8c812edefcc860e3a889f7f3e9b14a926ab056cb/libs/accounts/passkey/src/lib/passkey.repository.ts",
+    "sha": "0d380593eb0c70ebf37d6c39495ec64f9d040b9b",
+    "href": "https://github.com/mozilla/fxa/blob/0d380593eb0c70ebf37d6c39495ec64f9d040b9b/libs/accounts/passkey/src/lib/passkey.repository.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-26"
   },
   {
     "name": "Notesnook",
     "repo": "streetwriters/notesnook",
-    "path": "packages/core/src/api/lookup.ts",
-    "sha": "d647eb8187b5d3f939c5c67d6c5483648942e7ed",
-    "href": "https://github.com/streetwriters/notesnook/blob/d647eb8187b5d3f939c5c67d6c5483648942e7ed/packages/core/src/api/lookup.ts",
+    "path": "packages/core/src/database/sql-collection.ts",
+    "sha": "bf909697d8bb2979d698334374f935a0f6161669",
+    "href": "https://github.com/streetwriters/notesnook/blob/bf909697d8bb2979d698334374f935a0f6161669/packages/core/src/database/sql-collection.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-18"
   },
   {
     "name": "Open Mercato",
     "repo": "open-mercato/open-mercato",
     "path": "packages/core/src/modules/query_index/lib/engine.ts",
-    "sha": "ab23d45ffc3aeca5e7d994eb57d5526c5b0a4712",
-    "href": "https://github.com/open-mercato/open-mercato/blob/ab23d45ffc3aeca5e7d994eb57d5526c5b0a4712/packages/core/src/modules/query_index/lib/engine.ts",
+    "sha": "fefc71d09efe2aa8c732dc6fafaa084a0e0dae3c",
+    "href": "https://github.com/open-mercato/open-mercato/blob/fefc71d09efe2aa8c732dc6fafaa084a0e0dae3c/packages/core/src/modules/query_index/lib/engine.ts",
     "group": "built-into",
-    "provenAt": "2026-09-18"
+    "provenAt": "2026-09-23"
   },
   {
     "name": "OpenClaw",
     "repo": "openclaw/openclaw",
-    "path": "src/agents/worktrees/registry.ts",
-    "sha": "e391505896163d06d97ae8f48caa5ae333e89a7b",
-    "href": "https://github.com/openclaw/openclaw/blob/e391505896163d06d97ae8f48caa5ae333e89a7b/src/agents/worktrees/registry.ts",
+    "path": "src/config/sessions/session-accessor.sqlite-node-artifacts.ts",
+    "sha": "28340c41f8b88ae6d11488e523808315319747b5",
+    "href": "https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/src/config/sessions/session-accessor.sqlite-node-artifacts.ts",
     "group": "built-into",
-    "provenAt": "2026-08-14"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Open Collective",
     "repo": "opencollective/opencollective-api",
     "path": "server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
-    "sha": "685571a7516bf37546d6e60cd234b688b2013252",
-    "href": "https://github.com/opencollective/opencollective-api/blob/685571a7516bf37546d6e60cd234b688b2013252/server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
+    "sha": "0a59b37c8b33574ee8d9d9a586d5a19506fd5921",
+    "href": "https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
     "group": "production",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Open.cx",
@@ -324,70 +333,70 @@
     "name": "OpenSanctions",
     "repo": "opensanctions/opensanctions",
     "path": "ui/lib/db.ts",
-    "sha": "4f445407a0644dd1b9a147ef7576af7ee964a9b1",
-    "href": "https://github.com/opensanctions/opensanctions/blob/4f445407a0644dd1b9a147ef7576af7ee964a9b1/ui/lib/db.ts",
+    "sha": "667f62f315467eb2150cab9fca1a75185e47cb3a",
+    "href": "https://github.com/opensanctions/opensanctions/blob/667f62f315467eb2150cab9fca1a75185e47cb3a/ui/lib/db.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Parabol",
     "repo": "ParabolInc/parabol",
     "path": "packages/server/postgres/select.ts",
-    "sha": "9f07efc560cc2f00d0fe9ea2e2f198338104f76d",
-    "href": "https://github.com/ParabolInc/parabol/blob/9f07efc560cc2f00d0fe9ea2e2f198338104f76d/packages/server/postgres/select.ts",
+    "sha": "d2dd4aaf2bfda5ed20b7e7c51aedb0c1f7c6b7e7",
+    "href": "https://github.com/ParabolInc/parabol/blob/d2dd4aaf2bfda5ed20b7e7c51aedb0c1f7c6b7e7/packages/server/postgres/select.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-23"
   },
   {
     "name": "Prisma Studio",
     "repo": "prisma/studio",
-    "path": "data/mysql-core/dml.ts",
-    "sha": "550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b",
-    "href": "https://github.com/prisma/studio/blob/550f51d2b1cdf4487a6abfb3278df8c3a51aeb2b/data/mysql-core/dml.ts",
+    "path": "data/postgres-core/dml.ts",
+    "sha": "780cfcc8ec3660a34c2fcdf75f04134c38d95602",
+    "href": "https://github.com/prisma/studio/blob/780cfcc8ec3660a34c2fcdf75f04134c38d95602/data/postgres-core/dml.ts",
     "group": "built-into",
-    "provenAt": "2026-07-18"
+    "provenAt": "2026-09-22"
   },
   {
     "name": "Profilarr",
     "repo": "Dictionarry-Hub/profilarr",
-    "path": "src/lib/server/pcd/entities/qualityProfiles/list.ts",
-    "sha": "a01f2dac69a16357075db4d250606d78f4325e4e",
-    "href": "https://github.com/Dictionarry-Hub/profilarr/blob/a01f2dac69a16357075db4d250606d78f4325e4e/src/lib/server/pcd/entities/qualityProfiles/list.ts",
+    "path": "src/lib/server/pcd/entities/customFormats/conditions/read.ts",
+    "sha": "7fec444c1dc660b261b72c55a685b9e8f6957ea6",
+    "href": "https://github.com/Dictionarry-Hub/profilarr/blob/7fec444c1dc660b261b72c55a685b9e8f6957ea6/src/lib/server/pcd/entities/customFormats/conditions/read.ts",
     "group": "built-into",
-    "provenAt": "2026-08-10"
+    "provenAt": "2026-09-26"
   },
   {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
-    "path": "sdk/package.json",
-    "sha": "4fdfe5636b34a9d917570d4321fc05422326ffd3",
-    "href": "https://github.com/redwoodjs/sdk/blob/4fdfe5636b34a9d917570d4321fc05422326ffd3/sdk/package.json",
+    "path": "addons/passkey/src/passkey/db/db.ts",
+    "sha": "ab57737152e098442f09b39064f09649ab25c8f1",
+    "href": "https://github.com/redwoodjs/sdk/blob/ab57737152e098442f09b39064f09649ab25c8f1/addons/passkey/src/passkey/db/db.ts",
     "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-23"
   },
   {
     "name": "Reflect",
     "repo": "team-reflect/reflect-open",
     "path": "packages/core/src/indexing/queries.ts",
-    "sha": "7cc83ae6efcc90f2f19af520ddc9f1a5268328da",
-    "href": "https://github.com/team-reflect/reflect-open/blob/7cc83ae6efcc90f2f19af520ddc9f1a5268328da/packages/core/src/indexing/queries.ts",
+    "sha": "daf1fc1088115f02f771fd50a1064499fb8198de",
+    "href": "https://github.com/team-reflect/reflect-open/blob/daf1fc1088115f02f771fd50a1064499fb8198de/packages/core/src/indexing/queries.ts",
     "group": "built-into",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Replicas",
-    "href": "https://x.com/SaaiArora/status/2084750907712139685",
+    "href": "https://tryreplicas.com/blog/why-we-switched-from-sql-to-an-orm",
     "group": "production",
-    "provenAt": "2026-08-04"
+    "provenAt": "2026-07-28"
   },
   {
     "name": "ROOST Coop",
     "repo": "roostorg/coop",
-    "path": "server/graphql/datasources/rolePersistence.ts",
-    "sha": "0ee607ed651bd43f66d3311c5361bb3dda59af8d",
-    "href": "https://github.com/roostorg/coop/blob/0ee607ed651bd43f66d3311c5361bb3dda59af8d/server/graphql/datasources/rolePersistence.ts",
+    "path": "server/services/manualReviewToolService/modules/QueueOperations.ts",
+    "sha": "ab18bac1f1ebd858150e8559819a94b4eb172964",
+    "href": "https://github.com/roostorg/coop/blob/ab18bac1f1ebd858150e8559819a94b4eb172964/server/services/manualReviewToolService/modules/QueueOperations.ts",
     "group": "built-into",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-25"
   },
   {
     "name": "Sesame Care",
@@ -398,80 +407,71 @@
   {
     "name": "Sink",
     "repo": "miantiao-me/Sink",
-    "path": "package.json",
-    "sha": "6cbf63f30497ef1838bb9b531035dd61506cc79e",
-    "href": "https://github.com/miantiao-me/Sink/blob/6cbf63f30497ef1838bb9b531035dd61506cc79e/package.json",
+    "path": "server/utils/analytics-sql.ts",
+    "sha": "bafa4e1f7e3ec034929e11e5542c4c3e116d69da",
+    "href": "https://github.com/miantiao-me/Sink/blob/bafa4e1f7e3ec034929e11e5542c4c3e116d69da/server/utils/analytics-sql.ts",
     "group": "built-into",
-    "provenAt": "2026-08-09"
-  },
-  {
-    "name": "Stacks",
-    "repo": "stacksjs/stacks",
-    "path": "storage/framework/core/auth/src/rbac-store-bqb.ts",
-    "sha": "a0f7b25e29ffe28ee8dbaf2c1fbeb1bc11698a6d",
-    "href": "https://github.com/stacksjs/stacks/blob/a0f7b25e29ffe28ee8dbaf2c1fbeb1bc11698a6d/storage/framework/core/auth/src/rbac-store-bqb.ts",
-    "group": "built-into",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-27"
   },
   {
     "name": "StudioCMS",
     "repo": "withstudiocms/studiocms",
     "path": "packages/@withstudiocms/sdk/src/modules/auth/index.ts",
-    "sha": "a4ac4625872b49347a596bb6e7dc8cb9eb422ff3",
-    "href": "https://github.com/withstudiocms/studiocms/blob/a4ac4625872b49347a596bb6e7dc8cb9eb422ff3/packages/@withstudiocms/sdk/src/modules/auth/index.ts",
+    "sha": "e8dbd3bac3182e8d54f983761c21f66776b7eb06",
+    "href": "https://github.com/withstudiocms/studiocms/blob/e8dbd3bac3182e8d54f983761c21f66776b7eb06/packages/@withstudiocms/sdk/src/modules/auth/index.ts",
     "group": "built-into",
-    "provenAt": "2026-08-11"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Supabase Lite",
-    "href": "https://npmx.dev/package-code/@supabase/lite/v/0.8.0/dist/index.js",
+    "href": "https://npmx.dev/package-code/@supabase/lite/v/0.10.0/dist/index.js",
     "group": "built-into",
-    "provenAt": "2026-08-04"
+    "provenAt": "2026-09-03"
   },
   {
     "name": "Tailor",
     "repo": "tailor-platform/sdk",
     "path": "packages/sdk/src/kysely/index.ts",
-    "sha": "8bf3566c6e8d7ebfe9d4ef0017a6060a8e37d61e",
-    "href": "https://github.com/tailor-platform/sdk/blob/8bf3566c6e8d7ebfe9d4ef0017a6060a8e37d61e/packages/sdk/src/kysely/index.ts",
+    "sha": "fa96d943d39d9f96c96c5b444fb6558351393762",
+    "href": "https://github.com/tailor-platform/sdk/blob/fa96d943d39d9f96c96c5b444fb6558351393762/packages/sdk/src/kysely/index.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Teable",
     "repo": "teableio/teable",
-    "path": "packages/v2/debug-data/src/adapters/postgres/PostgresDebugMetaStore.ts",
-    "sha": "06a4461e2bc53055182d4df0a72dffa26fd99210",
-    "href": "https://github.com/teableio/teable/blob/06a4461e2bc53055182d4df0a72dffa26fd99210/packages/v2/debug-data/src/adapters/postgres/PostgresDebugMetaStore.ts",
+    "path": "packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
+    "sha": "5ef2238883cad7c3980084de9a9031135fb9734f",
+    "href": "https://github.com/teableio/teable/blob/5ef2238883cad7c3980084de9a9031135fb9734f/packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
     "group": "production",
-    "provenAt": "2026-07-29"
+    "provenAt": "2026-09-01"
   },
   {
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/src/adminRoutes.ts",
-    "sha": "d4b0ac83df7aaf2c4c3f6d6a47702d4f0dca6e99",
-    "href": "https://github.com/tldraw/tldraw/blob/d4b0ac83df7aaf2c4c3f6d6a47702d4f0dca6e99/apps/dotcom/sync-worker/src/adminRoutes.ts",
+    "sha": "fdd9b4dee0d968cb92b52db2b6e0d37ffc906d74",
+    "href": "https://github.com/tldraw/tldraw/blob/fdd9b4dee0d968cb92b52db2b6e0d37ffc906d74/apps/dotcom/sync-worker/src/adminRoutes.ts",
     "group": "production",
-    "provenAt": "2026-08-13"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "TrueForge",
     "repo": "truefoundry/trueforge",
     "path": "packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
-    "sha": "651c574e6ebf8bc2f4c39a00c7f749b4c22d9f88",
-    "href": "https://github.com/truefoundry/trueforge/blob/651c574e6ebf8bc2f4c39a00c7f749b4c22d9f88/packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
+    "sha": "33cbe52ff63f03306ab35bc6c8e9d78c5c7104a2",
+    "href": "https://github.com/truefoundry/trueforge/blob/33cbe52ff63f03306ab35bc6c8e9d78c5c7104a2/packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
     "group": "built-into",
-    "provenAt": "2026-09-18"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "Tunarr",
     "repo": "chrisbenincasa/tunarr",
-    "path": "server/src/db/FillerListDB.ts",
-    "sha": "b9cceaccda81b9f8a232852cd02829a51e5b50ce",
-    "href": "https://github.com/chrisbenincasa/tunarr/blob/b9cceaccda81b9f8a232852cd02829a51e5b50ce/server/src/db/FillerListDB.ts",
+    "path": "server/src/tasks/fixers/BackfillMediaSourceIdFixer.ts",
+    "sha": "754786b59eddeba1d79943f65920873c5226ada3",
+    "href": "https://github.com/chrisbenincasa/tunarr/blob/754786b59eddeba1d79943f65920873c5226ada3/server/src/tasks/fixers/BackfillMediaSourceIdFixer.ts",
     "group": "built-into",
-    "provenAt": "2026-08-12"
+    "provenAt": "2026-09-28"
   },
   {
     "name": "wevm curl.md",
@@ -485,10 +485,10 @@
   {
     "name": "ZenStack",
     "repo": "zenstackhq/zenstack",
-    "path": "packages/plugins/policy/src/policy-handler.ts",
-    "sha": "d7c41d8567debef44b8c282c439c3e43803d7568",
-    "href": "https://github.com/zenstackhq/zenstack/blob/d7c41d8567debef44b8c282c439c3e43803d7568/packages/plugins/policy/src/policy-handler.ts",
+    "path": "packages/orm/src/client/crud/operations/base.ts",
+    "sha": "b812e1161d653fac957989c2fcba9e563a8e8f93",
+    "href": "https://github.com/zenstackhq/zenstack/blob/b812e1161d653fac957989c2fcba9e563a8e8f93/packages/orm/src/client/crud/operations/base.ts",
     "group": "built-into",
-    "provenAt": "2026-08-11"
+    "provenAt": "2026-09-25"
   }
 ]

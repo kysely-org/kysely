@@ -92,8 +92,9 @@ for (const entry of entries) {
     )
     const content = Buffer.from(file.content, 'base64').toString('utf8')
 
-    // Wrapper-importing modules (e.g. Stacks' @stacksjs/database) never say
-    // "kysely"; query-builder calls are equally binding evidence.
+    // Wrapper imports can hide the package name. Query-builder calls are
+    // only a heuristic: manually verify the underlying dependency, since
+    // compatible APIs can expose the same methods without using Kysely.
     if (
       !/kysely/i.test(content) &&
       !/\.(selectFrom|insertInto|updateTable|deleteFrom)\s*\(/.test(content)
