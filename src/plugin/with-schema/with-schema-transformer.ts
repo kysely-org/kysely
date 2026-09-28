@@ -1,5 +1,6 @@
 import type { AggregateFunctionNode } from '../../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../../operation-node/alias-node.js'
+import type { ColumnDefinitionNode } from '../../operation-node/column-definition-node.js'
 import type { FunctionNode } from '../../operation-node/function-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { JoinNode } from '../../operation-node/join-node.js'
@@ -32,6 +33,25 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   constructor(schema: string) {
     super()
     this.#schema = schema
+  }
+
+  protected override transformColumnDefinition(
+    node: ColumnDefinitionNode,
+    queryId?: QueryId,
+  ): ColumnDefinitionNode {
+    const transformed = super.transformColumnDefinition(node, queryId)
+
+    if (!SchemableIdentifierNode.is(transformed.dataType)) {
+      return transformed
+    }
+
+    return {
+      ...transformed,
+      dataType: SchemableIdentifierNode.createWithSchema(
+        this.#schema,
+        transformed.dataType.identifier.name,
+      ),
+    }
   }
 
   protected override transformNodeImpl<T extends OperationNode>(

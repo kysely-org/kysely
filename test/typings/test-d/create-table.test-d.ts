@@ -21,7 +21,7 @@ async function testCreateTableWithSeveralColumns(db: Kysely<Database>) {
       .addColumn(null, 'varchar(255)')
       .addColumn('b', 'varchar(255)'),
   )
-  expectError(
+  expectType<CreateTableBuilder<'test', 'a' | 'b'>>(
     db.schema
       .createTable('test')
       .addColumn('a', 'varchar(255)')

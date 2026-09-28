@@ -118,9 +118,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
-   *   // You can specify any data type using the `sql` tag if the types
-   *   // don't include it.
-   *   .addColumn('data', sql`any_type_here`)
+   *   // Custom types can be passed by name. `withSchema` also applies the
+   *   // schema to custom types.
+   *   .addColumn('data', 'custom_type')
    *   .addColumn('parent_id', 'integer', (col) =>
    *     col.references('person.id').onDelete('cascade')
    *   )
