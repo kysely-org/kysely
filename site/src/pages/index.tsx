@@ -407,7 +407,6 @@ const LOGO_WITH_NAME = new Set([
   'OpenClaw',
   'Prisma Studio',
   'Replicas',
-  'Stacks',
   'StudioCMS',
   'Supabase Lite',
   'Teable',
