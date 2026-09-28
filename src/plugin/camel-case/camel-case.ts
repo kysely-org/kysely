@@ -88,16 +88,22 @@ export function createCamelCaseMapper({
 
     let out = str[0]
 
+    // A leading underscore is not a word separator, so it must not cause the
+    // character after it to be capitalized (`_id` is `_id`, not `_Id`).
+    let leadingUnderscore = str[0] === '_'
+
     for (let i = 1, l = str.length; i < l; ++i) {
       const char = str[i]
       const prevChar = str[i - 1]
 
       if (char !== '_') {
-        if (prevChar === '_') {
+        if (prevChar === '_' && !leadingUnderscore) {
           out += char.toUpperCase()
         } else {
           out += char
         }
+
+        leadingUnderscore = false
       }
     }
 
