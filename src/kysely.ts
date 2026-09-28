@@ -7,6 +7,10 @@ import { QueryCreator, type QueryCreatorProps } from './query-creator.js'
 import type { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import type { DatabaseIntrospector } from './dialect/database-introspector.js'
+import {
+  TypeMetadataQueryBuilder,
+  type TypeMetadataProvider,
+} from './dialect/type-metadata-query-builder.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
@@ -160,8 +164,22 @@ export class Kysely<DB>
   /**
    * Returns a {@link DatabaseIntrospector | database introspector}.
    */
-  get introspection(): DatabaseIntrospector {
-    return this.#props.dialect.createIntrospector(this.withoutPlugins())
+  get introspection(): DatabaseIntrospector & {
+    getType(name: string): TypeMetadataQueryBuilder
+  } {
+    const introspector = this.#props.dialect.createIntrospector(
+      this.withoutPlugins(),
+    )
+
+    return {
+      getSchemas: () => introspector.getSchemas(),
+      getTables: (options) => introspector.getTables(options),
+      getType: (name: string) =>
+        new TypeMetadataQueryBuilder(
+          introspector as unknown as TypeMetadataProvider,
+          name,
+        ),
+    }
   }
 
   /**

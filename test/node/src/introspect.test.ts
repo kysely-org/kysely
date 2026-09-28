@@ -81,19 +81,23 @@ for (const dialect of DIALECTS) {
 
     describe('getTypes', () => {
       it('should get type metadata', async () => {
-        const types = await ctx.db.introspection.getTypes()
-
         if (sqlSpec === 'postgres') {
-          expect(types).to.containSubset([
-            {
-              name: 'species',
-              schema: 'dtype_schema',
-              kind: 'enum',
-              values: ['cat', 'dog', 'frog'],
-            },
-          ])
+          const type = await ctx.db.introspection
+            .getType('species')
+            .schema('dtype_schema')
+            .kind('enum')
+            .execute()
+
+          expect(type).to.containSubset({
+            name: 'species',
+            schema: 'dtype_schema',
+            kind: 'enum',
+            values: ['cat', 'dog', 'frog'],
+          })
         } else {
-          expect(types).to.eql([])
+          await expect(
+            ctx.db.introspection.getType('species').execute(),
+          ).to.be.rejectedWith('type "species" not found')
         }
       })
     })
