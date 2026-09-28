@@ -1,7 +1,7 @@
 import type { TypeMetadata, TypeMetadataKind } from './database-introspector.js'
 
 export interface TypeMetadataProvider {
-  getTypes(): Promise<TypeMetadata[]>
+  getTypes?(): Promise<TypeMetadata[]>
 }
 
 export class TypeMetadataQueryBuilder<
@@ -46,6 +46,10 @@ export class TypeMetadataQueryBuilder<
     TypeMetadata &
       (K extends 'enum' ? { kind: 'enum'; values: string[] } : unknown)
   > {
+    if (!this.#introspector.getTypes) {
+      throw new Error('type introspection is not supported by this dialect')
+    }
+
     const types = await this.#introspector.getTypes()
     const type = types.find(
       (type) =>

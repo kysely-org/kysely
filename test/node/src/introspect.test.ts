@@ -97,7 +97,9 @@ for (const dialect of DIALECTS) {
         } else {
           await expect(
             ctx.db.introspection.getType('species').execute(),
-          ).to.be.rejectedWith('type "species" not found')
+          ).to.be.rejectedWith(
+            'type introspection is not supported by this dialect',
+          )
         }
       })
     })

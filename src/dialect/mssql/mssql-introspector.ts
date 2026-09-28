@@ -4,7 +4,6 @@ import type {
   DatabaseMetadataOptions,
   SchemaMetadata,
   TableMetadata,
-  TypeMetadata,
 } from '../database-introspector.js'
 import {
   DEFAULT_MIGRATION_LOCK_TABLE,
@@ -21,10 +20,6 @@ export class MssqlIntrospector implements DatabaseIntrospector {
 
   async getSchemas(): Promise<SchemaMetadata[]> {
     return await this.#db.selectFrom('sys.schemas').select('name').execute()
-  }
-
-  async getTypes(): Promise<TypeMetadata[]> {
-    return []
   }
 
   async getTables(
