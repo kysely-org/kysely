@@ -42,6 +42,9 @@ ignoreWorkspaceRootCheck: true
 # https://pnpm.io/settings#minimumreleaseagestrict
 minimumReleaseAgeStrict: true
 
+minimumReleaseAgeExclude:
+  - afdocs@0.22.2
+
 overrides:
   # https://github.com/advisories/GHSA-c83g-rgw3-j3cx
   # https://github.com/advisories/GHSA-73wf-gq98-2v4g
