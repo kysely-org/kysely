@@ -15,15 +15,15 @@ const supportedKeys = [
   'continue',
   'status',
 ]
-let errorPhase = false
+let filesystemPhase = false
 const routes = vercel.routes.flatMap((route) => {
   if ('handle' in route) {
-    if (route.handle !== 'error' || Object.keys(route).length !== 1) {
+    if (route.handle !== 'filesystem' || Object.keys(route).length !== 1) {
       throw new Error(
         'Update the afdocs server to support the new Vercel phase',
       )
     }
-    errorPhase = true
+    filesystemPhase = true
     return []
   }
 
@@ -36,7 +36,7 @@ const routes = vercel.routes.flatMap((route) => {
   }
 
   return {
-    errorPhase,
+    filesystemPhase,
     status: route.status === 404 ? (404 as const) : undefined,
     pattern: new RegExp(route.src),
     methods: route.methods && new Set(route.methods),
@@ -55,15 +55,15 @@ const routes = vercel.routes.flatMap((route) => {
 const root = fileURLToPath(new URL('../build/', import.meta.url))
 type Env = { Variables: { filePath: string; routeHeaders: Headers } }
 const app = new Hono<Env>()
-function applyRoutes(errorPhase: boolean): MiddlewareHandler<Env> {
+function applyRoutes(filesystemPhase: boolean): MiddlewareHandler<Env> {
   return async (c, next) => {
-    let pathname = errorPhase ? c.get('filePath') : c.req.path
-    const headers = errorPhase ? c.get('routeHeaders') : new Headers()
+    let pathname = filesystemPhase ? c.get('filePath') : c.req.path
+    const headers = filesystemPhase ? c.get('routeHeaders') : new Headers()
     let status: 404 | undefined
 
     for (const route of routes) {
       if (
-        route.errorPhase !== errorPhase ||
+        route.filesystemPhase !== filesystemPhase ||
         !route.pattern.test(pathname) ||
         (route.methods && !route.methods.has(c.req.method)) ||
         route.conditions.some((condition) => {
@@ -107,7 +107,7 @@ const serveHtml = serveStatic<Env>({
   rewriteRequestPath: (_, c) => `${c.get('filePath').replace(/\/$/, '')}.html`,
 })
 app.use((c, next) => (extname(c.get('filePath')) ? next() : serveHtml(c, next)))
-// Only a filesystem miss reaches the Vercel error phase.
+// Only a filesystem miss reaches these fallback routes.
 app.use(applyRoutes(true))
 app.use(serveFile)
 

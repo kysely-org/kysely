@@ -23,16 +23,18 @@
       "methods": ["GET", "HEAD"],
       "has": [{ "type": "header", "key": "accept", "value": "text/markdown" }],
       "dest": "/index.md",
-      "headers": { "Content-Type": "text/markdown; charset=utf-8" }
+      "headers": { "Content-Type": "text/markdown; charset=utf-8" },
+      "continue": true
     },
     {
       "src": "^/docs/([^.]+?)/?$",
       "methods": ["GET", "HEAD"],
       "has": [{ "type": "header", "key": "accept", "value": "text/markdown" }],
       "dest": "/docs/$1.md",
-      "headers": { "Content-Type": "text/markdown; charset=utf-8" }
+      "headers": { "Content-Type": "text/markdown; charset=utf-8" },
+      "continue": true
     },
-    { "handle": "error" },
+    { "handle": "filesystem" },
     {
       "src": "^/.*$",
       "status": 404,
