@@ -68,6 +68,7 @@ jobs:
           trap 'kill "$docs_server_pid" 2>/dev/null || true' EXIT
           curl --fail --silent --show-error --retry 20 --retry-connrefused \
             --retry-delay 1 --output /dev/null "$DOCS_URL/llms.txt"
+          node scripts/check-agent-doc-errors.mts "$DOCS_URL"
           # afdocs requires a numeric limit. Use the entire build's page count.
           page_count=$(node -e "console.log(require('node:fs').readdirSync('build', { recursive: true }).filter(path => path.endsWith('.html')).length)")
           # CDN cache headers cannot be verified against the local build.

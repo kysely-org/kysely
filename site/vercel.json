@@ -31,6 +31,27 @@
       "has": [{ "type": "header", "key": "accept", "value": "text/markdown" }],
       "dest": "/docs/$1.md",
       "headers": { "Content-Type": "text/markdown; charset=utf-8" }
+    },
+    { "handle": "error" },
+    {
+      "src": "^/.*$",
+      "status": 404,
+      "methods": ["GET", "HEAD"],
+      "has": [{ "type": "header", "key": "accept", "value": "text/markdown" }],
+      "dest": "/404.md",
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Vary": "Accept"
+      }
+    },
+    {
+      "src": "^/.*$",
+      "status": 404,
+      "dest": "/404.html",
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "Vary": "Accept"
+      }
     }
   ]
 }
