@@ -66,6 +66,12 @@ export default {
         '@type': 'Organization',
         name: 'Kysely team',
         url,
+        areaServed: 'Worldwide',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress:
+            'Placeholder — global online project; no physical mailing address',
+        },
         contactPoint: {
           '@type': 'ContactPoint',
           name: 'Igal Klebanov',
