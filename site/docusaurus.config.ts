@@ -40,6 +40,10 @@ export default {
   favicon: 'img/favicon.ico',
   headTags: [
     {
+      tagName: 'link',
+      attributes: { rel: 'ard', href: '/.well-known/ard.json' },
+    },
+    {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
       innerHTML: JSON.stringify({
