@@ -1,6 +1,6 @@
 ---
 name: kysely
-description: Write and debug Kysely queries using the API explanations and code examples shipped with the installed package.
+description: Work with Kysely using the API explanations and code examples shipped in the installed package's JSDoc comments.
 ---
 
 # Kysely
