@@ -35,20 +35,6 @@ export default function Home(): JSX.Element {
       <Head>
         <title>{title}</title>
         <meta property="og:title" content={title} />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'SoftwareApplication',
-            name: siteConfig.title,
-            description: siteConfig.tagline,
-            url: siteConfig.url,
-            applicationCategory: 'DeveloperApplication',
-            sameAs: [GITHUB_URL, 'https://www.npmjs.com/package/kysely'],
-            license: `${GITHUB_URL}/blob/master/LICENSE`,
-            isAccessibleForFree: true,
-            softwareVersion: packageJson.version,
-          })}
-        </script>
         <link
           rel="preload"
           as="image"
