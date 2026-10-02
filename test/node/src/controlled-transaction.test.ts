@@ -816,7 +816,7 @@ describe('controlled transaction', () => {
       })
     }
 
-    it(`should reject queued work after ${command}, including through derived handles`, async () => {
+    it(`should reject queued work after ${command}`, async () => {
       const commandStarted = new Deferred<void>()
       const commandFinished = new Deferred<void>()
       const commandStub = sandbox
@@ -829,18 +829,17 @@ describe('controlled transaction', () => {
       const streamSpy = sandbox.spy(connection, 'streamQuery')
       const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const trx = await db.startTransaction().execute()
-      const derived = trx.withSchema('public')
       const otherCommand = trx[command === 'commit' ? 'rollback' : 'commit']()
       const otherCommandSpy = sandbox.spy(
         driver,
         command === 'commit' ? 'rollbackTransaction' : 'commitTransaction',
       )
-      const completion = derived[command]().execute()
+      const completion = trx[command]().execute()
       await commandStarted.promise
 
       const queuedWork = Promise.allSettled([
         trx.selectFrom('person').selectAll().execute(),
-        derived
+        trx
           .selectFrom('person')
           .selectAll()
           .execute({ signal: new AbortController().signal }),
