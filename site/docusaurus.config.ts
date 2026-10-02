@@ -11,7 +11,9 @@ import { socialIconPaths } from './src/components/socialIconPaths'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
+import packageJson from './package.json'
 
+const title = 'Kysely'
 const url = 'https://kysely.dev'
 
 const tagline =
@@ -36,6 +38,49 @@ function socialNavbarItem(
 export default {
   baseUrl: '/',
   favicon: 'img/favicon.ico',
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: { type: 'application/ld+json' },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: title,
+        description: tagline,
+        url,
+        applicationCategory: 'DeveloperApplication',
+        sameAs: [
+          'https://github.com/kysely-org/kysely',
+          'https://www.npmjs.com/package/kysely',
+        ],
+        license: 'https://github.com/kysely-org/kysely/blob/master/LICENSE',
+        isAccessibleForFree: true,
+        softwareVersion: packageJson.version,
+      }),
+    },
+    {
+      tagName: 'script',
+      attributes: { type: 'application/ld+json' },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Kysely team',
+        url,
+        areaServed: 'Worldwide',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress:
+            'Placeholder — global online project; no physical mailing address',
+        },
+        contactPoint: {
+          '@type': 'ContactPoint',
+          name: 'Igal Klebanov',
+          email: 'me@igal.dev',
+          contactType: 'maintainer',
+        },
+      }),
+    },
+  ],
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -259,6 +304,6 @@ export default {
   } satisfies PresetClassicThemeConfig,
   clientModules: ['./src/clientModules/navbarScroll.ts'],
   themes: ['@docusaurus/theme-mermaid'],
-  title: 'Kysely',
+  title,
   url,
 } satisfies Config
