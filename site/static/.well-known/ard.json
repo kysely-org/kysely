@@ -1,4 +1,16 @@
 {
   "specVersion": "1.0",
-  "entries": []
+  "entries": [
+    {
+      "identifier": "urn:air:kysely.dev:skill:kysely",
+      "displayName": "Kysely",
+      "type": "application/ai-skill+md",
+      "url": "https://kysely.dev/skills/kysely/SKILL.md",
+      "description": "Use the installed Kysely package's JSDoc explanations and code examples when writing or debugging queries.",
+      "representativeQueries": [
+        "How do I write a query with my installed version of Kysely?",
+        "Where can I find Kysely API explanations and code examples?"
+      ]
+    }
+  ]
 }
