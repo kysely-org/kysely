@@ -58,6 +58,22 @@ export default {
         softwareVersion: packageJson.version,
       }),
     },
+    {
+      tagName: 'script',
+      attributes: { type: 'application/ld+json' },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Kysely team',
+        url,
+        contactPoint: {
+          '@type': 'ContactPoint',
+          name: 'Igal Klebanov',
+          email: 'me@igal.dev',
+          contactType: 'maintainer',
+        },
+      }),
+    },
   ],
   i18n: {
     defaultLocale: 'en',
