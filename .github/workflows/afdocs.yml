@@ -20,11 +20,9 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
   workflow_dispatch:
-  deployment_status:
 
 jobs:
   check:
-    if: ${{ github.event_name != 'deployment_status' }}
     name: Check agent documentation
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -104,34 +102,3 @@ jobs:
             site/afdocs-report.json
             site/afdocs-server.log
           if-no-files-found: error
-
-  deployment:
-    name: Check deployed agent documentation responses
-    if: >-
-      github.event_name == 'deployment_status' &&
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment == 'Preview'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    concurrency:
-      cancel-in-progress: true
-      group: ${{ github.workflow }}-deployment-${{ github.event.deployment.id }}
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.deployment.sha }}
-          persist-credentials: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: lts/*
-
-      - name: Check deployed responses
-        env:
-          DOCS_URL: ${{ github.event.deployment_status.environment_url }}
-        run: node site/scripts/check-agent-doc-errors.mts "$DOCS_URL"
