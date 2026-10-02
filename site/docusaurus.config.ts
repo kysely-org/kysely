@@ -66,6 +66,11 @@ export default {
         '@type': 'Organization',
         name: 'Kysely team',
         url,
+        sameAs: [
+          'https://github.com/kysely-org',
+          'https://x.com/kysely_',
+          'https://bsky.app/profile/kysely.dev',
+        ],
         areaServed: 'Worldwide',
         address: {
           '@type': 'PostalAddress',
