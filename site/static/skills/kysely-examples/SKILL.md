@@ -6,9 +6,10 @@ description: Find Kysely usage examples in the installed package's JSDoc comment
 # Kysely examples
 
 Kysely ships API explanations and code examples in its JSDoc comments.
-When working with Kysely, look in the project's `node_modules/kysely` and read
-the relevant API's JSDoc in the `.d.ts` files under `dist/`. Follow imports and
-re-exports as needed. These docs and examples match the installed version.
+Locate the Kysely package resolved by the project using its package manager or
+module resolver; `node_modules/kysely` is only one possible location. Read the
+relevant API's JSDoc in the package's `.d.ts` files under `dist/`. Follow imports
+and re-exports as needed. These docs and examples match the installed version.
 
 For guides to common patterns, read the [recipes index](https://kysely.dev/docs/category/recipes.md)
 and follow its links to the relevant Markdown recipes.
