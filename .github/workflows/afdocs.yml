@@ -68,7 +68,16 @@ jobs:
           trap 'kill "$docs_server_pid" 2>/dev/null || true' EXIT
           curl --fail --silent --show-error --retry 20 --retry-connrefused \
             --retry-delay 1 --output /dev/null "$DOCS_URL/llms.txt"
-          node scripts/check-agent-doc-errors.mts "$DOCS_URL"
+          # Verify the 404 representation as well as its status.
+          for path in /__missing-page /docs/__missing-page /docs/__missing-page.md; do
+            response=$(curl -sS -L -H 'Accept: text/markdown' \
+              -o afdocs-404.md -w '%{http_code} %{content_type}' "$DOCS_URL$path")
+            [[ "$response" == '404 text/markdown' || "$response" == '404 text/markdown;'* ]]
+            test "$(wc -m < afdocs-404.md)" -ge 20
+            grep -Eiq 'not found|does not exist|moved' afdocs-404.md
+            grep -Eq '\[[^]]+\]\(https://kysely\.dev/(llms\.txt|sitemap\.xml|docs[^)]*)\)' afdocs-404.md
+            ! grep -Eiq '<!doctype|<html' afdocs-404.md
+          done
           # afdocs requires a numeric limit. Use the entire build's page count.
           page_count=$(node -e "console.log(require('node:fs').readdirSync('build', { recursive: true }).filter(path => path.endsWith('.html')).length)")
           # CDN cache headers cannot be verified against the local build.
