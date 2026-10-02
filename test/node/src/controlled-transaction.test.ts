@@ -775,6 +775,61 @@ describe('controlled transaction', () => {
   })
 })
 
+describe('controlled transaction state', () => {
+  for (const command of ['commit', 'rollback'] as const) {
+    for (const useDerivedHandle of [false, true]) {
+      it(`should share ${command} state when completed through ${useDerivedHandle ? 'a derived' : 'the original'} handle`, async () => {
+        const driver: Driver = new DummyDriver()
+        const connection = await driver.acquireConnection()
+        sinon.stub(driver, 'acquireConnection').resolves(connection)
+        const querySpy = sinon.spy(connection, 'executeQuery')
+        const releaseSpy = sinon.spy(driver, 'releaseConnection')
+        const db = new Kysely<Database>({
+          dialect: {
+            createAdapter: () => new PostgresAdapter(),
+            createDriver: () => driver,
+            createIntrospector: (db) => new PostgresIntrospector(db),
+            createQueryCompiler: () => new PostgresQueryCompiler(),
+          },
+        })
+
+        try {
+          const trx = await db.startTransaction().execute()
+          const derived = trx.withSchema('public')
+          const savepoint = await trx.savepoint('point').execute()
+          const handles = [
+            trx,
+            derived,
+            trx.withoutPlugins(),
+            trx.withTables<{}>(),
+            savepoint,
+            await savepoint.rollbackToSavepoint('point').execute(),
+            await savepoint.releaseSavepoint('point').execute(),
+          ]
+
+          await (useDerivedHandle ? derived : trx)[command]().execute()
+          handles.push(trx.withSchema('another_schema'))
+
+          const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
+          for (const handle of handles) {
+            expect(handle.isCommitted).to.equal(command === 'commit')
+            expect(handle.isRolledBack).to.equal(command === 'rollback')
+            await expect(
+              handle.selectFrom('person').selectAll().execute(),
+            ).to.be.rejectedWith(message)
+            expect(() => handle.commit()).to.throw(message)
+            expect(() => handle.rollback()).to.throw(message)
+          }
+          expect(querySpy.notCalled).to.be.true
+          expect(releaseSpy.calledOnce).to.be.true
+        } finally {
+          await db.destroy()
+        }
+      })
+    }
+  }
+})
+
 async function insertSomething(db: Kysely<Database>) {
   return await db
     .insertInto('person')

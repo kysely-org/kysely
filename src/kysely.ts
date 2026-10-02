@@ -967,6 +967,7 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
+      state: { isCommitted: false, isRolledBack: false },
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection.connection),
       ),
@@ -983,15 +984,14 @@ export class ControlledTransaction<
   readonly #state: ControlledTransctionState
 
   constructor(props: ControlledTransactionProps) {
-    const state = { isCommitted: false, isRolledBack: false }
     props = {
       ...props,
       executor: new NotCommittedOrRolledBackAssertingExecutor(
         props.executor,
-        state,
+        props.state,
       ),
     }
-    const { connection, ...transactionProps } = props
+    const { connection, state, ...transactionProps } = props
     super(transactionProps)
 
     this.#props = freeze(props)
@@ -1292,6 +1292,7 @@ interface ControlledTransctionState {
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: ControlledConnection
+  readonly state: ControlledTransctionState
 }
 
 export class Command<T> {
