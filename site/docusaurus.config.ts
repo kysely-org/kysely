@@ -243,6 +243,7 @@ export default {
       } satisfies MermaidConfig,
     },
     metadata: [
+      { property: 'og:type', content: 'website' },
       {
         content: tagline,
         name: 'description',
