@@ -5,11 +5,10 @@ import TurndownService from 'turndown'
 import docs from '../build/mcp/docs.json' with { type: 'json' }
 import manifest from '../build/mcp/manifest.json' with { type: 'json' }
 import { createInstance } from '../build/pagefind/pagefind.js'
-import {
-  APIDOC_BASE_URL,
-  APIDOC_INDEX_WEIGHT,
-  APIDOC_PAGEFIND_URL,
-} from '../src/search-config.js'
+import searchConfig from '../src/search-config.json' with { type: 'json' }
+
+const APIDOC_BASE_URL = searchConfig.apiDocsUrl
+const APIDOC_PAGEFIND_URL = `${APIDOC_BASE_URL}pagefind/`
 
 // Load index chunks from this deployment, while returning canonical doc URLs.
 const deploymentUrl = process.env.VERCEL_URL
@@ -41,7 +40,7 @@ const search: SearchProvider = {
     if (apiAvailable) {
       await pagefind.mergeIndex(APIDOC_PAGEFIND_URL, {
         baseUrl: APIDOC_BASE_URL,
-        indexWeight: APIDOC_INDEX_WEIGHT,
+        indexWeight: searchConfig.apiIndexWeight,
       })
     }
     ready = true
