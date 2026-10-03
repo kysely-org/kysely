@@ -34,4 +34,6 @@ Useful starting points:
 - UPDATE queries: `UpdateQueryBuilder` in `update-query-builder.d.ts`.
 - DELETE queries: `DeleteQueryBuilder` in `delete-query-builder.d.ts`.
 - MERGE queries: `MergeQueryBuilder` in `merge-query-builder.d.ts`.
+- Expressions and predicates: `ExpressionBuilder` in `expression-builder.d.ts`.
+- SQL function calls: `FunctionModule` in `function-module.d.ts`.
 - DDL queries: `SchemaModule` in `schema-module.d.ts`.
