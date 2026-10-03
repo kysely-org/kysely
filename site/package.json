@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "pnpm snippets && docusaurus build && pagefind",
+    "build": "pnpm snippets && docusaurus build && pagefind && node -e \"require('node:fs').copyFileSync('build/pagefind/pagefind.js', 'build/pagefind/pagefind.mjs')\"",
     "snippets": "node scripts/highlight-snippets.mjs",
     "proof-links": "node scripts/verify-proof-links.mjs",
     "swizzle": "docusaurus swizzle",
@@ -25,6 +25,8 @@
     "@mdx-js/react": "3.1.1",
     "@radix-ui/colors": "3.0.0",
     "clsx": "2.1.1",
+    "docusaurus-plugin-mcp-server": "2.1.0",
+    "entities": "6.0.1",
     "prism-react-renderer": "2.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
