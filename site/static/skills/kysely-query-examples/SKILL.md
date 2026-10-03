@@ -1,9 +1,9 @@
 ---
-name: kysely-examples
+name: kysely-query-examples
 description: Find Kysely usage examples in the installed package's JSDoc comments, official recipes, and real-world GitHub repositories linked from the homepage.
 ---
 
-# Kysely examples
+# Kysely query examples
 
 Kysely ships API explanations and code examples in its JSDoc comments. These
 examples are type-checked in Kysely's CI and pinned to the installed version

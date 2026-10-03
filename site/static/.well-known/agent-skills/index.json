@@ -2,11 +2,11 @@
   "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
   "skills": [
     {
-      "name": "kysely-examples",
+      "name": "kysely-query-examples",
       "type": "skill-md",
       "description": "Find Kysely usage examples in the installed package's JSDoc comments, official recipes, and real-world GitHub repositories linked from the homepage.",
-      "url": "/skills/kysely-examples/SKILL.md",
-      "digest": "sha256:4cb7a32ceacb296aec970be7040692ef35a89f02d842799c3c618e1e8ff48a4f"
+      "url": "/skills/kysely-query-examples/SKILL.md",
+      "digest": "sha256:b55a729989f8aff5c87aa192a858932edf9c7ba48de6081e229080e6e7a8b69c"
     }
   ]
 }
