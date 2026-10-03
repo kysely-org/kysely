@@ -1,0 +1,38 @@
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Types } from './json-traversal/Types'
+
+# JSON Traversal
+
+In the era of data-driven applications, SQL databases such as PostgreSQL, MySQL,
+and SQLite have evolved to support JSON traversal. JSON provides a flexible and
+dynamic data structure, and these databases now offer native support for storing,
+querying, and manipulating JSON data within the SQL framework.
+
+PostgreSQL, MySQL, and SQLite have introduced native JSON data types, along with
+functions and operators for extracting values, filtering conditions, aggregating
+arrays, and indexing JSON data. This enables developers to leverage the strengths
+of SQL and JSON together, combining relational querying with the flexibility of
+JSON manipulation.
+
+These capabilities have always fascinated us, and finally we are able to bring
+them to Kysely and through some exploration and experimentation, we'll hopefully
+land together on a solution that is both elegant, practical, and most importantly,
+type-safe.
+
+Each dialect Kysely supports at its core, has a different way of handling JSON
+traversal. So this recipe will require choosing a dialect to work with:
+
+<Tabs queryString="dialect">
+  <TabItem value="postgresql" label="PostgreSQL" default></TabItem>
+  <TabItem value="mysql" label="MySQL"></TabItem>
+  <TabItem value="sqlite" label="SQLite"></TabItem>
+</Tabs>
+
+## Defining Types
+
+<Types />
+
+## Querying
+
+## Inference
