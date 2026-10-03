@@ -68,6 +68,7 @@ export default {
         url,
         sameAs: [
           'https://github.com/kysely-org',
+          'https://www.linkedin.com/company/kysely-org',
           'https://x.com/kysely_',
           'https://bsky.app/profile/kysely.dev',
         ],
