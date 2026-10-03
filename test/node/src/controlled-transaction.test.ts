@@ -775,6 +775,124 @@ describe('controlled transaction', () => {
   })
 })
 
+describe('controlled transaction state', () => {
+  const sandbox = sinon.createSandbox()
+  let db: Kysely<Database>
+  let trx: ControlledTransaction<Database>
+  let derivedTrx: ControlledTransaction<Database>
+  let savepointTrx: ControlledTransaction<Database, ['point']>
+  let querySpy: sinon.SinonSpy
+  let releaseSpy: sinon.SinonSpy
+
+  beforeEach(async () => {
+    const driver: Driver = new DummyDriver()
+    const connection = await driver.acquireConnection()
+    sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    querySpy = sandbox.spy(connection, 'executeQuery')
+    releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    db = new Kysely<Database>({
+      dialect: {
+        createAdapter: () => new PostgresAdapter(),
+        createDriver: () => driver,
+        createIntrospector: (db) => new PostgresIntrospector(db),
+        createQueryCompiler: () => new PostgresQueryCompiler(),
+      },
+    })
+    trx = await db.startTransaction().execute()
+    derivedTrx = trx.withSchema('public')
+    savepointTrx = await trx.savepoint('point').execute()
+  })
+
+  afterEach(async () => {
+    sandbox.restore()
+    await db.destroy()
+  })
+
+  it('should invalidate derived handles when the original transaction commits', async () => {
+    await trx.commit().execute()
+
+    expect(derivedTrx.isCommitted).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.false
+    expect(savepointTrx.isCommitted).to.be.true
+    expect(savepointTrx.isRolledBack).to.be.false
+    await expect(
+      derivedTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    await expect(
+      savepointTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    expect(() => derivedTrx.commit()).to.throw(
+      'Transaction is already committed',
+    )
+    expect(() => derivedTrx.rollback()).to.throw(
+      'Transaction is already committed',
+    )
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate the original transaction when a derived handle commits', async () => {
+    await derivedTrx.commit().execute()
+
+    expect(trx.isCommitted).to.be.true
+    expect(trx.isRolledBack).to.be.false
+    expect(savepointTrx.isCommitted).to.be.true
+    expect(savepointTrx.isRolledBack).to.be.false
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    await expect(
+      savepointTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    expect(() => trx.commit()).to.throw('Transaction is already committed')
+    expect(() => trx.rollback()).to.throw('Transaction is already committed')
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate derived handles when the original transaction rolls back', async () => {
+    await trx.rollback().execute()
+
+    expect(derivedTrx.isCommitted).to.be.false
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(savepointTrx.isCommitted).to.be.false
+    expect(savepointTrx.isRolledBack).to.be.true
+    await expect(
+      derivedTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    await expect(
+      savepointTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    expect(() => derivedTrx.commit()).to.throw(
+      'Transaction is already rolled back',
+    )
+    expect(() => derivedTrx.rollback()).to.throw(
+      'Transaction is already rolled back',
+    )
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate the original transaction when a derived handle rolls back', async () => {
+    await derivedTrx.rollback().execute()
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    expect(savepointTrx.isCommitted).to.be.false
+    expect(savepointTrx.isRolledBack).to.be.true
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    await expect(
+      savepointTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    expect(() => trx.commit()).to.throw('Transaction is already rolled back')
+    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+})
+
 async function insertSomething(db: Kysely<Database>) {
   return await db
     .insertInto('person')
