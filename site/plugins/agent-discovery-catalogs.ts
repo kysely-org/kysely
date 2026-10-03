@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'pathe'
 
-export default function agentDiscoveryCatalogs(): Plugin {
+export default function generateAgentDiscoveryCatalogs(): Plugin {
   return {
     name: 'agent-discovery-catalogs',
     async postBuild({ outDir, siteDir, siteConfig }) {
