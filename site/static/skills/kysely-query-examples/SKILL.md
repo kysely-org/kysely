@@ -17,3 +17,9 @@ Locate the Kysely package resolved by the project using its package manager or
 module resolver; `node_modules/kysely` is only one possible location. Search the
 package's `.d.ts` files under `dist/` for the relevant API or query pattern, then
 read the surrounding JSDoc explanations and fenced code examples.
+
+Useful starting points:
+
+- DML queries: `QueryCreator` in `query-creator.d.ts`.
+- SELECT queries in particular: `SelectQueryBuilder` in `select-query-builder.d.ts`.
+- DDL queries: `SchemaModule` in `schema-module.d.ts`.
