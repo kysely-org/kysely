@@ -6,12 +6,16 @@ import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
 import packageJson from './package.json'
+import ardCatalog from './static/.well-known/ard.json'
 
 const title = 'Kysely'
 const url = 'https://kysely.dev'
@@ -111,6 +115,42 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    function agentSkillsIndex() {
+      return {
+        name: 'agent-skills-index',
+        async postBuild({ outDir }) {
+          const skills = await Promise.all(
+            ardCatalog.entries
+              .filter((entry) => entry.type === 'application/ai-skill+md')
+              .map(async (entry) => {
+                const skillUrl = new URL(entry.url).pathname
+                const content = await readFile(join(outDir, skillUrl))
+                return {
+                  name: entry.identifier.split(':').at(-1),
+                  type: 'skill-md',
+                  description: entry.description,
+                  url: skillUrl,
+                  digest: `sha256:${createHash('sha256').update(content).digest('hex')}`,
+                }
+              }),
+          )
+          const directory = join(outDir, '.well-known/agent-skills')
+          await mkdir(directory, { recursive: true })
+          await writeFile(
+            join(directory, 'index.json'),
+            JSON.stringify(
+              {
+                $schema:
+                  'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+                skills,
+              },
+              null,
+              2,
+            ) + '\n',
+          )
+        },
+      }
+    },
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
     // the last production build's index instead: content may be stale, but
