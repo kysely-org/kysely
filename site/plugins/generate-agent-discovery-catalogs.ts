@@ -6,7 +6,7 @@ import { join } from 'pathe'
 
 export default function generateAgentDiscoveryCatalogs(): Plugin {
   return {
-    name: 'generateAgentDiscoveryCatalogs',
+    name: 'generate-agent-discovery-catalogs',
     async postBuild({ outDir, siteDir, siteConfig }) {
       const directories = await readdir(join(siteDir, 'static/skills'), {
         withFileTypes: true,
