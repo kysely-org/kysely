@@ -3,11 +3,12 @@ import type {
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import { DEFAULT_PARSE_FRONT_MATTER } from '@docusaurus/utils'
 import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { createHash } from 'node:crypto'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
@@ -15,7 +16,6 @@ import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
 import packageJson from './package.json'
-import ardCatalog from './static/.well-known/ard.json'
 
 const title = 'Kysely'
 const url = 'https://kysely.dev'
@@ -115,38 +115,79 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
-    function agentSkillsIndex() {
+    function agentDiscoveryCatalogs() {
       return {
-        name: 'agent-skills-index',
-        async postBuild({ outDir }) {
-          const skills = await Promise.all(
-            ardCatalog.entries
-              .filter((entry) => entry.type === 'application/ai-skill+md')
-              .map(async (entry) => {
-                const skillUrl = new URL(entry.url).pathname
-                const content = await readFile(join(outDir, skillUrl))
-                return {
-                  name: entry.identifier.split(':').at(-1),
-                  type: 'skill-md',
-                  description: entry.description,
-                  url: skillUrl,
-                  digest: `sha256:${createHash('sha256').update(content).digest('hex')}`,
-                }
-              }),
-          )
-          const directory = join(outDir, '.well-known/agent-skills')
-          await mkdir(directory, { recursive: true })
-          await writeFile(
-            join(directory, 'index.json'),
-            JSON.stringify(
-              {
-                $schema:
-                  'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
-                skills,
-              },
-              null,
-              2,
-            ) + '\n',
+        name: 'agent-discovery-catalogs',
+        async postBuild({ outDir, siteDir, siteConfig }) {
+          const directories = await readdir(join(siteDir, 'static/skills'), {
+            withFileTypes: true,
+          })
+          const skills = []
+          const entries = []
+          for (const directory of directories
+            .filter((entry) => entry.isDirectory())
+            .map((entry) => entry.name)
+            .sort()) {
+            const skillUrl = `/skills/${directory}/SKILL.md`
+            const filePath = join(outDir, skillUrl)
+            const content = await readFile(filePath)
+            const { frontMatter } = await DEFAULT_PARSE_FRONT_MATTER({
+              filePath,
+              fileContent: content.toString('utf8'),
+            })
+            const { name, description, metadata } = frontMatter as {
+              name: string
+              description: string
+              metadata?: Record<string, string>
+            }
+            if (
+              name !== directory ||
+              typeof description !== 'string' ||
+              !description.trim()
+            ) {
+              throw new Error(
+                `Invalid skill name or description in ${filePath}`,
+              )
+            }
+            skills.push({
+              name,
+              type: 'skill-md',
+              description,
+              url: skillUrl,
+              digest: `sha256:${createHash('sha256').update(content).digest('hex')}`,
+            })
+            entries.push({
+              identifier: `urn:air:${new URL(siteConfig.url).hostname}:skill:${name}`,
+              displayName: metadata?.displayName ?? name,
+              type: 'application/ai-skill+md',
+              url: new URL(skillUrl, siteConfig.url).href,
+              description,
+              representativeQueries: (metadata?.representativeQueries ?? '')
+                .split('\n')
+                .map((query) => query.trim())
+                .filter(Boolean),
+            })
+          }
+          const catalog = { specVersion: '1.0', entries }
+          const files = {
+            'ard.json': catalog,
+            'ai-catalog.json': catalog,
+            'agent-skills/index.json': {
+              $schema:
+                'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+              skills,
+            },
+          }
+          await mkdir(join(outDir, '.well-known/agent-skills'), {
+            recursive: true,
+          })
+          await Promise.all(
+            Object.entries(files).map(([file, data]) =>
+              writeFile(
+                join(outDir, '.well-known', file),
+                JSON.stringify(data, null, 2) + '\n',
+              ),
+            ),
           )
         },
       }

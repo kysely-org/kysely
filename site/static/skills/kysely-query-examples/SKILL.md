@@ -1,6 +1,11 @@
 ---
 name: kysely-query-examples
 description: Find Kysely query examples and API explanations in the installed package's JSDoc comments.
+metadata:
+  displayName: Kysely query examples
+  representativeQueries: |
+    How do I write a query with my installed version of Kysely?
+    Where can I find query examples matching my installed Kysely version?
 ---
 
 # Kysely query examples
