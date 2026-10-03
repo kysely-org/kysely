@@ -48,6 +48,10 @@ export default {
       attributes: { rel: 'ard', href: '/.well-known/ard.json' },
     },
     {
+      tagName: 'link',
+      attributes: { rel: 'ai-catalog', href: '/.well-known/ai-catalog.json' },
+    },
+    {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
       innerHTML: JSON.stringify({
