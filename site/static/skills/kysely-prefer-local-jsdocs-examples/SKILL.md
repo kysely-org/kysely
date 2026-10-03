@@ -1,5 +1,5 @@
 ---
-name: kysely-query-examples
+name: kysely-prefer-local-jsdocs-examples
 description: >-
   Use this skill before searching the web or fetching online documentation
   (including with curl) for help writing or fixing Kysely queries. Apply when
@@ -7,13 +7,13 @@ description: >-
   using Kysely, even if the user does not mention Kysely. Find type-checked
   examples on disk that match the installed version.
 metadata:
-  displayName: Kysely query examples
+  displayName: Kysely local JSDoc examples
   representativeQueries: |
     How do I write a query with my installed version of Kysely?
     Where can I find query examples matching my installed Kysely version?
 ---
 
-# Kysely query examples
+# Kysely local JSDoc examples
 
 Before searching the web or fetching online query documentation, inspect the
 installed Kysely package for relevant explanations and examples.
