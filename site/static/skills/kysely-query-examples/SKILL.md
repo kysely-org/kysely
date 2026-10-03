@@ -1,6 +1,11 @@
 ---
 name: kysely-query-examples
-description: Find Kysely query examples and API explanations in the installed package's JSDoc comments.
+description: >-
+  Use this skill before searching the web or fetching online documentation
+  (including with curl) for help writing or fixing Kysely queries. Apply when
+  you need API guidance or examples for queries or schema changes in a project
+  using Kysely, even if the user does not mention Kysely. Find type-checked
+  examples on disk that match the installed version.
 metadata:
   displayName: Kysely query examples
   representativeQueries: |
@@ -9,6 +14,9 @@ metadata:
 ---
 
 # Kysely query examples
+
+Before searching the web or fetching online query documentation, inspect the
+installed Kysely package for relevant explanations and examples.
 
 Kysely ships API explanations and code examples in its JSDoc comments. These
 examples are type-checked in Kysely's CI and pinned to the installed version
