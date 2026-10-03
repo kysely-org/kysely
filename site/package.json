@@ -25,6 +25,7 @@
     "@mdx-js/react": "3.1.1",
     "@radix-ui/colors": "3.0.0",
     "clsx": "2.1.1",
+    "docusaurus-plugin-mcp-server": "2.1.0",
     "prism-react-renderer": "2.4.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"

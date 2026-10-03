@@ -3,6 +3,8 @@ import type {
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
 import type { Config } from '@docusaurus/types'
+import type { McpServerPluginOptions } from 'docusaurus-plugin-mcp-server'
+import { createRequire } from 'node:module'
 import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
@@ -13,6 +15,11 @@ import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
 import packageJson from './package.json'
+
+// Docusaurus's Jiti loader cannot load the plugin's Zod 4 dependency.
+const { default: mcpServer } = createRequire(__filename)(
+  'docusaurus-plugin-mcp-server',
+) as typeof import('docusaurus-plugin-mcp-server')
 
 const title = 'Kysely'
 const url = 'https://kysely.dev'
@@ -117,6 +124,13 @@ export default {
   organizationName: 'kysely-org',
   plugins: [
     generateAgentDiscoveryCatalogs,
+    [
+      mcpServer,
+      {
+        server: { name: 'kysely-docs', version: packageJson.version },
+        skills: false,
+      } satisfies McpServerPluginOptions,
+    ],
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
     // the last production build's index instead: content may be stale, but

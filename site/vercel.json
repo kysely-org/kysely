@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "routes": [
+    { "src": "^/mcp/?$", "dest": "/api/mcp" },
     {
       "src": "^/(?:index\\.html)?$",
       "headers": {
