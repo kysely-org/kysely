@@ -10,6 +10,9 @@ export default function generateAgentDiscoveryCatalogs(): Plugin {
     async postBuild({ outDir, siteDir, siteConfig }) {
       const directories = await readdir(join(siteDir, 'static/skills'), {
         withFileTypes: true,
+      }).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') return []
+        throw error
       })
       const skills = []
       const entries = []
