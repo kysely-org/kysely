@@ -21,5 +21,9 @@ read the surrounding JSDoc explanations and fenced code examples.
 Useful starting points:
 
 - DML queries: `QueryCreator` in `query-creator.d.ts`.
-- SELECT queries in particular: `SelectQueryBuilder` in `select-query-builder.d.ts`.
+- SELECT queries: `SelectQueryBuilder` in `select-query-builder.d.ts`.
+- INSERT queries: `InsertQueryBuilder` in `insert-query-builder.d.ts`.
+- UPDATE queries: `UpdateQueryBuilder` in `update-query-builder.d.ts`.
+- DELETE queries: `DeleteQueryBuilder` in `delete-query-builder.d.ts`.
+- MERGE queries: `MergeQueryBuilder` in `merge-query-builder.d.ts`.
 - DDL queries: `SchemaModule` in `schema-module.d.ts`.
