@@ -4,7 +4,8 @@ import { createWebRequestHandler } from 'docusaurus-plugin-mcp-server/adapters'
 import TurndownService from 'turndown'
 import docs from '../build/mcp/docs.json' with { type: 'json' }
 import manifest from '../build/mcp/manifest.json' with { type: 'json' }
-import { createInstance } from '../build/pagefind/pagefind.js'
+// An explicit .mjs copy keeps Vercel from converting Pagefind to CommonJS.
+import { createInstance } from '../build/pagefind/pagefind.mjs'
 import searchConfig from '../src/search-config.json' with { type: 'json' }
 
 const APIDOC_BASE_URL = searchConfig.apiDocsUrl

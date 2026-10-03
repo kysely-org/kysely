@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "pnpm snippets && docusaurus build && pagefind",
+    "build": "pnpm snippets && docusaurus build && pagefind && node -e \"require('node:fs').copyFileSync('build/pagefind/pagefind.js', 'build/pagefind/pagefind.mjs')\"",
     "snippets": "node scripts/highlight-snippets.mjs",
     "proof-links": "node scripts/verify-proof-links.mjs",
     "swizzle": "docusaurus swizzle",

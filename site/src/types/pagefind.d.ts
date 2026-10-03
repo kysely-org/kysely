@@ -1,6 +1,6 @@
 // The generated search bundle has no declarations; the pagefind package's
 // types describe its build-time indexing API, not this runtime API.
-declare module '*build/pagefind/pagefind.js' {
+declare module '*build/pagefind/pagefind.mjs' {
   interface PagefindResult {
     score: number
     data(): Promise<{
