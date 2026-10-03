@@ -9,7 +9,7 @@ import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaur
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join } from 'pathe'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
