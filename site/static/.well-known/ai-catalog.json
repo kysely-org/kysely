@@ -6,7 +6,7 @@
       "displayName": "Kysely query examples",
       "type": "application/ai-skill+md",
       "url": "https://kysely.dev/skills/kysely-query-examples/SKILL.md",
-      "description": "Find Kysely usage examples in the installed package's JSDoc comments, official recipes, and real-world GitHub repositories linked from the homepage.",
+      "description": "Find Kysely usage examples in the installed package's JSDoc comments, official recipes, and real-world GitHub code permalinks.",
       "representativeQueries": [
         "How do I write a query with my installed version of Kysely?",
         "Where can I find real-world Kysely query examples on GitHub?"
