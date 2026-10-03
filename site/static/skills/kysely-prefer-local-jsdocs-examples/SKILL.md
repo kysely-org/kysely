@@ -36,4 +36,8 @@ Useful starting points:
 - MERGE queries: `MergeQueryBuilder` in `merge-query-builder.d.ts`.
 - Expressions and predicates: `ExpressionBuilder` in `expression-builder.d.ts`.
 - SQL function calls: `FunctionModule` in `function-module.d.ts`.
+- Parameterized raw SQL and SQL fragments: `sql` in `sql.d.ts`.
+- Aggregate filters and window functions: `AggregateFunctionBuilder` in `aggregate-function-builder.d.ts`.
+- Nested JSON objects and arrays: the dialect-specific `helpers/postgres.d.ts`, `helpers/mysql.d.ts`, `helpers/sqlite.d.ts`, or `helpers/mssql.d.ts`.
+- Transactions and connection management: `Kysely` in `kysely.d.ts`.
 - DDL queries: `SchemaModule` in `schema-module.d.ts`.
