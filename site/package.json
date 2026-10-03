@@ -24,11 +24,13 @@
     "@docusaurus/theme-mermaid": "3.10.2",
     "@mdx-js/react": "3.1.1",
     "@radix-ui/colors": "3.0.0",
+    "cheerio": "1.0.0-rc.12",
     "clsx": "2.1.1",
     "docusaurus-plugin-mcp-server": "2.1.0",
     "prism-react-renderer": "2.4.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "turndown": "7.2.4"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.10.2",
@@ -38,6 +40,7 @@
     "@hono/node-server": "2.1.1",
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
     "@types/react": "19.3.0",
+    "@types/turndown": "5.0.6",
     "afdocs": "0.22.2",
     "hono": "catalog:http",
     "mermaid": "11.16.1",
