@@ -159,15 +159,15 @@ importers:
       '@radix-ui/colors':
         specifier: 3.0.0
         version: 3.0.0
-      cheerio:
-        specifier: 1.0.0-rc.12
-        version: 1.0.0-rc.12
       clsx:
         specifier: 2.1.1
         version: 2.1.1
       docusaurus-plugin-mcp-server:
         specifier: 2.1.0
         version: 2.1.0(@docusaurus/core@3.10.2)(@docusaurus/types@3.10.2)(react-dom@19.3.0)(react@19.3.0)(supports-color@10.2.2)(zod@4.6.5)
+      entities:
+        specifier: 6.0.1
+        version: 6.0.1
       prism-react-renderer:
         specifier: 2.4.1
         version: 2.4.1(react@19.3.0)
@@ -177,9 +177,6 @@ importers:
       react-dom:
         specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
-      turndown:
-        specifier: 7.2.4
-        version: 7.2.4
     devDependencies:
       '@docusaurus/module-type-aliases':
         specifier: 3.10.2
@@ -202,9 +199,6 @@ importers:
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
-      '@types/turndown':
-        specifier: 5.0.6
-        version: 5.0.6
       afdocs:
         specifier: 0.22.2
         version: 0.22.2(supports-color@10.2.2)
@@ -2710,9 +2704,6 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
-
-  '@types/turndown@5.0.6':
-    resolution: {integrity: sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -11074,8 +11065,6 @@ snapshots:
 
   '@types/trusted-types@2.0.7':
     optional: true
-
-  '@types/turndown@5.0.6': {}
 
   '@types/unist@2.0.11': {}
 

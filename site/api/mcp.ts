@@ -1,7 +1,6 @@
-import { load } from 'cheerio'
 import type { ProcessedDoc, SearchProvider } from 'docusaurus-plugin-mcp-server'
 import { createWebRequestHandler } from 'docusaurus-plugin-mcp-server/adapters'
-import TurndownService from 'turndown'
+import { decodeHTML } from 'entities'
 import docs from '../build/mcp/docs.json' with { type: 'json' }
 import manifest from '../build/mcp/manifest.json' with { type: 'json' }
 // An explicit .mjs copy keeps Vercel from converting Pagefind to CommonJS.
@@ -20,7 +19,6 @@ const pagefind = createInstance({
   baseUrl: manifest.baseUrl,
   language: 'en',
 })
-const markdown = new TurndownService({ codeBlockStyle: 'fenced' })
 let ready = false
 
 const search: SearchProvider = {
@@ -57,7 +55,7 @@ const search: SearchProvider = {
           route: new URL(data.url).pathname,
           title: data.meta.title,
           score: result.score,
-          snippet: load(data.excerpt).text(),
+          snippet: decodeHTML(data.excerpt.replace(/<\/?mark>/g, '')),
         }
       }),
     )
@@ -74,37 +72,24 @@ const search: SearchProvider = {
     // Only fetch API reference pages. Reject redirects to other destinations.
     if (
       !url.href.startsWith(APIDOC_BASE_URL) ||
-      !url.pathname.endsWith('.html')
+      !/\.(?:html|md)$/.test(url.pathname)
     ) {
       return null
     }
-    const response = await fetch(url, {
+    const markdownUrl = new URL(url)
+    markdownUrl.pathname = markdownUrl.pathname.replace(/\.html$/, '.md')
+    const response = await fetch(markdownUrl, {
       redirect: 'error',
       signal: AbortSignal.timeout(10000),
     })
     if (!response.ok) return null
 
-    const $ = load(await response.text())
-    const content = $('.col-content')
-    if (!content.length) return null
-    const title = content.find('h1').first().text()
-    content
-      .find('h1, button, script, style, .tsd-anchor-icon, .tsd-breadcrumb')
-      .remove()
-    // TypeDoc uses <br> inside highlighted code; retain its line breaks.
-    content.find('pre br').replaceWith('\n')
-    content.find('pre > code').each((_, code) => {
-      const language = $(code).attr('class')
-      if (language) $(code).attr('class', `language-${language}`)
-    })
-    content.find('a[href]').each((_, link) => {
-      $(link).attr('href', new URL($(link).attr('href')!, url).href)
-    })
+    const markdown = await response.text()
     return {
       route: url.pathname,
-      title,
+      title: markdown.match(/^# (.+)$/m)?.[1] ?? url.pathname,
       description: '',
-      markdown: markdown.turndown(content.html()!),
+      markdown,
       headings: [],
     }
   },
