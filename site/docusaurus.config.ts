@@ -8,6 +8,7 @@ import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaur
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
+import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
@@ -39,6 +40,14 @@ export default {
   baseUrl: '/',
   favicon: 'img/favicon.ico',
   headTags: [
+    {
+      tagName: 'link',
+      attributes: { rel: 'ard', href: '/.well-known/ard.json' },
+    },
+    {
+      tagName: 'link',
+      attributes: { rel: 'ai-catalog', href: '/.well-known/ai-catalog.json' },
+    },
     {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
@@ -107,6 +116,7 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    generateAgentDiscoveryCatalogs,
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
     // the last production build's index instead: content may be stale, but
