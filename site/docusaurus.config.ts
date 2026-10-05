@@ -8,6 +8,7 @@ import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaur
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
+import deferPrism from './plugins/defer-prism'
 import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
@@ -115,6 +116,7 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    deferPrism,
     generateAgentDiscoveryCatalogs,
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
