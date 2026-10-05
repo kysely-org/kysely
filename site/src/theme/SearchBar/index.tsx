@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useColorMode } from '@docusaurus/theme-common'
 
 // The API reference index. Never point this at localhost: the on-load
@@ -64,17 +64,25 @@ let componentAssets: Promise<void> | undefined
 
 function loadComponentAssets(): Promise<void> {
   componentAssets ??= new Promise((resolve, reject) => {
+    let pending = 2
+    const onLoad = () => {
+      if (--pending === 0) resolve()
+    }
+    const onError = () =>
+      reject(new Error('Failed to load Pagefind. Is this a production build?'))
+
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = `${SITE_PAGEFIND_URL}pagefind-component-ui.css`
+    link.onload = onLoad
+    link.onerror = onError
     document.head.appendChild(link)
 
     const script = document.createElement('script')
     script.type = 'module'
     script.src = `${SITE_PAGEFIND_URL}pagefind-component-ui.js`
-    script.onload = () => resolve()
-    script.onerror = () =>
-      reject(new Error('Failed to load Pagefind. Is this a production build?'))
+    script.onload = onLoad
+    script.onerror = onError
     document.head.appendChild(script)
   })
 
@@ -258,6 +266,11 @@ function ensureModal(): void {
 
 export default function SearchBar(): React.JSX.Element {
   const [isReady, setIsReady] = useState(false)
+  const [loadRequested, setLoadRequested] = useState(false)
+  const openWhenReady = useRef(false)
+  const trigger = useRef<HTMLElement>(null)
+  const placeholder = useRef<HTMLButtonElement>(null)
+  const restoreFocus = useRef(false)
   // Rendered during SSR, so default to Mac and correct after mount.
   const [modifierKey, setModifierKey] = useState('⌘')
   const { colorMode } = useColorMode()
@@ -278,7 +291,77 @@ export default function SearchBar(): React.JSX.Element {
     }
   }, [isReady, colorMode])
 
+  const openSearch = useCallback(() => {
+    openWhenReady.current = true
+    setLoadRequested(true)
+  }, [])
+
   useEffect(() => {
+    if (loadRequested) return
+
+    // Warm search automatically, after initial loading and when the main
+    // thread is idle. A click or shortcut bypasses this schedule.
+    let idleCallback: number | undefined
+    let timer: number | undefined
+    const schedule = () => {
+      if (window.requestIdleCallback) {
+        idleCallback = window.requestIdleCallback(
+          () => setLoadRequested(true),
+          { timeout: 2000 },
+        )
+      } else {
+        timer = window.setTimeout(() => setLoadRequested(true), 1000)
+      }
+    }
+
+    if (document.readyState === 'complete') schedule()
+    else window.addEventListener('load', schedule, { once: true })
+
+    return () => {
+      window.removeEventListener('load', schedule)
+      if (idleCallback !== undefined) window.cancelIdleCallback(idleCallback)
+      window.clearTimeout(timer)
+    }
+  }, [loadRequested])
+
+  useEffect(() => {
+    if (isReady) {
+      const button = trigger.current?.querySelector('button')
+      if (restoreFocus.current) button?.focus()
+      if (openWhenReady.current) {
+        openWhenReady.current = false
+        button?.click()
+      }
+      return
+    }
+
+    // Pagefind registers its own shortcut once its trigger mounts.
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = document.activeElement
+      if (
+        event.defaultPrevented ||
+        event.repeat ||
+        event.altKey ||
+        event.shiftKey ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.key.toLowerCase() !== 'k' ||
+        (target instanceof HTMLElement &&
+          (target.matches('input, textarea') || target.isContentEditable))
+      ) {
+        return
+      }
+
+      event.preventDefault()
+      openSearch()
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [isReady, openSearch])
+
+  useEffect(() => {
+    if (!loadRequested) return
+
     let cancelled = false
 
     void Promise.all([loadComponentAssets(), probeApidocIndex()])
@@ -316,6 +399,7 @@ export default function SearchBar(): React.JSX.Element {
         })
 
         ensureModal()
+        restoreFocus.current = document.activeElement === placeholder.current
         setIsReady(true)
       })
       .catch((error) => {
@@ -325,7 +409,7 @@ export default function SearchBar(): React.JSX.Element {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [loadRequested])
 
   if (!isReady) {
     // Static stand-in during SSR and while the bundle loads; also what
@@ -333,7 +417,14 @@ export default function SearchBar(): React.JSX.Element {
     // live trigger's markup and lowercase English label so the swap is
     // pixel-identical (Pagefind uses its "keyboard_search" translation).
     return (
-      <button aria-label="search" className="pf-trigger-btn" type="button">
+      <button
+        aria-label="search"
+        aria-haspopup="dialog"
+        className="pf-trigger-btn"
+        onClick={openSearch}
+        ref={placeholder}
+        type="button"
+      >
         <span aria-hidden="true" className="pf-trigger-icon" />
         <span className="pf-trigger-text">search</span>
         <span aria-hidden="true" className="pf-trigger-shortcut">
@@ -347,5 +438,5 @@ export default function SearchBar(): React.JSX.Element {
   // Custom-element props must stay off the JSX: React 19 assigns known
   // properties directly, and these elements expose getter-only reflections
   // (setting `placeholder` throws). Defaults are right anyway.
-  return <pagefind-modal-trigger />
+  return <pagefind-modal-trigger ref={trigger} />
 }
