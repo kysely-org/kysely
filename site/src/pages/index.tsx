@@ -395,6 +395,7 @@ function proofTitle(entry: ProofEntry): string {
 // name; wordmarks get only what the mark doesn't already say (the Prisma
 // wordmark + "Studio").
 const LOGO_WITH_NAME = new Set([
+  'A2A JavaScript SDK',
   'AirTrail',
   'Conar',
   'Domain Locker',
