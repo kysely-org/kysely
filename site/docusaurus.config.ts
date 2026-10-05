@@ -11,7 +11,6 @@ import { socialIconPaths } from './src/components/socialIconPaths'
 import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
-import rehypeRemoveMarkdownExcluded from './plugins/rehype-remove-markdown-excluded.mjs'
 import packageJson from './package.json'
 
 const title = 'Kysely'
@@ -138,10 +137,7 @@ export default {
       '@signalwire/docusaurus-plugin-llms-txt',
       {
         content: {
-          beforeDefaultRehypePlugins: [
-            rehypeRemoveComments,
-            rehypeRemoveMarkdownExcluded,
-          ],
+          beforeDefaultRehypePlugins: [rehypeRemoveComments],
           // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
           contentSelectors: [
             '.theme-doc-markdown', // Docusaurus main content area
