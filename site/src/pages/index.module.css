@@ -420,11 +420,6 @@ a.stat:hover .statValue {
   text-decoration: none;
 }
 
-/* The official A2A lockup pairs a tall symbol with a smaller wordmark. */
-.productionNames a[aria-label='A2A JavaScript SDK'] svg {
-  height: 40px;
-}
-
 /* Every cell links to proof; the corner arrow is the standing cue, faint
    until intent. */
 .productionNames a:not(.productionCTA)::after {
