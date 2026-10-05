@@ -181,7 +181,7 @@
 
 /* Tertiary reassurance link: whispered, not shouted. */
 .heroAudit {
-  color: var(--kl-faint);
+  color: var(--kl-mut);
   font-size: 13px;
   margin: 14px 0 0;
 }
