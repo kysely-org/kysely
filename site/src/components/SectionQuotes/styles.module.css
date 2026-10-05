@@ -33,33 +33,30 @@
 }
 
 .masonry {
-  display: none;
+  --columns: 3;
+  align-content: start;
+  align-items: start;
+  display: grid;
   gap: 16px;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
 }
 
-.masonryColumn {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
+/* Before hydration (and without JS), keep a readable grid in curated order. */
+.masonry[data-packed] > * {
+  grid-column: var(--column);
+  grid-row: 1;
+  transform: translateY(var(--offset));
 }
 
-@media (min-width: 997px) {
-  .masonry3 {
-    display: flex;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 996px) {
-  .masonry2 {
-    display: flex;
+@media (max-width: 996px) {
+  .masonry {
+    --columns: 2;
   }
 }
 
 @media (max-width: 640px) {
-  .masonry1 {
-    display: flex;
+  .masonry {
+    --columns: 1;
   }
 }
 
@@ -144,4 +141,3 @@
 .darkIcon {
   fill: var(--kl-ink);
 }
-
