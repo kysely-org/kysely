@@ -404,7 +404,10 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
 
 @media (max-width: 996px) {
   .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
+    align-items: center;
     background: none;
+    display: inline-flex;
+    height: 36px;
     padding: 6px;
   }
 
