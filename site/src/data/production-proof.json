@@ -1,5 +1,14 @@
 [
   {
+    "name": "A2A JavaScript SDK",
+    "repo": "a2aproject/a2a-js",
+    "path": "src/server/database/task/store.ts",
+    "sha": "af1b5a804daabb331a4d4437ac7cef61105bf3ad",
+    "href": "https://github.com/a2aproject/a2a-js/blob/af1b5a804daabb331a4d4437ac7cef61105bf3ad/src/server/database/task/store.ts",
+    "group": "built-into",
+    "provenAt": "2026-10-05"
+  },
+  {
     "name": "AirTrail",
     "repo": "johanohly/AirTrail",
     "path": "src/lib/server/oauth/server.ts",
