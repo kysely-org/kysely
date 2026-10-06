@@ -3,7 +3,25 @@
   display: flex;
 }
 
-/* A pill-shaped button mostly hidden behind the track's left curve; the
+/* Keep the compact artwork inside separate, non-overlapping touch targets. */
+.button {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0;
+}
+
+.systemButton {
+  width: 24px;
+}
+
+.modeButton {
+  width: 40px;
+}
+
+/* A pill-shaped decoration mostly hidden behind the track's left curve; the
    visible part is a crescent sliver carrying the system icon. */
 .crescent {
   align-items: center;
@@ -11,13 +29,13 @@
   border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: 11px 0 0 11px;
   border-right: none;
-  cursor: pointer;
   display: flex;
+  flex-shrink: 0;
   height: 22px;
   justify-content: flex-start;
-  margin-right: -22px;
   opacity: 0.55;
   padding: 0 0 0 5px;
+  pointer-events: none;
   position: relative;
   transition:
     background-color 0.25s ease,
@@ -27,7 +45,7 @@
   z-index: 1;
 }
 
-.crescent:hover {
+.systemButton:hover .crescent {
   border-color: var(--ifm-color-emphasis-600);
   opacity: 1;
 }
@@ -59,9 +77,10 @@
   background: var(--ifm-color-emphasis-200);
   border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: 11px;
-  cursor: pointer;
+  flex-shrink: 0;
   height: 22px;
   padding: 0;
+  pointer-events: none;
   position: relative;
   transition:
     background-color 0.25s ease,
@@ -70,7 +89,7 @@
   z-index: 2;
 }
 
-.track:hover {
+.modeButton:hover .track {
   border-color: var(--ifm-color-emphasis-600);
 }
 
