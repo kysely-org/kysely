@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useColorMode } from '@docusaurus/theme-common'
 import useIsBrowser from '@docusaurus/useIsBrowser'
+import clsx from 'clsx'
 import styles from './DemoVideo.module.css'
 
 // The light variants are the same footage passed through a Dark+ -> Light+
@@ -50,6 +51,17 @@ export function DemoVideo() {
   return (
     <figure className={styles.frame}>
       <div className={styles.cropBox}>
+        {/* CSS uses Docusaurus's early theme choice, before React hydrates. */}
+        <div
+          aria-hidden="true"
+          className={clsx(styles.video, styles.poster, styles.darkPoster)}
+          style={{ backgroundImage: `url(${SOURCES.dark.poster})` }}
+        />
+        <div
+          aria-hidden="true"
+          className={clsx(styles.video, styles.poster, styles.lightPoster)}
+          style={{ backgroundImage: `url(${SOURCES.light.poster})` }}
+        />
         {isBrowser && (
           <video
             key={colorMode}
