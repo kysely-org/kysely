@@ -31,7 +31,12 @@ function IconMonitor({ className }: { className?: string }) {
 // day/night switching. Clicking the pill pins an explicit choice and unlights
 // the crescent; clicking the crescent clears the choice and re-aligns the
 // pill with the system.
-function ColorModeToggle({ className, buttonClassName, value, onChange }: Props) {
+function ColorModeToggle({
+  className,
+  buttonClassName,
+  value,
+  onChange,
+}: Props) {
   const isBrowser = useIsBrowser()
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
@@ -42,11 +47,7 @@ function ColorModeToggle({ className, buttonClassName, value, onChange }: Props)
       <button
         aria-label="Match system preferences"
         aria-pressed={isSystem}
-        className={clsx(
-          'clean-btn',
-          styles.crescent,
-          isSystem && styles.crescentActive,
-        )}
+        className={clsx('clean-btn', styles.button, styles.systemButton)}
         disabled={!isBrowser}
         onClick={() => onChange(isSystem ? colorMode : null)}
         title={`Match system preferences ${
@@ -54,27 +55,39 @@ function ColorModeToggle({ className, buttonClassName, value, onChange }: Props)
         }, click to ${isSystem ? 'disable' : 'enable'}`}
         type="button"
       >
-        <IconMonitor className={styles.crescentIcon} />
+        <span
+          aria-hidden="true"
+          className={clsx(styles.crescent, isSystem && styles.crescentActive)}
+        >
+          <IconMonitor className={styles.crescentIcon} />
+        </span>
       </button>
       <button
         aria-checked={isDark}
         aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-        className={clsx('clean-btn', styles.track, buttonClassName)}
+        className={clsx(
+          'clean-btn',
+          styles.button,
+          styles.modeButton,
+          buttonClassName,
+        )}
         disabled={!isBrowser}
         onClick={() => onChange(isDark ? 'light' : 'dark')}
         role="switch"
         title={`${isDark ? 'Dark' : 'Light'} mode, click to change`}
         type="button"
       >
-        <span className={styles.thumb}>
-          <IconLightMode
-            aria-hidden
-            className={clsx(styles.icon, styles.sun)}
-          />
-          <IconDarkMode
-            aria-hidden
-            className={clsx(styles.icon, styles.moon)}
-          />
+        <span aria-hidden="true" className={styles.track}>
+          <span className={styles.thumb}>
+            <IconLightMode
+              aria-hidden
+              className={clsx(styles.icon, styles.sun)}
+            />
+            <IconDarkMode
+              aria-hidden
+              className={clsx(styles.icon, styles.moon)}
+            />
+          </span>
         </span>
       </button>
     </div>
