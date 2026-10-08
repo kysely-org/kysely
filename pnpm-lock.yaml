@@ -8,8 +8,8 @@ settings:
 catalogs:
   http:
     hono:
-      specifier: 4.13.7
-      version: 4.13.7
+      specifier: 4.13.13
+      version: 4.13.13
   node:
     pathe:
       specifier: 2.0.3
@@ -186,7 +186,7 @@ importers:
         version: 3.10.2(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)(react-dom@19.3.0)(react@19.3.0)(supports-color@10.2.2)
       '@hono/node-server':
         specifier: 2.1.1
-        version: 2.1.1(hono@4.13.7)
+        version: 2.1.1(hono@4.13.13)
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)
@@ -198,7 +198,7 @@ importers:
         version: 0.22.2(supports-color@10.2.2)
       hono:
         specifier: catalog:http
-        version: 4.13.7
+        version: 4.13.13
       mermaid:
         specifier: 11.16.1
         version: 11.16.1
@@ -219,7 +219,7 @@ importers:
     dependencies:
       hono:
         specifier: catalog:http
-        version: 4.13.7
+        version: 4.13.13
     devDependencies:
       wrangler:
         specifier: 4.131.2
@@ -4453,8 +4453,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.7:
-    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
+  hono@4.13.13:
+    resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
@@ -7865,17 +7865,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-define-polyfill-provider@0.6.5(@babel/core@7.29.6)(supports-color@8.1.1)':
-    dependencies:
-      '@babel/core': 7.29.6(supports-color@10.2.2)
-      '@babel/helper-compilation-targets': 7.29.7
-      '@babel/helper-plugin-utils': 7.29.7
-      debug: 4.4.3(supports-color@8.1.1)
-      lodash.debounce: 4.0.8
-      resolve: 1.22.10
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/helper-globals@7.29.7': {}
 
   '@babel/helper-member-expression-to-functions@7.27.1(supports-color@10.2.2)':
@@ -8348,7 +8337,7 @@ snapshots:
       '@babel/core': 7.29.6(supports-color@10.2.2)
       '@babel/helper-module-imports': 7.29.7(supports-color@10.2.2)
       '@babel/helper-plugin-utils': 7.29.7
-      babel-plugin-polyfill-corejs2: 0.4.14(@babel/core@7.29.6)(supports-color@8.1.1)
+      babel-plugin-polyfill-corejs2: 0.4.14(@babel/core@7.29.6)(supports-color@10.2.2)
       babel-plugin-polyfill-corejs3: 0.13.0(@babel/core@7.29.6)(supports-color@10.2.2)
       babel-plugin-polyfill-regenerator: 0.6.5(@babel/core@7.29.6)(supports-color@10.2.2)
       semver: 6.3.1
@@ -10042,9 +10031,9 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono/node-server@2.1.1(hono@4.13.7)':
+  '@hono/node-server@2.1.1(hono@4.13.13)':
     dependencies:
-      hono: 4.13.7
+      hono: 4.13.13
 
   '@iconify/types@2.0.0': {}
 
@@ -11362,15 +11351,6 @@ snapshots:
       '@babel/compat-data': 7.29.7
       '@babel/core': 7.29.6(supports-color@10.2.2)
       '@babel/helper-define-polyfill-provider': 0.6.5(@babel/core@7.29.6)(supports-color@10.2.2)
-      semver: 6.3.1
-    transitivePeerDependencies:
-      - supports-color
-
-  babel-plugin-polyfill-corejs2@0.4.14(@babel/core@7.29.6)(supports-color@8.1.1):
-    dependencies:
-      '@babel/compat-data': 7.29.7
-      '@babel/core': 7.29.6(supports-color@10.2.2)
-      '@babel/helper-define-polyfill-provider': 0.6.5(@babel/core@7.29.6)(supports-color@8.1.1)
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -12999,7 +12979,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.7: {}
+  hono@4.13.13: {}
 
   hosted-git-info@2.8.9: {}
 
