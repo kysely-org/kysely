@@ -11,6 +11,7 @@ import { socialIconPaths } from './src/components/socialIconPaths'
 import deferPrism from './plugins/defer-prism'
 import preloadDemoPoster from './plugins/preload-demo-poster'
 import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
+import generateBrandLogoSprite from './plugins/generate-brand-logo-sprite'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import packageJson from './package.json'
@@ -120,6 +121,7 @@ export default {
     deferPrism,
     preloadDemoPoster,
     generateAgentDiscoveryCatalogs,
+    generateBrandLogoSprite,
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
     // the last production build's index instead: content may be stale, but
@@ -128,10 +130,12 @@ export default {
       return {
         configureWebpack: () => ({
           devServer: {
-            static: {
-              directory: `${__dirname}/build/pagefind`,
-              publicPath: '/pagefind',
-            },
+            static: [
+              {
+                directory: `${__dirname}/build/pagefind`,
+                publicPath: '/pagefind',
+              },
+            ],
           },
         }),
         name: 'pagefind-dev-server',
