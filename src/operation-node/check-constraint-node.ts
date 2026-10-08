@@ -6,13 +6,23 @@ export interface CheckConstraintNode extends OperationNode {
   readonly kind: 'CheckConstraintNode'
   readonly expression: OperationNode
   readonly name?: IdentifierNode
+  readonly notValid?: boolean
 }
+
+export type CheckConstraintNodeProps = Omit<
+  Partial<CheckConstraintNode>,
+  'kind'
+>
 
 type CheckConstraintNodeFactory = Readonly<{
   is(node: OperationNode): node is CheckConstraintNode
   create(
     expression: OperationNode,
     constraintName?: string,
+  ): Readonly<CheckConstraintNode>
+  cloneWith(
+    node: CheckConstraintNode,
+    props: CheckConstraintNodeProps,
   ): Readonly<CheckConstraintNode>
 }>
 
@@ -32,6 +42,13 @@ export const CheckConstraintNode: CheckConstraintNodeFactory =
         name: constraintName
           ? IdentifierNode.create(constraintName)
           : undefined,
+      })
+    },
+
+    cloneWith(node, props) {
+      return freeze({
+        ...node,
+        ...props,
       })
     },
   })

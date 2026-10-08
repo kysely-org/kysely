@@ -3888,6 +3888,30 @@ for (const dialect of DIALECTS) {
 
             await builder.execute()
           })
+
+          if (sqlSpec === 'postgres') {
+            it('should add a check constraint with "not valid" modifier', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addCheckConstraint(
+                  'some_constraint_not_valid',
+                  sql`integer_col > 0`,
+                  (cb) => cb.notValid(),
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "some_constraint_not_valid" check (integer_col > 0) not valid',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+          }
         })
       }
 

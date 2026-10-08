@@ -1,11 +1,24 @@
 import type { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import type { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
+import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 
 export class CheckConstraintBuilder implements OperationNodeSource {
   readonly #node: CheckConstraintNode
 
   constructor(node: CheckConstraintNode) {
     this.#node = node
+  }
+
+  /**
+   * Adds `not valid` to the check constraint definition.
+   *
+   * Supported by PostgreSQL dialect only.
+   */
+  notValid(): CheckConstraintBuilder {
+    return new CheckConstraintBuilder(
+      CheckConstraintNode.cloneWith(this.#node, {
+        notValid: true,
+      }),
+    )
   }
 
   /**

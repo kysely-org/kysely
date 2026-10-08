@@ -1098,6 +1098,10 @@ export class DefaultQueryCompiler
     this.append('check (')
     this.visitNode(node.expression)
     this.append(')')
+
+    if (node.notValid) {
+      this.append(' not valid')
+    }
   }
 
   protected override visitForeignKeyConstraint(

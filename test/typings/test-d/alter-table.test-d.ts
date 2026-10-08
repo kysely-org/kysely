@@ -1,5 +1,5 @@
 import { expectError, expectType } from 'tsd'
-import type { AlterTableBuilder, Kysely } from '../index.js'
+import { type AlterTableBuilder, type Kysely, sql } from '../index.js'
 import type { Database } from '../shared.js'
 import { AlterTableExecutor } from '../../../dist/schema/alter-table-executor.js'
 
@@ -36,3 +36,16 @@ async function testAlterTableWithAddUniqueConstraint(db: Kysely<Database>) {
       .addUniqueConstraint('a_unique', ['a'], 'wrong option'),
   )
 }
+
+async function testAlterTableWithAddCheckConstraint(db: Kysely<Database>) {
+  expectType<AlterTableExecutor>(
+    db.schema.alterTable('test').addCheckConstraint('a_check', sql`a > 0`),
+  )
+
+  expectType<AlterTableExecutor>(
+    db.schema
+      .alterTable('test')
+      .addCheckConstraint('a_check', sql`a > 0`, (cb) => cb.notValid()),
+  )
+}
+

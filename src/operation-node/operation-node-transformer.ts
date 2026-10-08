@@ -772,6 +772,7 @@ export class OperationNodeTransformer {
       kind: 'CheckConstraintNode',
       expression: this.transformNode(node.expression, queryId),
       name: this.transformNode(node.name, queryId),
+      notValid: node.notValid,
     } satisfies AllProps<CheckConstraintNode>
   }
 
