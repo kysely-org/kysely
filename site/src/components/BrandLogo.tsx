@@ -3,7 +3,9 @@ import useBaseUrl from '@docusaurus/useBaseUrl'
 import styles from './BrandLogo.module.css'
 
 /**
- * Geometry lives in static/img/brand-logos.svg and is shared through SVG use.
+ * Edit artwork in src/assets/brands/<id>.svg. The Docusaurus plugin combines
+ * these files into /img/brand-logos.svg for both development and production.
+ * Keep each source SVG's viewBox aligned with the metadata below.
  * Official brand marks normalized to single-tone `currentColor`, sourced
  * from each company's press kit, public repo, site assets, or Wikimedia
  * Commons (Bluesky, Deno, Mozilla 2024, Maersk). Maersk's badge plate is
