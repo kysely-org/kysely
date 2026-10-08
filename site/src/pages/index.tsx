@@ -411,7 +411,25 @@ const LOGO_WITH_NAME = new Set([
 
 function SectionProduction() {
   const [helpOpen, setHelpOpen] = useState(false)
+  const [logosLoaded, setLogosLoaded] = useState(false)
   const helpRef = useRef<HTMLSpanElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const section = sectionRef.current!
+    const onLoad = () => {
+      // All marks share one sprite. Check the referenced artwork, not the
+      // SVG's fallback text, including when it loaded before hydration.
+      if (section.querySelector('use')?.getBBox().width) {
+        setLogosLoaded(true)
+        section.removeEventListener('load', onLoad, true)
+      }
+    }
+
+    section.addEventListener('load', onLoad, true)
+    onLoad()
+    return () => section.removeEventListener('load', onLoad, true)
+  }, [])
 
   // Hover peeks the explainer; a click pins it open until a click lands
   // outside or Escape is pressed.
@@ -440,7 +458,7 @@ function SectionProduction() {
   }, [helpOpen])
 
   return (
-    <section className={styles.production}>
+    <section className={styles.production} ref={sectionRef}>
       <div className={clsx('container', styles.productionInner)}>
         {PROOF_GROUPS.map(({ group, caption }) => (
           <React.Fragment key={group}>
@@ -498,7 +516,15 @@ function SectionProduction() {
                     >
                       {brandLogos[name] ? (
                         <>
-                          <BrandLogoSvg logo={brandLogos[name]} />
+                          <BrandLogoSvg
+                            logo={brandLogos[name]}
+                            loaded={logosLoaded}
+                            showFallback={
+                              !LOGO_WITH_NAME.has(name) ||
+                              (name.startsWith(brandLogos[name].label) &&
+                                name !== brandLogos[name].label)
+                            }
+                          />
                           {LOGO_WITH_NAME.has(name) && (
                             <span>
                               {(name.startsWith(brandLogos[name].label)

@@ -305,8 +305,17 @@ export const brandLogos: Record<string, BrandLogo> = {
   },
 }
 
-export function BrandLogoSvg({ logo }: { logo: BrandLogo }): JSX.Element {
+export function BrandLogoSvg({
+  logo,
+  loaded,
+  showFallback,
+}: {
+  logo: BrandLogo
+  loaded: boolean
+  showFallback: boolean
+}): JSX.Element {
   const spriteUrl = useBaseUrl('/img/brand-logos.svg')
+  const [x, y, width, height] = logo.viewBox.split(' ').map(Number)
 
   return (
     <svg
@@ -317,7 +326,21 @@ export function BrandLogoSvg({ logo }: { logo: BrandLogo }): JSX.Element {
       role="img"
       viewBox={logo.viewBox}
     >
-      <use href={`${spriteUrl}#${logo.id}`} />
+      {!loaded && showFallback && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2}
+          dominantBaseline="central"
+          fontSize={Math.min(height * 0.75, width / (logo.label.length * 0.65))}
+          textAnchor="middle"
+        >
+          {logo.label}
+        </text>
+      )}
+      <use
+        href={`${spriteUrl}#${logo.id}`}
+        visibility={loaded ? 'visible' : 'hidden'}
+      />
     </svg>
   )
 }
