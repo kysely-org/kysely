@@ -6,10 +6,10 @@ description: 'Use Kysely on Deno with a built-in database dialect, or compile SQ
 
 # Running on Deno
 
-Kysely works with Deno's npm package support. For example, the built-in PostgreSQL dialect can execute queries using `pg-pool`:
+Kysely is published to [JSR](https://jsr.io/@kysely/kysely) as `@kysely/kysely`. Deno can import it directly. For example, the built-in PostgreSQL dialect can execute queries using the `pg-pool` npm driver:
 
 ```ts
-import { Generated, Kysely, PostgresDialect } from 'npm:kysely'
+import { Generated, Kysely, PostgresDialect } from 'jsr:@kysely/kysely'
 import Pool from 'npm:pg-pool'
 
 interface Database {
@@ -48,7 +48,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from 'npm:kysely'
+} from 'jsr:@kysely/kysely'
 
 interface Person {
   id: Generated<number>

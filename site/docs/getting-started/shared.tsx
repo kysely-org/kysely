@@ -129,7 +129,7 @@ export function getDenoCommand(
     content: JSON.stringify(
       {
         imports: {
-          kysely: `npm:kysely@^${packageJson.version}`,
+          kysely: `jsr:@kysely/kysely@^${packageJson.version}`,
           ...additionalImports,
         },
       },
