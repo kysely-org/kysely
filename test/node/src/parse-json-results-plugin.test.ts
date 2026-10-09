@@ -69,4 +69,63 @@ describe('ParseJSONResultsPlugin', () => {
 
     expect((mergedWithRowParsedByPlugin as any).isAdmin).to.be.undefined
   })
+
+  describe('when candidate JSON fails to parse', () => {
+    it('should silence console.error and keep original value when `onError` is false', async () => {
+      const originalConsoleError = console.error
+      let called = false
+      console.error = () => {
+        called = true
+      }
+
+      try {
+        const plugin = new ParseJSONResultsPlugin({ onError: false })
+        const nonJsonGuid = '{51196F13-6AD0-C1B8-E2B4-A1F9AE17003E}'
+
+        const {
+          rows: [row],
+        } = await plugin.transformResult({
+          queryId: createQueryId(),
+          result: {
+            rows: [{ codeName: nonJsonGuid }],
+          },
+        })
+
+        expect(row.codeName).to.equal(nonJsonGuid)
+        expect(called).to.be.false
+      } finally {
+        console.error = originalConsoleError
+      }
+    })
+
+    it('should invoke `onError` callback with error, value, and jsonPath', async () => {
+      let capturedError: unknown
+      let capturedValue: string | undefined
+      let capturedPath: string | undefined
+
+      const plugin = new ParseJSONResultsPlugin({
+        onError: (error, value, jsonPath) => {
+          capturedError = error
+          capturedValue = value
+          capturedPath = jsonPath
+        },
+      })
+
+      const nonJsonGuid = '{51196F13-6AD0-C1B8-E2B4-A1F9AE17003E}'
+
+      const {
+        rows: [row],
+      } = await plugin.transformResult({
+        queryId: createQueryId(),
+        result: {
+          rows: [{ codeName: nonJsonGuid }],
+        },
+      })
+
+      expect(row.codeName).to.equal(nonJsonGuid)
+      expect(capturedError).to.be.instanceOf(SyntaxError)
+      expect(capturedValue).to.equal(nonJsonGuid)
+      expect(capturedPath).to.equal('$[0]."codeName"')
+    })
+  })
 })

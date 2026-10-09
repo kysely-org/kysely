@@ -37,14 +37,35 @@ export interface ParseJSONResultsPluginOptions {
    * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#the_reviver_parameter | The reviver parameter}.
    */
   reviver?: (key: string, value: unknown, context?: any) => unknown
+
+  /**
+   * An error handler callback invoked when `JSON.parse` fails on a candidate JSON string
+   * detected by the built-in heuristic.
+   *
+   * By default, errors are logged via `console.error`. Set to `false` to silence errors,
+   * or provide a custom callback to handle or log them.
+   *
+   * Note: If a custom `shouldParse` function is provided, parse errors are re-thrown
+   * instead of invoking this handler.
+   *
+   * @param error - The parsing error thrown by `JSON.parse`.
+   * @param value - The string value that failed to parse.
+   * @param jsonPath - The JSON path leading to this value.
+   */
+  onError?: ((error: unknown, value: string, jsonPath: string) => void) | false
 }
 
 type ObjectStrategy = 'in-place' | 'create'
 
-type ProcessedParseJSONResultsPluginOptions = {
-  readonly [K in keyof ParseJSONResultsPluginOptions]-?: K extends 'skipKeys'
-    ? Record<string, true>
-    : ParseJSONResultsPluginOptions[K]
+type ProcessedParseJSONResultsPluginOptions = Omit<
+  {
+    readonly [K in keyof ParseJSONResultsPluginOptions]-?: K extends 'skipKeys'
+      ? Record<string, true>
+      : ParseJSONResultsPluginOptions[K]
+  },
+  'onError'
+> & {
+  readonly onError?: (error: unknown, value: string, jsonPath: string) => void
 }
 
 /**
@@ -104,6 +125,10 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
         ? (value: string, jsonPath: string) =>
             maybeJson(value) && shouldParse(value, jsonPath)
         : maybeJson,
+      onError:
+        options.onError === false
+          ? undefined
+          : options.onError || ((error) => console.error(error)),
     })
   }
 
@@ -197,7 +222,7 @@ function parseString(
     }
 
     // built-in naive heuristic should keep going despite errors given there might be false positives in detection.
-    console.error(error)
+    options.onError?.(error, str, jsonPath)
 
     return str
   }
