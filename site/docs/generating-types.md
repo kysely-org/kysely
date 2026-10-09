@@ -13,9 +13,11 @@ database schema, by automatically generating the database schema type definition
 
 There are several ways to do this using third-party libraries:
 
-- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This library 
-generates Kysely database schema type definitions by connecting to and introspecting 
-your database. This library works with all built-in dialects.
+- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This library
+generates Kysely database schema type definitions by connecting to and introspecting
+your database. Its CLI supports PostgreSQL, MySQL, SQLite, and Microsoft SQL Server.
+PGlite is not a CLI dialect; generating types from an in-process PGlite database
+requires a programmatic integration.
 
 - [prisma-kysely](https://github.com/valtyr/prisma-kysely) - This library generates 
 Kysely database schema type definitions from your existing Prisma schemas.
