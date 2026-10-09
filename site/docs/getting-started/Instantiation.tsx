@@ -5,14 +5,11 @@ import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
   getKyselyImportPath,
-  isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
-  PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
   type PackageManager,
   type PropsWithDialect,
   DIALECT_CLASS_NAMES,
-  PRETTY_DIALECT_NAMES,
   type PropsWithPackageManager,
   useSearchState,
   DIALECTS,
@@ -39,12 +36,10 @@ export function Instantiation(props: InstantiationProps) {
     value: props.packageManager,
   })
 
-  const dialectSpecificCodeSnippet = !isDialectSupported(
+  const dialectSpecificCodeSnippet = getDialectSpecificCodeSnippet(
     dialect,
     packageManager,
   )
-    ? getNotSupportedCode(dialect, packageManager)
-    : getDialectSpecificCodeSnippet(dialect, packageManager)
 
   const dialectClassName = DIALECT_CLASS_NAMES[dialect]
 
@@ -52,15 +47,9 @@ export function Instantiation(props: InstantiationProps) {
     <>
       <p>
         <strong>Let's create a Kysely instance</strong>
-        {isDialectSupported(dialect, packageManager) ? (
-          <>
-            <strong> using the built-in </strong>
-            <code>{dialectClassName}</code>
-            <strong> dialect</strong>
-          </>
-        ) : (
-          <strong> assuming a compatible community dialect exists</strong>
-        )}
+        <strong> using the built-in </strong>
+        <code>{dialectClassName}</code>
+        <strong> dialect</strong>
         <strong>:</strong>
       </p>
       <CodeBlock language="ts" title="src/database.ts">
@@ -105,20 +94,6 @@ export const db = new Kysely<Database>({
       </Admonition>
     </>
   )
-}
-
-function getNotSupportedCode(
-  dialect: Dialect,
-  packageManager: PackageManager,
-): string {
-  const kyselyPackageName = getKyselyImportPath(packageManager)
-
-  return `/* Kysely doesn't support ${PRETTY_DIALECT_NAMES[dialect]} + ${
-    PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
-  } out of the box. Import a community dialect that does here. */
-import { Kysely } from '${kyselyPackageName}'
-
-const dialect = /* instantiate the dialect here */`
 }
 
 function getDialectSpecificCodeSnippet(
