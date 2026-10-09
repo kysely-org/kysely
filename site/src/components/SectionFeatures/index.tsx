@@ -15,7 +15,7 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         Precise TypeScript result types and compile-time errors within queries.
-        With introspection, your database is the source of types.
+        With introspection and codegen, your database is the source of types.
       </>
     ),
   },
