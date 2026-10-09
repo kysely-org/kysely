@@ -85,17 +85,14 @@ export function Dialects(props: DialectsProps) {
       {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverDocsURL, poolDocsURL, value }) => {
-          const driverNPMPackage = getDriverNPMPackageNames()[value]
+          const driverNPMPackage =
+            getDriverNPMPackageNames(packageManager)[value]
           const poolNPMPackage =
             POOL_NPM_PACKAGE_NAMES[value as keyof typeof POOL_NPM_PACKAGE_NAMES]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
           const installationCommand =
             packageManager === 'deno'
-              ? getDenoCommand({
-                  [driverNPMPackage]: `npm:${driverNPMPackage}`,
-                  [`${driverNPMPackage}-pool`]:
-                    driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
-                })
+              ? getDenoCommand(`npm:${driverNPMPackage}`)
               : getBashCommand(packageManager, driverNPMPackage, [
                   poolNPMPackage,
                 ])

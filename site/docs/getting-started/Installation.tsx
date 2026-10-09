@@ -80,7 +80,7 @@ const packageManagers: PackageManagerDetails[] = [
         <Link to="https://www.typescriptlang.org">TypeScript</Link>.
       </>
     ),
-    command: getDenoCommand(),
+    command: getDenoCommand('jsr:@kysely/kysely'),
   },
   {
     value: 'bun',

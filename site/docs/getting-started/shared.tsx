@@ -1,6 +1,5 @@
 import { useLocation } from '@docusaurus/router'
 import { useEffect, useState, type ReactNode } from 'react'
-import packageJson from '../../package.json'
 
 export const DIALECTS = [
   'postgresql',
@@ -122,31 +121,12 @@ export function getBashCommand(
   }
 }
 
-export function getDenoCommand(
-  additionalImports?: Record<string, string | undefined>,
-): Command {
+export function getDenoCommand(packageSpecifier: string): Command {
   return {
-    content: JSON.stringify(
-      {
-        imports: {
-          kysely: `jsr:@kysely/kysely@^${packageJson.version}`,
-          ...additionalImports,
-        },
-      },
-      null,
-      2,
-    ),
-    intro: (
-      <>
-        <strong>Your root </strong>
-        <code>deno.json</code>
-        <strong>
-          's "imports" field should include the following dependencies:
-        </strong>
-      </>
-    ),
-    language: 'json',
-    title: 'deno.json',
+    content: `deno add ${packageSpecifier}`,
+    intro: 'Run the following command in your terminal:',
+    language: 'bash',
+    title: 'terminal',
   }
 }
 
