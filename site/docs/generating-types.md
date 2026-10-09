@@ -1,5 +1,5 @@
 ---
-description: 'Generate Kysely database types from your database schema or Prisma models using tools such as kysely-codegen, prisma-kysely, and Kanel.'
+description: 'Generate Kysely database types from your database schema or Prisma models using tools such as kysely-codegen, kysely-typegen, prisma-kysely, and Kanel.'
 ---
 
 # Generating types
@@ -18,6 +18,13 @@ generates Kysely database schema type definitions by connecting to and introspec
 your database. Its CLI supports PostgreSQL, MySQL, SQLite, and Microsoft SQL Server.
 PGlite is not a CLI dialect; generating types from an in-process PGlite database
 requires a programmatic integration.
+
+- [kysely-typegen](https://github.com/theoludwig/kysely-typegen) - This library
+generates Kysely database schema type definitions by introspecting your database
+through the `Kysely` instance you pass to it. It is used programmatically rather
+than as a CLI, so it also works with in-process databases such as PGlite. It
+supports PostgreSQL, PGlite, MySQL, and SQLite, has no runtime dependencies, and
+can be extended to more dialects.
 
 - [prisma-kysely](https://github.com/valtyr/prisma-kysely) - This library generates 
 Kysely database schema type definitions from your existing Prisma schemas.
