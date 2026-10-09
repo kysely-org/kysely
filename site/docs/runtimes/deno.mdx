@@ -20,19 +20,18 @@ interface Database {
   }
 }
 
-const db = new Kysely<Database>({
+await using db = new Kysely<Database>({
   dialect: new PostgresDialect({
     pool: new Pool({ connectionString: Deno.env.get('DATABASE_URL') }),
   }),
 })
 
-try {
-  const people = await db.selectFrom('person').selectAll().execute()
-  console.log(people)
-} finally {
-  await db.destroy()
-}
+const people = await db.selectFrom('person').selectAll().execute()
+console.log(people)
 ```
+
+Kysely closes the connection pool when the script leaves the `await using` scope,
+including if the query fails.
 
 Run this example with `--allow-env --allow-net` and a PostgreSQL connection string in `DATABASE_URL`.
 
