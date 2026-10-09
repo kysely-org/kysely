@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 title: 'Running on Deno'
-description: 'Use Kysely on Deno with a built-in database dialect, or compile SQL without a database connection.'
+description: 'Use Kysely on Deno from JSR with the built-in PostgreSQL dialect and an npm database driver.'
 ---
 
 # Running on Deno
@@ -36,51 +36,5 @@ try {
 
 Run this example with `--allow-env --allow-net` and a PostgreSQL connection string in `DATABASE_URL`.
 
-## Compile SQL without a database connection
-
-If you only need to build and compile queries, use `DummyDriver`:
-
-```ts
-import {
-  DummyDriver,
-  Generated,
-  Kysely,
-  PostgresAdapter,
-  PostgresIntrospector,
-  PostgresQueryCompiler,
-} from 'jsr:@kysely/kysely'
-
-interface Person {
-  id: Generated<number>
-  first_name: string
-  last_name: string | null
-}
-
-interface Database {
-  person: Person
-}
-
-const db = new Kysely<Database>({
-  dialect: {
-    createAdapter() {
-      return new PostgresAdapter()
-    },
-    createDriver() {
-      // You need a driver to be able to execute queries. In this example
-      // we use the dummy driver that never does anything.
-      return new DummyDriver()
-    },
-    createIntrospector(db: Kysely<unknown>) {
-      return new PostgresIntrospector(db)
-    },
-    createQueryCompiler() {
-      return new PostgresQueryCompiler()
-    },
-  },
-})
-
-const query = db.selectFrom('person').select('id')
-const sql = query.compile()
-
-console.log(sql.sql)
-```
+For building and compiling queries without a database connection, see
+[Splitting query building and execution](/docs/recipes/splitting-query-building-and-execution).
