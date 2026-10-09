@@ -28,15 +28,23 @@ const db = new Kysely({
 
 You can provide a custom logging function to the `log` property when instantiating `Kysely`. The custom logging function receives a log event as an argument.
 
-The `LogEvent` interface is defined as follows:
+`LogEvent` is a discriminated union. Query events may have `isStream`; only error
+events have an `error` property:
 
 ```ts
-interface LogEvent {
-  level: 'query' | 'error';
-  query: CompiledQuery; // this object contains the raw SQL string, parameters, and Kysely's SQL syntax tree that helped output the raw SQL string.
-  queryDurationMillis: number; // the time in milliseconds it took for the query to execute and get a response from the database.
-  error: unknown; // only present if `level` is `'error'`.
-}
+type LogEvent =
+  | {
+      level: 'query'
+      isStream?: boolean
+      query: CompiledQuery
+      queryDurationMillis: number
+    }
+  | {
+      level: 'error'
+      error: unknown
+      query: CompiledQuery
+      queryDurationMillis: number
+    }
 ```
 
 Example:
