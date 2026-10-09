@@ -130,6 +130,12 @@ export function Dialects(props: DialectsProps) {
                       configuration options.
                     </p>
                   ) : null}
+                  {packageManager === 'bun' && value === 'sqlite' ? (
+                    <p>
+                      Verified with Bun 1.4.2 and better-sqlite3 13.0.3. Bun
+                      1.4.0 crashes when loading this driver.
+                    </p>
+                  ) : null}
                   {packageManager === 'deno' && value === 'sqlite' ? (
                     <>
                       <p>
