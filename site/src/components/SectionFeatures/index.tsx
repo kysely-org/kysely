@@ -28,6 +28,14 @@ const FeatureList: FeatureItem[] = [
           target="_blank"
         >
           <code>kysely-codegen</code>
+        </a>{' '}
+        or{' '}
+        <a
+          href="https://github.com/theoludwig/kysely-typegen"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <code>kysely-typegen</code>
         </a>
         , your database is the source of types.
       </>
