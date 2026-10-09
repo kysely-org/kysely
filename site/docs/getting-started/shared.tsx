@@ -31,6 +31,10 @@ export type PackageManager = (typeof PACKAGE_MANAGERS)[number]
 
 export const DEFAULT_PACKAGE_MANAGER = 'npm' satisfies PackageManager
 
+export function getKyselyImportPath(packageManager: PackageManager): string {
+  return packageManager === 'deno' ? '@kysely/kysely' : 'kysely'
+}
+
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
     bun: ['sqlite'],

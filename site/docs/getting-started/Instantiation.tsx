@@ -4,6 +4,7 @@ import { IUseADifferentDialect } from './IUseADifferentDialect'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
+  getKyselyImportPath,
   isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
   PRETTY_PACKAGE_MANAGER_NAMES,
@@ -110,8 +111,7 @@ function getNotSupportedCode(
   dialect: Dialect,
   packageManager: PackageManager,
 ): string {
-  const kyselyPackageName =
-    packageManager === 'deno' ? '@kysely/kysely' : 'kysely'
+  const kyselyPackageName = getKyselyImportPath(packageManager)
 
   return `/* Kysely doesn't support ${PRETTY_DIALECT_NAMES[dialect]} + ${
     PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
@@ -130,8 +130,7 @@ function getDialectSpecificCodeSnippet(
   const poolClassName = 'Pool'
   const poolClassImport =
     packageManager === 'deno' ? poolClassName : `{ ${poolClassName} }`
-  const kyselyPackageName =
-    packageManager === 'deno' ? '@kysely/kysely' : 'kysely'
+  const kyselyPackageName = getKyselyImportPath(packageManager)
 
   if (dialect === 'postgresql') {
     return `import ${poolClassImport} from '${driverNPMPackageName}'

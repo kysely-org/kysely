@@ -4,10 +4,14 @@ import Link from '@docusaurus/Link'
 import { IUseADifferentDialect } from './IUseADifferentDialect'
 import {
   DEFAULT_DIALECT,
+  DEFAULT_PACKAGE_MANAGER,
   DIALECTS,
+  getKyselyImportPath,
+  PACKAGE_MANAGERS,
   useSearchState,
   type Dialect,
   type PropsWithDialect,
+  type PropsWithPackageManager,
 } from './shared'
 
 const postgresqlCodeSnippet = `    await db.schema.createTable('person')
@@ -63,12 +67,18 @@ const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
   pglite: truncateTableSnippet,
 }
 
-export function Summary(props: PropsWithDialect) {
+export function Summary(props: PropsWithDialect<PropsWithPackageManager>) {
   const dialect = useSearchState({
     defaultValue: DEFAULT_DIALECT,
     searchParam: props.dialectSearchParam,
     validator: (value) => DIALECTS.includes(value as never),
     value: props.dialect,
+  })
+  const packageManager = useSearchState({
+    defaultValue: DEFAULT_PACKAGE_MANAGER,
+    searchParam: props.packageManagerSearchParam,
+    validator: (value) => PACKAGE_MANAGERS.includes(value as never),
+    value: props.packageManager,
   })
 
   const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
@@ -86,7 +96,7 @@ export function Summary(props: PropsWithDialect) {
         <strong>Let's put it all to the test:</strong>
       </p>
       <CodeBlock language="ts" title="src/PersonRepository.spec.ts">
-        {`import { sql } from 'kysely'
+        {`import { sql } from '${getKyselyImportPath(packageManager)}'
 import { db } from './database'
 import * as PersonRepository from './PersonRepository'
 
