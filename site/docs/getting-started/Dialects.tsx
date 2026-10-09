@@ -94,7 +94,13 @@ export function Dialects(props: DialectsProps) {
             packageManager === 'deno'
               ? `npm:${driverNPMPackage}`
               : driverNPMPackage,
-            poolNPMPackage ? [poolNPMPackage] : undefined,
+            poolNPMPackage
+              ? [
+                  packageManager === 'deno'
+                    ? `npm:${poolNPMPackage}`
+                    : poolNPMPackage,
+                ]
+              : undefined,
           )
 
           return (
