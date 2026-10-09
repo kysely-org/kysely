@@ -7,37 +7,16 @@ type FeatureItem = {
   description: string | JSX.Element
 }
 
-// One sentence per cell, for landing-page scannability. The original long
-// copy is kept in comments below each entry; good candidates for expansion
-// in the docs.
+// One sentence per cell, for landing-page scannability.
 const FeatureList: FeatureItem[] = [
-  // Original: "Kysely's state-of-the-art, type-safe API provides precise
-  // result types and catches errors within queries at compile-time, giving
-  // high-performing teams the confidence to ship at greater velocity. Use
-  // `kysely-codegen` to make the database the source of types."
   {
     tag: 'no compromises',
     title: 'Type safety above all',
     description: (
       <>
         Precise TypeScript result types and compile-time errors within queries.
-        With{' '}
-        <a
-          href="https://github.com/RobinBlomberg/kysely-codegen"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <code>kysely-codegen</code>
-        </a>{' '}
-        or{' '}
-        <a
-          href="https://github.com/theoludwig/kysely-typegen"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <code>kysely-typegen</code>
-        </a>
-        , your database is the source of types.
+        With <a href="/docs/generating-types">type generator</a>, your database
+        is the source of types.
       </>
     ),
   },
@@ -50,8 +29,8 @@ const FeatureList: FeatureItem[] = [
     title: 'What you see is what you get',
     description: (
       <>
-        A thin abstraction layer over SQL, crafted by SQL lovers for SQL
-        lovers. Familiar naming, predictable 1:1 query compilation.
+        A thin abstraction layer over SQL, crafted by SQL lovers for SQL lovers.
+        Familiar naming, predictable 1:1 query compilation.
       </>
     ),
   },
@@ -78,8 +57,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Freedom of expression',
     description: (
       <>
-        Spec-faithful APIs for everything production teams need, composable
-        all the way down, escape hatches everywhere.
+        Spec-faithful APIs for everything production teams need, composable all
+        the way down, escape hatches everywhere.
       </>
     ),
   },
@@ -92,8 +71,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Run anywhere',
     description: (
       <>
-        No environment-specific APIs, nothing to bundle around. Runs in
-        Node.js, Deno, Bun, AWS Lambda, Cloudflare Workers, and browsers.
+        No environment-specific APIs, nothing to bundle around. Runs in Node.js,
+        Deno, Bun, AWS Lambda, Cloudflare Workers, and browsers.
       </>
     ),
   },
