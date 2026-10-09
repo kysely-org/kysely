@@ -136,6 +136,23 @@ export function Dialects(props: DialectsProps) {
                   >
                     {installationCommand.content}
                   </CodeBlock>
+                  {packageManager === 'deno' && value === 'sqlite' ? (
+                    <Admonition type="note" title="SQLite on Deno">
+                      <p>
+                        <code>better-sqlite3</code> uses a native addon. Set{' '}
+                        <code>nodeModulesDir</code> to <code>"auto"</code> and add{' '}
+                        <code>"npm:better-sqlite3"</code> to{' '}
+                        <code>allowScripts</code> in your <code>deno.json</code>.
+                        Run <code>deno install</code> to build the addon, then run
+                        your application with <code>--allow-ffi</code> and the
+                        filesystem permissions it needs. See{' '}
+                        <Link to="https://docs.deno.com/examples/npm_lifecycle_scripts_tutorial/">
+                          Deno's native addon instructions
+                        </Link>
+                        .
+                      </p>
+                    </Admonition>
+                  ) : null}
                 </>
               )}
             </TabItem>

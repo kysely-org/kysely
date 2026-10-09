@@ -35,7 +35,7 @@ export const DEFAULT_PACKAGE_MANAGER = 'npm' satisfies PackageManager
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
     bun: ['sqlite'],
-    deno: ['sqlite', 'mssql'],
+    deno: ['mssql'],
     npm: [],
     pnpm: [],
     yarn: [],
