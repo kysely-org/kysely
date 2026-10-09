@@ -69,6 +69,18 @@ const packageManagers: PackageManagerDetails[] = [
     command: getBashCommand('yarn', 'kysely'),
   },
   {
+    value: 'bun',
+    description: (
+      <>
+        <Link to="https://bun.sh">{PRETTY_PACKAGE_MANAGER_NAMES.bun}</Link> is a
+        new <JavaScriptLink /> runtime built for speed, with a native bundler,
+        transpiler, test runner, and {PRETTY_PACKAGE_MANAGER_NAMES.npm}
+        -compatible package manager baked-in.
+      </>
+    ),
+    command: getBashCommand('bun', 'kysely'),
+  },
+  {
     value: 'deno',
     description: (
       <>
@@ -80,18 +92,6 @@ const packageManagers: PackageManagerDetails[] = [
       </>
     ),
     command: getBashCommand('deno', 'jsr:@kysely/kysely'),
-  },
-  {
-    value: 'bun',
-    description: (
-      <>
-        <Link to="https://bun.sh">{PRETTY_PACKAGE_MANAGER_NAMES.bun}</Link> is a
-        new <JavaScriptLink /> runtime built for speed, with a native bundler,
-        transpiler, test runner, and {PRETTY_PACKAGE_MANAGER_NAMES.npm}
-        -compatible package manager baked-in.
-      </>
-    ),
-    command: getBashCommand('bun', 'kysely'),
   },
 ]
 

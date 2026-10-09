@@ -25,7 +25,7 @@ export type PropsWithPackageManager<P = {}> = P & {
   packageManagerSelectionID?: string
 }
 
-export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'deno', 'bun'] as const
+export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun', 'deno'] as const
 
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number]
 
@@ -82,16 +82,16 @@ export const PRETTY_PACKAGE_MANAGER_NAMES = {
   npm: 'npm',
   pnpm: 'pnpm',
   yarn: 'Yarn',
-  deno: 'Deno',
   bun: 'Bun',
+  deno: 'Deno',
 } as const satisfies Record<PackageManager, string>
 
 const PACKAGE_MANAGER_INSTALL_COMMANDS = {
   npm: 'npm install',
   pnpm: 'pnpm install',
   yarn: 'yarn add',
-  deno: 'deno add',
   bun: 'bun install',
+  deno: 'deno add',
 } as const satisfies Record<PackageManager, string>
 
 export interface Command {
