@@ -8,12 +8,9 @@ import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
   getBashCommand,
-  isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
   PRETTY_DIALECT_NAMES,
-  PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
-  type PackageManager,
   PACKAGE_MANAGERS,
   type PropsWithPackageManager,
   useSearchState,
@@ -106,67 +103,55 @@ export function Dialects(props: DialectsProps) {
           return (
             // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
             <TabItem key={value} value={value} label={prettyDialectName}>
-              {!isDialectSupported(value, packageManager) ? (
-                <UnsupportedDriver
-                  dialect={prettyDialectName}
-                  driverNPMPackage={driverNPMPackage}
-                  packageManager={packageManager}
-                />
-              ) : (
+              <p>
+                Kysely's built-in {prettyDialectName} dialect uses the "
+                {driverNPMPackage}" driver library under the hood. Please refer
+                to its <Link to={driverDocsURL}>official documentation</Link>{' '}
+                for configuration options.
+              </p>
+              {poolNPMPackage ? (
+                <p>
+                  Additionally, Kysely's {prettyDialectName} dialect uses the "
+                  {poolNPMPackage}" resource pool package for connection
+                  pooling. Please refer to its{' '}
+                  <Link to={poolDocsURL}>official documentation</Link> for
+                  configuration options.
+                </p>
+              ) : null}
+              {packageManager === 'bun' && value === 'sqlite' ? (
+                <p>
+                  Verified on macOS arm64 with Bun 1.4.2 and better-sqlite3
+                  13.0.3. Bun 1.4.0 crashes when loading this driver on that
+                  platform.
+                </p>
+              ) : null}
+              {packageManager === 'deno' && value === 'sqlite' ? (
                 <>
                   <p>
-                    Kysely's built-in {prettyDialectName} dialect uses the "
-                    {driverNPMPackage}" driver library under the hood. Please
-                    refer to its{' '}
-                    <Link to={driverDocsURL}>official documentation</Link> for
-                    configuration options.
+                    Add the following to your <code>deno.json</code> before
+                    installing the driver so Deno can install its native addon:
                   </p>
-                  {poolNPMPackage ? (
-                    <p>
-                      Additionally, Kysely's {prettyDialectName} dialect uses
-                      the "{poolNPMPackage}" resource pool package for
-                      connection pooling. Please refer to its{' '}
-                      <Link to={poolDocsURL}>official documentation</Link> for
-                      configuration options.
-                    </p>
-                  ) : null}
-                  {packageManager === 'bun' && value === 'sqlite' ? (
-                    <p>
-                      Verified on macOS arm64 with Bun 1.4.2 and
-                      better-sqlite3 13.0.3. Bun 1.4.0 crashes when loading
-                      this driver on that platform.
-                    </p>
-                  ) : null}
-                  {packageManager === 'deno' && value === 'sqlite' ? (
-                    <>
-                      <p>
-                        Add the following to your <code>deno.json</code> before
-                        installing the driver so Deno can install its native
-                        addon:
-                      </p>
-                      <CodeBlock language="json" title="deno.json">
-                        {`{
+                  <CodeBlock language="json" title="deno.json">
+                    {`{
   "nodeModulesDir": "auto",
   "allowScripts": ["npm:better-sqlite3"]
 }`}
-                      </CodeBlock>
-                      <p>
-                        Run your application with <code>--allow-read</code> and{' '}
-                        <code>--allow-ffi</code> to load the addon.
-                      </p>
-                    </>
-                  ) : null}
-                  <p>
-                    <strong>{installationCommand.intro}</strong>
-                  </p>
-                  <CodeBlock
-                    language={installationCommand.language}
-                    title={installationCommand.title}
-                  >
-                    {installationCommand.content}
                   </CodeBlock>
+                  <p>
+                    Run your application with <code>--allow-read</code> and{' '}
+                    <code>--allow-ffi</code> to load the addon.
+                  </p>
                 </>
-              )}
+              ) : null}
+              <p>
+                <strong>{installationCommand.intro}</strong>
+              </p>
+              <CodeBlock
+                language={installationCommand.language}
+                title={installationCommand.title}
+              >
+                {installationCommand.content}
+              </CodeBlock>
             </TabItem>
           )
         })}
@@ -184,27 +169,5 @@ export function Dialects(props: DialectsProps) {
         .
       </Admonition>
     </>
-  )
-}
-
-interface UnsupportedDriverProps {
-  dialect: string
-  driverNPMPackage: string
-  packageManager: PackageManager
-}
-
-function UnsupportedDriver(props: UnsupportedDriverProps) {
-  const { dialect, packageManager } = props
-
-  const packageManagerName =
-    PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
-
-  return (
-    <Admonition type="danger" title="Driver unsupported">
-      Kysely's built-in {dialect} dialect does not work in {packageManagerName}{' '}
-      because the driver library it uses, "{props.driverNPMPackage}", doesn't.
-      You have to use a community {dialect} dialect that works in{' '}
-      {packageManagerName}, or implement your own.
-    </Admonition>
   )
 }

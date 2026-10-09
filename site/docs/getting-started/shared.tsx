@@ -35,22 +35,6 @@ export function getKyselyImportPath(packageManager: PackageManager): string {
   return packageManager === 'deno' ? '@kysely/kysely' : 'kysely'
 }
 
-const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
-  {
-    bun: [],
-    deno: [],
-    npm: [],
-    pnpm: [],
-    yarn: [],
-  }
-
-export function isDialectSupported(
-  dialect: Dialect,
-  packageManager: PackageManager,
-): boolean {
-  return !PACKAGE_MANAGER_UNSUPPORTED_DIALECTS[packageManager].includes(dialect)
-}
-
 export const DIALECT_CLASS_NAMES = {
   postgresql: 'PostgresDialect',
   mysql: 'MysqlDialect',
