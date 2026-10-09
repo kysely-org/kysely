@@ -38,7 +38,7 @@ export function getKyselyImportPath(packageManager: PackageManager): string {
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
     bun: ['sqlite'],
-    deno: ['sqlite'],
+    deno: [],
     npm: [],
     pnpm: [],
     yarn: [],

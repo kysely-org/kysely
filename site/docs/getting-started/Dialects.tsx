@@ -130,6 +130,25 @@ export function Dialects(props: DialectsProps) {
                       configuration options.
                     </p>
                   ) : null}
+                  {packageManager === 'deno' && value === 'sqlite' ? (
+                    <>
+                      <p>
+                        Add the following to your <code>deno.json</code> before
+                        installing the driver so Deno can install its native
+                        addon:
+                      </p>
+                      <CodeBlock language="json" title="deno.json">
+                        {`{
+  "nodeModulesDir": "auto",
+  "allowScripts": ["npm:better-sqlite3"]
+}`}
+                      </CodeBlock>
+                      <p>
+                        Run your application with <code>--allow-read</code> and{' '}
+                        <code>--allow-ffi</code> to load the addon.
+                      </p>
+                    </>
+                  ) : null}
                   <p>
                     <strong>{installationCommand.intro}</strong>
                   </p>
