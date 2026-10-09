@@ -30,9 +30,6 @@ const people = await db.selectFrom('person').selectAll().execute()
 console.log(people)
 ```
 
-Kysely closes the connection pool when the script leaves the `await using` scope,
-including if the query fails.
-
 Run this example with `--allow-env --allow-net` and a PostgreSQL connection string in `DATABASE_URL`.
 
 For building and compiling queries without a database connection, see
