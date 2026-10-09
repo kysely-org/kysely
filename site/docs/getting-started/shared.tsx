@@ -90,8 +90,9 @@ const PACKAGE_MANAGER_INSTALL_COMMANDS = {
   npm: 'npm install',
   pnpm: 'pnpm install',
   yarn: 'yarn add',
+  deno: 'deno add',
   bun: 'bun install',
-} as const satisfies Omit<Record<PackageManager, string>, 'deno'>
+} as const satisfies Record<PackageManager, string>
 
 export interface Command {
   content: ReactNode
@@ -105,25 +106,12 @@ export function getBashCommand(
   installedPackage: string,
   additionalPackages?: string[],
 ): Command {
-  if (packageManager === 'deno') {
-    throw new Error('Deno has no bash command')
-  }
-
   return {
     content: `${
       PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]
     } ${installedPackage}${
       additionalPackages?.length ? ` ${additionalPackages.join(' ')}` : ''
     }`,
-    intro: 'Run the following command in your terminal:',
-    language: 'bash',
-    title: 'terminal',
-  }
-}
-
-export function getDenoCommand(packageSpecifier: string): Command {
-  return {
-    content: `deno add ${packageSpecifier}`,
     intro: 'Run the following command in your terminal:',
     language: 'bash',
     title: 'terminal',

@@ -5,7 +5,6 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import {
   getBashCommand,
-  getDenoCommand,
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Command,
   type PackageManager,
@@ -80,7 +79,7 @@ const packageManagers: PackageManagerDetails[] = [
         <Link to="https://www.typescriptlang.org">TypeScript</Link>.
       </>
     ),
-    command: getDenoCommand('jsr:@kysely/kysely'),
+    command: getBashCommand('deno', 'jsr:@kysely/kysely'),
   },
   {
     value: 'bun',

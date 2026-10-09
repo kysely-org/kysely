@@ -8,7 +8,6 @@ import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
   getBashCommand,
-  getDenoCommand,
   isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
   PRETTY_DIALECT_NAMES,
@@ -90,12 +89,13 @@ export function Dialects(props: DialectsProps) {
           const poolNPMPackage =
             POOL_NPM_PACKAGE_NAMES[value as keyof typeof POOL_NPM_PACKAGE_NAMES]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
-          const installationCommand =
+          const installationCommand = getBashCommand(
+            packageManager,
             packageManager === 'deno'
-              ? getDenoCommand(`npm:${driverNPMPackage}`)
-              : getBashCommand(packageManager, driverNPMPackage, [
-                  poolNPMPackage,
-                ])
+              ? `npm:${driverNPMPackage}`
+              : driverNPMPackage,
+            poolNPMPackage ? [poolNPMPackage] : undefined,
+          )
 
           return (
             // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
