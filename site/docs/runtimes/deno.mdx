@@ -1,15 +1,46 @@
 ---
 sidebar_position: 6
 title: 'Running on Deno'
-description: 'Use Kysely on Deno to build type-safe queries and compile PostgreSQL SQL with DummyDriver, without a database connection.'
+description: 'Use Kysely on Deno with a built-in database dialect, or compile SQL without a database connection.'
 ---
 
 # Running on Deno
 
-Kysely doesn't include drivers for Deno, but you can still use Kysely as a query builder or implement your own driver:
+Kysely works with Deno's npm package support. For example, the built-in PostgreSQL dialect can execute queries using `pg-pool`:
 
 ```ts
-// We use jsdeliver to get Kysely from npm.
+import { Generated, Kysely, PostgresDialect } from 'npm:kysely'
+import Pool from 'npm:pg-pool'
+
+interface Database {
+  person: {
+    id: Generated<number>
+    first_name: string
+    last_name: string | null
+  }
+}
+
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect({
+    pool: new Pool({ connectionString: Deno.env.get('DATABASE_URL') }),
+  }),
+})
+
+try {
+  const people = await db.selectFrom('person').selectAll().execute()
+  console.log(people)
+} finally {
+  await db.destroy()
+}
+```
+
+Run this example with `--allow-env --allow-net` and a PostgreSQL connection string in `DATABASE_URL`.
+
+## Compile SQL without a database connection
+
+If you only need to build and compile queries, use `DummyDriver`:
+
+```ts
 import {
   DummyDriver,
   Generated,
@@ -17,7 +48,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from 'https://cdn.jsdelivr.net/npm/kysely/dist/index.js'
+} from 'npm:kysely'
 
 interface Person {
   id: Generated<number>
