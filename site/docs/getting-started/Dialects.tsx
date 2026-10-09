@@ -8,7 +8,6 @@ import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
   getBashCommand,
-  getDenoCommand,
   isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
   PRETTY_DIALECT_NAMES,
@@ -85,20 +84,24 @@ export function Dialects(props: DialectsProps) {
       {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverDocsURL, poolDocsURL, value }) => {
-          const driverNPMPackage = getDriverNPMPackageNames()[value]
+          const driverNPMPackage =
+            getDriverNPMPackageNames(packageManager)[value]
           const poolNPMPackage =
             POOL_NPM_PACKAGE_NAMES[value as keyof typeof POOL_NPM_PACKAGE_NAMES]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
-          const installationCommand =
+          const installationCommand = getBashCommand(
+            packageManager,
             packageManager === 'deno'
-              ? getDenoCommand({
-                  [driverNPMPackage]: `npm:${driverNPMPackage}`,
-                  [`${driverNPMPackage}-pool`]:
-                    driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
-                })
-              : getBashCommand(packageManager, driverNPMPackage, [
-                  poolNPMPackage,
-                ])
+              ? `npm:${driverNPMPackage}`
+              : driverNPMPackage,
+            poolNPMPackage
+              ? [
+                  packageManager === 'deno'
+                    ? `npm:${poolNPMPackage}`
+                    : poolNPMPackage,
+                ]
+              : undefined,
+          )
 
           return (
             // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
@@ -126,6 +129,25 @@ export function Dialects(props: DialectsProps) {
                       <Link to={poolDocsURL}>official documentation</Link> for
                       configuration options.
                     </p>
+                  ) : null}
+                  {packageManager === 'deno' && value === 'sqlite' ? (
+                    <>
+                      <p>
+                        Add the following to your <code>deno.json</code> before
+                        installing the driver so Deno can install its native
+                        addon:
+                      </p>
+                      <CodeBlock language="json" title="deno.json">
+                        {`{
+  "nodeModulesDir": "auto",
+  "allowScripts": ["npm:better-sqlite3"]
+}`}
+                      </CodeBlock>
+                      <p>
+                        Run your application with <code>--allow-read</code> and{' '}
+                        <code>--allow-ffi</code> to load the addon.
+                      </p>
+                    </>
                   ) : null}
                   <p>
                     <strong>{installationCommand.intro}</strong>

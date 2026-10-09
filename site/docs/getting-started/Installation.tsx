@@ -5,7 +5,6 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import {
   getBashCommand,
-  getDenoCommand,
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Command,
   type PackageManager,
@@ -70,19 +69,6 @@ const packageManagers: PackageManagerDetails[] = [
     command: getBashCommand('yarn', 'kysely'),
   },
   {
-    value: 'deno',
-    description: (
-      <>
-        <Link to="https://deno.com/runtime">
-          {PRETTY_PACKAGE_MANAGER_NAMES.deno}
-        </Link>{' '}
-        is a secure runtime for <JavaScriptLink /> and{' '}
-        <Link to="https://www.typescriptlang.org">TypeScript</Link>.
-      </>
-    ),
-    command: getDenoCommand(),
-  },
-  {
     value: 'bun',
     description: (
       <>
@@ -93,6 +79,19 @@ const packageManagers: PackageManagerDetails[] = [
       </>
     ),
     command: getBashCommand('bun', 'kysely'),
+  },
+  {
+    value: 'deno',
+    description: (
+      <>
+        <Link to="https://deno.com/runtime">
+          {PRETTY_PACKAGE_MANAGER_NAMES.deno}
+        </Link>{' '}
+        is a secure runtime for <JavaScriptLink /> and{' '}
+        <Link to="https://www.typescriptlang.org">TypeScript</Link>.
+      </>
+    ),
+    command: getBashCommand('deno', 'jsr:@kysely/kysely'),
   },
 ]
 

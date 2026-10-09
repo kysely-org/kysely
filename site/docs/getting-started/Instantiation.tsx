@@ -4,6 +4,7 @@ import { IUseADifferentDialect } from './IUseADifferentDialect'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   getDriverNPMPackageNames,
+  getKyselyImportPath,
   isDialectSupported,
   POOL_NPM_PACKAGE_NAMES,
   PRETTY_PACKAGE_MANAGER_NAMES,
@@ -110,10 +111,12 @@ function getNotSupportedCode(
   dialect: Dialect,
   packageManager: PackageManager,
 ): string {
+  const kyselyPackageName = getKyselyImportPath(packageManager)
+
   return `/* Kysely doesn't support ${PRETTY_DIALECT_NAMES[dialect]} + ${
     PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
   } out of the box. Import a community dialect that does here. */
-import { Kysely } from 'kysely'
+import { Kysely } from '${kyselyPackageName}'
 
 const dialect = /* instantiate the dialect here */`
 }
@@ -127,10 +130,11 @@ function getDialectSpecificCodeSnippet(
   const poolClassName = 'Pool'
   const poolClassImport =
     packageManager === 'deno' ? poolClassName : `{ ${poolClassName} }`
+  const kyselyPackageName = getKyselyImportPath(packageManager)
 
   if (dialect === 'postgresql') {
     return `import ${poolClassImport} from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from 'kysely'
+import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
 
 const dialect = new ${dialectClassName}({
   pool: new ${poolClassName}({
@@ -147,7 +151,7 @@ const dialect = new ${dialectClassName}({
     const poolFactoryName = 'createPool'
 
     return `import { ${poolFactoryName} } from '${driverNPMPackageName}' // do not use 'mysql2/promises'!
-import { Kysely, ${dialectClassName} } from 'kysely'
+import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
 
 const dialect = new ${dialectClassName}({
   pool: ${poolFactoryName}({
@@ -166,7 +170,7 @@ const dialect = new ${dialectClassName}({
 
     return `import * as ${driverNPMPackageName} from '${driverNPMPackageName}'
 import * as ${poolPackageName} from '${poolPackageName}'
-import { Kysely, ${dialectClassName} } from 'kysely'
+import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
 
 const dialect = new ${dialectClassName}({
   ${poolPackageName}: {
@@ -201,7 +205,7 @@ const dialect = new ${dialectClassName}({
     const driverImportName = 'SQLite'
 
     return `import ${driverImportName} from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from 'kysely'
+import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
 
 const dialect = new ${dialectClassName}({
   database: new ${driverImportName}(':memory:'),
@@ -212,7 +216,7 @@ const dialect = new ${dialectClassName}({
     const driverImportName = 'PGlite'
 
     return `import { ${driverImportName} } from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from 'kysely'
+import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
 
 const dialect = new ${dialectClassName}({
   pglite: new ${driverImportName}(),

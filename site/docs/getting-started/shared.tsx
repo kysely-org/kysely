@@ -1,6 +1,5 @@
 import { useLocation } from '@docusaurus/router'
 import { useEffect, useState, type ReactNode } from 'react'
-import packageJson from '../../package.json'
 
 export const DIALECTS = [
   'postgresql',
@@ -26,16 +25,20 @@ export type PropsWithPackageManager<P = {}> = P & {
   packageManagerSelectionID?: string
 }
 
-export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'deno', 'bun'] as const
+export const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun', 'deno'] as const
 
 export type PackageManager = (typeof PACKAGE_MANAGERS)[number]
 
 export const DEFAULT_PACKAGE_MANAGER = 'npm' satisfies PackageManager
 
+export function getKyselyImportPath(packageManager: PackageManager): string {
+  return packageManager === 'deno' ? '@kysely/kysely' : 'kysely'
+}
+
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
     bun: ['sqlite'],
-    deno: ['sqlite', 'mssql'],
+    deno: [],
     npm: [],
     pnpm: [],
     yarn: [],
@@ -83,8 +86,8 @@ export const PRETTY_PACKAGE_MANAGER_NAMES = {
   npm: 'npm',
   pnpm: 'pnpm',
   yarn: 'Yarn',
-  deno: 'Deno',
   bun: 'Bun',
+  deno: 'Deno',
 } as const satisfies Record<PackageManager, string>
 
 const PACKAGE_MANAGER_INSTALL_COMMANDS = {
@@ -92,7 +95,8 @@ const PACKAGE_MANAGER_INSTALL_COMMANDS = {
   pnpm: 'pnpm install',
   yarn: 'yarn add',
   bun: 'bun install',
-} as const satisfies Omit<Record<PackageManager, string>, 'deno'>
+  deno: 'deno add',
+} as const satisfies Record<PackageManager, string>
 
 export interface Command {
   content: ReactNode
@@ -106,10 +110,6 @@ export function getBashCommand(
   installedPackage: string,
   additionalPackages?: string[],
 ): Command {
-  if (packageManager === 'deno') {
-    throw new Error('Deno has no bash command')
-  }
-
   return {
     content: `${
       PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]
@@ -119,34 +119,6 @@ export function getBashCommand(
     intro: 'Run the following command in your terminal:',
     language: 'bash',
     title: 'terminal',
-  }
-}
-
-export function getDenoCommand(
-  additionalImports?: Record<string, string | undefined>,
-): Command {
-  return {
-    content: JSON.stringify(
-      {
-        imports: {
-          kysely: `npm:kysely@^${packageJson.version}`,
-          ...additionalImports,
-        },
-      },
-      null,
-      2,
-    ),
-    intro: (
-      <>
-        <strong>Your root </strong>
-        <code>deno.json</code>
-        <strong>
-          's "imports" field should include the following dependencies:
-        </strong>
-      </>
-    ),
-    language: 'json',
-    title: 'deno.json',
   }
 }
 
