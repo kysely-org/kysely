@@ -16,66 +16,42 @@ interface PackageManagerDetails {
   command: Command
 }
 
-const JavaScriptLink = () => (
-  <Link to="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
-    JavaScript
-  </Link>
+const nodeRuntimeDescription = (
+  <>
+    Kysely's query builder uses standard JavaScript APIs. Use a{' '}
+    <Link to="https://nodejs.org/en/about/previous-releases">
+      non-EOL Node.js release
+    </Link>{' '}
+    that meets Kysely's <code>node &gt;=22</code> package engine requirement. We
+    test non-EOL Node.js releases in CI. Your database driver may have its own
+    runtime requirements.
+  </>
 )
-const NodeJSLink = () => <Link to="https://nodejs.org">Node.js</Link>
 
 const packageManagers: PackageManagerDetails[] = [
   {
     value: 'npm',
-    description: (
-      <>
-        <Link to="https://npmjs.com">{PRETTY_PACKAGE_MANAGER_NAMES.npm}</Link>{' '}
-        is the default package manager for <NodeJSLink />, and to where Kysely
-        is published.
-        <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.npm} if it has a{' '}
-        <code>package-lock.json</code> file in its root folder.
-      </>
-    ),
+    description: nodeRuntimeDescription,
     command: getBashCommand('npm', 'kysely'),
   },
   {
     value: 'pnpm',
-    description: (
-      <>
-        <Link to="https://pnpm.io">{PRETTY_PACKAGE_MANAGER_NAMES.pnpm}</Link> is
-        a fast, disk space efficient package manager for <NodeJSLink />
-        .
-        <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.pnpm} if it has a{' '}
-        <code>pnpm-lock.yaml</code> file in its root folder.
-      </>
-    ),
+    description: nodeRuntimeDescription,
     command: getBashCommand('pnpm', 'kysely'),
   },
   {
     value: 'yarn',
-    description: (
-      <>
-        <Link to="https://yarnpkg.com">
-          {PRETTY_PACKAGE_MANAGER_NAMES.yarn}
-        </Link>{' '}
-        is a fast, reliable and secure dependency manager for <NodeJSLink />
-        .
-        <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.yarn} if it has a{' '}
-        <code>yarn.lock</code> file in its root folder.
-      </>
-    ),
+    description: nodeRuntimeDescription,
     command: getBashCommand('yarn', 'kysely'),
   },
   {
     value: 'bun',
     description: (
       <>
-        <Link to="https://bun.sh">{PRETTY_PACKAGE_MANAGER_NAMES.bun}</Link> is a
-        new <JavaScriptLink /> runtime built for speed, with a native bundler,
-        transpiler, test runner, and {PRETTY_PACKAGE_MANAGER_NAMES.npm}
-        -compatible package manager baked-in.
+        Kysely's query builder uses standard JavaScript APIs. We test{' '}
+        <Link to="https://bun.sh">Bun</Link> in CI and target releases that have
+        not reached end of life. Your database driver may have its own runtime
+        requirements.
       </>
     ),
     command: getBashCommand('bun', 'kysely'),
@@ -84,11 +60,12 @@ const packageManagers: PackageManagerDetails[] = [
     value: 'deno',
     description: (
       <>
-        <Link to="https://deno.com/runtime">
-          {PRETTY_PACKAGE_MANAGER_NAMES.deno}
+        Kysely's query builder uses standard JavaScript APIs. We test{' '}
+        <Link to="https://docs.deno.com/runtime/fundamentals/stability_and_releases/">
+          Deno
         </Link>{' '}
-        is a secure runtime for <JavaScriptLink /> and{' '}
-        <Link to="https://www.typescriptlang.org">TypeScript</Link>.
+        in CI and target stable and LTS releases that have not reached end of
+        life. Your database driver may have its own runtime requirements.
       </>
     ),
     command: getBashCommand('deno', 'jsr:@kysely/kysely'),
