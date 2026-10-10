@@ -9,7 +9,6 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  SqliteDialect,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -691,57 +690,6 @@ for (const dialect of DIALECTS) {
 }
 
 describe('custom dialect: controlled transaction', () => {
-  const db = new Kysely<Database>({
-    dialect: new (class extends SqliteDialect {
-      createDriver(): Driver {
-        const driver = class extends DummyDriver {}
-
-        // @ts-ignore
-        driver.prototype.releaseSavepoint = undefined
-        // @ts-ignore
-        driver.prototype.rollbackToSavepoint = undefined
-        // @ts-ignore
-        driver.prototype.savepoint = undefined
-
-        return new driver()
-      }
-      // @ts-ignore
-    })({}),
-  })
-  let trx: ControlledTransaction<Database>
-
-  before(async () => {
-    trx = await db.startTransaction().execute()
-  })
-
-  after(async () => {
-    await trx.rollback().execute()
-  })
-
-  it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
-    await expect(trx.savepoint('foo').execute()).to.be.rejectedWith(
-      'The `savepoint` method is not supported by this driver',
-    )
-  })
-
-  it('should throw an error when trying to rollback to a savepoint on a dialect that does not support it', async () => {
-    await expect(
-      trx.rollbackToSavepoint('foo' as never).execute(),
-    ).to.be.rejectedWith(
-      'The `rollbackToSavepoint` method is not supported by this driver',
-    )
-  })
-
-  it('should throw an error when trying to release a savepoint on a dialect that does not support it', async () => {
-    await expect(
-      trx.releaseSavepoint('foo' as never).execute(),
-    ).to.be.rejectedWith(
-      'The `releaseSavepoint` method is not supported by this driver',
-    )
-  })
-})
-
-describe('controlled transaction', () => {
   const sandbox = sinon.createSandbox()
   let driver: Driver
   let db: Kysely<Database>
@@ -768,6 +716,43 @@ describe('controlled transaction', () => {
   afterEach(async () => {
     sandbox.restore()
     await db.destroy()
+  })
+
+  it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
+    sandbox.stub(driver, 'savepoint').value(undefined)
+    const trx = await db.startTransaction().execute()
+
+    await expect(trx.savepoint('foo').execute()).to.be.rejectedWith(
+      'The `savepoint` method is not supported by this driver',
+    )
+
+    await trx.rollback().execute()
+  })
+
+  it('should throw an error when trying to rollback to a savepoint on a dialect that does not support it', async () => {
+    sandbox.stub(driver, 'rollbackToSavepoint').value(undefined)
+    const trx = await db.startTransaction().execute()
+
+    await expect(
+      trx.rollbackToSavepoint('foo' as never).execute(),
+    ).to.be.rejectedWith(
+      'The `rollbackToSavepoint` method is not supported by this driver',
+    )
+
+    await trx.rollback().execute()
+  })
+
+  it('should throw an error when trying to release a savepoint on a dialect that does not support it', async () => {
+    sandbox.stub(driver, 'releaseSavepoint').value(undefined)
+    const trx = await db.startTransaction().execute()
+
+    await expect(
+      trx.releaseSavepoint('foo' as never).execute(),
+    ).to.be.rejectedWith(
+      'The `releaseSavepoint` method is not supported by this driver',
+    )
+
+    await trx.rollback().execute()
   })
 
   it('should release the connection if the transaction fails to begin', async () => {
