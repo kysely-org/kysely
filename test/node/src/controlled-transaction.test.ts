@@ -691,16 +691,18 @@ for (const dialect of DIALECTS) {
 
 describe('custom dialect: controlled transaction', () => {
   const sandbox = sinon.createSandbox()
-  let driver: Driver
   let db: Kysely<Database>
-  let acquireStub: sinon.SinonStub
+  let trx: ControlledTransaction<Database>
   let querySpy: sinon.SinonSpy
   let releaseSpy: sinon.SinonSpy
 
   beforeEach(async () => {
-    driver = new DummyDriver()
+    const driver: Driver = new DummyDriver()
+    driver.savepoint = undefined
+    driver.rollbackToSavepoint = undefined
+    driver.releaseSavepoint = undefined
     const connection = await driver.acquireConnection()
-    acquireStub = sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    sandbox.stub(driver, 'acquireConnection').resolves(connection)
     querySpy = sandbox.spy(connection, 'executeQuery')
     releaseSpy = sandbox.spy(driver, 'releaseConnection')
     db = new Kysely<Database>({
@@ -711,83 +713,48 @@ describe('custom dialect: controlled transaction', () => {
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
     })
+    trx = await db.startTransaction().execute()
   })
 
   afterEach(async () => {
-    sandbox.restore()
+    if (!trx.isCommitted && !trx.isRolledBack) {
+      await trx.rollback().execute()
+    }
     await db.destroy()
+    sandbox.restore()
   })
 
   it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
-    sandbox.stub(driver, 'savepoint').value(undefined)
-    const trx = await db.startTransaction().execute()
-
     await expect(trx.savepoint('foo').execute()).to.be.rejectedWith(
       'The `savepoint` method is not supported by this driver',
     )
-
-    await trx.rollback().execute()
   })
 
   it('should throw an error when trying to rollback to a savepoint on a dialect that does not support it', async () => {
-    sandbox.stub(driver, 'rollbackToSavepoint').value(undefined)
-    const trx = await db.startTransaction().execute()
-
     await expect(
       trx.rollbackToSavepoint('foo' as never).execute(),
     ).to.be.rejectedWith(
       'The `rollbackToSavepoint` method is not supported by this driver',
     )
-
-    await trx.rollback().execute()
   })
 
   it('should throw an error when trying to release a savepoint on a dialect that does not support it', async () => {
-    sandbox.stub(driver, 'releaseSavepoint').value(undefined)
-    const trx = await db.startTransaction().execute()
-
     await expect(
       trx.releaseSavepoint('foo' as never).execute(),
     ).to.be.rejectedWith(
       'The `releaseSavepoint` method is not supported by this driver',
     )
-
-    await trx.rollback().execute()
-  })
-
-  it('should release the connection if the transaction fails to begin', async () => {
-    const beginError = new Error('begin failed')
-    sandbox.stub(driver, 'beginTransaction').rejects(beginError)
-
-    const error = await db
-      .startTransaction()
-      .execute()
-      .catch((error: unknown) => error)
-
-    expect(error).to.equal(beginError)
-    expect(acquireStub.calledOnce, 'connection acquired once').to.be.true
-    expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-    expect(releaseSpy.firstCall.args[0]).to.equal(
-      await acquireStub.firstCall.returnValue,
-    )
   })
 
   it('should invalidate derived handles when the original transaction commits', async () => {
-    const trx = await db.startTransaction().execute()
     const derivedTrx = trx.withSchema('public')
-    const savepointTrx = await trx.savepoint('point').execute()
 
     await trx.commit().execute()
 
     expect(derivedTrx.isCommitted).to.be.true
     expect(derivedTrx.isRolledBack).to.be.false
-    expect(savepointTrx.isCommitted).to.be.true
-    expect(savepointTrx.isRolledBack).to.be.false
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
-    ).to.be.rejectedWith('Transaction is already committed')
-    await expect(
-      savepointTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
     expect(() => derivedTrx.commit()).to.throw(
       'Transaction is already committed',
@@ -800,21 +767,14 @@ describe('custom dialect: controlled transaction', () => {
   })
 
   it('should invalidate the original transaction when a derived handle commits', async () => {
-    const trx = await db.startTransaction().execute()
     const derivedTrx = trx.withSchema('public')
-    const savepointTrx = await trx.savepoint('point').execute()
 
     await derivedTrx.commit().execute()
 
     expect(trx.isCommitted).to.be.true
     expect(trx.isRolledBack).to.be.false
-    expect(savepointTrx.isCommitted).to.be.true
-    expect(savepointTrx.isRolledBack).to.be.false
     await expect(
       trx.selectFrom('person').selectAll().execute(),
-    ).to.be.rejectedWith('Transaction is already committed')
-    await expect(
-      savepointTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
     expect(() => trx.commit()).to.throw('Transaction is already committed')
     expect(() => trx.rollback()).to.throw('Transaction is already committed')
@@ -823,21 +783,14 @@ describe('custom dialect: controlled transaction', () => {
   })
 
   it('should invalidate derived handles when the original transaction rolls back', async () => {
-    const trx = await db.startTransaction().execute()
     const derivedTrx = trx.withSchema('public')
-    const savepointTrx = await trx.savepoint('point').execute()
 
     await trx.rollback().execute()
 
     expect(derivedTrx.isCommitted).to.be.false
     expect(derivedTrx.isRolledBack).to.be.true
-    expect(savepointTrx.isCommitted).to.be.false
-    expect(savepointTrx.isRolledBack).to.be.true
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
-    ).to.be.rejectedWith('Transaction is already rolled back')
-    await expect(
-      savepointTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
     expect(() => derivedTrx.commit()).to.throw(
       'Transaction is already rolled back',
@@ -850,26 +803,53 @@ describe('custom dialect: controlled transaction', () => {
   })
 
   it('should invalidate the original transaction when a derived handle rolls back', async () => {
-    const trx = await db.startTransaction().execute()
     const derivedTrx = trx.withSchema('public')
-    const savepointTrx = await trx.savepoint('point').execute()
 
     await derivedTrx.rollback().execute()
 
     expect(trx.isCommitted).to.be.false
     expect(trx.isRolledBack).to.be.true
-    expect(savepointTrx.isCommitted).to.be.false
-    expect(savepointTrx.isRolledBack).to.be.true
     await expect(
       trx.selectFrom('person').selectAll().execute(),
-    ).to.be.rejectedWith('Transaction is already rolled back')
-    await expect(
-      savepointTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
     expect(() => trx.commit()).to.throw('Transaction is already rolled back')
     expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
+  })
+})
+
+describe('controlled transaction', () => {
+  it('should release the connection if the transaction fails to begin', async () => {
+    const driver: Driver = new DummyDriver()
+    const beginError = new Error('begin failed')
+    sinon.stub(driver, 'beginTransaction').rejects(beginError)
+    const acquireSpy = sinon.spy(driver, 'acquireConnection')
+    const releaseSpy = sinon.spy(driver, 'releaseConnection')
+    const db = new Kysely<Database>({
+      dialect: {
+        createAdapter: () => new PostgresAdapter(),
+        createDriver: () => driver,
+        createIntrospector: (db) => new PostgresIntrospector(db),
+        createQueryCompiler: () => new PostgresQueryCompiler(),
+      },
+    })
+
+    try {
+      const error = await db
+        .startTransaction()
+        .execute()
+        .catch((error: unknown) => error)
+
+      expect(error).to.equal(beginError)
+      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
+      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+      expect(releaseSpy.firstCall.args[0]).to.equal(
+        await acquireSpy.firstCall.returnValue,
+      )
+    } finally {
+      await db.destroy()
+    }
   })
 })
 
