@@ -58,20 +58,15 @@ export function DemoVideo() {
       return
     }
 
-    const handleCanPlay = () => {
-      video.play().catch(() => setPlaybackOverride(false))
-      video.removeEventListener('canplay', handleCanPlay)
-    }
-
-    video.addEventListener('canplay', handleCanPlay)
-    video.load()
-
-    if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-      handleCanPlay()
-    }
+    let cancelled = false
+    video.play().catch(() => {
+      if (!cancelled) {
+        setPlaybackOverride(false)
+      }
+    })
 
     return () => {
-      video.removeEventListener('canplay', handleCanPlay)
+      cancelled = true
     }
   }, [isBrowser, colorMode, shouldPlay])
 
