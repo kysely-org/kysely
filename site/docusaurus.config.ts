@@ -159,7 +159,7 @@ export default {
           relativePaths: false,
           // The plugin package types its options as unknown; this function uses { url }.
           remarkPlugins: [[
-            remarkAgentDocs as Extract<LLMsTXTPluginInput, (...args: any[]) => any>,
+            remarkAgentDocs as never,
             { url },
           ]],
         },
