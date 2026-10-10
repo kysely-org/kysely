@@ -137,7 +137,7 @@ export default {
               publicPath: '/pagefind',
             },
           },
-        }) as unknown as ReturnType<NonNullable<Plugin['configureWebpack']>>,
+        }) as never,
         name: 'pagefind-dev-server',
       }
     },
