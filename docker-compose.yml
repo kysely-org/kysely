@@ -24,7 +24,7 @@ services:
       # https://docs.microsoft.com/en-us/sql/relational-databases/logs/control-transaction-durability?view=sql-server-ver15#bkmk_DbControl
       - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P KyselyTest0 -d master -Q "CREATE DATABASE kysely_test; ALTER DATABASE kysely_test SET ALLOW_SNAPSHOT_ISOLATION ON; ALTER DATABASE kysely_test SET DELAYED_DURABILITY = FORCED"; do sleep 5; done'
   mysql:
-    image: 'mysql/mysql-server'
+    image: 'container-registry.oracle.com/mysql/community-server:latest'
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: kysely_test
@@ -34,7 +34,7 @@ services:
       - ./test/scripts/mysql-init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
   postgres:
-    image: 'postgres'
+    image: 'public.ecr.aws/docker/library/postgres:latest'
     environment:
       POSTGRES_DB: kysely_test
       POSTGRES_PASSWORD: kysely
