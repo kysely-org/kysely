@@ -1,19 +1,29 @@
 import CodeBlock from '@theme/CodeBlock'
 import {
+  DEFAULT_DIALECT,
   DEFAULT_PACKAGE_MANAGER,
+  DIALECTS,
   getKyselyImportPath,
   PACKAGE_MANAGERS,
   useSearchState,
+  type PropsWithDialect,
   type PropsWithPackageManager,
 } from './shared'
 
-export function TypesCode(props: PropsWithPackageManager) {
+export function TypesCode(props: PropsWithDialect<PropsWithPackageManager>) {
+  const dialect = useSearchState({
+    defaultValue: DEFAULT_DIALECT,
+    searchParam: props.dialectSearchParam,
+    validator: (value) => DIALECTS.includes(value as never),
+    value: props.dialect,
+  })
   const packageManager = useSearchState({
     defaultValue: DEFAULT_PACKAGE_MANAGER,
     searchParam: props.packageManagerSearchParam,
     validator: (value) => PACKAGE_MANAGERS.includes(value as never),
     value: props.packageManager,
   })
+  const createdAtSelectType = dialect === 'sqlite' ? 'string' : 'Date'
 
   return (
     <CodeBlock language="ts" title="src/types.ts">
@@ -52,9 +62,9 @@ export interface PersonTable {
   // You can specify a different type for each operation (select, insert and
   // update) using the \`ColumnType<SelectType, InsertType, UpdateType>\`
   // wrapper. Here we define a column \`created_at\` that is selected as
-  // a \`Date\`, can optionally be provided as a \`string\` in inserts and
+  // a \`${createdAtSelectType}\`, can optionally be provided as a \`string\` in inserts and
   // can never be updated:
-  created_at: ColumnType<Date, string | undefined, never>
+  created_at: ColumnType<${createdAtSelectType}, string | undefined, never>
 
   // You can specify JSON columns using the \`JSONColumnType\` wrapper.
   // It is a shorthand for \`ColumnType<T, string, string>\`, where T
