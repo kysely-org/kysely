@@ -9,7 +9,6 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  SqliteDialect,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -691,31 +690,38 @@ for (const dialect of DIALECTS) {
 }
 
 describe('custom dialect: controlled transaction', () => {
-  const db = new Kysely<Database>({
-    dialect: new (class extends SqliteDialect {
-      createDriver(): Driver {
-        const driver = class extends DummyDriver {}
-
-        // @ts-ignore
-        driver.prototype.releaseSavepoint = undefined
-        // @ts-ignore
-        driver.prototype.rollbackToSavepoint = undefined
-        // @ts-ignore
-        driver.prototype.savepoint = undefined
-
-        return new driver()
-      }
-      // @ts-ignore
-    })({}),
-  })
+  const sandbox = sinon.createSandbox()
+  let db: Kysely<Database>
   let trx: ControlledTransaction<Database>
+  let querySpy: sinon.SinonSpy
+  let releaseSpy: sinon.SinonSpy
 
-  before(async () => {
+  beforeEach(async () => {
+    const driver = new DummyDriver()
+    sandbox.stub(driver, 'savepoint').value(undefined)
+    sandbox.stub(driver, 'rollbackToSavepoint').value(undefined)
+    sandbox.stub(driver, 'releaseSavepoint').value(undefined)
+    const connection = await driver.acquireConnection()
+    sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    querySpy = sandbox.spy(connection, 'executeQuery')
+    releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    db = new Kysely<Database>({
+      dialect: {
+        createAdapter: () => new PostgresAdapter(),
+        createDriver: () => driver,
+        createIntrospector: (db) => new PostgresIntrospector(db),
+        createQueryCompiler: () => new PostgresQueryCompiler(),
+      },
+    })
     trx = await db.startTransaction().execute()
   })
 
-  after(async () => {
-    await trx.rollback().execute()
+  afterEach(async () => {
+    if (!trx.isCommitted && !trx.isRolledBack) {
+      await trx.rollback().execute()
+    }
+    await db.destroy()
+    sandbox.restore()
   })
 
   it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
@@ -738,6 +744,78 @@ describe('custom dialect: controlled transaction', () => {
     ).to.be.rejectedWith(
       'The `releaseSavepoint` method is not supported by this driver',
     )
+  })
+
+  it('should invalidate derived handles when the original transaction commits', async () => {
+    const derivedTrx = trx.withSchema('public')
+
+    await trx.commit().execute()
+
+    expect(derivedTrx.isCommitted).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.false
+    await expect(
+      derivedTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    expect(() => derivedTrx.commit()).to.throw(
+      'Transaction is already committed',
+    )
+    expect(() => derivedTrx.rollback()).to.throw(
+      'Transaction is already committed',
+    )
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate the original transaction when a derived handle commits', async () => {
+    const derivedTrx = trx.withSchema('public')
+
+    await derivedTrx.commit().execute()
+
+    expect(trx.isCommitted).to.be.true
+    expect(trx.isRolledBack).to.be.false
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already committed')
+    expect(() => trx.commit()).to.throw('Transaction is already committed')
+    expect(() => trx.rollback()).to.throw('Transaction is already committed')
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate derived handles when the original transaction rolls back', async () => {
+    const derivedTrx = trx.withSchema('public')
+
+    await trx.rollback().execute()
+
+    expect(derivedTrx.isCommitted).to.be.false
+    expect(derivedTrx.isRolledBack).to.be.true
+    await expect(
+      derivedTrx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    expect(() => derivedTrx.commit()).to.throw(
+      'Transaction is already rolled back',
+    )
+    expect(() => derivedTrx.rollback()).to.throw(
+      'Transaction is already rolled back',
+    )
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should invalidate the original transaction when a derived handle rolls back', async () => {
+    const derivedTrx = trx.withSchema('public')
+
+    await derivedTrx.rollback().execute()
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+    expect(() => trx.commit()).to.throw('Transaction is already rolled back')
+    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
   })
 })
 
