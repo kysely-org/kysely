@@ -48,7 +48,7 @@ export default function generateBrandLogoSprite({
             publicPath: `${siteConfig.baseUrl}img`,
           },
         },
-      } as unknown as ReturnType<NonNullable<Plugin['configureWebpack']>>
+      } as never
     },
     async postBuild({ outDir }) {
       await mkdir(join(outDir, 'img'), { recursive: true })
