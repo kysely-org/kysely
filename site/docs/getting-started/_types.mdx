@@ -7,7 +7,15 @@ values.
 
 **Let's define our first database interface:**
 
-<TypesCode packageManagerSearchParam="package-manager" />
+<TypesCode
+  dialectSearchParam="dialect"
+  packageManagerSearchParam="package-manager"
+/>
+
+The selected dialect determines the example's `created_at` result type.
+With SQLite and `better-sqlite3`, `CURRENT_TIMESTAMP` is returned as a string;
+the other built-in driver examples return a `Date`. Always match your types to
+what your driver actually returns.
 
 :::tip[Codegen]
 
