@@ -114,7 +114,16 @@ export function DemoVideo() {
             onClick={() => setPlaybackOverride(!shouldPlay)}
             type="button"
           >
-            {shouldPlay ? 'Pause' : 'Play'}
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              {shouldPlay ? (
+                <>
+                  <rect x="5" y="4" width="5" height="16" rx="1" />
+                  <rect x="14" y="4" width="5" height="16" rx="1" />
+                </>
+              ) : (
+                <path d="M7 4.5 20 12 7 19.5z" />
+              )}
+            </svg>
           </button>
         )}
       </div>
