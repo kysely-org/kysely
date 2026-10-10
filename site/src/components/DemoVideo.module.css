@@ -41,3 +41,25 @@
 :global(html[data-theme='light']) .lightPoster {
   display: block;
 }
+
+.playbackButton {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1;
+  min-height: 44px;
+  min-width: 64px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 78%);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.playbackButton:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 3px;
+}
