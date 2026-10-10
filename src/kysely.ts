@@ -832,6 +832,7 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
+      state: { isCommitted: false, isRolledBack: false },
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection.connection),
       ),
@@ -845,33 +846,30 @@ export class ControlledTransaction<
 > extends Transaction<DB> {
   readonly #props: ControlledTransactionProps
   readonly #compileQuery: QueryCompiler['compileQuery']
-  readonly #state: ControlledTransctionState
 
   constructor(props: ControlledTransactionProps) {
-    const state = { isCommitted: false, isRolledBack: false }
     props = {
       ...props,
       executor: new NotCommittedOrRolledBackAssertingExecutor(
         props.executor,
-        state,
+        props.state,
       ),
     }
-    const { connection, ...transactionProps } = props
+    const { connection, state, ...transactionProps } = props
     super(transactionProps)
 
     this.#props = freeze(props)
-    this.#state = state
 
     const queryId = createQueryId()
     this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
   }
 
   get isCommitted(): boolean {
-    return this.#state.isCommitted
+    return this.#props.state.isCommitted
   }
 
   get isRolledBack(): boolean {
-    return this.#state.isRolledBack
+    return this.#props.state.isRolledBack
   }
 
   /**
@@ -899,13 +897,13 @@ export class ControlledTransaction<
    * ```
    */
   commit(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async () => {
       await this.#props.driver.commitTransaction(
         this.#props.connection.connection,
       )
-      this.#state.isCommitted = true
+      this.#props.state.isCommitted = true
       this.#props.connection.release()
     })
   }
@@ -935,13 +933,13 @@ export class ControlledTransaction<
    * ```
    */
   rollback(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async () => {
       await this.#props.driver.rollbackTransaction(
         this.#props.connection.connection,
       )
-      this.#state.isRolledBack = true
+      this.#props.state.isRolledBack = true
       this.#props.connection.release()
     })
   }
@@ -978,7 +976,7 @@ export class ControlledTransaction<
   savepoint<SN extends string>(
     savepointName: SN extends S ? never : SN,
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async () => {
       await this.#props.driver.savepoint?.(
@@ -1026,7 +1024,7 @@ export class ControlledTransaction<
   ): RollbackToSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async () => {
       await this.#props.driver.rollbackToSavepoint?.(
@@ -1079,7 +1077,7 @@ export class ControlledTransaction<
   ): ReleaseSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async () => {
       await this.#props.driver.releaseSavepoint?.(
@@ -1129,6 +1127,7 @@ interface ControlledTransctionState {
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: ControlledConnection
+  readonly state: ControlledTransctionState
 }
 
 export class Command<T> {
