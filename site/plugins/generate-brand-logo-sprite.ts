@@ -39,17 +39,16 @@ export default function generateBrandLogoSprite({
         `<svg xmlns="http://www.w3.org/2000/svg">\n${logos.join('\n')}\n</svg>\n`,
       )
     },
+    // Docusaurus merges this dev-server setting although its webpack type omits it.
     configureWebpack() {
       return {
         devServer: {
-          static: [
-            {
-              directory: outputDir,
-              publicPath: `${siteConfig.baseUrl}img`,
-            },
-          ],
+          static: {
+            directory: outputDir,
+            publicPath: `${siteConfig.baseUrl}img`,
+          },
         },
-      }
+      } as unknown as ReturnType<NonNullable<Plugin['configureWebpack']>>
     },
     async postBuild({ outDir }) {
       await mkdir(join(outDir, 'img'), { recursive: true })

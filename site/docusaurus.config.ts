@@ -2,9 +2,10 @@ import type {
   Options as PresetClassicOptions,
   ThemeConfig as PresetClassicThemeConfig,
 } from '@docusaurus/preset-classic'
-import type { Config } from '@docusaurus/types'
+import type { Config, Plugin } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
+import type { PluginInput as LLMsTXTPluginInput } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
@@ -128,16 +129,15 @@ export default {
     // search UI work doesn't need a 90s rebuild per iteration.
     function pagefindDevServer() {
       return {
+        // Docusaurus merges this dev-server setting although its webpack type omits it.
         configureWebpack: () => ({
           devServer: {
-            static: [
-              {
-                directory: `${__dirname}/build/pagefind`,
-                publicPath: '/pagefind',
-              },
-            ],
+            static: {
+              directory: `${__dirname}/build/pagefind`,
+              publicPath: '/pagefind',
+            },
           },
-        }),
+        }) as unknown as ReturnType<NonNullable<Plugin['configureWebpack']>>,
         name: 'pagefind-dev-server',
       }
     },
@@ -157,7 +157,11 @@ export default {
           includePages: true,
           includeVersionedDocs: false,
           relativePaths: false,
-          remarkPlugins: [[remarkAgentDocs, { url }]],
+          // The plugin package types its options as unknown; this function uses { url }.
+          remarkPlugins: [[
+            remarkAgentDocs as Extract<LLMsTXTPluginInput, (...args: any[]) => any>,
+            { url },
+          ]],
         },
         depth: 3,
         onRouteError: 'throw',
