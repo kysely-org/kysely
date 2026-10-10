@@ -742,52 +742,17 @@ describe('custom dialect: controlled transaction', () => {
 })
 
 describe('controlled transaction', () => {
-  it('should release the connection if the transaction fails to begin', async () => {
-    const driver: Driver = new DummyDriver()
-    const beginError = new Error('begin failed')
-    sinon.stub(driver, 'beginTransaction').rejects(beginError)
-    const acquireSpy = sinon.spy(driver, 'acquireConnection')
-    const releaseSpy = sinon.spy(driver, 'releaseConnection')
-    const db = new Kysely<Database>({
-      dialect: {
-        createAdapter: () => new PostgresAdapter(),
-        createDriver: () => driver,
-        createIntrospector: (db) => new PostgresIntrospector(db),
-        createQueryCompiler: () => new PostgresQueryCompiler(),
-      },
-    })
-
-    try {
-      const error = await db
-        .startTransaction()
-        .execute()
-        .catch((error: unknown) => error)
-
-      expect(error).to.equal(beginError)
-      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
-      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-      expect(releaseSpy.firstCall.args[0]).to.equal(
-        await acquireSpy.firstCall.returnValue,
-      )
-    } finally {
-      await db.destroy()
-    }
-  })
-})
-
-describe('controlled transaction state', () => {
   const sandbox = sinon.createSandbox()
+  let driver: Driver
   let db: Kysely<Database>
-  let trx: ControlledTransaction<Database>
-  let derivedTrx: ControlledTransaction<Database>
-  let savepointTrx: ControlledTransaction<Database, ['point']>
+  let acquireStub: sinon.SinonStub
   let querySpy: sinon.SinonSpy
   let releaseSpy: sinon.SinonSpy
 
   beforeEach(async () => {
-    const driver: Driver = new DummyDriver()
+    driver = new DummyDriver()
     const connection = await driver.acquireConnection()
-    sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    acquireStub = sandbox.stub(driver, 'acquireConnection').resolves(connection)
     querySpy = sandbox.spy(connection, 'executeQuery')
     releaseSpy = sandbox.spy(driver, 'releaseConnection')
     db = new Kysely<Database>({
@@ -798,9 +763,6 @@ describe('controlled transaction state', () => {
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
     })
-    trx = await db.startTransaction().execute()
-    derivedTrx = trx.withSchema('public')
-    savepointTrx = await trx.savepoint('point').execute()
   })
 
   afterEach(async () => {
@@ -808,7 +770,28 @@ describe('controlled transaction state', () => {
     await db.destroy()
   })
 
+  it('should release the connection if the transaction fails to begin', async () => {
+    const beginError = new Error('begin failed')
+    sandbox.stub(driver, 'beginTransaction').rejects(beginError)
+
+    const error = await db
+      .startTransaction()
+      .execute()
+      .catch((error: unknown) => error)
+
+    expect(error).to.equal(beginError)
+    expect(acquireStub.calledOnce, 'connection acquired once').to.be.true
+    expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+    expect(releaseSpy.firstCall.args[0]).to.equal(
+      await acquireStub.firstCall.returnValue,
+    )
+  })
+
   it('should invalidate derived handles when the original transaction commits', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savepointTrx = await trx.savepoint('point').execute()
+
     await trx.commit().execute()
 
     expect(derivedTrx.isCommitted).to.be.true
@@ -832,6 +815,10 @@ describe('controlled transaction state', () => {
   })
 
   it('should invalidate the original transaction when a derived handle commits', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savepointTrx = await trx.savepoint('point').execute()
+
     await derivedTrx.commit().execute()
 
     expect(trx.isCommitted).to.be.true
@@ -851,6 +838,10 @@ describe('controlled transaction state', () => {
   })
 
   it('should invalidate derived handles when the original transaction rolls back', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savepointTrx = await trx.savepoint('point').execute()
+
     await trx.rollback().execute()
 
     expect(derivedTrx.isCommitted).to.be.false
@@ -874,6 +865,10 @@ describe('controlled transaction state', () => {
   })
 
   it('should invalidate the original transaction when a derived handle rolls back', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savepointTrx = await trx.savepoint('point').execute()
+
     await derivedTrx.rollback().execute()
 
     expect(trx.isCommitted).to.be.false
