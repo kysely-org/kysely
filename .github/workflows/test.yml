@@ -68,7 +68,7 @@ jobs:
         if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
         env:
           SERVICES: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
-        run: docker compose up -d $SERVICES
+        run: bash scripts/start-test-databases.sh $SERVICES
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -118,7 +118,7 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        run: docker compose up -d
+        run: bash scripts/start-test-databases.sh
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -171,7 +171,7 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        run: docker compose up -d
+        run: bash scripts/start-test-databases.sh
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -263,7 +263,7 @@ jobs:
         run: pnpm install
 
       - name: spin up databases
-        run: docker compose up -d
+        run: bash scripts/start-test-databases.sh
 
       - name: run cloudflare workers test
         run: pnpm test:cloudflare-workers
