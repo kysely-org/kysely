@@ -697,10 +697,10 @@ describe('custom dialect: controlled transaction', () => {
   let releaseSpy: sinon.SinonSpy
 
   beforeEach(async () => {
-    const driver: Driver = new DummyDriver()
-    driver.savepoint = undefined
-    driver.rollbackToSavepoint = undefined
-    driver.releaseSavepoint = undefined
+    const driver = new DummyDriver()
+    sandbox.stub(driver, 'savepoint').value(undefined)
+    sandbox.stub(driver, 'rollbackToSavepoint').value(undefined)
+    sandbox.stub(driver, 'releaseSavepoint').value(undefined)
     const connection = await driver.acquireConnection()
     sandbox.stub(driver, 'acquireConnection').resolves(connection)
     querySpy = sandbox.spy(connection, 'executeQuery')
