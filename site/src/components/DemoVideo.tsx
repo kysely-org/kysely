@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useColorMode } from '@docusaurus/theme-common'
 import useIsBrowser from '@docusaurus/useIsBrowser'
 import clsx from 'clsx'
@@ -24,8 +24,27 @@ export function DemoVideo() {
   const isBrowser = useIsBrowser()
   const { colorMode } = useColorMode()
   const videoRef = useRef<HTMLVideoElement>(null)
+  // Docusaurus keeps the video client-only until hydration has finished.
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window === 'undefined'
+      ? true
+      : window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+  const [playbackOverride, setPlaybackOverride] = useState<boolean | null>(null)
 
   const sources = SOURCES[colorMode] ?? SOURCES.dark
+  const shouldPlay = playbackOverride ?? !reducedMotion
+
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updatePreference = () => {
+      setReducedMotion(preference.matches)
+      setPlaybackOverride(null)
+    }
+
+    preference.addEventListener('change', updatePreference)
+    return () => preference.removeEventListener('change', updatePreference)
+  }, [])
 
   useEffect(() => {
     const { current: video } = videoRef
@@ -34,19 +53,22 @@ export function DemoVideo() {
       return
     }
 
-    video.load()
-
-    const handleCanPlay = () => {
-      video.play().catch(() => {})
-      video.removeEventListener('canplay', handleCanPlay)
+    if (!shouldPlay) {
+      video.pause()
+      return
     }
 
-    video.addEventListener('canplay', handleCanPlay)
+    let cancelled = false
+    video.play().catch(() => {
+      if (!cancelled) {
+        setPlaybackOverride(false)
+      }
+    })
 
     return () => {
-      video.removeEventListener('canplay', handleCanPlay)
+      cancelled = true
     }
-  }, [isBrowser, colorMode])
+  }, [isBrowser, colorMode, shouldPlay])
 
   return (
     <figure className={styles.frame}>
@@ -65,6 +87,7 @@ export function DemoVideo() {
         {isBrowser && (
           <video
             key={colorMode}
+            aria-label="Kysely autocomplete demonstration"
             className={styles.video}
             height="592"
             loop
@@ -78,6 +101,25 @@ export function DemoVideo() {
             <source src={sources.webm} type="video/webm" />
             <source src={sources.mp4} type="video/mp4" />
           </video>
+        )}
+        {isBrowser && (
+          <button
+            aria-label={shouldPlay ? 'Pause demo video' : 'Play demo video'}
+            className={styles.playbackButton}
+            onClick={() => setPlaybackOverride(!shouldPlay)}
+            type="button"
+          >
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              {shouldPlay ? (
+                <>
+                  <rect x="5" y="4" width="5" height="16" rx="1" />
+                  <rect x="14" y="4" width="5" height="16" rx="1" />
+                </>
+              ) : (
+                <path d="M7 4.5 20 12 7 19.5z" />
+              )}
+            </svg>
+          </button>
         )}
       </div>
     </figure>
