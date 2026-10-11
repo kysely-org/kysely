@@ -64,6 +64,7 @@ import {
   type DropColumnBuilderCallback,
 } from './drop-column-builder.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { CreateTableBuilder } from './create-table-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -185,7 +186,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   }
 
   /**
-   * See {@link CreateTableBuilder.addUniqueConstraint}
+   * See {@link CreateTableBuilder.prototype.addUniqueConstraint}
    */
   addUniqueConstraint(
     constraintName: string,
@@ -216,7 +217,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   }
 
   /**
-   * See {@link CreateTableBuilder.addCheckConstraint}
+   * See {@link CreateTableBuilder.prototype.addCheckConstraint}
    */
   addCheckConstraint(
     constraintName: string,
@@ -243,9 +244,9 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   }
 
   /**
-   * See {@link CreateTableBuilder.addForeignKeyConstraint}
+   * See {@link CreateTableBuilder.prototype.addForeignKeyConstraint}
    *
-   * Unlike {@link CreateTableBuilder.addForeignKeyConstraint} this method returns
+   * Unlike {@link CreateTableBuilder.prototype.addForeignKeyConstraint} this method returns
    * the constraint builder and doesn't take a callback as the last argument. This
    * is because you can only add one column per `ALTER TABLE` query.
    */
@@ -274,7 +275,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   }
 
   /**
-   * See {@link CreateTableBuilder.addPrimaryKeyConstraint}
+   * See {@link CreateTableBuilder.prototype.addPrimaryKeyConstraint}
    */
   addPrimaryKeyConstraint(
     constraintName: string,
@@ -375,7 +376,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   /**
    * Calls the given function passing `this` as the only argument.
    *
-   * See {@link CreateTableBuilder.$call}
+   * See {@link CreateTableBuilder.prototype.$call}
    */
   $call<T>(func: (qb: this) => T): T {
     return func(this)
@@ -399,7 +400,7 @@ export interface ColumnAlteringInterface {
   renameColumn(column: string, newColumn: string): ColumnAlteringInterface
 
   /**
-   * See {@link CreateTableBuilder.addColumn}
+   * See {@link CreateTableBuilder.prototype.addColumn}
    */
   addColumn(
     columnName: string,
