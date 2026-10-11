@@ -60,7 +60,7 @@ To compile a query, simply call `.compile()` at the end of the query building ch
 const compiledQuery = db
   .selectFrom('person')
   .select('first_name')
-  .where('id', '=', id)
+  .where('id', '=', 1)
   .compile()
 
 console.log(compiledQuery) // { sql: 'select "first_name" from "person" where "id" = $1', parameters: [1], query: { ... } }
@@ -78,7 +78,7 @@ Raw queries can be compiled as well:
 ```ts
 import { Selectable, sql } from 'kysely'
 
-const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${id}`.compile(db)
+const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${1}`.compile(db)
 
 console.log(compiledQuery) // { sql: 'select * from person where id = $1', parameters: [1], query: { ... } }
 ```
@@ -95,7 +95,7 @@ import { InferResult } from 'kysely'
 const query = db
   .selectFrom('person')
   .select('first_name')
-  .where('id', '=', id)
+  .where('id', '=', 1)
 
 type QueryReturnType = InferResult<typeof query> // { first_name: string }[]
 
@@ -113,7 +113,7 @@ via "hot" Kysely instances (real drivers in use):
 const compiledQuery = db
   .selectFrom('person')
   .select('first_name')
-  .where('id', '=', id)
+  .where('id', '=', 1)
   .compile()
 
 const results = await db.executeQuery(compiledQuery)
