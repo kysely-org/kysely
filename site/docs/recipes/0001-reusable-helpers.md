@@ -83,6 +83,28 @@ The helper functions should then use the inputs to create an output that's also 
 
 See [this recipe](https://kysely.dev/docs/recipes/expressions) to learn more about expressions.
 
+## Common pitfalls
+
+Helper signatures are part of the type-safety boundary. A couple of small-looking type choices can make a reusable helper much less useful:
+
+- Don't replace an `Expression<T>` input with a plain `T` value. For example, `upper` should accept `Expression<string>` so callers can pass a reference, a value, or another expression. A `string` parameter would only accept values and would prevent the helper from composing with the query builder.
+- Be careful with `string` and `string[]` when a helper accepts column names or other typed keys. Those types widen the caller's literals and lose the information Kysely uses to check them. See the TypeScript handbook's [literal types](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types) for background.
+- Prefer a `readonly` tuple-friendly, literal-preserving signature for lists supplied by callers. For example, `['first_name'] as const` has the type `readonly ['first_name']`, not `string[]`. A mutable array parameter rejects that value, while a `const` type parameter preserves its literal types:
+
+  ```ts
+  // Too wide: literals are widened and readonly tuples are rejected.
+  function selectColumnsTooWide(columns: string[]) {
+    return columns
+  }
+
+  // In a real helper, replace `string` with the appropriate Kysely type.
+  function selectColumns<const Columns extends readonly string[]>(columns: Columns) {
+    return columns
+  }
+  ```
+
+  See the TypeScript handbook's sections on [readonly arrays and tuples](https://www.typescriptlang.org/docs/handbook/2/objects.html#the-readonly-modifier) and [const type parameters](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#const-type-parameters) for more detail.
+
 So we've learned that everything's an expression and that expressions are composable. Let's put this idea to use:
 
 ```ts
