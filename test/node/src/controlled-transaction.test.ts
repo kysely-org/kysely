@@ -691,13 +691,14 @@ for (const dialect of DIALECTS) {
 
 describe('custom dialect: controlled transaction', () => {
   const sandbox = sinon.createSandbox()
+  let driver: DummyDriver
   let db: Kysely<Database>
   let trx: ControlledTransaction<Database>
   let querySpy: sinon.SinonSpy
   let releaseSpy: sinon.SinonSpy
 
   beforeEach(async () => {
-    const driver = new DummyDriver()
+    driver = new DummyDriver()
     sandbox.stub(driver, 'savepoint').value(undefined)
     sandbox.stub(driver, 'rollbackToSavepoint').value(undefined)
     sandbox.stub(driver, 'releaseSavepoint').value(undefined)
@@ -813,6 +814,22 @@ describe('custom dialect: controlled transaction', () => {
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
     expect(() => trx.commit()).to.throw('Transaction is already rolled back')
+    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    expect(querySpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should release the connection when rolling back fails', async () => {
+    const rollbackError = new Error('rollback failed')
+    sandbox.stub(driver, 'rollbackTransaction').rejects(rollbackError)
+
+    await expect(trx.rollback().execute()).to.be.rejectedWith(rollbackError)
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
     expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
