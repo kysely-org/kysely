@@ -1074,8 +1074,7 @@ export class ControlledTransaction<
     assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async (): Promise<void> => {
-      // A failed rollback cannot be retried meaningfully (e.g. the connection is
-      // gone), so release the connection like callback transactions do.
+      // A failed rollback can't be meaningfully retried (e.g. dead connection).
       try {
         await this.#props.driver.rollbackTransaction(
           this.#props.connection.connection,
