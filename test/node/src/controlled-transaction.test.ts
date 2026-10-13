@@ -11,6 +11,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  SingleConnectionProvider,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -900,7 +901,10 @@ describe('controlled transaction', () => {
       const otherCompletion =
         trx[command === 'commit' ? 'rollback' : 'commit']()
       await completion.execute()
-      const provideSpy = sandbox.spy(trx.getExecutor(), 'provideConnection')
+      const provideSpy = sandbox.spy(
+        SingleConnectionProvider.prototype,
+        'provideConnection',
+      )
       const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
 
       await expect(completion.execute()).to.be.rejectedWith(message)

@@ -1037,8 +1037,6 @@ export class ControlledTransaction<
    */
   commit(): Command<void> {
     return new Command(async (): Promise<void> => {
-      assertNotCommittedOrRolledBack(this.#props.state)
-
       await this.#props.executor.provideConnection(async (connection) => {
         assertNotCommittedOrRolledBack(this.#props.state)
 
@@ -1082,8 +1080,6 @@ export class ControlledTransaction<
    */
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
-      assertNotCommittedOrRolledBack(this.#props.state)
-
       await this.#props.executor.provideConnection(async (connection) => {
         assertNotCommittedOrRolledBack(this.#props.state)
 
