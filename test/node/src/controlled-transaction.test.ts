@@ -880,6 +880,41 @@ describe('controlled transaction', () => {
   })
 
   for (const command of ['commit', 'rollback'] as const) {
+    it(`should reject saved commands before providing a connection after ${command}`, async () => {
+      const commandSpy = sandbox.spy(driver, `${command}Transaction`)
+      const otherCommandSpy = sandbox.spy(
+        driver,
+        command === 'commit' ? 'rollbackTransaction' : 'commitTransaction',
+      )
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const trx = await db.startTransaction().execute()
+      const completion = trx[command]()
+      const otherCompletion =
+        trx[command === 'commit' ? 'rollback' : 'commit']()
+      await completion.execute()
+      const provideSpy = sandbox.spy(trx.getExecutor(), 'provideConnection')
+      const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
+
+      await expect(completion.execute()).to.be.rejectedWith(message)
+      await expect(otherCompletion.execute()).to.be.rejectedWith(message)
+
+      expect(provideSpy.notCalled).to.be.true
+      expect(commandSpy.calledOnce).to.be.true
+      expect(otherCommandSpy.notCalled).to.be.true
+      expect(releaseSpy.calledOnce).to.be.true
+    })
+
+    it(`should reject connection consumers immediately after ${command}`, async () => {
+      const trx = await db.startTransaction().execute()
+      await trx[command]().execute()
+      const consumer = sandbox.spy(async () => undefined)
+
+      expect(() => trx.getExecutor().provideConnection(consumer)).to.throw(
+        `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`,
+      )
+      expect(consumer.notCalled).to.be.true
+    })
+
     for (const fails of [false, true]) {
       it(`should wait for an ongoing query to ${fails ? 'fail' : 'finish'} before ${command}`, async () => {
         const queryStarted = new Deferred<void>()
@@ -922,6 +957,7 @@ describe('controlled transaction', () => {
         })
       const querySpy = sandbox.spy(connection, 'executeQuery')
       const streamSpy = sandbox.spy(connection, 'streamQuery')
+      const consumer = sandbox.spy(async () => undefined)
       const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const trx = await db.startTransaction().execute()
       const otherCommand = trx[command === 'commit' ? 'rollback' : 'commit']()
@@ -940,6 +976,7 @@ describe('controlled transaction', () => {
           .execute({ signal: new AbortController().signal }),
         trx.selectFrom('person').selectAll().stream().next(),
         otherCommand.execute(),
+        trx.getExecutor().provideConnection(consumer),
       ])
       commandFinished.resolve()
       await completion
@@ -954,6 +991,7 @@ describe('controlled transaction', () => {
       }
       expect(querySpy.notCalled).to.be.true
       expect(streamSpy.notCalled).to.be.true
+      expect(consumer.notCalled).to.be.true
       expect(otherCommandSpy.notCalled).to.be.true
       expect(commandStub.calledOnce).to.be.true
       expect(releaseSpy.calledOnce).to.be.true
