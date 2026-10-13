@@ -1036,10 +1036,10 @@ export class ControlledTransaction<
    * ```
    */
   commit(): Command<void> {
-    return new Command(() => {
+    return new Command(async (): Promise<void> => {
       assertNotCommittedOrRolledBack(this.#props.state)
 
-      return this.#props.executor.provideConnection(async (connection) => {
+      await this.#props.executor.provideConnection(async (connection) => {
         assertNotCommittedOrRolledBack(this.#props.state)
 
         await this.#props.driver.commitTransaction(connection)
@@ -1081,10 +1081,10 @@ export class ControlledTransaction<
    * ```
    */
   rollback(): Command<void> {
-    return new Command(() => {
+    return new Command(async (): Promise<void> => {
       assertNotCommittedOrRolledBack(this.#props.state)
 
-      return this.#props.executor.provideConnection(async (connection) => {
+      await this.#props.executor.provideConnection(async (connection) => {
         assertNotCommittedOrRolledBack(this.#props.state)
 
         // A failed rollback can't be meaningfully retried (e.g. dead connection).
