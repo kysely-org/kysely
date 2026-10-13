@@ -1036,8 +1036,6 @@ export class ControlledTransaction<
    * ```
    */
   commit(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(() => {
       assertNotCommittedOrRolledBack(this.#props.state)
 
@@ -1083,8 +1081,6 @@ export class ControlledTransaction<
    * ```
    */
   rollback(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(() => {
       assertNotCommittedOrRolledBack(this.#props.state)
 

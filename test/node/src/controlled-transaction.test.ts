@@ -760,10 +760,10 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
-    expect(() => derivedTrx.commit()).to.throw(
+    await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
       'Transaction is already committed',
     )
-    expect(() => derivedTrx.rollback()).to.throw(
+    await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
       'Transaction is already committed',
     )
     expect(querySpy.notCalled).to.be.true
@@ -780,8 +780,12 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
-    expect(() => trx.commit()).to.throw('Transaction is already committed')
-    expect(() => trx.rollback()).to.throw('Transaction is already committed')
+    await expect(trx.commit().execute()).to.be.rejectedWith(
+      'Transaction is already committed',
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      'Transaction is already committed',
+    )
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
@@ -796,10 +800,10 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-    expect(() => derivedTrx.commit()).to.throw(
+    await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
       'Transaction is already rolled back',
     )
-    expect(() => derivedTrx.rollback()).to.throw(
+    await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
       'Transaction is already rolled back',
     )
     expect(querySpy.notCalled).to.be.true
@@ -816,8 +820,12 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-    expect(() => trx.commit()).to.throw('Transaction is already rolled back')
-    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    await expect(trx.commit().execute()).to.be.rejectedWith(
+      'Transaction is already rolled back',
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      'Transaction is already rolled back',
+    )
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
