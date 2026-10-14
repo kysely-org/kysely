@@ -1046,6 +1046,9 @@ export class ControlledTransaction<
   /**
    * Rolls back the transaction.
    *
+   * The connection is released even if the rollback fails, so the transaction
+   * cannot be used afterwards in either case.
+   *
    * See {@link commit} and {@link rollbackToSavepoint}.
    *
    * ### Examples
@@ -1071,11 +1074,15 @@ export class ControlledTransaction<
     assertNotCommittedOrRolledBack(this.#props.state)
 
     return new Command(async (): Promise<void> => {
-      await this.#props.driver.rollbackTransaction(
-        this.#props.connection.connection,
-      )
-      this.#props.state.isRolledBack = true
-      this.#props.connection.release()
+      // A failed rollback can't be meaningfully retried (e.g. dead connection).
+      try {
+        await this.#props.driver.rollbackTransaction(
+          this.#props.connection.connection,
+        )
+      } finally {
+        this.#props.state.isRolledBack = true
+        this.#props.connection.release()
+      }
     })
   }
 
