@@ -1,6 +1,6 @@
 import type { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
-import type { ShallowRecord } from '../util/type-utils.js'
+import type { ShadowedTable } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
@@ -25,7 +25,7 @@ export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
     // updateTable('person as p') --> UpdateQueryBuilder<DB & { p: Person }, 'p', 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? UpdateQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, A, UpdateResult>
+      ? UpdateQueryBuilder<ShadowedTable<DB, A, DB[T]>, A, A, UpdateResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? UpdateQueryBuilder<

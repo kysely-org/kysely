@@ -220,6 +220,10 @@ export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
   [P in K]: T
 }>
 
+export type ShadowedTable<DB, A extends keyof any, R> = DrainOuterGeneric<{
+  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+}>
+
 /**
  * Dehydrates any root properties of an object that are not valid JSON types.
  *
