@@ -1097,6 +1097,10 @@ export class ControlledTransaction<
   /**
    * Creates a savepoint with a given name.
    *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before creating a savepoint.
+   *
    * See {@link rollbackToSavepoint} and {@link releaseSavepoint}.
    *
    * For a type-safe experience, you should use the returned instance from now on.
@@ -1126,15 +1130,15 @@ export class ControlledTransaction<
   savepoint<SN extends string>(
     savepointName: SN extends S ? never : SN,
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(
       async (): Promise<ControlledTransaction<DB, [...S, SN]>> => {
-        await this.#props.driver.savepoint?.(
-          this.#props.connection.connection,
-          savepointName,
-          this.#compileQuery,
-        )
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.savepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
         return new ControlledTransaction({ ...this.#props })
       },
@@ -1143,6 +1147,10 @@ export class ControlledTransaction<
 
   /**
    * Rolls back to a savepoint with a given name.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before rolling back to a savepoint.
    *
    * See {@link savepoint} and {@link releaseSavepoint}.
    *
@@ -1176,17 +1184,17 @@ export class ControlledTransaction<
   ): RollbackToSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(
       async (): Promise<
         ControlledTransaction<DB, RollbackToSavepoint<S, SN>>
       > => {
-        await this.#props.driver.rollbackToSavepoint?.(
-          this.#props.connection.connection,
-          savepointName,
-          this.#compileQuery,
-        )
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.rollbackToSavepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
         return new ControlledTransaction({ ...this.#props })
       },
@@ -1195,6 +1203,10 @@ export class ControlledTransaction<
 
   /**
    * Releases a savepoint with a given name.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before releasing a savepoint.
    *
    * See {@link savepoint} and {@link rollbackToSavepoint}.
    *
@@ -1233,15 +1245,15 @@ export class ControlledTransaction<
   ): ReleaseSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(
       async (): Promise<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> => {
-        await this.#props.driver.releaseSavepoint?.(
-          this.#props.connection.connection,
-          savepointName,
-          this.#compileQuery,
-        )
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.releaseSavepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
         return new ControlledTransaction({ ...this.#props })
       },
