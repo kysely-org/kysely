@@ -1392,12 +1392,12 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     }, options)
   }
 
-  async executeQuery<R>(
+  executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return await this.#executor
+    return this.#executor
       .withConnectionProvider(this)
       .executeQuery(compiledQuery, options)
   }
