@@ -14,5 +14,7 @@ for attempt in {1..8}; do
     exit 1
   fi
 
-  sleep $((attempt * 4 + RANDOM % 8))
+  delay=$((attempt * 4 + RANDOM % 8))
+  printf 'Registry rate limit; retrying database startup (%d/8) in %ds.\n' "$((attempt + 1))" "$delay" >&2
+  sleep "$delay"
 done

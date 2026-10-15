@@ -66,9 +66,9 @@ jobs:
 
       - name: spin up database
         if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
-        env:
-          SERVICES: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
-        run: bash scripts/start-test-databases.sh $SERVICES
+        uses: ./.github/actions/start-test-databases
+        with:
+          services: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -118,7 +118,7 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        run: bash scripts/start-test-databases.sh
+        uses: ./.github/actions/start-test-databases
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -171,7 +171,7 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        run: bash scripts/start-test-databases.sh
+        uses: ./.github/actions/start-test-databases
 
       - name: install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
@@ -263,7 +263,7 @@ jobs:
         run: pnpm install
 
       - name: spin up databases
-        run: bash scripts/start-test-databases.sh
+        uses: ./.github/actions/start-test-databases
 
       - name: run cloudflare workers test
         run: pnpm test:cloudflare-workers

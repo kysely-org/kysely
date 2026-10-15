@@ -34,7 +34,7 @@ services:
       - ./test/scripts/mysql-init.sql:/data/application/init.sql
     command: --init-file /data/application/init.sql
   postgres:
-    image: 'public.ecr.aws/docker/library/postgres:latest'
+    image: 'postgres:latest'
     environment:
       POSTGRES_DB: kysely_test
       POSTGRES_PASSWORD: kysely

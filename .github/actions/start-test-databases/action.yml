@@ -1,0 +1,30 @@
+name: Start test databases
+description: Configure cached image pulls and start the requested test databases.
+
+inputs:
+  services:
+    description: Space-separated Compose services; defaults to all services.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: use Docker Hub cache
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
+      with:
+        # ECR Public also limits anonymous downloads by source IP. Use Google's
+        # cache, with Docker Hub as the fallback when an image is not cached.
+        # https://docs.cloud.google.com/artifact-registry/docs/pull-cached-dockerhub-images
+        daemon-config: |
+          {
+            "registry-mirrors": ["https://mirror.gcr.io"]
+          }
+
+    - name: spin up databases
+      shell: bash
+      env:
+        COMPOSE_SERVICES: ${{ inputs.services }}
+      run: |
+        read -r -a services <<< "$COMPOSE_SERVICES"
+        bash scripts/start-test-databases.sh "${services[@]}"
