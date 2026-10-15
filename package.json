@@ -112,7 +112,7 @@
     "mysql2": "3.24.4",
     "pathe": "catalog:node",
     "pg": "8.23.0",
-    "pg-cursor": "2.22.0",
+    "pg-cursor": "2.22.1",
     "playwright": "1.64.1",
     "prettier": "3.9.10",
     "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
