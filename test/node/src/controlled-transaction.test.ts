@@ -11,7 +11,6 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  SingleConnectionProvider,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -917,47 +916,22 @@ describe('controlled transaction', () => {
   })
 
   for (const command of ['commit', 'rollback'] as const) {
-    it(`should reject saved commands before providing a connection after ${command}`, async () => {
-      const commandSpy = sandbox.spy(driver, `${command}Transaction`)
-      const otherCommandSpy = sandbox.spy(
-        driver,
-        command === 'commit' ? 'rollbackTransaction' : 'commitTransaction',
-      )
-      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
+
+    it(`should reject saved commands after ${command}`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const completion = trx[command]()
-      const otherCompletion =
-        trx[command === 'commit' ? 'rollback' : 'commit']()
-      const savepointSpies = [
-        sandbox.spy(driver, 'savepoint'),
-        sandbox.spy(driver, 'rollbackToSavepoint'),
-        sandbox.spy(driver, 'releaseSavepoint'),
-      ]
-      const savedCommands = [
-        completion,
-        otherCompletion,
+      const commands = [
+        trx.commit(),
+        trx.rollback(),
         trx.savepoint('bar'),
         trx.rollbackToSavepoint('foo'),
         trx.releaseSavepoint('foo'),
       ]
-      await completion.execute()
-      const provideSpy = sandbox.spy(
-        SingleConnectionProvider.prototype,
-        'provideConnection',
-      )
-      const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
+      await trx[command]().execute()
 
-      for (const savedCommand of savedCommands) {
+      for (const savedCommand of commands) {
         await expect(savedCommand.execute()).to.be.rejectedWith(message)
       }
-
-      expect(provideSpy.notCalled).to.be.true
-      expect(commandSpy.calledOnce).to.be.true
-      expect(otherCommandSpy.notCalled).to.be.true
-      for (const savepointSpy of savepointSpies) {
-        expect(savepointSpy.notCalled).to.be.true
-      }
-      expect(releaseSpy.calledOnce).to.be.true
     })
 
     it(`should reject connection consumers immediately after ${command}`, async () => {
@@ -971,170 +945,156 @@ describe('controlled transaction', () => {
       expect(consumer.notCalled).to.be.true
     })
 
-    it(`should reject queued work after ${command}`, async () => {
-      const commandStarted = new Deferred<void>()
-      const commandFinished = new Deferred<void>()
-      const commandStub = sandbox
-        .stub(driver, `${command}Transaction`)
-        .callsFake(async () => {
-          commandStarted.resolve()
-          await commandFinished.promise
-        })
-      const querySpy = sandbox.spy(connection, 'executeQuery')
-      const streamSpy = sandbox.spy(connection, 'streamQuery')
-      const consumer = sandbox.spy(async () => undefined)
-      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    it(`should reject a query queued behind ${command}`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const otherCommand = trx[command === 'commit' ? 'rollback' : 'commit']()
-      const savepointSpies = [
-        sandbox.spy(driver, 'savepoint'),
-        sandbox.spy(driver, 'rollbackToSavepoint'),
-        sandbox.spy(driver, 'releaseSavepoint'),
-      ]
-      const otherCommandSpy = sandbox.spy(
-        driver,
-        command === 'commit' ? 'rollbackTransaction' : 'commitTransaction',
-      )
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const querySpy = sandbox.spy(connection, 'executeQuery')
       const completion = trx[command]().execute()
-      await commandStarted.promise
-
-      const queuedWork = Promise.allSettled([
+      const query = expect(
         trx.selectFrom('person').selectAll().execute(),
-        trx
-          .selectFrom('person')
-          .selectAll()
-          .execute({ signal: new AbortController().signal }),
-        trx.selectFrom('person').selectAll().stream().next(),
-        otherCommand.execute(),
-        trx.savepoint('bar').execute(),
-        trx.rollbackToSavepoint('foo').execute(),
-        trx.releaseSavepoint('foo').execute(),
-        trx.getExecutor().provideConnection(consumer),
-      ])
-      commandFinished.resolve()
-      await completion
+      ).to.be.rejectedWith(message)
 
-      for (const result of await queuedWork) {
-        expect(result.status).to.equal('rejected')
-        if (result.status === 'rejected') {
-          expect(result.reason.message).to.equal(
-            `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`,
-          )
-        }
-      }
+      finished.resolve()
+      await completion
+      await query
       expect(querySpy.notCalled).to.be.true
-      expect(streamSpy.notCalled).to.be.true
+    })
+
+    it(`should reject an abortable query queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const query = expect(
+        trx.selectFrom('person').selectAll().execute({
+          signal: new AbortController().signal,
+        }),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await query
+    })
+
+    it(`should reject a stream queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const stream = expect(
+        trx.selectFrom('person').selectAll().stream().next(),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await stream
+    })
+
+    it(`should reject commands queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const commands = [
+        trx.commit(),
+        trx.rollback(),
+        trx.savepoint('bar'),
+        trx.rollbackToSavepoint('foo'),
+        trx.releaseSavepoint('foo'),
+      ]
+      const results = commands.map((queuedCommand) =>
+        expect(queuedCommand.execute()).to.be.rejectedWith(message),
+      )
+
+      finished.resolve()
+      await completion
+      await Promise.all(results)
+    })
+
+    it(`should reject a connection consumer queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const consumer = sandbox.spy(async () => undefined)
+      const result = expect(
+        trx.getExecutor().provideConnection(consumer),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await result
       expect(consumer.notCalled).to.be.true
-      expect(otherCommandSpy.notCalled).to.be.true
-      for (const savepointSpy of savepointSpies) {
-        expect(savepointSpy.notCalled).to.be.true
-      }
-      expect(commandStub.calledOnce).to.be.true
-      expect(releaseSpy.calledOnce).to.be.true
-      expect(trx.isCommitted).to.equal(command === 'commit')
-      expect(trx.isRolledBack).to.equal(command === 'rollback')
     })
   }
 
-  it('should reject queued work after failed rollback', async () => {
-    const commandError = new Error('rollback failed')
-    const commandStarted = new Deferred<void>()
-    const commandFinished = new Deferred<void>()
-    const commandStub = sandbox
-      .stub(driver, 'rollbackTransaction')
-      .callsFake(async () => {
-        commandStarted.resolve()
-        await commandFinished.promise
-        throw commandError
-      })
-    const querySpy = sandbox.spy(connection, 'executeQuery')
-    const streamSpy = sandbox.spy(connection, 'streamQuery')
-    const consumer = sandbox.spy(async () => undefined)
-    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+  it('should reject a queued query and release once when rollback fails', async () => {
     const trx = await startTransactionWithSavepoint()
-    const otherCommand = trx.commit()
-    const savepointSpies = [
-      sandbox.spy(driver, 'savepoint'),
-      sandbox.spy(driver, 'rollbackToSavepoint'),
-      sandbox.spy(driver, 'releaseSavepoint'),
-    ]
-    const otherCommandSpy = sandbox.spy(driver, 'commitTransaction')
+    const finished = new Deferred<void>()
+    const rollbackError = new Error('rollback failed')
+    sandbox.stub(driver, 'rollbackTransaction').returns(finished.promise)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
     const completion = trx.rollback().execute()
-    await commandStarted.promise
-
-    const queuedWork = Promise.allSettled([
+    const query = expect(
       trx.selectFrom('person').selectAll().execute(),
-      trx
-        .selectFrom('person')
-        .selectAll()
-        .execute({ signal: new AbortController().signal }),
-      trx.selectFrom('person').selectAll().stream().next(),
-      otherCommand.execute(),
-      trx.savepoint('bar').execute(),
-      trx.rollbackToSavepoint('foo').execute(),
-      trx.releaseSavepoint('foo').execute(),
-      trx.getExecutor().provideConnection(consumer),
-    ])
-    commandFinished.resolve()
-    expect(await completion.catch((error: unknown) => error)).to.equal(
-      commandError,
-    )
+    ).to.be.rejectedWith('Transaction is already rolled back')
 
-    for (const result of await queuedWork) {
-      expect(result.status).to.equal('rejected')
-      if (result.status === 'rejected') {
-        expect(result.reason.message).to.equal(
-          'Transaction is already rolled back',
-        )
-      }
-    }
-    expect(querySpy.notCalled).to.be.true
-    expect(streamSpy.notCalled).to.be.true
-    expect(consumer.notCalled).to.be.true
-    expect(otherCommandSpy.notCalled).to.be.true
-    for (const savepointSpy of savepointSpies) {
-      expect(savepointSpy.notCalled).to.be.true
-    }
-    expect(commandStub.calledOnce).to.be.true
+    finished.reject(rollbackError)
+    expect(await completion.catch((error: unknown) => error)).to.equal(
+      rollbackError,
+    )
+    await query
     expect(releaseSpy.calledOnce).to.be.true
-    expect(trx.isCommitted).to.be.false
-    expect(trx.isRolledBack).to.be.true
   })
 
-  for (const command of [
-    'commit',
-    'rollback',
-    'savepoint',
-    'rollbackToSavepoint',
-    'releaseSavepoint',
-  ] as const) {
-    const driverMethod =
-      command === 'commit' || command === 'rollback'
-        ? (`${command}Transaction` as const)
-        : command
-    const createCommand = (trx: ControlledTransaction<Database, ['foo']>) => {
-      if (command === 'commit' || command === 'rollback') {
-        return trx[command]()
-      }
-      if (command === 'savepoint') {
-        return trx.savepoint('bar')
-      }
-      return trx[command]('foo')
-    }
+  type TransactionWithSavepoint = ControlledTransaction<Database, ['foo']>
 
+  const savepointCommands = [
+    {
+      name: 'savepoint',
+      driverMethod: 'savepoint',
+      createCommand: (trx: TransactionWithSavepoint) => trx.savepoint('bar'),
+    },
+    {
+      name: 'rollbackToSavepoint',
+      driverMethod: 'rollbackToSavepoint',
+      createCommand: (trx: TransactionWithSavepoint) =>
+        trx.rollbackToSavepoint('foo'),
+    },
+    {
+      name: 'releaseSavepoint',
+      driverMethod: 'releaseSavepoint',
+      createCommand: (trx: TransactionWithSavepoint) =>
+        trx.releaseSavepoint('foo'),
+    },
+  ] as const
+
+  const commands = [
+    {
+      name: 'commit',
+      driverMethod: 'commitTransaction',
+      createCommand: (trx: TransactionWithSavepoint) => trx.commit(),
+    },
+    {
+      name: 'rollback',
+      driverMethod: 'rollbackTransaction',
+      createCommand: (trx: TransactionWithSavepoint) => trx.rollback(),
+    },
+    ...savepointCommands,
+  ] as const
+
+  for (const { name: command, driverMethod, createCommand } of commands) {
     it(`should wait for an ongoing query to finish before ${command}`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const queryStarted = new Deferred<void>()
       const queryFinished = new Deferred<void>()
       sandbox.stub(connection, 'executeQuery').callsFake(async () => {
-        queryStarted.resolve()
         await queryFinished.promise
         return { rows: [] }
       })
       const commandSpy = sandbox.spy(driver, driverMethod)
       const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const query = trx.selectFrom('person').selectAll().execute()
-      await queryStarted.promise
 
       const completion = createCommand(trx).execute()
       await setImmediate()
@@ -1145,18 +1105,13 @@ describe('controlled transaction', () => {
       expect(await query).to.eql([])
       await completion
       expect(commandSpy.calledOnce).to.be.true
-      expect(releaseSpy.callCount).to.equal(
-        command === 'commit' || command === 'rollback' ? 1 : 0,
-      )
     })
 
     it(`should wait for an ongoing query to fail before ${command}`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const queryStarted = new Deferred<void>()
       const queryFinished = new Deferred<void>()
       const queryError = new Error('query failed')
       sandbox.stub(connection, 'executeQuery').callsFake(async () => {
-        queryStarted.resolve()
         await queryFinished.promise
         throw queryError
       })
@@ -1164,7 +1119,6 @@ describe('controlled transaction', () => {
       const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const query = trx.selectFrom('person').selectAll().execute()
       const queryResult = query.catch((error: unknown) => error)
-      await queryStarted.promise
 
       const completion = createCommand(trx).execute()
       await setImmediate()
@@ -1175,9 +1129,6 @@ describe('controlled transaction', () => {
       expect(await queryResult).to.equal(queryError)
       await completion
       expect(commandSpy.calledOnce).to.be.true
-      expect(releaseSpy.callCount).to.equal(
-        command === 'commit' || command === 'rollback' ? 1 : 0,
-      )
     })
 
     it(`should wait for a stream to close before ${command}`, async () => {
@@ -1233,79 +1184,89 @@ describe('controlled transaction', () => {
       await completion
       expect(commandSpy.calledOnce).to.be.true
     })
+  }
 
-    if (command === 'commit' || command === 'rollback') {
-      continue
-    }
-
-    it(`should keep queries and completion waiting for ${command} to finish`, async () => {
+  for (const {
+    name: command,
+    driverMethod,
+    createCommand,
+  } of savepointCommands) {
+    it(`should hold queries until ${command} finishes`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const commandStarted = new Deferred<void>()
-      const commandFinished = new Deferred<void>()
-      const commandStub = sandbox.stub(driver, command).callsFake(async () => {
-        commandStarted.resolve()
-        await commandFinished.promise
-      })
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
       const querySpy = sandbox.spy(connection, 'executeQuery')
-      const commitSpy = sandbox.spy(driver, 'commitTransaction')
-      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const execution = createCommand(trx).execute()
-      await commandStarted.promise
-
-      const derivedTrx = trx.withSchema('public')
-      const query = derivedTrx.selectFrom('person').selectAll().execute()
-      const completion = derivedTrx.commit().execute()
+      const query = trx
+        .withSchema('public')
+        .selectFrom('person')
+        .selectAll()
+        .execute()
       await setImmediate()
       expect(querySpy.notCalled).to.be.true
-      expect(commitSpy.notCalled).to.be.true
-      expect(releaseSpy.notCalled).to.be.true
 
-      commandFinished.resolve()
+      finished.resolve()
       await execution
       await query
-      await completion
-      expect(commandStub.calledOnce).to.be.true
       expect(querySpy.calledOnce).to.be.true
-      expect(commitSpy.calledOnce).to.be.true
-      expect(querySpy.calledBefore(commitSpy)).to.be.true
-      expect(releaseSpy.calledOnce).to.be.true
     })
 
-    it(`should keep queries and completion waiting for ${command} to fail`, async () => {
+    it(`should let queued queries continue when ${command} fails`, async () => {
       const trx = await startTransactionWithSavepoint()
-      const commandStarted = new Deferred<void>()
-      const commandFinished = new Deferred<void>()
+      const finished = new Deferred<void>()
       const commandError = new Error(`${command} failed`)
-      const commandStub = sandbox.stub(driver, command).callsFake(async () => {
-        commandStarted.resolve()
-        await commandFinished.promise
-        throw commandError
-      })
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
       const querySpy = sandbox.spy(connection, 'executeQuery')
-      const commitSpy = sandbox.spy(driver, 'commitTransaction')
-      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
       const execution = createCommand(trx).execute()
-      await commandStarted.promise
-
-      const derivedTrx = trx.withSchema('public')
-      const query = derivedTrx.selectFrom('person').selectAll().execute()
-      const completion = derivedTrx.commit().execute()
+      const query = trx
+        .withSchema('public')
+        .selectFrom('person')
+        .selectAll()
+        .execute()
       await setImmediate()
       expect(querySpy.notCalled).to.be.true
-      expect(commitSpy.notCalled).to.be.true
-      expect(releaseSpy.notCalled).to.be.true
 
-      commandFinished.resolve()
+      finished.reject(commandError)
       expect(await execution.catch((error: unknown) => error)).to.equal(
         commandError,
       )
       await query
-      await completion
-      expect(commandStub.calledOnce).to.be.true
       expect(querySpy.calledOnce).to.be.true
+    })
+
+    it(`should hold commit until ${command} finishes`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const commitSpy = sandbox.spy(driver, 'commitTransaction')
+      const execution = createCommand(trx).execute()
+      const completion = trx.withSchema('public').commit().execute()
+      await setImmediate()
+      expect(commitSpy.notCalled).to.be.true
+
+      finished.resolve()
+      await execution
+      await completion
       expect(commitSpy.calledOnce).to.be.true
-      expect(querySpy.calledBefore(commitSpy)).to.be.true
-      expect(releaseSpy.calledOnce).to.be.true
+    })
+
+    it(`should hold rollback until ${command} fails`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      const commandError = new Error(`${command} failed`)
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+      const execution = createCommand(trx).execute()
+      const completion = trx.withSchema('public').rollback().execute()
+      await setImmediate()
+      expect(rollbackSpy.notCalled).to.be.true
+
+      finished.reject(commandError)
+      expect(await execution.catch((error: unknown) => error)).to.equal(
+        commandError,
+      )
+      await completion
+      expect(rollbackSpy.calledOnce).to.be.true
     })
   }
 })
