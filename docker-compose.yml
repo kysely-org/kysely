@@ -1,17 +1,17 @@
 services:
   # credit to Knex.js team for the following mssql setup here:
   mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:latest
     ports:
       - '21433:1433'
     environment:
       ACCEPT_EULA: Y
       MSSQL_PID: Express
-      SA_PASSWORD: KyselyTest0
+      MSSQL_SA_PASSWORD: KyselyTest0
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -C -S mssql -U sa -P 'KyselyTest0' -Q 'select 1'
   waitmssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:latest
     links:
       - mssql
     depends_on:
