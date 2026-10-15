@@ -1,0 +1,8 @@
+server = "https://registry-1.docker.io"
+
+[host."https://mirror.gcr.io"]
+  capabilities = ["pull", "resolve"]
+
+[host."https://public.ecr.aws/v2/docker"]
+  capabilities = ["pull", "resolve"]
+  override_path = true

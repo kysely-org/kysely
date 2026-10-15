@@ -1,5 +1,5 @@
 name: Start test databases
-description: Configure cached image pulls and start the requested test databases.
+description: Configure registry fallbacks and start the requested test databases.
 
 inputs:
   services:
@@ -10,15 +10,22 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: use Docker Hub cache
+    - name: configure registry fallbacks
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: sudo install -D -m 0644 "$ACTION_PATH/hosts.toml" /etc/docker/certs.d/docker.io/hosts.toml
+
+    - name: set up Docker
       uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
       with:
-        # ECR Public also limits anonymous downloads by source IP. Use Google's
-        # cache, with Docker Hub as the fallback when an image is not cached.
-        # https://docs.cloud.google.com/artifact-registry/docs/pull-cached-dockerhub-images
+        # The containerd image store reads hosts.toml, including ECR's API path.
+        # Mirrors are tried in file order, followed by the Docker Hub server.
         daemon-config: |
           {
-            "registry-mirrors": ["https://mirror.gcr.io"]
+            "features": {
+              "containerd-snapshotter": true
+            }
           }
 
     - name: spin up databases
@@ -36,7 +43,7 @@ runs:
 
           printf '%s\n' "$output" >&2
 
-          if [[ "$output" != *toomanyrequests* && "$output" != *'Rate exceeded'* ]] || ((attempt == 8)); then
+          if [[ "$output" != *toomanyrequests* && "$output" != *'Rate exceeded'* && "$output" != *'Too Many Requests'* ]] || ((attempt == 8)); then
             exit 1
           fi
 
