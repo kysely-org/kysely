@@ -210,40 +210,17 @@ test(
 )
 
 test(
-  'Docker Hub MySQL uses the test database initialization',
+  'MySQL uses the test database initialization',
   { skip: process.platform !== 'linux', timeout: 240_000 },
   async (t) => {
-    const image = 'registry-1.docker.io/library/mysql:latest'
-    try {
-      await exec('docker', ['image', 'pull', image], { timeout: 120_000 })
-    } catch (error) {
-      // The fallback source need not be reachable while Oracle is healthy.
-      // Keep outages and exhausted Hub quotas from making this smoke test flaky.
-      if (
-        /429|toomanyrequests|Too Many Requests|timeout|no such host|connection refused|503 Service Unavailable/i.test(
-          error.message,
-        )
-      ) {
-        t.skip('Docker Hub is currently unavailable')
-        return
-      }
-      throw error
-    }
-
-    const { stdout: inspected } = await exec('docker', [
-      'image',
-      'inspect',
-      '--format',
-      '{{index .RepoDigests 0}}',
-      image,
-    ])
-    const project = `kysely-mysql-fallback-${randomUUID()}`
-    const env = { ...process.env, MYSQL_IMAGE: inspected.trim() }
+    const project = `kysely-mysql-smoke-${randomUUID()}`
     const compose = (...args) =>
-      exec('docker', ['compose', '--project-name', project, ...args], { env })
+      exec('docker', ['compose', '--project-name', project, ...args], {
+        timeout: 120_000,
+      })
 
     try {
-      await compose('up', '-d', '--pull', 'never', 'mysql')
+      await compose('up', '-d', 'mysql')
       const query = (sql) =>
         compose(
           'exec',
