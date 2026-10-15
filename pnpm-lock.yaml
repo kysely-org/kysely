@@ -261,8 +261,8 @@ importers:
         specifier: 1.64.1
         version: 1.64.1
       prettier:
-        specifier: 3.9.6
-        version: 3.9.6
+        specifier: 3.9.10
+        version: 3.9.10
       prototype-pollution-vulnerable-lodash.merge-dont-upgrade:
         specifier: npm:lodash.merge@4.6.1
         version: lodash.merge@4.6.1
@@ -6341,8 +6341,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  prettier@3.9.6:
-    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
+  prettier@3.9.10:
+    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -15226,7 +15226,7 @@ snapshots:
 
   prettier@3.6.2: {}
 
-  prettier@3.9.6: {}
+  prettier@3.9.10: {}
 
   pretty-error@4.0.0:
     dependencies:
