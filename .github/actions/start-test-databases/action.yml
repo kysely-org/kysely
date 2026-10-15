@@ -35,13 +35,43 @@ runs:
       run: |
         read -r -a services <<< "$COMPOSE_SERVICES"
 
+        mysql_ready=true
+        if (( ${#services[@]} == 0 )); then
+          mysql_ready=false
+        fi
+        for service in "${services[@]}"; do
+          if [[ "$service" == mysql ]]; then
+            mysql_ready=false
+          fi
+        done
+
         for attempt in {1..8}; do
-          if output=$(docker compose up -d "${services[@]}" 2>&1); then
-            printf '%s\n' "$output"
-            exit 0
+          if [[ "$mysql_ready" == false ]]; then
+            # Use Docker Hub's maintained MySQL build if Oracle is unavailable.
+            # Its explicit hostname bypasses the PostgreSQL mirror chain.
+            for image in container-registry.oracle.com/mysql/community-server:latest registry-1.docker.io/library/mysql:latest; do
+              printf 'Pulling MySQL image %s\n' "$image"
+              if output=$(docker image pull "$image" 2>&1); then
+                printf '%s\n' "$output"
+                # Pin this run to the loaded digest so Compose does not pull
+                # the mutable latest tag again and bypass the chosen fallback.
+                MYSQL_IMAGE=$(docker image inspect --format '{{index .RepoDigests 0}}' "$image")
+                export MYSQL_IMAGE
+                printf 'Using MySQL image %s\n' "$MYSQL_IMAGE"
+                mysql_ready=true
+                break
+              fi
+              printf '%s\n' "$output" >&2
+            done
           fi
 
-          printf '%s\n' "$output" >&2
+          if [[ "$mysql_ready" == true ]]; then
+            if output=$(docker compose up -d "${services[@]}" 2>&1); then
+              printf '%s\n' "$output"
+              exit 0
+            fi
+            printf '%s\n' "$output" >&2
+          fi
 
           if [[ "$output" != *toomanyrequests* && "$output" != *'Rate exceeded'* && "$output" != *'Too Many Requests'* ]] || ((attempt == 8)); then
             exit 1

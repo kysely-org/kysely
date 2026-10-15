@@ -5,6 +5,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { setTimeout } from 'node:timers/promises'
 import { promisify } from 'node:util'
 import test from 'node:test'
 
@@ -204,6 +205,83 @@ test(
         hostsDirectory,
       ])
       await rm(temporaryDirectory, { recursive: true, force: true })
+    }
+  },
+)
+
+test(
+  'Docker Hub MySQL uses the test database initialization',
+  { skip: process.platform !== 'linux', timeout: 240_000 },
+  async (t) => {
+    const image = 'registry-1.docker.io/library/mysql:latest'
+    try {
+      await exec('docker', ['image', 'pull', image], { timeout: 120_000 })
+    } catch (error) {
+      // The fallback source need not be reachable while Oracle is healthy.
+      // Keep outages and exhausted Hub quotas from making this smoke test flaky.
+      if (
+        /429|toomanyrequests|Too Many Requests|timeout|no such host|connection refused|503 Service Unavailable/i.test(
+          error.message,
+        )
+      ) {
+        t.skip('Docker Hub is currently unavailable')
+        return
+      }
+      throw error
+    }
+
+    const { stdout: inspected } = await exec('docker', [
+      'image',
+      'inspect',
+      '--format',
+      '{{index .RepoDigests 0}}',
+      image,
+    ])
+    const project = `kysely-mysql-fallback-${randomUUID()}`
+    const env = { ...process.env, MYSQL_IMAGE: inspected.trim() }
+    const compose = (...args) =>
+      exec('docker', ['compose', '--project-name', project, ...args], { env })
+
+    try {
+      await compose('up', '-d', '--pull', 'never', 'mysql')
+      const query = (sql) =>
+        compose(
+          'exec',
+          '-T',
+          'mysql',
+          'mysql',
+          '--protocol=TCP',
+          '-h127.0.0.1',
+          '-ukysely',
+          '-pkysely',
+          '--database=kysely_test',
+          '-e',
+          sql,
+        )
+      let lastError
+      for (let attempt = 0; attempt < 60; attempt++) {
+        try {
+          await query('SELECT 1')
+          lastError = undefined
+          break
+        } catch (error) {
+          lastError = error
+          await setTimeout(1000)
+        }
+      }
+      if (lastError) {
+        const { stdout } = await compose('logs', '--no-color', 'mysql')
+        t.diagnostic(stdout)
+        throw lastError
+      }
+      const { stdout } = await query(
+        'CREATE TABLE fallback_smoke (id integer); INSERT INTO fallback_smoke VALUES (1); SELECT DATABASE(), CURRENT_USER(), VERSION(), id FROM fallback_smoke; DROP TABLE fallback_smoke;',
+      )
+      assert.match(stdout, /kysely_test/)
+      assert.match(stdout, /kysely@%/)
+      t.diagnostic(stdout.trim())
+    } finally {
+      await compose('down', '--volumes')
     }
   },
 )
