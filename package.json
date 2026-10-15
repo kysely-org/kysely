@@ -109,7 +109,7 @@
     "esbuild": "0.28.2",
     "jsr": "0.14.3",
     "mocha": "12.0.1",
-    "mysql2": "3.24.4",
+    "mysql2": "3.24.6",
     "pathe": "catalog:node",
     "pg": "8.23.1",
     "pg-cursor": "2.22.1",
