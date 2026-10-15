@@ -1,9 +1,11 @@
 import * as sinon from 'sinon'
+import { setImmediate } from 'node:timers/promises'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
   ControlledTransaction,
-  Driver,
+  type DatabaseConnection,
+  type Driver,
   DummyDriver,
   Kysely,
   PostgresAdapter,
@@ -22,6 +24,7 @@ import {
   insertDefaultDataSet,
   limit,
 } from './test-setup.js'
+import { Deferred } from '../../../dist/cjs/util/deferred.js'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: controlled transaction`, () => {
@@ -707,10 +710,10 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
-    expect(() => derivedTrx.commit()).to.throw(
+    await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
       'Transaction is already committed',
     )
-    expect(() => derivedTrx.rollback()).to.throw(
+    await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
       'Transaction is already committed',
     )
     expect(querySpy.notCalled).to.be.true
@@ -727,8 +730,12 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already committed')
-    expect(() => trx.commit()).to.throw('Transaction is already committed')
-    expect(() => trx.rollback()).to.throw('Transaction is already committed')
+    await expect(trx.commit().execute()).to.be.rejectedWith(
+      'Transaction is already committed',
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      'Transaction is already committed',
+    )
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
@@ -743,10 +750,10 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       derivedTrx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-    expect(() => derivedTrx.commit()).to.throw(
+    await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
       'Transaction is already rolled back',
     )
-    expect(() => derivedTrx.rollback()).to.throw(
+    await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
       'Transaction is already rolled back',
     )
     expect(querySpy.notCalled).to.be.true
@@ -763,8 +770,12 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-    expect(() => trx.commit()).to.throw('Transaction is already rolled back')
-    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    await expect(trx.commit().execute()).to.be.rejectedWith(
+      'Transaction is already rolled back',
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      'Transaction is already rolled back',
+    )
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
@@ -780,20 +791,25 @@ describe('custom dialect: controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-    expect(() => trx.rollback()).to.throw('Transaction is already rolled back')
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      'Transaction is already rolled back',
+    )
     expect(querySpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
 })
 
 describe('controlled transaction', () => {
-  it('should release the connection if the transaction fails to begin', async () => {
-    const driver: Driver = new DummyDriver()
-    const beginError = new Error('begin failed')
-    sinon.stub(driver, 'beginTransaction').rejects(beginError)
-    const acquireSpy = sinon.spy(driver, 'acquireConnection')
-    const releaseSpy = sinon.spy(driver, 'releaseConnection')
-    const db = new Kysely<Database>({
+  const sandbox = sinon.createSandbox()
+  let driver: Driver
+  let connection: DatabaseConnection
+  let db: Kysely<Database>
+
+  beforeEach(async () => {
+    driver = new DummyDriver()
+    connection = await driver.acquireConnection()
+    sandbox.stub(driver, 'acquireConnection').resolves(connection)
+    db = new Kysely<Database>({
       dialect: {
         createAdapter: () => new PostgresAdapter(),
         createDriver: () => driver,
@@ -801,23 +817,362 @@ describe('controlled transaction', () => {
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
     })
-
-    try {
-      const error = await db
-        .startTransaction()
-        .execute()
-        .catch((error: unknown) => error)
-
-      expect(error).to.equal(beginError)
-      expect(acquireSpy.calledOnce, 'connection acquired once').to.be.true
-      expect(releaseSpy.calledOnce, 'connection released once').to.be.true
-      expect(releaseSpy.firstCall.args[0]).to.equal(
-        await acquireSpy.firstCall.returnValue,
-      )
-    } finally {
-      await db.destroy()
-    }
   })
+
+  afterEach(async () => {
+    sandbox.restore()
+    await db.destroy()
+  })
+
+  async function startTransactionWithSavepoint() {
+    const trx = await db.startTransaction().execute()
+    return await trx.savepoint('foo').execute()
+  }
+
+  it('should release the connection if the transaction fails to begin', async () => {
+    const beginError = new Error('begin failed')
+    sandbox.stub(driver, 'beginTransaction').rejects(beginError)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+
+    const error = await db
+      .startTransaction()
+      .execute()
+      .catch((error: unknown) => error)
+
+    expect(error).to.equal(beginError)
+    expect(releaseSpy.calledOnce, 'connection released once').to.be.true
+    expect(releaseSpy.firstCall.args[0]).to.equal(connection)
+  })
+
+  it('should allow retrying a failed commit', async () => {
+    const commandError = new Error('commit failed')
+    const commandStub = sandbox.stub(driver, 'commitTransaction')
+    commandStub.onFirstCall().rejects(commandError)
+    commandStub.onSecondCall().resolves()
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const trx = await db.startTransaction().execute()
+    const completion = trx.commit()
+
+    expect(
+      await completion.execute().catch((error: unknown) => error),
+    ).to.equal(commandError)
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.false
+    expect(releaseSpy.notCalled).to.be.true
+
+    await completion.execute()
+    expect(commandStub.calledTwice).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  for (const command of ['commit', 'rollback'] as const) {
+    const message = `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`
+
+    it(`should reject saved commands after ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const commands = [
+        trx.commit(),
+        trx.rollback(),
+        trx.savepoint('bar'),
+        trx.rollbackToSavepoint('foo'),
+        trx.releaseSavepoint('foo'),
+      ]
+      await trx[command]().execute()
+
+      for (const savedCommand of commands) {
+        await expect(savedCommand.execute()).to.be.rejectedWith(message)
+      }
+    })
+
+    it(`should reject connection consumers immediately after ${command}`, async () => {
+      const trx = await db.startTransaction().execute()
+      await trx[command]().execute()
+      const consumer = sandbox.spy(async () => undefined)
+
+      expect(() => trx.getExecutor().provideConnection(consumer)).to.throw(
+        `Transaction is already ${command === 'commit' ? 'committed' : 'rolled back'}`,
+      )
+      expect(consumer.notCalled).to.be.true
+    })
+
+    it(`should reject a query queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const querySpy = sandbox.spy(connection, 'executeQuery')
+      const completion = trx[command]().execute()
+      const query = expect(
+        trx.selectFrom('person').selectAll().execute(),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await query
+      expect(querySpy.notCalled).to.be.true
+    })
+
+    it(`should reject a stream queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const stream = expect(
+        trx.selectFrom('person').selectAll().stream().next(),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await stream
+    })
+
+    it(`should reject commands queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const commands = [
+        trx.commit(),
+        trx.rollback(),
+        trx.savepoint('bar'),
+        trx.rollbackToSavepoint('foo'),
+        trx.releaseSavepoint('foo'),
+      ]
+      const results = commands.map((queuedCommand) =>
+        expect(queuedCommand.execute()).to.be.rejectedWith(message),
+      )
+
+      finished.resolve()
+      await completion
+      await Promise.all(results)
+    })
+
+    it(`should reject a connection consumer queued behind ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, `${command}Transaction`).returns(finished.promise)
+      const completion = trx[command]().execute()
+      const consumer = sandbox.spy(async () => undefined)
+      const result = expect(
+        trx.getExecutor().provideConnection(consumer),
+      ).to.be.rejectedWith(message)
+
+      finished.resolve()
+      await completion
+      await result
+      expect(consumer.notCalled).to.be.true
+    })
+  }
+
+  it('should reject a queued query and release once when rollback fails', async () => {
+    const trx = await startTransactionWithSavepoint()
+    const finished = new Deferred<void>()
+    const rollbackError = new Error('rollback failed')
+    sandbox.stub(driver, 'rollbackTransaction').returns(finished.promise)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const completion = trx.rollback().execute()
+    const query = expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+
+    finished.reject(rollbackError)
+    expect(await completion.catch((error: unknown) => error)).to.equal(
+      rollbackError,
+    )
+    await query
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  type TransactionWithSavepoint = ControlledTransaction<Database, ['foo']>
+
+  const savepointCommands = [
+    {
+      name: 'savepoint',
+      driverMethod: 'savepoint',
+      createCommand: (trx: TransactionWithSavepoint) => trx.savepoint('bar'),
+    },
+    {
+      name: 'rollbackToSavepoint',
+      driverMethod: 'rollbackToSavepoint',
+      createCommand: (trx: TransactionWithSavepoint) =>
+        trx.rollbackToSavepoint('foo'),
+    },
+    {
+      name: 'releaseSavepoint',
+      driverMethod: 'releaseSavepoint',
+      createCommand: (trx: TransactionWithSavepoint) =>
+        trx.releaseSavepoint('foo'),
+    },
+  ] as const
+
+  const commands = [
+    {
+      name: 'commit',
+      driverMethod: 'commitTransaction',
+      createCommand: (trx: TransactionWithSavepoint) => trx.commit(),
+    },
+    {
+      name: 'rollback',
+      driverMethod: 'rollbackTransaction',
+      createCommand: (trx: TransactionWithSavepoint) => trx.rollback(),
+    },
+    ...savepointCommands,
+  ] as const
+
+  for (const { name: command, driverMethod, createCommand } of commands) {
+    it(`should wait for an ongoing query to finish before ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const queryFinished = new Deferred<void>()
+      sandbox.stub(connection, 'executeQuery').callsFake(async () => {
+        await queryFinished.promise
+        return { rows: [] }
+      })
+      const commandSpy = sandbox.spy(driver, driverMethod)
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const query = trx.selectFrom('person').selectAll().execute()
+
+      const completion = createCommand(trx).execute()
+      await setImmediate()
+      expect(commandSpy.notCalled, 'command waits for query').to.be.true
+      expect(releaseSpy.notCalled, 'connection is held').to.be.true
+
+      queryFinished.resolve()
+      expect(await query).to.eql([])
+      await completion
+      expect(commandSpy.calledOnce).to.be.true
+    })
+
+    it(`should wait for an ongoing query to fail before ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const queryFinished = new Deferred<void>()
+      const queryError = new Error('query failed')
+      sandbox.stub(connection, 'executeQuery').callsFake(async () => {
+        await queryFinished.promise
+        throw queryError
+      })
+      const commandSpy = sandbox.spy(driver, driverMethod)
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const query = trx.selectFrom('person').selectAll().execute()
+      const queryResult = query.catch((error: unknown) => error)
+
+      const completion = createCommand(trx).execute()
+      await setImmediate()
+      expect(commandSpy.notCalled, 'command waits for query').to.be.true
+      expect(releaseSpy.notCalled, 'connection is held').to.be.true
+
+      queryFinished.resolve()
+      expect(await queryResult).to.equal(queryError)
+      await completion
+      expect(commandSpy.calledOnce).to.be.true
+    })
+
+    it(`should wait for a stream to close before ${command}`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      let streamClosed = false
+      sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+        try {
+          yield { rows: [{ id: 1 }] }
+        } finally {
+          streamClosed = true
+        }
+      })
+      const commandSpy = sandbox.spy(driver, driverMethod)
+      const stream = trx.selectFrom('person').selectAll().stream()
+      await stream.next()
+
+      const completion = createCommand(trx).execute()
+      await setImmediate()
+      expect(commandSpy.notCalled).to.be.true
+
+      await stream.return!()
+      await completion
+      expect(streamClosed).to.be.true
+      expect(commandSpy.calledOnce).to.be.true
+    })
+  }
+
+  for (const {
+    name: command,
+    driverMethod,
+    createCommand,
+  } of savepointCommands) {
+    it(`should hold queries until ${command} finishes`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const querySpy = sandbox.spy(connection, 'executeQuery')
+      const execution = createCommand(trx).execute()
+      const query = trx
+        .withSchema('public')
+        .selectFrom('person')
+        .selectAll()
+        .execute()
+      await setImmediate()
+      expect(querySpy.notCalled).to.be.true
+
+      finished.resolve()
+      await execution
+      await query
+      expect(querySpy.calledOnce).to.be.true
+    })
+
+    it(`should let queued queries continue when ${command} fails`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      const commandError = new Error(`${command} failed`)
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const querySpy = sandbox.spy(connection, 'executeQuery')
+      const execution = createCommand(trx).execute()
+      const query = trx
+        .withSchema('public')
+        .selectFrom('person')
+        .selectAll()
+        .execute()
+      await setImmediate()
+      expect(querySpy.notCalled).to.be.true
+
+      finished.reject(commandError)
+      expect(await execution.catch((error: unknown) => error)).to.equal(
+        commandError,
+      )
+      await query
+      expect(querySpy.calledOnce).to.be.true
+    })
+
+    it(`should hold commit until ${command} finishes`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const commitSpy = sandbox.spy(driver, 'commitTransaction')
+      const execution = createCommand(trx).execute()
+      const completion = trx.withSchema('public').commit().execute()
+      await setImmediate()
+      expect(commitSpy.notCalled).to.be.true
+
+      finished.resolve()
+      await execution
+      await completion
+      expect(commitSpy.calledOnce).to.be.true
+    })
+
+    it(`should hold rollback until ${command} fails`, async () => {
+      const trx = await startTransactionWithSavepoint()
+      const finished = new Deferred<void>()
+      const commandError = new Error(`${command} failed`)
+      sandbox.stub(driver, driverMethod).returns(finished.promise)
+      const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+      const execution = createCommand(trx).execute()
+      const completion = trx.withSchema('public').rollback().execute()
+      await setImmediate()
+      expect(rollbackSpy.notCalled).to.be.true
+
+      finished.reject(commandError)
+      expect(await execution.catch((error: unknown) => error)).to.equal(
+        commandError,
+      )
+      await completion
+      expect(rollbackSpy.calledOnce).to.be.true
+    })
+  }
 })
 
 async function insertSomething(db: Kysely<Database>) {

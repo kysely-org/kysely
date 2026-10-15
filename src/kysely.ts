@@ -875,6 +875,10 @@ export class ControlledTransaction<
   /**
    * Commits the transaction.
    *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before committing.
+   *
    * See {@link rollback}.
    *
    * ### Examples
@@ -897,14 +901,12 @@ export class ControlledTransaction<
    * ```
    */
   commit(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
-    return new Command(async () => {
-      await this.#props.driver.commitTransaction(
-        this.#props.connection.connection,
-      )
-      this.#props.state.isCommitted = true
-      this.#props.connection.release()
+    return new Command(async (): Promise<void> => {
+      await this.#props.executor.provideConnection(async (connection) => {
+        await this.#props.driver.commitTransaction(connection)
+        this.#props.state.isCommitted = true
+        this.#props.connection.release()
+      })
     })
   }
 
@@ -913,6 +915,10 @@ export class ControlledTransaction<
    *
    * The connection is released even if the rollback fails, so the transaction
    * cannot be used afterwards in either case.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before rolling back.
    *
    * See {@link commit} and {@link rollbackToSavepoint}.
    *
@@ -936,23 +942,25 @@ export class ControlledTransaction<
    * ```
    */
   rollback(): Command<void> {
-    assertNotCommittedOrRolledBack(this.#props.state)
-
     return new Command(async (): Promise<void> => {
-      // A failed rollback can't be meaningfully retried (e.g. dead connection).
-      try {
-        await this.#props.driver.rollbackTransaction(
-          this.#props.connection.connection,
-        )
-      } finally {
-        this.#props.state.isRolledBack = true
-        this.#props.connection.release()
-      }
+      await this.#props.executor.provideConnection(async (connection) => {
+        // A failed rollback can't be meaningfully retried (e.g. dead connection).
+        try {
+          await this.#props.driver.rollbackTransaction(connection)
+        } finally {
+          this.#props.state.isRolledBack = true
+          this.#props.connection.release()
+        }
+      })
     })
   }
 
   /**
    * Creates a savepoint with a given name.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before creating a savepoint.
    *
    * See {@link rollbackToSavepoint} and {@link releaseSavepoint}.
    *
@@ -983,21 +991,27 @@ export class ControlledTransaction<
   savepoint<SN extends string>(
     savepointName: SN extends S ? never : SN,
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
-    assertNotCommittedOrRolledBack(this.#props.state)
+    return new Command(
+      async (): Promise<ControlledTransaction<DB, [...S, SN]>> => {
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.savepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
-    return new Command(async () => {
-      await this.#props.driver.savepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
-
-      return new ControlledTransaction({ ...this.#props })
-    })
+        return new ControlledTransaction({ ...this.#props })
+      },
+    )
   }
 
   /**
    * Rolls back to a savepoint with a given name.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before rolling back to a savepoint.
    *
    * See {@link savepoint} and {@link releaseSavepoint}.
    *
@@ -1031,21 +1045,29 @@ export class ControlledTransaction<
   ): RollbackToSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#props.state)
+    return new Command(
+      async (): Promise<
+        ControlledTransaction<DB, RollbackToSavepoint<S, SN>>
+      > => {
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.rollbackToSavepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
-    return new Command(async () => {
-      await this.#props.driver.rollbackToSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
-
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   /**
    * Releases a savepoint with a given name.
+   *
+   * Waits for ongoing queries to finish. Streams must be exhausted or closed
+   * before awaiting this command. When consuming a stream with `for await`,
+   * exit the loop before releasing a savepoint.
    *
    * See {@link savepoint} and {@link rollbackToSavepoint}.
    *
@@ -1084,17 +1106,19 @@ export class ControlledTransaction<
   ): ReleaseSavepoint<S, SN> extends string[]
     ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
     : never {
-    assertNotCommittedOrRolledBack(this.#props.state)
+    return new Command(
+      async (): Promise<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> => {
+        await this.#props.executor.provideConnection(async (connection) => {
+          await this.#props.driver.releaseSavepoint?.(
+            connection,
+            savepointName,
+            this.#compileQuery,
+          )
+        })
 
-    return new Command(async () => {
-      await this.#props.driver.releaseSavepoint?.(
-        this.#props.connection.connection,
-        savepointName,
-        this.#compileQuery,
-      )
-
-      return new ControlledTransaction({ ...this.#props })
-    }) as any
+        return new ControlledTransaction({ ...this.#props })
+      },
+    ) as never
   }
 
   override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
@@ -1206,12 +1230,21 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T> {
-    return this.#executor.provideConnection(consumer)
+    assertNotCommittedOrRolledBack(this.#state)
+
+    return this.#executor.provideConnection(async (connection) => {
+      assertNotCommittedOrRolledBack(this.#state)
+      return await consumer(connection)
+    })
   }
 
-  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
+  executeQuery<R>(
+    compiledQuery: CompiledQuery<R>,
+  ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.executeQuery(compiledQuery)
+    return this.#executor
+      .withConnectionProvider(this)
+      .executeQuery(compiledQuery)
   }
 
   stream<R>(
@@ -1219,7 +1252,9 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
-    return this.#executor.stream(compiledQuery, chunkSize)
+    return this.#executor
+      .withConnectionProvider(this)
+      .stream(compiledQuery, chunkSize)
   }
 
   withConnectionProvider(

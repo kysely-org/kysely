@@ -486,7 +486,7 @@ for (const dialect of DIALECTS) {
 
     it('should escape single quotes in json object keys', async () => {
       const value = (value: string) =>
-        sqlSpec === 'postgres'
+        dialect === 'postgres'
           ? expressionBuilder().cast<string>(sql.val(value), 'text')
           : sql.val(value)
 
@@ -522,7 +522,7 @@ for (const dialect of DIALECTS) {
           .selectNoFrom((eb) =>
             jsonBuildObject({
               [value]:
-                sqlSpec === 'postgres'
+                dialect === 'postgres'
                   ? eb.cast<string>(sql.val(value), 'text')
                   : sql.val(value),
             }).as('object'),
@@ -533,7 +533,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'mssql') {
+    if (dialect === 'mssql') {
       it('should preserve NUL characters in json object keys and values', async () => {
         const value = 'a\0b'
         const result = await db
