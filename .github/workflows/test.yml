@@ -320,7 +320,10 @@ jobs:
           echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
 
       - name: install typescript (${{ env.TS_VERSION }}) and tsd (${{ env.TSD_VERSION }})
-        run: pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+        run: |
+          pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+          # Refresh pnpm's dependency verification state after changing versions.
+          pnpm install
 
       - name: make `tsconfig` backwards compatible
         run: pnpm script:override-tsconfig-target
