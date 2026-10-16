@@ -89,20 +89,21 @@ export const db = new Kysely<Database>({
       </Admonition>
       <Admonition type="info" title="Closing connections">
         <p>
-          When Kysely is responsible for closing its connections or pool, call{' '}
-          <code>await db.destroy()</code> when you are done using it to close
-          the connections and release resources.
+          When Kysely is responsible for closing its connections, pool, or
+          database instance, call <code>await db.destroy()</code> when you are
+          done using it to release those resources.
         </p>
         <p>
-          If you share the pool with other consumers or manage its lifecycle
-          elsewhere, skip <code>db.destroy()</code>. Let the application close
-          the pool once all consumers, including Kysely, have finished. No
-          separate cleanup of the Kysely instance is needed.
+          If you share the pool or database instance with other consumers or
+          manage its lifecycle elsewhere, skip <code>db.destroy()</code>. Let
+          the application close it once all consumers, including Kysely, have
+          finished. No separate cleanup of the Kysely instance is needed.
         </p>
         <p>
           Kysely initializes its driver lazily. Calling{' '}
           <code>db.destroy()</code> before initialization has started does
-          nothing, even if you have used the supplied pool independently.
+          nothing, even if you have used the supplied pool or database instance
+          independently.
         </p>
       </Admonition>
     </>
