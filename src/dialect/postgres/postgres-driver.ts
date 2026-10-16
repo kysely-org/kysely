@@ -35,6 +35,13 @@ export class PostgresDriver implements Driver {
 
   async acquireConnection(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
+
+    // `destroy` was called while the connection was being acquired.
+    if (!this.#pool) {
+      client.release()
+      throw new Error('driver has already been destroyed')
+    }
+
     let connection = this.#connections.get(client)
 
     if (!connection) {
