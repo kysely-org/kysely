@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -71,12 +71,12 @@ jobs:
           services: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -109,7 +109,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -121,12 +121,12 @@ jobs:
         uses: ./.github/actions/start-test-databases
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -162,7 +162,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -174,12 +174,12 @@ jobs:
         uses: ./.github/actions/start-test-databases
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -204,7 +204,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -213,12 +213,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -241,7 +241,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -250,12 +250,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -287,7 +287,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -296,12 +296,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -338,7 +338,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -347,12 +347,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -380,7 +380,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -389,12 +389,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -415,7 +415,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -424,12 +424,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 

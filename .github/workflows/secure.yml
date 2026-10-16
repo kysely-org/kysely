@@ -23,12 +23,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -49,7 +49,7 @@ jobs:
           persist-credentials: false
 
       - name: run zizmor
-        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2
+        uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
         with:
           advanced-security: false
           annotations: true
