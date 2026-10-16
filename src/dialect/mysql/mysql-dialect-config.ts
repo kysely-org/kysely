@@ -11,6 +11,16 @@ export interface MysqlDialectConfig {
    *
    * If a function is provided, it's called once when the first query is executed.
    *
+   * Once the driver has initialized, {@link Kysely.destroy} calls
+   * `pool.end(callback)`, whether the pool is supplied directly or returned by a
+   * function. If initialization hasn't started, `db.destroy()` does nothing,
+   * even if the supplied pool has been used outside Kysely.
+   *
+   * If Kysely is not the sole consumer of the pool, or the pool's lifecycle is
+   * managed elsewhere, skip `db.destroy()`. Let the application call
+   * `pool.end(callback)` once all consumers, including Kysely, have finished. No
+   * separate cleanup of the `Kysely` instance is needed.
+   *
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
   pool: MysqlPool | (() => Promise<MysqlPool>)

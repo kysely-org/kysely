@@ -9,6 +9,16 @@ export interface SqliteDialectConfig {
    *
    * If a function is provided, it's called once when the first query is executed.
    *
+   * Once the driver has initialized, {@link Kysely.destroy} calls
+   * `database.close()`, whether the database is supplied directly or returned by
+   * a function. If initialization hasn't started, `db.destroy()` does nothing,
+   * even if the supplied database has been used outside Kysely.
+   *
+   * If Kysely is not the sole consumer of the database, or the database's
+   * lifecycle is managed elsewhere, skip `db.destroy()`. Let the application
+   * call `database.close()` once all consumers, including Kysely, have finished.
+   * No separate cleanup of the `Kysely` instance is needed.
+   *
    * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
    */
   database: SqliteDatabase | (() => Promise<SqliteDatabase>)
