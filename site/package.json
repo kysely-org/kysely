@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "pnpm snippets && docusaurus build && pagefind",
+    "build": "pnpm run snippets && docusaurus build && pagefind",
     "snippets": "node scripts/highlight-snippets.mjs",
     "proof-links": "node scripts/verify-proof-links.mjs",
     "swizzle": "docusaurus swizzle",

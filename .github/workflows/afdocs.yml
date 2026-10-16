@@ -57,7 +57,7 @@ jobs:
 
       - name: Build site
         working-directory: site
-        run: pnpm build
+        run: pnpm run build
 
       - name: Run afdocs
         id: scan

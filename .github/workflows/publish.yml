@@ -141,7 +141,7 @@ jobs:
         run: pnpm i
 
       - name: Prepare for publish
-        run: pnpm script:remove-global-augmentations
+        run: pnpm run script:remove-global-augmentations
 
       - name: publish
-        run: pnpm jsr publish --allow-dirty
+        run: pnpm exec jsr publish --allow-dirty

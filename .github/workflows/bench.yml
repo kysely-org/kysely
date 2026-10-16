@@ -80,7 +80,7 @@ jobs:
         id: bench
         run: |
           # Run benchmarks and capture output
-          pnpm bench:ts > /tmp/bench_output.txt 2>&1
+          pnpm run bench:ts > /tmp/bench_output.txt 2>&1
           exit_code=$?
 
           # Extract summary (everything from "⏱️" to end of file)

@@ -87,11 +87,11 @@ jobs:
         env:
           DIALECTS: ${{ matrix.variant }}
           TEST_TRANSFORMER: ${{ matrix.with-transformer && '1' || '' }}
-        run: pnpm test
+        run: pnpm run test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
-        run: pnpm test:esbuild
+        run: pnpm run test:esbuild
 
   deno:
     concurrency:
@@ -139,13 +139,13 @@ jobs:
         run: pnpm install
 
       - name: build
-        run: pnpm build
+        run: pnpm run build
 
       - name: run deno tests
-        run: pnpm test:deno
+        run: pnpm run test:deno
 
       - name: lint for deno/jsr
-        run: pnpm lint:deno
+        run: pnpm run lint:deno
 
   bun:
     concurrency:
@@ -192,7 +192,7 @@ jobs:
           bun-version: ${{ matrix.bun-version }}
 
       - name: run bun tests
-        run: pnpm test:bun
+        run: pnpm run test:bun
 
   browser:
     concurrency:
@@ -226,10 +226,10 @@ jobs:
         run: pnpm install
 
       - name: install playwright
-        run: pnpm playwright install chromium
+        run: pnpm exec playwright install chromium
 
       - name: run browser tests
-        run: pnpm test:browser
+        run: pnpm run test:browser
 
   cloudflare-workers:
     concurrency:
@@ -266,7 +266,7 @@ jobs:
         uses: $/.github/actions/start-test-databases
 
       - name: run cloudflare workers test
-        run: pnpm test:cloudflare-workers
+        run: pnpm run test:cloudflare-workers
 
   older-typescript-version:
     concurrency:
@@ -309,7 +309,7 @@ jobs:
         run: pnpm install
 
       - name: run build with newer typescript
-        run: pnpm build
+        run: pnpm run build
 
       - name: set typeScript and tsd versions
         env:
@@ -326,10 +326,10 @@ jobs:
           pnpm install
 
       - name: make `tsconfig` backwards compatible
-        run: pnpm script:override-tsconfig-target
+        run: pnpm run script:override-tsconfig-target
 
       - name: run tests with older typescript version
-        run: pnpm test:typings && pnpm test:node:build
+        run: pnpm run test:typings && pnpm run test:node:build
 
   jsdocs:
     concurrency:
@@ -368,10 +368,10 @@ jobs:
         run: pnpm install
 
       - name: build
-        run: pnpm build
+        run: pnpm run build
 
       - name: type-check jsdocs code blocks
-        run: pnpm test:jsdocs
+        run: pnpm run test:jsdocs
 
   typescript-composite:
     concurrency:
@@ -408,6 +408,48 @@ jobs:
         working-directory: test/composite-ts
         run: npm i && npm run check:types
 
+  npm:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-npm-${{ github.event.pull_request.number || github.sha }}
+
+    name: npm
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    env:
+      DIST_TAG: latest
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # Need full history to check branch ancestry
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: false # cache can be poisoned by malicious actors.
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+          package-manager-cache: false # cache can be poisoned by malicious actors.
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile --prefer-offline
+
+      - name: Publish (dry run)
+        run: pnpm stage publish --no-git-checks --tag "$DIST_TAG" --dry-run # the workflow runs in a detached head state, so git checks fail
+
   jsr:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
@@ -440,7 +482,7 @@ jobs:
         run: pnpm i
 
       - name: prepare for publish
-        run: pnpm script:remove-global-augmentations
+        run: pnpm run script:remove-global-augmentations
 
       - name: dry-run jsr publish
-        run: pnpm jsr publish --allow-dirty --dry-run
+        run: pnpm exec jsr publish --allow-dirty --dry-run
