@@ -1,0 +1,52 @@
+name: Start test databases
+description: Configure registry fallbacks and start the requested test databases.
+
+inputs:
+  services:
+    description: Space-separated Compose services; defaults to all services.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: configure registry fallbacks
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      run: sudo install -D -m 0644 "$ACTION_PATH/hosts.toml" /etc/docker/certs.d/docker.io/hosts.toml
+
+    - name: set up Docker
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
+      with:
+        # The containerd image store reads hosts.toml, including ECR's API path.
+        # Mirrors are tried in file order, followed by the Docker Hub server.
+        daemon-config: |
+          {
+            "features": {
+              "containerd-snapshotter": true
+            }
+          }
+
+    - name: spin up databases
+      shell: bash
+      env:
+        COMPOSE_SERVICES: ${{ inputs.services }}
+      run: |
+        read -r -a services <<< "$COMPOSE_SERVICES"
+
+        for attempt in {1..8}; do
+          if output=$(docker compose up -d "${services[@]}" 2>&1); then
+            printf '%s\n' "$output"
+            exit 0
+          fi
+          printf '%s\n' "$output" >&2
+
+          if [[ "$output" != *toomanyrequests* && "$output" != *'Rate exceeded'* && "$output" != *'Too Many Requests'* ]] || ((attempt == 8)); then
+            exit 1
+          fi
+
+          delay=$((attempt * 4 + RANDOM % 8))
+          printf 'Registry rate limit; retrying database startup (%d/8) in %ds.\n' "$((attempt + 1))" "$delay" >&2
+          sleep "$delay"
+        done
