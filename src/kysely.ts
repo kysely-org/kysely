@@ -65,7 +65,8 @@ Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
  * The main Kysely class.
  *
  * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains its own connection pool.
+ * constructor. The dialect manages database connections and may use a shared
+ * pool or database instance.
  *
  * ### Examples
  *
@@ -600,7 +601,16 @@ export class Kysely<DB>
   /**
    * Releases all resources and disconnects from the database.
    *
-   * You need to call this when you are done using the `Kysely` instance.
+   * Call this when you are done using the `Kysely` instance and Kysely is
+   * responsible for closing its connections, pool, or database instance.
+   *
+   * If the pool or database instance is shared with other consumers or its
+   * lifecycle is managed elsewhere, skip this call. Let the application close it
+   * once all consumers, including Kysely, have finished. No separate cleanup of
+   * the `Kysely` instance is needed.
+   *
+   * The driver is initialized lazily. If initialization hasn't started, this
+   * method does nothing.
    */
   async destroy(): Promise<void> {
     await this.#props.driver.destroy()

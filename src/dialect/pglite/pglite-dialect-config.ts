@@ -21,6 +21,16 @@ export interface PGliteDialectConfig {
    *
    * If a function is provided, it's called once when the first query is executed.
    *
+   * Once the driver has initialized, {@link Kysely.destroy} calls `pglite.close()`
+   * if the instance is still open, whether it is supplied directly or returned
+   * by a function. If initialization hasn't started, `db.destroy()` does nothing,
+   * even if the supplied instance has been used outside Kysely.
+   *
+   * If Kysely is not the sole consumer of the instance, or its lifecycle is
+   * managed elsewhere, skip `db.destroy()`. Let the application call
+   * `pglite.close()` once all consumers, including Kysely, have finished. No
+   * separate cleanup of the `Kysely` instance is needed.
+   *
    * https://pglite.dev/docs/api#main-constructor
    */
   pglite:
