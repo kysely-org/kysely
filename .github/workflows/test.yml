@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -66,17 +66,17 @@ jobs:
 
       - name: spin up database
         if: ${{ matrix.variant != 'sqlite' && matrix.variant != 'pglite' }}
-        uses: ./.github/actions/start-test-databases
+        uses: $/.github/actions/start-test-databases
         with:
           services: ${{ matrix.variant == 'mssql' && 'mssql waitmssql' || matrix.variant }}
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -87,11 +87,11 @@ jobs:
         env:
           DIALECTS: ${{ matrix.variant }}
           TEST_TRANSFORMER: ${{ matrix.with-transformer && '1' || '' }}
-        run: pnpm test
+        run: pnpm run test
 
       - name: Run esbuild test
         if: ${{ !matrix.with-transformer }}
-        run: pnpm test:esbuild
+        run: pnpm run test:esbuild
 
   deno:
     concurrency:
@@ -109,7 +109,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -118,15 +118,15 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        uses: ./.github/actions/start-test-databases
+        uses: $/.github/actions/start-test-databases
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -139,13 +139,13 @@ jobs:
         run: pnpm install
 
       - name: build
-        run: pnpm build
+        run: pnpm run build
 
       - name: run deno tests
-        run: pnpm test:deno
+        run: pnpm run test:deno
 
       - name: lint for deno/jsr
-        run: pnpm lint:deno
+        run: pnpm run lint:deno
 
   bun:
     concurrency:
@@ -162,7 +162,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -171,15 +171,15 @@ jobs:
           persist-credentials: false
 
       - name: spin up databases
-        uses: ./.github/actions/start-test-databases
+        uses: $/.github/actions/start-test-databases
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -192,7 +192,7 @@ jobs:
           bun-version: ${{ matrix.bun-version }}
 
       - name: run bun tests
-        run: pnpm test:bun
+        run: pnpm run test:bun
 
   browser:
     concurrency:
@@ -204,7 +204,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -213,12 +213,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -226,10 +226,10 @@ jobs:
         run: pnpm install
 
       - name: install playwright
-        run: pnpm playwright install chromium
+        run: pnpm exec playwright install chromium
 
       - name: run browser tests
-        run: pnpm test:browser
+        run: pnpm run test:browser
 
   cloudflare-workers:
     concurrency:
@@ -241,7 +241,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -250,12 +250,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -263,10 +263,10 @@ jobs:
         run: pnpm install
 
       - name: spin up databases
-        uses: ./.github/actions/start-test-databases
+        uses: $/.github/actions/start-test-databases
 
       - name: run cloudflare workers test
-        run: pnpm test:cloudflare-workers
+        run: pnpm run test:cloudflare-workers
 
   older-typescript-version:
     concurrency:
@@ -287,7 +287,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -296,12 +296,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -309,7 +309,7 @@ jobs:
         run: pnpm install
 
       - name: run build with newer typescript
-        run: pnpm build
+        run: pnpm run build
 
       - name: set typeScript and tsd versions
         env:
@@ -320,13 +320,16 @@ jobs:
           echo "TSD_VERSION=$TSD_VERSION" >> $GITHUB_ENV
 
       - name: install typescript (${{ env.TS_VERSION }}) and tsd (${{ env.TSD_VERSION }})
-        run: pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+        run: |
+          pnpm i -D "typescript@$TS_VERSION" "tsd@$TSD_VERSION"
+          # Refresh pnpm's dependency verification state after changing versions.
+          pnpm install
 
       - name: make `tsconfig` backwards compatible
-        run: pnpm script:override-tsconfig-target
+        run: pnpm run script:override-tsconfig-target
 
       - name: run tests with older typescript version
-        run: pnpm test:typings && pnpm test:node:build
+        run: pnpm run test:typings && pnpm run test:node:build
 
   jsdocs:
     concurrency:
@@ -338,7 +341,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -347,12 +350,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -365,10 +368,10 @@ jobs:
         run: pnpm install
 
       - name: build
-        run: pnpm build
+        run: pnpm run build
 
       - name: type-check jsdocs code blocks
-        run: pnpm test:jsdocs
+        run: pnpm run test:jsdocs
 
   typescript-composite:
     concurrency:
@@ -380,7 +383,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -389,12 +392,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -404,6 +407,48 @@ jobs:
       - name: test
         working-directory: test/composite-ts
         run: npm i && npm run check:types
+
+  npm:
+    concurrency:
+      cancel-in-progress: ${{ github.ref_name != 'master' }}
+      group: ${{ github.workflow }}-npm-${{ github.event.pull_request.number || github.sha }}
+
+    name: npm
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    env:
+      DIST_TAG: latest
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # Need full history to check branch ancestry
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          cache: false # cache can be poisoned by malicious actors.
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+          package-manager-cache: false # cache can be poisoned by malicious actors.
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile --prefer-offline
+
+      - name: Publish (dry run)
+        run: pnpm stage publish --no-git-checks --tag "$DIST_TAG" --dry-run # the workflow runs in a detached head state, so git checks fail
 
   jsr:
     concurrency:
@@ -415,7 +460,7 @@ jobs:
 
     steps:
       - name: harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -424,12 +469,12 @@ jobs:
           persist-credentials: false
 
       - name: install pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           cache: true
 
       - name: use node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
 
@@ -437,7 +482,7 @@ jobs:
         run: pnpm i
 
       - name: prepare for publish
-        run: pnpm script:remove-global-augmentations
+        run: pnpm run script:remove-global-augmentations
 
       - name: dry-run jsr publish
-        run: pnpm jsr publish --allow-dirty --dry-run
+        run: pnpm exec jsr publish --allow-dirty --dry-run
