@@ -1,65 +1,117 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
+# [Kysely](https://kysely.dev)
+
+Kysely (pronounced “Key-Seh-Lee”, Finnish for “query”) is a [mature](https://github.com/kysely-org/kysely/issues/1328#issuecomment-2602609767), type-safe TypeScript SQL query builder, inspired by [Knex](https://knexjs.org).
+Write queries with autocompletion and inferred result types while keeping control of the SQL you run.
+
+```sh
+npm i kysely
+```
+
+**[Getting started](https://kysely.dev/docs/getting-started) · [Playground](https://play.kysely.dev) · [API reference](https://kysely-org.github.io/kysely-apidoc/)**
+
 [![NPM Version](https://img.shields.io/npm/v/kysely?style=flat&label=latest)](https://github.com/kysely-org/kysely/releases/latest)
 [![Socket Badge](https://badge.socket.dev/npm/package/kysely/0.29.6)](https://socket.dev/npm/package/kysely/overview/0.29.6)
 [![Tests](https://github.com/kysely-org/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/kysely-org/kysely)
 [![License](https://img.shields.io/github/license/kysely-org/kysely?style=flat)](https://github.com/kysely-org/kysely/blob/master/LICENSE)
-[![Issues](https://img.shields.io/github/issues-closed/kysely-org/kysely?logo=github)](https://github.com/kysely-org/kysely/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
-[![Pull Requests](https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat)](https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
-![GitHub contributors](https://img.shields.io/github/contributors/kysely-org/kysely)
 [![NPM Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
 [![JSR Downloads](https://jsr.io/badges/@kysely/kysely/weekly-downloads)](https://jsr.io/@kysely/kysely)
-[![JSR Score](https://jsr.io/badges/@kysely/kysely/score)](https://jsr.io/@kysely/kysely)
 
-###### Join the discussion ⠀⠀⠀⠀⠀⠀⠀ 
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=flat&logo=discord&logoColor=white)](https://discord.gg/xyBJ3GwvAm)
-[![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?style=flat&logo=Bluesky&logoColor=white)](https://bsky.app/profile/kysely.dev)
+![Kysely providing table and column autocompletion and inferring query result types in an editor](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
 
-###### Get started
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23316192.svg?style=flat&logo=postgresql&logoColor=white)](https://kysely.dev/docs/getting-started?dialect=postgresql)
-[![MySQL](https://img.shields.io/badge/MySQL-4479A1.svg?style=flat&logo=mysql&logoColor=white)](https://kysely.dev/docs/getting-started?dialect=mysql)
-[![MSSQL](https://img.shields.io/badge/MSSQL-CC2927?style=flat&logo=microsoft%20sql%20server&logoColor=white)](https://kysely.dev/docs/getting-started?dialect=mssql)
-[![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?style=flat&logo=sqlite&logoColor=white)](https://kysely.dev/docs/getting-started?dialect=sqlite)
-[![PGlite](https://img.shields.io/badge/PGlite-131517.svg?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTgxIiB2aWV3Qm94PSIwIDAgMzQwIDI3MiIgZmlsbD0ibm9uZSI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjg4IDg4LjA1MDdMMjg4IDIxNS45N0MyODggMjIwLjM5MSAyODQuNDEzIDIyMy45NzUgMjc5Ljk5MSAyMjMuOTdMMjQ3Ljk2OCAyMjMuOTMyQzI0My43MzQgMjIzLjkyNyAyNDAuMjcyIDIyMC42MzQgMjM5Ljk5NSAyMTYuNDcxQzIzOS45OTggMjE2LjMxMyAyNDAgMjE2LjE1NSAyNDAgMjE1Ljk5NkwyMzkuOTk5IDE2Ny45OThDMjM5Ljk5OSAxNTQuNzQ0IDIyOS4yMzkgMTQzLjk5OSAyMTUuOTg0IDE0My45OTlDMjAzLjEzOCAxNDMuOTk5IDE5Mi42MzYgMTMzLjkwNiAxOTIgMTIxLjIxN1Y0OC4wMDk1TDI0OC4wMyA0OC4wNTA3QzI3MC4xMDkgNDguMDY2OSAyODggNjUuOTcwOCAyODggODguMDUwN1pNMTI4IDQ3Ljk5ODNMMTI4IDEwNC4wMjNDMTI4IDExNy4yNzcgMTM4Ljc0NSAxMjguMDIzIDE1MiAxMjguMDIzSDE3NkwxNzYgMTI2LjQxNEMxNzYgMTQ0Ljk2MiAxOTEuMDM2IDE1OS45OTggMjA5LjU4NCAxNTkuOTk4QzIxNy41MzMgMTU5Ljk5OCAyMjMuOTc3IDE2Ni40NDIgMjIzLjk3NyAxNzQuMzkxTDIyMy45NzcgMjE1LjkzMkMyMjMuOTc3IDIxNi4xMjMgMjIzLjk4IDIxNi4zMTMgMjIzLjk4NCAyMTYuNTAzQzIyMy43MjIgMjIwLjY4NSAyMjAuMjQ3IDIyMy45OTYgMjE1Ljk5OSAyMjMuOTk2TDE3NS43MjYgMjIzLjk5NEwxNzYgMTY4LjAzNEMxNzYuMDIyIDE2My42MTYgMTcyLjQ1NyAxNjAuMDE3IDE2OC4wMzkgMTU5Ljk5NUMxNjMuNjIxIDE1OS45NzMgMTYwLjAyMiAxNjMuNTM4IDE2MCAxNjcuOTU2TDE1OS43MjYgMjIzLjk1OUwxNTkuNzI2IDIyMy45OTJMMTExLjkgMjIzLjk4OVYxNjcuOTk1QzExMS45IDE2My41NzcgMTA4LjMxOCAxNTkuOTk1IDEwMy45IDE1OS45OTVDOTkuNDgxNiAxNTkuOTk1IDk1Ljg5OTkgMTYzLjU3NyA5NS44OTk5IDE2Ny45OTVWMjIzLjk4OEw1NS45OTk1IDIyMy45ODZDNTEuNTgxNCAyMjMuOTg1IDQ4IDIyMC40MDQgNDggMjE1Ljk4NlY4Ny45OThDNDggNjUuOTA2NiA2NS45MDg3IDQ3Ljk5NzkgODguMDAwMiA0Ny45OThMMTI4IDQ3Ljk5ODNaTTI1Mi4wNCA5Ni4yMTUzQzI1Mi4wNCA4OS41ODc5IDI0Ni42NjcgODQuMjE1MyAyNDAuMDQgODQuMjE1M0MyMzMuNDEyIDg0LjIxNTMgMjI4LjA0IDg5LjU4NzkgMjI4LjA0IDk2LjIxNTNDMjI4LjA0IDEwMi44NDMgMjMzLjQxMiAxMDguMjE1IDI0MC4wNCAxMDguMjE1QzI0Ni42NjcgMTA4LjIxNSAyNTIuMDQgMTAyLjg0MyAyNTIuMDQgOTYuMjE1M1oiIGZpbGw9IiNGNkY5NUMiLz48L3N2Zz4=)](https://kysely.dev/docs/getting-started?dialect=pglite)
-& more!
+## SQL, with TypeScript
 
-# [Kysely](https://kysely.dev)
+With a [configured `Kysely<Database>` instance](https://kysely.dev/docs/getting-started) named `db`, select people aged 18 and older and their pets:
 
-Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly [TypeScript](https://www.typescriptlang.org/) [SQL](https://en.wikipedia.org/wiki/SQL) query builder.
-Inspired by [Knex.js](http://knexjs.org/). Mainly developed for [Node.js](https://nodejs.org/en/) but also
-runs on all other [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) environments like [Deno](https://deno.com/), [Bun](https://bun.sh/), [Cloudflare Workers](https://workers.cloudflare.com/)
-and web browsers.
+```ts
+const people = await db
+  .selectFrom('person')
+  .innerJoin('pet', 'pet.owner_id', 'person.id')
+  .select(['person.id', 'person.first_name', 'pet.name as pet_name'])
+  .where('person.age', '>=', 18)
+  .orderBy('person.first_name')
+  .execute()
+```
 
-![](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
+TypeScript infers the result from your database types and selected columns, including the `pet_name` alias:
 
-Kysely makes sure you only refer to tables and columns that are visible to the part of the query
-you're writing. The result type only has the selected columns with correct types and aliases. As an
-added bonus you get autocompletion for all that stuff.
+```ts
+type Result = typeof people
+// { id: number; first_name: string; pet_name: string }[]
+```
 
-As shown in the gif above, through the pure magic of modern TypeScript, Kysely is even able to parse
-the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
-column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty
-much anything you can think of.
+The generated SQL (PostgreSQL), with `18` passed separately as a parameter:
 
-Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
-hatches for these situations. See the [sql template tag](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html)
-and the [DynamicModule](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html#ref) for more info.
+```sql
+select "person"."id", "person"."first_name", "pet"."name" as "pet_name"
+from "person"
+inner join "pet" on "pet"."owner_id" = "person"."id"
+where "person"."age" >= $1
+order by "person"."first_name"
+```
 
-All API documentation is written in the typing files and you can simply hover over the module, class
-or method you're using to see it in your IDE. The same documentation is also hosted [here](https://kysely-org.github.io/kysely-apidoc/).
+**[Try this example in the playground][query-playground].**
 
-If you start using Kysely and can't find something you'd want to use, please open an issue or join our
-[Discord server](https://discord.gg/xyBJ3GwvAm).
+<details>
+<summary>Database types used in this example</summary>
 
-# Getting started
+```ts
+import type { Generated } from 'kysely'
 
-Please visit our documentation site [kysely.dev](https://kysely.dev) to get started. We also have a comprehensive
-API documentation hosted [here](https://kysely-org.github.io/kysely-apidoc/), but you can access the same
-documentation in your IDE by hovering over a class/method/property/whatever.
+export interface Database {
+  person: {
+    id: Generated<number>
+    first_name: string
+    age: number | null
+  }
+  pet: {
+    id: Generated<number>
+    name: string
+    owner_id: number
+  }
+}
+```
 
-# Core team
+These types describe your database; they don't create its tables. You can [generate them from an existing database](https://kysely.dev/docs/generating-types) or write them yourself.
 
-## Project leads
+</details>
+
+## Why Kysely?
+
+- **What you see is what you get.** A thin layer over SQL with familiar naming and structure, and predictable 1:1 query compilation. You decide which joins, subqueries and columns go into the SQL you run.
+- **Type safety within queries and in their results.** Catch nonexistent tables, misspelled columns and mistyped values at compile time. When you rename a column in your database types, TypeScript points out the queries that need updating. Autocompletion and inferred result types follow your selections, joins and aliases.
+- **Composition through plain TypeScript.** Extract expressions, subqueries and CTEs into [reusable typed functions](https://kysely.dev/docs/recipes/reusable-helpers). Fetch [related rows as typed, nested JSON](https://kysely.dev/docs/recipes/relations) in one query and one database round trip using SQL subqueries and JSON helpers.
+- **SQL's full range of expression.** Build `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `WITH` and more through [SQL-oriented APIs](https://kysely.dev/docs/category/examples). Compose custom SQL into structured queries with the [parameterized `sql` template tag](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
+- **Opt-in conventions.** [Plugins](https://kysely.dev/docs/plugins) can transform queries before compilation and results after execution. Use camelCase in TypeScript and snake_case in your database, for example.
+- **Documentation ships with the API.** Inline JSDoc includes examples that are [type-checked in CI](https://github.com/kysely-org/kysely/blob/master/.github/workflows/test.yml). Read it through IDE hovers, the [API reference](https://kysely-org.github.io/kysely-apidoc/), or your coding agent alongside the installed library.
+- **Zero runtime dependencies.** Kysely's core avoids environment-specific APIs. Choose a [dialect and driver](https://kysely.dev/docs/dialects) for your database and runtime: Node.js, Bun, Deno, AWS Lambda, Cloudflare Workers or browsers. Extend database support through community or custom dialects.
+
+## Getting started
+
+Follow the guide for your database to choose a driver and configure your first query:
+
+**[PostgreSQL](https://kysely.dev/docs/getting-started?dialect=postgresql) · [MySQL](https://kysely.dev/docs/getting-started?dialect=mysql) · [SQL Server](https://kysely.dev/docs/getting-started?dialect=mssql) · [SQLite](https://kysely.dev/docs/getting-started?dialect=sqlite) · [PGlite](https://kysely.dev/docs/getting-started?dialect=pglite)**
+
+See [all dialects](https://kysely.dev/docs/dialects) for community integrations.
+The docs also cover [generating database types](https://kysely.dev/docs/generating-types), [migrations](https://kysely.dev/docs/migrations) and [plugins](https://kysely.dev/docs/plugins).
+
+## Who uses Kysely?
+
+Kysely runs in production at [Mozilla](https://github.com/mozilla/fxa/blob/8c812edefcc860e3a889f7f3e9b14a926ab056cb/libs/accounts/passkey/src/lib/passkey.repository.ts), [Bluesky](https://github.com/bluesky-social/atproto/blob/f5a0af4465b469203a2a0804e9611474fde50feb/packages/ozone/src/set/service.ts) and [Materialize](https://github.com/MaterializeInc/materialize/blob/3a708836669f15a6dcb700b118fc01e1db7f2db8/console/src/api/materialize/roles/roleDetails.ts).
+It's also built into tools including [Better Auth](https://github.com/better-auth/better-auth/blob/86faaee69b6c2afe237fff8a00602ecc8eccc367/packages/better-auth/src/db/get-migration.ts), [MikroORM](https://github.com/mikro-orm/mikro-orm/blob/80959d2aaa20862b76c37ad9fc3a6be79fb9ba74/packages/sql/package.json) and [OpenClaw](https://github.com/openclaw/openclaw/blob/e391505896163d06d97ae8f48caa5ae333e89a7b/src/agents/worktrees/registry.ts).
+Each name links to public evidence; see more projects on [kysely.dev](https://kysely.dev).
+
+## Community
+
+Ask questions and share what you're building on [Discord](https://discord.gg/xyBJ3GwvAm), follow updates on [Bluesky](https://bsky.app/profile/kysely.dev), or [report a bug](https://github.com/kysely-org/kysely/issues).
+Contributions are welcome! Read the [contribution guidelines](./CONTRIBUTING.md) to get started.
+
+[query-playground]: https://play.kysely.dev/#r%7B%22dialect%22%3A%22postgres%22%2C%22editors%22%3A%7B%22query%22%3A%22const%20people%20%3D%20await%20db%5Cn%20%20.selectFrom('person')%5Cn%20%20.innerJoin('pet'%2C%20'pet.owner_id'%2C%20'person.id')%5Cn%20%20.select(%5B'person.id'%2C%20'person.first_name'%2C%20'pet.name%20as%20pet_name'%5D)%5Cn%20%20.where('person.age'%2C%20'%3E%3D'%2C%2018)%5Cn%20%20.orderBy('person.first_name')%5Cn%20%20.execute()%22%2C%22type%22%3A%22import%20type%20%7B%20Generated%20%7D%20from%20'kysely'%5Cn%5Cnexport%20interface%20Database%20%7B%5Cn%20%20person%3A%20%7B%5Cn%20%20%20%20id%3A%20Generated%3Cnumber%3E%5Cn%20%20%20%20first_name%3A%20string%5Cn%20%20%20%20age%3A%20number%20%7C%20null%5Cn%20%20%7D%5Cn%20%20pet%3A%20%7B%5Cn%20%20%20%20id%3A%20Generated%3Cnumber%3E%5Cn%20%20%20%20name%3A%20string%5Cn%20%20%20%20owner_id%3A%20number%5Cn%20%20%7D%5Cn%7D%5Cn%5Cnimport%20type%20%7B%20Kysely%20%7D%20from%20'kysely'%5Cn%5Cndeclare%20global%20%7B%5Cn%20%20const%20db%3A%20Kysely%3CDatabase%3E%5Cn%7D%5Cn%22%7D%2C%22hideType%22%3Atrue%7D
+
+## Core team
+
+### Project leads
 
 Responsible for project direction, API design, maintenance, code reviews, community support, documentation, and working on some of the most 
 impactful/challenging things.
@@ -89,7 +141,7 @@ impactful/challenging things.
     </tbody>
 </table>
 
-## Honorable mentions
+### Honorable mentions
 
 People who had special impact on the project and its growth.
 
@@ -144,7 +196,7 @@ People who had special impact on the project and its growth.
                 (prisma <a href="https://www.nexxel.dev/blog/typesafe-database">idea</a>)
             </td>
             <td align="center">
-                <a href="https://github.com/nexxeln">
+                <a href="https://github.com/valtyr">
                     <img src="https://avatars.githubusercontent.com/u/3050355?v=4&s=100" width="100px" alt="" />
                     <br />
                     Valtýr Örn Kjartansson
@@ -225,7 +277,7 @@ People who had special impact on the project and its growth.
     </tbody>
 </table>
 
-## All contributors
+### All contributors
 
 <p align="center">
     <a href="https://github.com/kysely-org/kysely/graphs/contributors">
