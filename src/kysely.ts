@@ -854,24 +854,32 @@ export class ControlledTransaction<
   DB,
   S extends string[] = [],
 > extends Transaction<DB> {
-  readonly #props: ControlledTransactionProps
+  readonly #props: ControlledTransactionProps & {
+    readonly state: ControlledTransctionState
+  }
   readonly #compileQuery: QueryCompiler['compileQuery']
 
   constructor(props: ControlledTransactionProps) {
-    props = {
+    const transactionState = props.state ?? {
+      isCommitted: false,
+      isRolledBack: false,
+    }
+    const controlledProps = {
       ...props,
+      state: transactionState,
       executor: new NotCommittedOrRolledBackAssertingExecutor(
         props.executor,
-        props.state,
+        transactionState,
       ),
     }
-    const { connection, state, ...transactionProps } = props
+    const { connection, state, ...transactionProps } = controlledProps
     super(transactionProps)
 
-    this.#props = freeze(props)
+    this.#props = freeze(controlledProps)
 
     const queryId = createQueryId()
-    this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
+    this.#compileQuery = (node) =>
+      controlledProps.executor.compileQuery(node, queryId)
   }
 
   get isCommitted(): boolean {
@@ -1168,7 +1176,7 @@ interface ControlledTransctionState {
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: ControlledConnection
-  readonly state: ControlledTransctionState
+  readonly state?: ControlledTransctionState
 }
 
 export class Command<T> {
@@ -1248,9 +1256,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     })
   }
 
-  executeQuery<R>(
-    compiledQuery: CompiledQuery<R>,
-  ): Promise<QueryResult<R>> {
+  executeQuery<R>(compiledQuery: CompiledQuery<R>): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#state)
     return this.#executor
       .withConnectionProvider(this)

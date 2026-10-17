@@ -8,6 +8,7 @@ import {
   type Driver,
   DummyDriver,
   Kysely,
+  type KyselyConfig,
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
@@ -803,20 +804,22 @@ describe('controlled transaction', () => {
   const sandbox = sinon.createSandbox()
   let driver: Driver
   let connection: DatabaseConnection
+  let config: KyselyConfig
   let db: Kysely<Database>
 
   beforeEach(async () => {
     driver = new DummyDriver()
     connection = await driver.acquireConnection()
     sandbox.stub(driver, 'acquireConnection').resolves(connection)
-    db = new Kysely<Database>({
+    config = {
       dialect: {
         createAdapter: () => new PostgresAdapter(),
         createDriver: () => driver,
         createIntrospector: (db) => new PostgresIntrospector(db),
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
-    })
+    }
+    db = new Kysely<Database>(config)
   })
 
   afterEach(async () => {
@@ -828,6 +831,24 @@ describe('controlled transaction', () => {
     const trx = await db.startTransaction().execute()
     return await trx.savepoint('foo').execute()
   }
+
+  it('should preserve direct construction without completion state', async () => {
+    const release = sandbox.spy()
+    const trx = new ControlledTransaction<Database>({
+      config,
+      dialect: config.dialect,
+      driver,
+      executor: db.getExecutor(),
+      connection: { connection, release },
+    })
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.false
+    await trx.withSchema('public').commit().execute()
+    expect(trx.isCommitted).to.be.true
+    expect(trx.isRolledBack).to.be.false
+    expect(release.calledOnce).to.be.true
+  })
 
   it('should release the connection if the transaction fails to begin', async () => {
     const beginError = new Error('begin failed')
