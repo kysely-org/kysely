@@ -798,7 +798,13 @@ for (const dialect of DIALECTS) {
             startedRunning = resolve
           })
           const [migratorA] = createMigrations(
-            [{ name: 'migrationA', durationMs: 1000, preUp: () => startedRunning() }],
+            [
+              {
+                name: 'migrationA',
+                durationMs: 1000,
+                preUp: () => startedRunning(),
+              },
+            ],
             { disableTransactions: true },
           )
           const [migratorB] = createMigrations(['migrationB'])
@@ -1073,12 +1079,15 @@ for (const dialect of DIALECTS) {
     }
 
     function createMigrations(
-      migrationConfigs: (string | {
-        name: string
-        error?: string
-        durationMs?: number
-        preUp?: () => void
-      })[],
+      migrationConfigs: (
+        | string
+        | {
+            name: string
+            error?: string
+            durationMs?: number
+            preUp?: () => void
+          }
+      )[],
       migratorConfig?: Partial<MigratorProps>,
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []

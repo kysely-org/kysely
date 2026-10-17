@@ -1019,7 +1019,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'sqlite') {
+    if (dialect === 'sqlite') {
       it('should order and limit the amount of deleted rows and return', async () => {
         const query = ctx.db
           .deleteFrom('person')
