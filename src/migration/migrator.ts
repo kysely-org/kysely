@@ -62,6 +62,13 @@ export class Migrator {
   }
 
   /**
+   * Returns the {@link MigrationProvider} passed to the constructor.
+   */
+  get provider(): MigrationProvider {
+    return this.#props.provider
+  }
+
+  /**
    * Returns a {@link MigrationInfo} object for each migration.
    *
    * The returned array is sorted by migration name.
