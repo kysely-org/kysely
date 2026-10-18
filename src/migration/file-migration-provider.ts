@@ -25,6 +25,14 @@ export class FileMigrationProvider implements MigrationProvider {
     this.#props = props
   }
 
+  /**
+   * Returns the {@link FileMigrationProviderProps.migrationFolder | migration folder}
+   * passed to the constructor.
+   */
+  get migrationFolder(): string {
+    return this.#props.migrationFolder
+  }
+
   async getMigrations(): Promise<Record<string, Migration>> {
     const migrations: Record<string, Migration> = {}
     const files = await this.#props.fs.readdir(this.#props.migrationFolder)
