@@ -26,7 +26,8 @@ export class FileMigrationProvider implements MigrationProvider {
   }
 
   /**
-   * Returns the migration folder passed to the constructor.
+   * Returns the {@link FileMigrationProviderProps.migrationFolder | migration folder}
+   * passed to the constructor.
    */
   get migrationFolder(): string {
     return this.#props.migrationFolder
