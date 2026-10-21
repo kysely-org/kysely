@@ -102,8 +102,8 @@ export class PostgresDriver implements Driver {
     try {
       await connection.executeQuery(CompiledQuery.raw('rollback'))
     } catch (err) {
-      // The transaction may still be open. A later successful query doesn't
-      // establish that the transaction was rolled back.
+      // The transaction may still be open. Reject further operations and keep
+      // this connection out of the pool.
       connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
       throw err
     }
@@ -189,6 +189,8 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async collectSessionInfo(): Promise<void> {
+    this.#assertNotDiscarded()
+
     if (this.#pid) {
       return
     }
@@ -213,6 +215,8 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    this.#assertNotDiscarded()
+
     try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
@@ -255,6 +259,8 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
+    this.#assertNotDiscarded()
+
     if (!this.#options.cursor) {
       throw new Error(
         "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
@@ -296,6 +302,14 @@ class PostgresConnection implements DatabaseConnection {
 
   [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
     this.#mustDiscard = true
+  }
+
+  #assertNotDiscarded(): void {
+    if (this.#mustDiscard) {
+      throw new Error(
+        'Postgres connection cannot be used after a failed rollback',
+      )
+    }
   }
 
   async #executeControlQuery(

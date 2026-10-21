@@ -3,6 +3,7 @@ import { Client, Pool } from 'pg'
 import Cursor from 'pg-cursor'
 import * as sinon from 'sinon'
 import { Kysely, PostgresDialect, sql } from '../../../dist/index.js'
+import { Deferred } from '../../../dist/util/deferred.js'
 import {
   clearDatabase,
   destroyTest,
@@ -166,44 +167,83 @@ if (dialect) {
     })
 
     for (const api of ['callback', 'controlled'] as const) {
-      it(`should discard when a ${api} transaction rollback fails before reaching PostgreSQL`, async () => {
+      it(`should reject queries queued behind a failed ${api} transaction rollback`, async () => {
         const client = await pool.connect()
         client.release()
         releases.length = 0
 
         const error = new Error('rollback rejected before reaching PostgreSQL')
+        const rollbackStarted = new Deferred<void>()
+        const failedRollback = new Deferred<never>()
         querySpy.restore()
         const queryStub = sandbox.stub(client, 'query').callThrough()
-        queryStub.withArgs('rollback').rejects(error)
+        queryStub.withArgs('rollback').callsFake(() => {
+          rollbackStarted.resolve()
+          return failedRollback.promise
+        })
 
-        if (api === 'callback') {
-          await expect(
-            db.transaction().execute(async (trx) => {
-              await insertUncommittedPerson(trx)
-              throw new Error('application error')
-            }),
-          ).to.be.rejectedWith(error)
-        } else {
-          const trx = await db.startTransaction().execute()
-          try {
-            await insertUncommittedPerson(trx)
-            await expect(trx.rollback().execute()).to.be.rejectedWith(error)
-            expect(trx.isRolledBack).to.be.true
-          } finally {
-            if (!trx.isCommitted && !trx.isRolledBack) {
-              await trx
-                .rollback()
-                .execute()
-                .catch(() => {})
+        await db.connection().execute(async (connection) => {
+          const rollback = (async () => {
+            if (api === 'callback') {
+              return await connection.transaction().execute(async (trx) => {
+                await insertUncommittedPerson(trx)
+                throw new Error('application error')
+              })
             }
+
+            const trx = await connection.startTransaction().execute()
+            try {
+              await insertUncommittedPerson(trx)
+              return await trx.rollback().execute()
+            } finally {
+              if (!trx.isCommitted && !trx.isRolledBack) {
+                await trx.rollback().execute()
+              }
+            }
+          })().catch((err: unknown) => err)
+
+          try {
+            await rollbackStarted.promise
+            const queryCount = queryStub.callCount
+
+            const queuedQuery = connection
+              .insertInto('person')
+              .values({ first_name: 'queued', gender: 'other' })
+              .execute()
+              .catch((err: unknown) => err)
+            const queuedCommit = sql`commit`
+              .execute(connection)
+              .catch((err: unknown) => err)
+            const stream = connection.selectFrom('person').selectAll().stream()
+            const queuedStream = stream.next().catch((err: unknown) => err)
+
+            failedRollback.reject(error)
+            expect(await rollback).to.equal(error)
+
+            for (const result of await Promise.all([
+              queuedQuery,
+              queuedCommit,
+              queuedStream,
+            ])) {
+              expect(result).to.be.instanceOf(Error)
+              expect((result as Error).message).to.equal(
+                'Postgres connection cannot be used after a failed rollback',
+              )
+            }
+
+            expect(queryStub.callCount).to.equal(queryCount)
+            expect(releases).to.deep.equal([])
+          } finally {
+            failedRollback.reject(error)
+            await rollback
           }
-        }
+        })
 
         await expectDiscardedClient()
       })
     }
 
-    it('should discard after a timed-out rollback even if an outer connection query later succeeds', async () => {
+    it('should reject further operations after a timed-out rollback even after pg recovers', async () => {
       await db.connection().execute(async (connection) => {
         const error = await connection
           .transaction()
@@ -216,7 +256,27 @@ if (dialect) {
         expect(error).to.be.instanceOf(Error)
         expect((error as Error).message).to.equal('Query read timeout')
         await sleep(1_000)
-        expect(await getPid(connection)).to.equal(initialPid)
+        const queryCount = querySpy.callCount
+        const message =
+          'Postgres connection cannot be used after a failed rollback'
+
+        await expect(getPid(connection)).to.be.rejectedWith(message)
+        await expect(
+          getPid(connection.withSchema('public')),
+        ).to.be.rejectedWith(message)
+        const stream = connection.selectFrom('person').selectAll().stream()
+        await expect(stream.next()).to.be.rejectedWith(message)
+        await expect(
+          connection.transaction().execute(async () => {}),
+        ).to.be.rejectedWith(message)
+        await expect(
+          connection.selectFrom('person').selectAll().execute({
+            signal: new AbortController().signal,
+            inflightQueryAbortStrategy: 'cancel query',
+          }),
+        ).to.be.rejectedWith(message)
+
+        expect(querySpy.callCount).to.equal(queryCount)
         expect(releases).to.deep.equal([])
       })
 
