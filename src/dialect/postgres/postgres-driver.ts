@@ -298,7 +298,7 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release(!!this.#queryTimeoutError)
+    this.#client.release(Boolean(this.#queryTimeoutError))
   }
 
   #assertNotTimedOut(): void {
