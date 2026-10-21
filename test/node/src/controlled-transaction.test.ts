@@ -1,3 +1,4 @@
+import { DatabaseError as PostgresError } from 'pg'
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
@@ -95,6 +96,73 @@ for (const dialect of DIALECTS) {
     after(async () => {
       await destroyTest(ctx)
     })
+
+    if (variant === 'postgres') {
+      it('should reject a commit when a caught statement error aborted the transaction', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: 1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').values(person).execute(),
+          ).to.be.rejectedWith(PostgresError, 'duplicate key')
+
+          await expect(trx.commit().execute()).to.be.rejectedWith(
+            'Transaction was rolled back instead of committed',
+          )
+          expect(trx.isCommitted).to.be.false
+        } finally {
+          if (!trx.isCommitted) {
+            await trx.rollback().execute()
+          }
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should commit after recovering from a statement error using a savepoint', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: 1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          const savedTrx = await trx.savepoint('before_error').execute()
+          await expect(
+            savedTrx.insertInto('person').values(person).execute(),
+          ).to.be.rejectedWith(PostgresError, 'duplicate key')
+          await savedTrx.rollbackToSavepoint('before_error').execute()
+          await trx.commit().execute()
+          expect(trx.isCommitted).to.be.true
+        } finally {
+          if (!trx.isCommitted) {
+            await trx.rollback().execute()
+          }
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+    }
 
     it('should be able to start and commit a transaction', async () => {
       const trx = await ctx.db.startTransaction().execute()

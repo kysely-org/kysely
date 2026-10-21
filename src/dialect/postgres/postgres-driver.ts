@@ -215,6 +215,12 @@ class PostgresConnection implements DatabaseConnection {
 
       const { command, rowCount, rows } = result
 
+      // PostgreSQL completes COMMIT with a ROLLBACK tag if an earlier
+      // statement error left the transaction aborted.
+      if (compiledQuery.sql === 'commit' && command === 'ROLLBACK') {
+        throw new Error('Transaction was rolled back instead of committed')
+      }
+
       return {
         numAffectedRows:
           command === 'INSERT' ||
