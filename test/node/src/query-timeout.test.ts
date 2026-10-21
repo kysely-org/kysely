@@ -17,7 +17,7 @@ import {
 const dialect = DIALECTS.find((dialect) => dialect.variant === 'postgres')
 
 if (dialect) {
-  describe('postgres: query timeout', () => {
+  describe('postgres: rollback failure', () => {
     const sandbox = sinon.createSandbox()
     let ctx: TestContext
     let db: Kysely<Database>
@@ -55,31 +55,31 @@ if (dialect) {
       await destroyTest(ctx)
     })
 
-    it('should discard the client after a standalone query times out', async () => {
+    it('should keep the client after a standalone query times out', async () => {
       await expectTimeout(db)
-      await expectDiscardedClient()
+      await expectReusableClient({ waitForRecovery: true })
     })
 
-    it('should discard the client when a connection callback throws after a timeout', async () => {
+    it('should keep the client when a connection callback throws after a query timeout', async () => {
       await expect(
         db.connection().execute((connection) => {
           return sql`select pg_sleep(1)`.execute(connection)
         }),
       ).to.be.rejectedWith('Query read timeout')
 
-      await expectDiscardedClient()
+      await expectReusableClient({ waitForRecovery: true })
     })
 
-    it('should discard the client when a connection callback catches a timeout', async () => {
+    it('should keep the client when a connection callback catches a query timeout', async () => {
       await db.connection().execute(async (connection) => {
         await expectTimeout(connection)
         expect(releases).to.deep.equal([])
       })
 
-      await expectDiscardedClient()
+      await expectReusableClient({ waitForRecovery: true })
     })
 
-    it('should discard the client when a stream times out', async () => {
+    it('should keep the client after closing a timed-out stream', async () => {
       await db.connection().execute(async (connection) => {
         const stream = connection
           .selectNoFrom(sql`pg_sleep(1)`.as('sleep'))
@@ -91,7 +91,7 @@ if (dialect) {
         expect(releases).to.deep.equal([])
       })
 
-      await expectDiscardedClient()
+      await expectReusableClient()
     })
 
     for (const catchesTimeout of [false, true]) {
@@ -164,6 +164,44 @@ if (dialect) {
         }
       }
     })
+
+    for (const api of ['callback', 'controlled'] as const) {
+      it(`should discard when a ${api} transaction rollback fails before reaching PostgreSQL`, async () => {
+        const client = await pool.connect()
+        client.release()
+        releases.length = 0
+
+        const error = new Error('rollback rejected before reaching PostgreSQL')
+        querySpy.restore()
+        const queryStub = sandbox.stub(client, 'query').callThrough()
+        queryStub.withArgs('rollback').rejects(error)
+
+        if (api === 'callback') {
+          await expect(
+            db.transaction().execute(async (trx) => {
+              await insertUncommittedPerson(trx)
+              throw new Error('application error')
+            }),
+          ).to.be.rejectedWith(error)
+        } else {
+          const trx = await db.startTransaction().execute()
+          try {
+            await insertUncommittedPerson(trx)
+            await expect(trx.rollback().execute()).to.be.rejectedWith(error)
+            expect(trx.isRolledBack).to.be.true
+          } finally {
+            if (!trx.isCommitted && !trx.isRolledBack) {
+              await trx
+                .rollback()
+                .execute()
+                .catch(() => {})
+            }
+          }
+        }
+
+        await expectDiscardedClient()
+      })
+    }
 
     it('should discard after a timed-out rollback even if an outer connection query later succeeds', async () => {
       await db.connection().execute(async (connection) => {
@@ -296,10 +334,17 @@ if (dialect) {
       return error
     }
 
-    async function expectReusableClient(): Promise<void> {
+    async function expectReusableClient({
+      waitForRecovery = false,
+    } = {}): Promise<void> {
       expect(releases).to.deep.equal([false])
       expect(pool.totalCount).to.equal(1)
       expect(pool.idleCount).to.equal(1)
+
+      if (waitForRecovery) {
+        await sleep(1_000)
+      }
+
       expect(await getPid(db)).to.equal(initialPid)
     }
 

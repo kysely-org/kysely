@@ -102,12 +102,9 @@ export class PostgresDriver implements Driver {
     try {
       await connection.executeQuery(CompiledQuery.raw('rollback'))
     } catch (err) {
-      if (isQueryTimeoutError(err)) {
-        // The rollback may never have reached PostgreSQL. A later successful
-        // query doesn't establish that the transaction was rolled back.
-        connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
-      }
-
+      // The transaction may still be open. A later successful query doesn't
+      // establish that the transaction was rolled back.
+      connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
       throw err
     }
   }
@@ -175,7 +172,6 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
-  #isTimedOut = false
   #mustDiscard = false
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
@@ -205,19 +201,14 @@ class PostgresConnection implements DatabaseConnection {
     if (processID) {
       this.#pid = processID
     } else {
-      try {
-        const {
-          rows: [{ pid }],
-        } = await this.#client.query<{ pid: string }>(
-          'select pg_backend_pid() as pid',
-          [],
-        )
+      const {
+        rows: [{ pid }],
+      } = await this.#client.query<{ pid: string }>(
+        'select pg_backend_pid() as pid',
+        [],
+      )
 
-        this.#isTimedOut = false
-        this.#pid = Number(pid)
-      } catch (err) {
-        throw this.#handleQueryError(err)
-      }
+      this.#pid = Number(pid)
     }
   }
 
@@ -230,8 +221,6 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.sql,
         compiledQuery.parameters,
       )
-
-      this.#isTimedOut = false
 
       const { command, rowCount, rows } = result
 
@@ -246,7 +235,7 @@ class PostgresConnection implements DatabaseConnection {
         rows: rows ?? [],
       }
     } catch (err) {
-      throw this.#handleQueryError(err)
+      throw extendStackTrace(err, new Error())
     } finally {
       // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
@@ -281,7 +270,6 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.parameters.slice(),
       ),
     )
-    let isTimedOut = false
 
     try {
       while (true) {
@@ -295,35 +283,19 @@ class PostgresConnection implements DatabaseConnection {
           rows,
         }
       }
-    } catch (err) {
-      isTimedOut = isQueryTimeoutError(err)
-      throw this.#handleQueryError(err)
     } finally {
-      if (!isTimedOut) {
-        await cursor.close()
-        this.#isTimedOut = false
-      }
-
+      await cursor.close()
       // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
     }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release(this.#isTimedOut || this.#mustDiscard)
+    this.#client.release(this.#mustDiscard)
   }
 
   [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
     this.#mustDiscard = true
-  }
-
-  #handleQueryError(err: unknown): unknown {
-    if (isQueryTimeoutError(err)) {
-      // pg rejects locally while the query may still be running on the server.
-      this.#isTimedOut = true
-    }
-
-    return extendStackTrace(err, new Error())
   }
 
   async #executeControlQuery(
@@ -370,8 +342,4 @@ class PostgresConnection implements DatabaseConnection {
       controlClient.end()
     }
   }
-}
-
-function isQueryTimeoutError(err: unknown): err is Error {
-  return err instanceof Error && err.message === 'Query read timeout'
 }
