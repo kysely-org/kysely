@@ -121,7 +121,7 @@ export interface PostgresPoolClient extends Omit<
   PostgresClient,
   'connect' | 'end'
 > {
-  release(): void
+  release(destroy?: boolean): void
 }
 
 /**

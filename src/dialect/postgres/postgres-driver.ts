@@ -164,6 +164,7 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
+  #queryTimeoutError?: Error
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -180,6 +181,8 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async collectSessionInfo(): Promise<void> {
+    this.#assertNotTimedOut()
+
     if (this.#pid) {
       return
     }
@@ -192,18 +195,24 @@ class PostgresConnection implements DatabaseConnection {
     if (processID) {
       this.#pid = processID
     } else {
-      const {
-        rows: [{ pid }],
-      } = await this.#client.query<{ pid: string }>(
-        'select pg_backend_pid() as pid',
-        [],
-      )
+      try {
+        const {
+          rows: [{ pid }],
+        } = await this.#client.query<{ pid: string }>(
+          'select pg_backend_pid() as pid',
+          [],
+        )
 
-      this.#pid = Number(pid)
+        this.#pid = Number(pid)
+      } catch (err) {
+        throw this.#handleQueryError(err)
+      }
     }
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    this.#assertNotTimedOut()
+
     try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
@@ -226,7 +235,7 @@ class PostgresConnection implements DatabaseConnection {
         rows: rows ?? [],
       }
     } catch (err) {
-      throw extendStackTrace(err, new Error())
+      throw this.#handleQueryError(err)
     } finally {
       // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
@@ -246,6 +255,8 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
+    this.#assertNotTimedOut()
+
     if (!this.#options.cursor) {
       throw new Error(
         "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
@@ -274,15 +285,35 @@ class PostgresConnection implements DatabaseConnection {
           rows,
         }
       }
+    } catch (err) {
+      throw this.#handleQueryError(err)
     } finally {
-      await cursor.close()
+      if (!this.#queryTimeoutError) {
+        await cursor.close()
+      }
+
       // this tells cancellation the query is no longer relevant.
       this.#queryId = undefined
     }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release()
+    this.#client.release(!!this.#queryTimeoutError)
+  }
+
+  #assertNotTimedOut(): void {
+    if (this.#queryTimeoutError) {
+      throw this.#queryTimeoutError
+    }
+  }
+
+  #handleQueryError(err: unknown): unknown {
+    if (err instanceof Error && err.message === 'Query read timeout') {
+      // pg rejects locally while the query may still be running on the server.
+      this.#queryTimeoutError = err
+    }
+
+    return extendStackTrace(err, new Error())
   }
 
   async #executeControlQuery(
