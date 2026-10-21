@@ -332,8 +332,14 @@ class PostgresConnection implements DatabaseConnection {
       })
     }
 
+    const {
+      query_timeout: _,
+      statement_timeout: __,
+      ...controlClientOptions
+    } = poolOptions as Record<string, unknown>
+
     const controlClient = new Client({
-      ...poolOptions,
+      ...controlClientOptions,
       // `password` is not enumerable, so we have to explicitly set it after the spread.
       password: 'password' in poolOptions ? poolOptions.password : undefined,
     })
