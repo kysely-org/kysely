@@ -190,6 +190,35 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    if (variant === 'postgres') {
+      it('should reject a commit when a caught statement error aborted the transaction', async () => {
+        await expect(
+          ctx.db.transaction().execute(async (trx) => {
+            const person = {
+              id: 1000000,
+              first_name: 'Foo',
+              gender: 'male',
+            } as const
+
+            await trx.insertInto('person').values(person).execute()
+            await expect(
+              trx.insertInto('person').values(person).execute(),
+            ).to.be.rejectedWith(PostgresError, 'duplicate key')
+
+            return 'success'
+          }),
+        ).to.be.rejectedWith('Transaction was rolled back instead of committed')
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', 1000000)
+            .execute(),
+        ).to.eql([])
+      })
+    }
+
     if (sqlSpec === 'postgres') {
       it('should be able to start a transaction with a single connection', async () => {
         const result = await ctx.db.connection().execute((db) => {
