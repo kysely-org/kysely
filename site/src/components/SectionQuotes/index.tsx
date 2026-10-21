@@ -37,15 +37,28 @@ export function SectionQuotes() {
       masonry.dataset.packed = 'true'
     }
 
+    // Layout changes observed sizes. Run outside the observer's delivery cycle
+    // to avoid resize-loop errors, and coalesce notifications into one frame.
+    let layoutFrame: number | undefined
+    const scheduleLayout = () => {
+      if (layoutFrame !== undefined) return
+
+      layoutFrame = requestAnimationFrame(() => {
+        layoutFrame = undefined
+        layout()
+      })
+    }
+
     // Keep the existing round-robin masonry layout with one copy of each quote.
     // Observing the cards also handles images, fonts, and text-size changes.
     layout()
-    const observer = new ResizeObserver(layout)
+    const observer = new ResizeObserver(scheduleLayout)
     observer.observe(masonry)
     cards.forEach((card) => observer.observe(card))
 
     return () => {
       observer.disconnect()
+      if (layoutFrame !== undefined) cancelAnimationFrame(layoutFrame)
       delete masonry.dataset.packed
       masonry.style.removeProperty('height')
       cards.forEach((card) => {
