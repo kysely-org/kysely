@@ -1,0 +1,8 @@
+{
+  "label": "Guides",
+  "position": 2.5,
+  "link": {
+    "type": "generated-index",
+    "description": "Learn how SQL query builders work in TypeScript, compare Kysely with Knex, and plan a migration with practical query examples."
+  }
+}

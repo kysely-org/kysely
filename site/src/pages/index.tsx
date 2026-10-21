@@ -1,5 +1,6 @@
 import React, { JSX, useEffect, useRef, useState } from 'react'
 import Head from '@docusaurus/Head'
+import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import clsx from 'clsx'
@@ -43,6 +44,7 @@ export default function Home(): JSX.Element {
         <SectionCompiler />
         <SectionComposition />
         <SectionFeatures />
+        <SectionGuides />
         <SectionQuotes />
       </main>
     </Layout>
@@ -93,10 +95,12 @@ function SectionHero() {
             </span>
           </h1>
           <p className={styles.heroSubtitle}>
+            A{' '}
             <a href={STABILITY_URL} rel="noopener noreferrer" target="_blank">
-              Mature
+              mature
             </a>
-            , predictable SQL, precise types, tight feedback loops.
+            , open-source SQL query builder for TypeScript. Predictable SQL,
+            precise types, tight feedback loops.
             <br />
             Runs everywhere:{' '}
             <a
@@ -169,6 +173,44 @@ function SectionHero() {
         <DemoVideo />
       </div>
     </header>
+  )
+}
+
+function SectionGuides() {
+  return (
+    <section
+      className={styles.guides}
+      id="learn"
+      aria-labelledby="guides-title"
+    >
+      <div className="container">
+        <h2 id="guides-title">Choosing a SQL query builder?</h2>
+        <p className={styles.guidesIntro}>
+          See how query builders work, what TypeScript adds, and how Kysely
+          compares with Knex.
+        </p>
+        <div className={styles.guidesGrid}>
+          <Link className={styles.guide} to="/docs/guides/sql-query-builder">
+            <span className={styles.guideLabel}>Learn the basics</span>
+            <h3>SQL query builders in TypeScript</h3>
+            <p>
+              From a typed query to the SQL it produces. With joins, parameters,
+              and a comparison with raw SQL and ORMs.
+            </p>
+            <span className={styles.guideLink}>Read the guide →</span>
+          </Link>
+          <Link className={styles.guide} to="/docs/guides/kysely-vs-knex">
+            <span className={styles.guideLabel}>Compare and migrate</span>
+            <h3>Kysely vs Knex</h3>
+            <p>
+              The same query in both libraries, differences in type inference,
+              and a practical path for migrating existing code.
+            </p>
+            <span className={styles.guideLink}>Compare the two →</span>
+          </Link>
+        </div>
+      </div>
+    </section>
   )
 }
 

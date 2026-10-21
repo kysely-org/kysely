@@ -20,7 +20,7 @@ const title = 'Kysely'
 const url = 'https://kysely.dev'
 
 const tagline =
-  'Kysely is the most powerful type-safe SQL query builder for TypeScript. Get unparalleled autocompletion and compile-time type safety for complex queries, joins, and subqueries. Used in production by Mozilla, Bluesky, and Materialize. Modern TypeScript, zero runtime dependencies.'
+  'Kysely is an open-source, type-safe SQL query builder for TypeScript. Build composable queries for PostgreSQL, MySQL, SQL Server, and SQLite with precise result types.'
 
 function socialNavbarItem(
   label: string,
@@ -84,11 +84,6 @@ export default {
           'https://bsky.app/profile/kysely.dev',
         ],
         areaServed: 'Worldwide',
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress:
-            'Placeholder — global online project; no physical mailing address',
-        },
         contactPoint: {
           '@type': 'ContactPoint',
           name: 'Igal Klebanov',
@@ -170,7 +165,7 @@ export default {
           },
         ],
         siteDescription:
-          'The most powerful type-safe SQL query builder for TypeScript',
+          'An open-source, type-safe SQL query builder for TypeScript',
         siteTitle: 'Kysely',
       } satisfies LLMsTXTPluginOptions,
     ],

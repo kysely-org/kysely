@@ -615,6 +615,78 @@ a.stat:hover .statValue {
   color: var(--kl-mut);
 }
 
+/* ------------------------------ guides ------------------------------ */
+
+.guides {
+  border-top: 1px solid var(--kl-line);
+  padding: 72px 0 80px;
+  scroll-margin-top: 88px;
+}
+
+.guides h2 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.guidesIntro {
+  color: var(--kl-mut);
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 28px;
+  max-width: 65ch;
+}
+
+.guidesGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guide {
+  border: 1px solid var(--kl-line);
+  border-radius: 12px;
+  color: var(--kl-ink);
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+}
+
+.guide:hover,
+.guide:focus-visible {
+  border-color: var(--kl-acc);
+  color: var(--kl-ink);
+  text-decoration: none;
+}
+
+.guideLabel {
+  color: var(--kl-acc);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.guide h3 {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  margin: 12px 0;
+}
+
+.guide p {
+  color: var(--kl-mut);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+.guideLink {
+  color: var(--kl-acc);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: auto;
+}
+
 /* --------------------------- responsive --------------------------- */
 
 @media (max-width: 996px) {
@@ -662,6 +734,10 @@ a.stat:hover .statValue {
 }
 
 @media (max-width: 640px) {
+  .guidesGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* Deliberate full-width stack instead of ragged wrapping. */
   .heroButtons {
     display: grid;
