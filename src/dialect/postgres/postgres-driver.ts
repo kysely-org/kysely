@@ -187,8 +187,6 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async collectSessionInfo(): Promise<void> {
-    this.#assertNotDiscarded()
-
     if (this.#pid) {
       return
     }
@@ -201,6 +199,8 @@ class PostgresConnection implements DatabaseConnection {
     if (processID) {
       this.#pid = processID
     } else {
+      this.#assertNotDiscarded()
+
       const {
         rows: [{ pid }],
       } = await this.#client.query<{ pid: string }>(
