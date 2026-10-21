@@ -20,6 +20,7 @@ import type {
 } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
+const PRIVATE_MARK_FOR_DISCARD_METHOD: unique symbol = Symbol()
 
 export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig
@@ -97,8 +98,18 @@ export class PostgresDriver implements Driver {
     await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+  async rollbackTransaction(connection: PostgresConnection): Promise<void> {
+    try {
+      await connection.executeQuery(CompiledQuery.raw('rollback'))
+    } catch (err) {
+      if (isQueryTimeoutError(err)) {
+        // The rollback may never have reached PostgreSQL. A later successful
+        // query doesn't establish that the transaction was rolled back.
+        connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
+      }
+
+      throw err
+    }
   }
 
   async savepoint(
@@ -164,7 +175,8 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
-  #queryTimeoutError?: Error
+  #isTimedOut = false
+  #mustDiscard = false
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -181,8 +193,6 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async collectSessionInfo(): Promise<void> {
-    this.#assertNotTimedOut()
-
     if (this.#pid) {
       return
     }
@@ -203,6 +213,7 @@ class PostgresConnection implements DatabaseConnection {
           [],
         )
 
+        this.#isTimedOut = false
         this.#pid = Number(pid)
       } catch (err) {
         throw this.#handleQueryError(err)
@@ -211,8 +222,6 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    this.#assertNotTimedOut()
-
     try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
@@ -221,6 +230,8 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.sql,
         compiledQuery.parameters,
       )
+
+      this.#isTimedOut = false
 
       const { command, rowCount, rows } = result
 
@@ -255,8 +266,6 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
-    this.#assertNotTimedOut()
-
     if (!this.#options.cursor) {
       throw new Error(
         "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
@@ -272,6 +281,7 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.parameters.slice(),
       ),
     )
+    let isTimedOut = false
 
     try {
       while (true) {
@@ -286,10 +296,12 @@ class PostgresConnection implements DatabaseConnection {
         }
       }
     } catch (err) {
+      isTimedOut = isQueryTimeoutError(err)
       throw this.#handleQueryError(err)
     } finally {
-      if (!this.#queryTimeoutError) {
+      if (!isTimedOut) {
         await cursor.close()
+        this.#isTimedOut = false
       }
 
       // this tells cancellation the query is no longer relevant.
@@ -298,19 +310,17 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release(Boolean(this.#queryTimeoutError))
+    this.#client.release(this.#isTimedOut || this.#mustDiscard)
   }
 
-  #assertNotTimedOut(): void {
-    if (this.#queryTimeoutError) {
-      throw this.#queryTimeoutError
-    }
+  [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
+    this.#mustDiscard = true
   }
 
   #handleQueryError(err: unknown): unknown {
-    if (err instanceof Error && err.message === 'Query read timeout') {
+    if (isQueryTimeoutError(err)) {
       // pg rejects locally while the query may still be running on the server.
-      this.#queryTimeoutError = err
+      this.#isTimedOut = true
     }
 
     return extendStackTrace(err, new Error())
@@ -360,4 +370,8 @@ class PostgresConnection implements DatabaseConnection {
       controlClient.end()
     }
   }
+}
+
+function isQueryTimeoutError(err: unknown): err is Error {
+  return err instanceof Error && err.message === 'Query read timeout'
 }

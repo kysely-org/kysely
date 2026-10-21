@@ -1,3 +1,4 @@
+import { setTimeout as sleep } from 'node:timers/promises'
 import { Client, Pool } from 'pg'
 import Cursor from 'pg-cursor'
 import * as sinon from 'sinon'
@@ -62,33 +63,31 @@ if (dialect) {
     it('should discard the client when a connection callback throws after a timeout', async () => {
       await expect(
         db.connection().execute((connection) => {
-          return sql`select pg_sleep(0.6)`.execute(connection)
+          return sql`select pg_sleep(1)`.execute(connection)
         }),
       ).to.be.rejectedWith('Query read timeout')
 
       await expectDiscardedClient()
     })
 
-    it('should reject further operations when a connection callback catches a timeout', async () => {
+    it('should discard the client when a connection callback catches a timeout', async () => {
       await db.connection().execute(async (connection) => {
-        const error = await expectTimeout(connection)
-        await expectUnusableConnection(connection, error)
+        await expectTimeout(connection)
         expect(releases).to.deep.equal([])
       })
 
       await expectDiscardedClient()
     })
 
-    it('should invalidate the connection when a stream times out', async () => {
+    it('should discard the client when a stream times out', async () => {
       await db.connection().execute(async (connection) => {
         const stream = connection
-          .selectNoFrom(sql`pg_sleep(0.6)`.as('sleep'))
+          .selectNoFrom(sql`pg_sleep(1)`.as('sleep'))
           .stream()
         const error = await stream.next().catch((error: unknown) => error)
 
         expect(error).to.be.instanceOf(Error)
         expect((error as Error).message).to.equal('Query read timeout')
-        await expectUnusableConnection(connection, error)
         expect(releases).to.deep.equal([])
       })
 
@@ -108,7 +107,6 @@ if (dialect) {
             queryCount = querySpy.callCount
 
             if (catchesTimeout) {
-              await expectUnusableConnection(trx, error)
               expect(releases).to.deep.equal([])
             } else {
               throw error
@@ -116,49 +114,144 @@ if (dialect) {
           })
           .catch((error: unknown) => error)
 
-        expect(result).to.equal(error)
-
-        // Neither commit nor rollback should be sent after the timeout.
-        expect(querySpy.callCount).to.equal(queryCount)
+        expect(result).to.be.instanceOf(Error)
+        expect((result as Error).message).to.equal('Query read timeout')
+        expect(result).to.not.equal(error)
+        expect(
+          querySpy
+            .getCalls()
+            .slice(queryCount)
+            .map((call) => call.args[0]),
+        ).to.deep.equal(catchesTimeout ? ['commit', 'rollback'] : ['rollback'])
         await expectDiscardedClient()
       })
     }
 
-    it('should invalidate a controlled transaction and discard its client on rollback', async () => {
+    it('should discard the client when a controlled transaction rollback times out', async () => {
       const trx = await db.startTransaction().execute()
-      await insertUncommittedPerson(trx)
-      const error = await expectTimeout(trx)
-      await expectUnusableConnection(trx, error)
-      await expectUnusableConnection(trx.withSchema('public'), error)
-      const queryCount = querySpy.callCount
+      try {
+        await insertUncommittedPerson(trx)
+        const error = await expectTimeout(trx)
+        const queryCount = querySpy.callCount
 
-      await expect(trx.commit().execute()).to.be.rejectedWith(error as Error)
-      expect(releases).to.deep.equal([])
-      await expect(trx.rollback().execute()).to.be.rejectedWith(error as Error)
+        const commitError = await trx
+          .commit()
+          .execute()
+          .catch((err: unknown) => err)
+        expect(commitError).to.be.instanceOf(Error)
+        expect((commitError as Error).message).to.equal('Query read timeout')
+        expect(commitError).to.not.equal(error)
+        expect(releases).to.deep.equal([])
+        await expect(trx.rollback().execute()).to.be.rejectedWith(
+          'Query read timeout',
+        )
 
-      expect(querySpy.callCount).to.equal(queryCount)
-      expect(trx.isCommitted).to.be.false
-      expect(trx.isRolledBack).to.be.true
-      await expectDiscardedClient()
+        expect(
+          querySpy
+            .getCalls()
+            .slice(queryCount)
+            .map((call) => call.args[0]),
+        ).to.deep.equal(['commit', 'rollback'])
+        expect(trx.isCommitted).to.be.false
+        expect(trx.isRolledBack).to.be.true
+        await expectDiscardedClient()
+      } finally {
+        if (!trx.isCommitted && !trx.isRolledBack) {
+          await trx
+            .rollback()
+            .execute()
+            .catch(() => {})
+        }
+      }
     })
 
-    it('should keep an outer connection unusable after a transaction times out', async () => {
+    it('should discard after a timed-out rollback even if an outer connection query later succeeds', async () => {
       await db.connection().execute(async (connection) => {
         const error = await connection
           .transaction()
           .execute(async (trx) => {
             await insertUncommittedPerson(trx)
-            return sql`select pg_sleep(0.6)`.execute(trx)
+            return sql`select pg_sleep(1)`.execute(trx)
           })
           .catch((error: unknown) => error)
 
         expect(error).to.be.instanceOf(Error)
         expect((error as Error).message).to.equal('Query read timeout')
-        await expectUnusableConnection(connection, error)
+        await sleep(1_000)
+        expect(await getPid(connection)).to.equal(initialPid)
         expect(releases).to.deep.equal([])
       })
 
       await expectDiscardedClient()
+    })
+
+    it('should reuse a client that recovers inside a connection callback', async () => {
+      await db.connection().execute(async (connection) => {
+        await expectTimeout(connection, 0.3)
+        expect(await getPid(connection)).to.equal(initialPid)
+        expect(releases).to.deep.equal([])
+      })
+
+      await expectReusableClient()
+    })
+
+    it('should allow a stream to recover after a query timeout', async () => {
+      await db.connection().execute(async (connection) => {
+        await expectTimeout(connection, 0.3)
+        const rows: { pid: number }[] = []
+
+        for await (const row of connection
+          .selectNoFrom(sql<number>`pg_backend_pid()`.as('pid'))
+          .stream()) {
+          rows.push(row)
+        }
+
+        expect(rows).to.deep.equal([{ pid: initialPid }])
+        expect(releases).to.deep.equal([])
+      })
+
+      await expectReusableClient()
+    })
+
+    it('should reuse a client when a callback transaction rollback succeeds after a query timeout', async () => {
+      let error: unknown
+      const result = await db
+        .transaction()
+        .execute(async (trx) => {
+          await insertUncommittedPerson(trx)
+          error = await expectTimeout(trx, 0.3)
+          throw error
+        })
+        .catch((error: unknown) => error)
+
+      expect(result).to.equal(error)
+      expect(querySpy.lastCall.args[0]).to.equal('rollback')
+      await expectReusableClient()
+      expect(
+        await ctx.db.selectFrom('person').selectAll().execute(),
+      ).to.deep.equal([])
+    })
+
+    it('should reuse a client when a controlled transaction rollback succeeds after a query timeout', async () => {
+      const trx = await db.startTransaction().execute()
+      try {
+        await insertUncommittedPerson(trx)
+        await expectTimeout(trx, 0.3)
+        await trx.rollback().execute()
+
+        expect(trx.isRolledBack).to.be.true
+        await expectReusableClient()
+        expect(
+          await ctx.db.selectFrom('person').selectAll().execute(),
+        ).to.deep.equal([])
+      } finally {
+        if (!trx.isCommitted && !trx.isRolledBack) {
+          await trx
+            .rollback()
+            .execute()
+            .catch(() => {})
+        }
+      }
     })
 
     it('should keep the client usable after a regular query error', async () => {
@@ -192,8 +285,9 @@ if (dialect) {
 
     async function expectTimeout(
       connection: Kysely<Database>,
+      seconds = 1,
     ): Promise<unknown> {
-      const error = await sql`select pg_sleep(0.6)`
+      const error = await sql`select pg_sleep(${seconds})`
         .execute(connection)
         .catch((error: unknown) => error)
 
@@ -202,18 +296,11 @@ if (dialect) {
       return error
     }
 
-    async function expectUnusableConnection(
-      connection: Kysely<Database>,
-      error: unknown,
-    ): Promise<void> {
-      const queryCount = querySpy.callCount
-      const query = connection.selectFrom('person').selectAll()
-
-      await expect(query.execute()).to.be.rejectedWith(error as Error)
-      const stream = query.stream()
-      await expect(stream.next()).to.be.rejectedWith(error as Error)
-
-      expect(querySpy.callCount).to.equal(queryCount)
+    async function expectReusableClient(): Promise<void> {
+      expect(releases).to.deep.equal([false])
+      expect(pool.totalCount).to.equal(1)
+      expect(pool.idleCount).to.equal(1)
+      expect(await getPid(db)).to.equal(initialPid)
     }
 
     async function expectDiscardedClient(): Promise<void> {
