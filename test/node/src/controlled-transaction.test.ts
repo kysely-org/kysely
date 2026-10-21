@@ -1,5 +1,6 @@
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
+import { Client, type PoolClient } from 'pg'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
@@ -11,6 +12,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  sql,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -286,6 +288,63 @@ for (const dialect of DIALECTS) {
 
       expect(person).to.be.undefined
     })
+
+    if (variant === 'postgres') {
+      for (const api of ['callback', 'controlled'] as const) {
+        it(`should discard the client and reject queued queries after a failed ${api} transaction rollback`, async () => {
+          const error = new Error('rollback failed')
+          const started = new Deferred<void>()
+          const failed = new Deferred<never>()
+          const query = sandbox.stub(Client.prototype, 'query').callThrough()
+          query.withArgs('rollback').callsFake(() => {
+            started.resolve()
+            return failed.promise
+          })
+
+          const release = await ctx.db
+            .connection()
+            .execute(async (connection) => {
+              const rollback = (async () => {
+                if (api === 'callback') {
+                  return await connection.transaction().execute(async () => {
+                    throw new Error('application error')
+                  })
+                }
+
+                const trx = await connection.startTransaction().execute()
+                return await trx.rollback().execute()
+              })()
+
+              await started.promise
+              const release = sandbox.spy(
+                query.lastCall.thisValue as PoolClient,
+                'release',
+              )
+              const queryCount = query.callCount
+              const queued = Promise.all(
+                [
+                  sql`select 1`.execute(connection),
+                  sql`commit`.execute(connection),
+                  connection.selectFrom('person').selectAll().stream().next(),
+                ].map((operation) =>
+                  expect(operation).to.be.rejectedWith(
+                    'Postgres connection has been discarded',
+                  ),
+                ),
+              )
+
+              failed.reject(error)
+              await expect(rollback).to.be.rejectedWith(error)
+              await queued
+              expect(query.callCount).to.equal(queryCount)
+              expect(release.notCalled).to.be.true
+              return release
+            })
+
+          expect(release.calledOnceWithExactly(true)).to.be.true
+        })
+      }
+    }
 
     if (
       (sqlSpec === 'postgres' && variant !== 'pglite') ||
