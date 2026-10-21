@@ -102,8 +102,6 @@ export class PostgresDriver implements Driver {
     try {
       await connection.executeQuery(CompiledQuery.raw('rollback'))
     } catch (err) {
-      // The transaction may still be open. Reject further operations and keep
-      // this connection out of the pool.
       connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
       throw err
     }
