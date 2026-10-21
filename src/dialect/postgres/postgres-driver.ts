@@ -304,9 +304,7 @@ class PostgresConnection implements DatabaseConnection {
 
   #assertNotDiscarded(): void {
     if (this.#discarded) {
-      throw new Error(
-        'Postgres connection cannot be used after a failed rollback',
-      )
+      throw new Error('Postgres connection has been discarded')
     }
   }
 

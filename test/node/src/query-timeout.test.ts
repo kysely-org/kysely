@@ -227,7 +227,7 @@ if (dialect) {
             ])) {
               expect(result).to.be.instanceOf(Error)
               expect((result as Error).message).to.equal(
-                'Postgres connection cannot be used after a failed rollback',
+                'Postgres connection has been discarded',
               )
             }
 
@@ -257,8 +257,7 @@ if (dialect) {
         expect((error as Error).message).to.equal('Query read timeout')
         await sleep(1_000)
         const queryCount = querySpy.callCount
-        const message =
-          'Postgres connection cannot be used after a failed rollback'
+        const message = 'Postgres connection has been discarded'
 
         await expect(getPid(connection)).to.be.rejectedWith(message)
         await expect(
