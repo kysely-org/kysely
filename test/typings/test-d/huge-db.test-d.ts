@@ -4,7 +4,12 @@
  */
 
 import { expectAssignable, expectError } from 'tsd'
-import type { ColumnType, Kysely, Transaction } from '../index.js'
+import type {
+  ColumnType,
+  ControlledTransaction,
+  Kysely,
+  Transaction,
+} from '../index.js'
 
 export type Decimal = ColumnType<string, number | string, number | string>
 
@@ -3237,6 +3242,10 @@ function testHugeDBDelete(db: Kysely<DB>) {
   )
 }
 
-function testHugeDBTransactionAssignableToKysely(trx: Transaction<DB>) {
+function testHugeDBTransactionAssignableToKysely(
+  trx: Transaction<DB>,
+  controlled: ControlledTransaction<DB, ['saved']>,
+) {
   expectAssignable<Kysely<DB>>(trx)
+  expectAssignable<Kysely<DB>>(controlled)
 }

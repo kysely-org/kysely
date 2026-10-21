@@ -7,7 +7,13 @@
  * happy, but we can catch it here.
  */
 
-import type { Kysely, Transaction, InsertResult, Selectable } from '../index.js'
+import type {
+  Kysely,
+  Transaction,
+  ControlledTransaction,
+  InsertResult,
+  Selectable,
+} from '../index.js'
 
 import type { Database, Person } from '../shared.js'
 import { expectType, expectError } from 'tsd'
@@ -30,6 +36,40 @@ async function testKyselyAndTransactionTypes(db: Kysely<Database>) {
 
   // Should be able to assign a Transaction to Kysely
   db = trx
+}
+
+function testOmitTables(
+  db: Kysely<Database>,
+  trx: Transaction<Database>,
+  controlled: ControlledTransaction<Database, ['saved']>,
+  dbOrTrx: Kysely<Database> | Transaction<Database>,
+  trxOrControlled:
+    Transaction<Database> | ControlledTransaction<Database, ['saved']>,
+) {
+  type RemainingDB = Omit<Database, 'person'>
+
+  expectType<Kysely<RemainingDB>>(db.$omitTables<'person'>())
+
+  const omittedTrx = trx.$omitTables<'person'>()
+  expectType<Transaction<RemainingDB>>(omittedTrx)
+  expectType<ReturnType<typeof trx.$omitTables<'person'>>>(omittedTrx)
+  expectError(omittedTrx.selectFrom('person'))
+
+  const omittedControlled = controlled.$omitTables<'person'>()
+  expectType<ControlledTransaction<RemainingDB, ['saved']>>(omittedControlled)
+  expectType<ReturnType<typeof controlled.$omitTables<'person'>>>(
+    omittedControlled,
+  )
+  omittedControlled.rollbackToSavepoint('saved')
+  expectError(omittedControlled.rollbackToSavepoint('missing'))
+  expectError(omittedControlled.selectFrom('person'))
+
+  expectType<Kysely<RemainingDB> | Transaction<RemainingDB>>(
+    dbOrTrx.$omitTables<'person'>(),
+  )
+  expectType<
+    Transaction<RemainingDB> | ControlledTransaction<RemainingDB, ['saved']>
+  >(trxOrControlled.$omitTables<'person'>())
 }
 
 async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {
