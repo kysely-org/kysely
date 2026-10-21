@@ -170,7 +170,7 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
-  #mustDiscard?: boolean
+  #discarded?: boolean
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -295,15 +295,15 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release(Boolean(this.#mustDiscard))
+    this.#client.release(Boolean(this.#discarded))
   }
 
   [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
-    this.#mustDiscard = true
+    this.#discarded = true
   }
 
   #assertNotDiscarded(): void {
-    if (this.#mustDiscard) {
+    if (this.#discarded) {
       throw new Error(
         'Postgres connection cannot be used after a failed rollback',
       )
