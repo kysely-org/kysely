@@ -170,7 +170,7 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
-  #mustDiscard = false
+  #mustDiscard?: boolean
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -295,7 +295,7 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release(this.#mustDiscard)
+    this.#client.release(Boolean(this.#mustDiscard))
   }
 
   [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
