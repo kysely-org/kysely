@@ -3,8 +3,8 @@
  * extremely slow if type performance regressions are introduced to the codebase.
  */
 
-import { expectError } from 'tsd'
-import type { ColumnType, Kysely } from '../index.js'
+import { expectAssignable, expectError } from 'tsd'
+import type { ColumnType, Kysely, Transaction } from '../index.js'
 
 export type Decimal = ColumnType<string, number | string, number | string>
 
@@ -3235,4 +3235,8 @@ function testHugeDBDelete(db: Kysely<DB>) {
   expectError(
     db.deleteFrom('not_a_table').where('my_table.id', 'in', [1, 2, 3]),
   )
+}
+
+function testHugeDBTransactionAssignableToKysely(trx: Transaction<DB>) {
+  expectAssignable<Kysely<DB>>(trx)
 }

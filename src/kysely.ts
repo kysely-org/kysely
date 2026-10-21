@@ -755,9 +755,18 @@ export class Transaction<DB> extends Kysely<DB> {
     return new Transaction({ ...this.#props })
   }
 
+  // Never callable (`this: never`); it only lets `Transaction<DB>` be checked against
+  // `Kysely<DB>` without relating the two `$omitTables` return types recursively, which
+  // takes seconds with a few hundred tables in TypeScript 6 and fails with TS2590 in 7.
+  override $omitTables<T extends keyof DB>(
+    this: never,
+  ): Kysely<DB extends object ? Omit<DB, T> : DB>
   /**
    * Similar to {@link Kysely.$omitTables} but returns the transaction.
    */
+  override $omitTables<T extends keyof DB>(): Transaction<
+    DB extends object ? Omit<DB, T> : DB
+  >
   override $omitTables<T extends keyof DB>(): Transaction<
     DB extends object ? Omit<DB, T> : DB
   > {
@@ -1301,6 +1310,14 @@ export class ControlledTransaction<
     return new ControlledTransaction({ ...this.#props })
   }
 
+  // See `Transaction.$omitTables`.
+  override $omitTables<T extends keyof DB>(
+    this: never,
+  ): Kysely<DB extends object ? Omit<DB, T> : DB>
+  override $omitTables<T extends keyof DB>(): ControlledTransaction<
+    DB extends object ? Omit<DB, T> : DB,
+    S
+  >
   override $omitTables<T extends keyof DB>(): ControlledTransaction<
     DB extends object ? Omit<DB, T> : DB,
     S
