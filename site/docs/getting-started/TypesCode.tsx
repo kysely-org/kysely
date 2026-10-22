@@ -21,14 +21,12 @@ export function TypesCode(props: PropsWithPackageManager) {
   ColumnType,
   Generated,
   Insertable,
-  JSONColumnType,
   Selectable,
   Updateable,
 } from '${getKyselyImportPath(packageManager)}'
 
 export interface Database {
   person: PersonTable
-  pet: PetTable
 }
 
 // This interface describes the \`person\` table to Kysely. Table
@@ -55,18 +53,6 @@ export interface PersonTable {
   // a \`Date\`, can optionally be provided as a \`string\` in inserts and
   // can never be updated:
   created_at: ColumnType<Date, string | undefined, never>
-
-  // You can specify JSON columns using the \`JSONColumnType\` wrapper.
-  // It is a shorthand for \`ColumnType<T, string, string>\`, where T
-  // is the type of the JSON object/array retrieved from the database,
-  // and the insert and update types are always \`string\` since you're
-  // always stringifying insert/update values.
-  metadata: JSONColumnType<{
-    login_at: string
-    ip: string | null
-    agent: string | null
-    plan: 'free' | 'premium'
-  }>
 }
 
 // You should not use the table schema interfaces directly. Instead, you should
@@ -77,18 +63,7 @@ export interface PersonTable {
 // types at all. These types can be useful when typing function arguments.
 export type Person = Selectable<PersonTable>
 export type NewPerson = Insertable<PersonTable>
-export type PersonUpdate = Updateable<PersonTable>
-
-export interface PetTable {
-  id: Generated<number>
-  name: string
-  owner_id: number
-  species: 'dog' | 'cat'
-}
-
-export type Pet = Selectable<PetTable>
-export type NewPet = Insertable<PetTable>
-export type PetUpdate = Updateable<PetTable>`}
+export type PersonUpdate = Updateable<PersonTable>`}
     </CodeBlock>
   )
 }

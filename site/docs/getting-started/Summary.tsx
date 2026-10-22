@@ -95,8 +95,10 @@ export function Summary(props: PropsWithDialect<PropsWithPackageManager>) {
         <br />
         <strong>Let's put it all to the test:</strong>
       </p>
-      <CodeBlock language="ts" title="src/PersonRepository.spec.ts">
-        {`import { sql } from '${getKyselyImportPath(packageManager)}'
+      <CodeBlock language="ts" title="src/PersonRepository.test.ts">
+        {`import * as assert from 'node:assert/strict'
+import { after, afterEach, before, describe, it } from 'node:test'
+import { sql } from '${getKyselyImportPath(packageManager)}'
 import { db } from './database'
 import * as PersonRepository from './PersonRepository'
 
@@ -111,30 +113,64 @@ ${dialectSpecificCodeSnippet}
     
   after(async () => {
     await db.schema.dropTable('person').execute()
+    await db.destroy()
   })
     
   it('should find a person with a given id', async () => {
-    await PersonRepository.findPersonById(123)
+    const created = await PersonRepository.createPerson({
+      first_name: 'Arnold',
+      last_name: null,
+      gender: 'man',
+    })
+    assert.ok(created)
+
+    const found = await PersonRepository.findPersonById(created.id)
+    assert.equal(found?.first_name, 'Arnold')
   })
     
   it('should find all people named Arnold', async () => {
-    await PersonRepository.findPeople({ first_name: 'Arnold' })
+    await PersonRepository.createPerson({
+      first_name: 'Arnold', last_name: null, gender: 'man',
+    })
+    await PersonRepository.createPerson({
+      first_name: 'Jennifer', last_name: null, gender: 'woman',
+    })
+
+    const people = await PersonRepository.findPeople({ first_name: 'Arnold' })
+    assert.equal(people.length, 1)
+    assert.equal(people[0].first_name, 'Arnold')
   })
     
   it('should update gender of a person with a given id', async () => {
-    await PersonRepository.updatePerson(123, { gender: 'woman' })
+    const created = await PersonRepository.createPerson({
+      first_name: 'Arnold', last_name: null, gender: 'man',
+    })
+    assert.ok(created)
+
+    await PersonRepository.updatePerson(created.id, { gender: 'woman' })
+    const updated = await PersonRepository.findPersonById(created.id)
+    assert.equal(updated?.gender, 'woman')
   })
     
   it('should create a person', async () => {
-    await PersonRepository.createPerson({
+    const created = await PersonRepository.createPerson({
       first_name: 'Jennifer',
       last_name: 'Aniston',
       gender: 'woman',
     })
+    assert.ok(created)
+    assert.equal(created.first_name, 'Jennifer')
   })
     
   it('should delete a person with a given id', async () => {
-    await PersonRepository.deletePerson(123)
+    const created = await PersonRepository.createPerson({
+      first_name: 'Arnold', last_name: null, gender: 'man',
+    })
+    assert.ok(created)
+
+    const deleted = await PersonRepository.deletePerson(created.id)
+    assert.equal(deleted?.id, created.id)
+    assert.equal(await PersonRepository.findPersonById(created.id), undefined)
   })
 })`}
       </CodeBlock>
