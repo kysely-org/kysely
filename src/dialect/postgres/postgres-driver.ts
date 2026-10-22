@@ -4,6 +4,7 @@ import type {
   QueryResult,
 } from '../../driver/database-connection.js'
 import type { Driver, TransactionSettings } from '../../driver/driver.js'
+import { TransactionRollbackError } from '../../driver/transaction-rollback-error.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
@@ -101,7 +102,7 @@ export class PostgresDriver implements Driver {
     // PostgreSQL completes COMMIT with a ROLLBACK tag if an earlier
     // statement error left the transaction aborted.
     if (rows[0]?.command === 'ROLLBACK') {
-      throw new Error('Transaction was rolled back instead of committed')
+      throw new TransactionRollbackError()
     }
   }
 

@@ -73,6 +73,7 @@ export * from './dynamic/dynamic-reference-builder.js'
 export * from './dynamic/dynamic-table-builder.js'
 
 export * from './driver/driver.js'
+export * from './driver/transaction-rollback-error.js'
 export type * from './driver/database-connection.js'
 export type * from './driver/connection-provider.js'
 export * from './driver/default-connection-provider.js'
