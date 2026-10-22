@@ -70,7 +70,7 @@ export interface PostgresPoolClient {
     parameters: ReadonlyArray<unknown>,
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
-  release(): void
+  release(destroy?: boolean): void
 }
 
 export interface PostgresCursor<T> {

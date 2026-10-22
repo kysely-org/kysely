@@ -1,5 +1,6 @@
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
+import { Pool } from 'pg'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
@@ -10,14 +11,17 @@ import {
   Kysely,
   type KyselyConfig,
   PostgresAdapter,
+  PostgresDialect,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  sql,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/cjs/index.js'
 import {
   DIALECTS,
-  Database,
-  TestContext,
+  DIALECT_CONFIGS,
+  type Database,
+  type TestContext,
   clearDatabase,
   destroyTest,
   expect,
@@ -254,6 +258,37 @@ for (const dialect of DIALECTS) {
 
       expect(person).to.be.undefined
     })
+
+    if (dialect === 'postgres') {
+      it('should discard the client when rollback times out', async () => {
+        const db = new Kysely<Database>({
+          dialect: new PostgresDialect({
+            pool: new Pool({
+              ...DIALECT_CONFIGS.postgres,
+              max: 1,
+              query_timeout: 1_000,
+            }),
+          }),
+        })
+
+        try {
+          const trx = await db.startTransaction().execute()
+          await expect(sql`select pg_sleep(2.5)`.execute(trx)).to.be.rejected
+          await expect(trx.rollback().execute()).to.be.rejected
+          await insertSomething(db)
+          await sql`rollback`.execute(db)
+
+          const person = await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('first_name', '=', 'Foo')
+            .executeTakeFirst()
+          expect(person).to.eql({ first_name: 'Foo' })
+        } finally {
+          await db.destroy()
+        }
+      })
+    }
 
     if (dialect === 'postgres' || dialect === 'mysql') {
       for (const accessMode of TRANSACTION_ACCESS_MODES) {

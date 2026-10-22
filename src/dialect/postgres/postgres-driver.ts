@@ -17,6 +17,7 @@ import type {
 } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
+const PRIVATE_MARK_FOR_DISCARD_METHOD: unique symbol = Symbol()
 
 export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig
@@ -90,8 +91,13 @@ export class PostgresDriver implements Driver {
     await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+  async rollbackTransaction(connection: PostgresConnection): Promise<void> {
+    try {
+      await connection.executeQuery(CompiledQuery.raw('rollback'))
+    } catch (err) {
+      connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
+      throw err
+    }
   }
 
   async savepoint(
@@ -153,6 +159,7 @@ interface PostgresConnectionOptions {
 class PostgresConnection implements DatabaseConnection {
   #client: PostgresPoolClient
   #options: PostgresConnectionOptions
+  #discarded?: boolean
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -160,6 +167,8 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    this.#assertNotDiscarded()
+
     try {
       const { command, rowCount, rows } = await this.#client.query<O>(
         compiledQuery.sql,
@@ -195,6 +204,8 @@ class PostgresConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
+    this.#assertNotDiscarded()
+
     const cursor = this.#client.query(
       new this.#options.cursor<O>(
         compiledQuery.sql,
@@ -220,6 +231,16 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release()
+    this.#client.release(Boolean(this.#discarded))
+  }
+
+  [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
+    this.#discarded = true
+  }
+
+  #assertNotDiscarded(): void {
+    if (this.#discarded) {
+      throw new Error('Postgres connection has been discarded')
+    }
   }
 }
