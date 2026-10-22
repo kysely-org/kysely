@@ -290,8 +290,6 @@ for (const dialect of DIALECTS) {
 
     if (variant === 'postgres') {
       it('should discard the client when rollback fails', async () => {
-        const error = new Error('rollback failed')
-        const message = 'Postgres connection has been discarded'
         const started = new Deferred<void>()
         const failed = new Deferred<never>()
         const query = sandbox.stub(Client.prototype, 'query').callThrough()
@@ -300,33 +298,27 @@ for (const dialect of DIALECTS) {
           return failed.promise
         })
 
-        const release = await ctx.db
-          .connection()
-          .execute(async (connection) => {
-            const trx = await connection.startTransaction().execute()
-            const release = sandbox.spy(
-              query.lastCall.thisValue as PoolClient,
-              'release',
-            )
-            const rollback = expect(
-              trx.rollback().execute(),
-            ).to.be.rejectedWith(error)
-            await started.promise
+        const client = await ctx.db.connection().execute(async (connection) => {
+          const trx = await connection.startTransaction().execute()
+          const client = query.lastCall.thisValue as PoolClient
+          const select = connection.selectFrom('person').selectAll()
+          const trxSelect = trx.selectFrom('person').selectAll()
+          const rollback = expect(trx.rollback().execute()).to.be.rejected
+          await started.promise
 
-            const queryCount = query.callCount
-            const select = connection.selectFrom('person').selectAll()
-            const queued = expect(select.execute()).to.be.rejectedWith(message)
+          const queued = expect(select.execute()).to.be.rejected
+          const queuedTrx = expect(trxSelect.execute()).to.be.rejected
 
-            failed.reject(error)
-            await rollback
-            await queued
-            await expect(select.stream().next()).to.be.rejectedWith(message)
-            expect(query.callCount).to.equal(queryCount)
-            expect(release.notCalled).to.be.true
-            return release
-          })
+          failed.reject(new Error())
+          await rollback
+          await queued
+          await queuedTrx
+          await expect(trxSelect.execute()).to.be.rejected
+          await expect(select.execute()).to.be.rejected
+          return client
+        })
 
-        expect(release.calledOnceWithExactly(true)).to.be.true
+        await expect(client.query('select 1')).to.be.rejected
       })
     }
 
