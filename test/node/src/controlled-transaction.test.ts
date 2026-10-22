@@ -16,7 +16,7 @@ import {
   PostgresQueryCompiler,
   sql,
   TRANSACTION_ACCESS_MODES,
-  TransactionRollbackError,
+  AbortedTransactionError,
   type Transaction,
 } from '../../../dist/index.js'
 import {
@@ -122,7 +122,7 @@ for (const dialect of DIALECTS) {
           ).to.be.rejectedWith(PostgresError, 'duplicate key')
 
           await expect(trx.commit().execute()).to.be.rejectedWith(
-            TransactionRollbackError,
+            AbortedTransactionError,
           )
           expect(trx.isCommitted).to.be.false
           expect(trx.isRolledBack).to.be.true
@@ -1021,7 +1021,7 @@ describe('controlled transaction', () => {
       const finished = new Deferred<void>()
       const rollbackError = otherCopy
         ? await createRollbackErrorFromOtherCopy()
-        : new TransactionRollbackError()
+        : new AbortedTransactionError()
       sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
       const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
       const releaseSpy = sandbox.spy(driver, 'releaseConnection')
@@ -1468,16 +1468,16 @@ async function insertSomethingElse(db: Kysely<Database>) {
 }
 
 async function createRollbackErrorFromOtherCopy(): Promise<Error> {
-  const otherCopy: typeof import('../../../dist/driver/transaction-rollback-error.js') =
+  const otherCopy: typeof import('../../../dist/driver/aborted-transaction-error.js') =
     await import(
       new URL(
-        '../../../dist/driver/transaction-rollback-error.js?other-copy',
+        '../../../dist/driver/aborted-transaction-error.js?other-copy',
         import.meta.url,
       ).href
     )
 
-  expect(otherCopy.TransactionRollbackError).to.not.equal(
-    TransactionRollbackError,
+  expect(otherCopy.AbortedTransactionError).to.not.equal(
+    AbortedTransactionError,
   )
-  return new otherCopy.TransactionRollbackError()
+  return new otherCopy.AbortedTransactionError()
 }

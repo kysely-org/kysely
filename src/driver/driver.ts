@@ -1,4 +1,4 @@
-import type { TransactionRollbackError } from './transaction-rollback-error.js'
+import type { AbortedTransactionError } from './aborted-transaction-error.js'
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { ArrayItemType } from '../util/type-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
@@ -35,7 +35,7 @@ export interface Driver {
   /**
    * Commits a transaction.
    *
-   * Throws {@link TransactionRollbackError} if the database confirms that
+   * Throws {@link AbortedTransactionError} if the database confirms that
    * the transaction was rolled back instead of committed.
    */
   commitTransaction(connection: DatabaseConnection): Promise<void>
