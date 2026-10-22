@@ -10,9 +10,9 @@ import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import {
-  isTransactionRollbackError,
-  type TransactionRollbackError,
-} from './driver/transaction-rollback-error.js'
+  isAbortedTransactionError,
+  type AbortedTransactionError,
+} from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
   type Driver,
@@ -924,7 +924,7 @@ export class TransactionBuilder<DB> {
 
         return result
       } catch (error) {
-        if (isTransactionRollbackError(error)) {
+        if (isAbortedTransactionError(error)) {
           state.isRolledBack = true
         } else if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
@@ -1027,7 +1027,7 @@ export class ControlledTransaction<
    * Commits the transaction.
    *
    * If the database rolls back instead of committing, marks the transaction
-   * as rolled back, releases the connection and throws {@link TransactionRollbackError}.
+   * as rolled back, releases the connection and throws {@link AbortedTransactionError}.
    *
    * Waits for ongoing queries to finish. Streams must be exhausted or closed
    * before awaiting this command. When consuming a stream with `for await`,
@@ -1062,7 +1062,7 @@ export class ControlledTransaction<
         try {
           await this.#props.driver.commitTransaction(connection)
         } catch (error) {
-          if (isTransactionRollbackError(error)) {
+          if (isAbortedTransactionError(error)) {
             this.#props.state.isRolledBack = true
             this.#props.connection.release()
           }

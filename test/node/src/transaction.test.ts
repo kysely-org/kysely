@@ -9,7 +9,7 @@ import {
   SqliteDriver,
   Transaction,
   TRANSACTION_ACCESS_MODES,
-  TransactionRollbackError,
+  AbortedTransactionError,
 } from '../../../dist/index.js'
 
 import {
@@ -211,7 +211,7 @@ for (const dialect of DIALECTS) {
 
             return 'success'
           }),
-        ).to.be.rejectedWith(TransactionRollbackError)
+        ).to.be.rejectedWith(AbortedTransactionError)
 
         await expect(
           escapedTrx!.selectFrom('person').selectAll().execute(),
