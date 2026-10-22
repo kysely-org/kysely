@@ -94,7 +94,15 @@ export class PostgresDriver implements Driver {
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+    const { rows } = await connection.executeQuery<{ command: string }>(
+      CompiledQuery.raw('commit'),
+    )
+
+    // PostgreSQL completes COMMIT with a ROLLBACK tag if an earlier
+    // statement error left the transaction aborted.
+    if (rows[0]?.command === 'ROLLBACK') {
+      throw new Error('Transaction was rolled back instead of committed')
+    }
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
@@ -215,10 +223,8 @@ class PostgresConnection implements DatabaseConnection {
 
       const { command, rowCount, rows } = result
 
-      // PostgreSQL completes COMMIT with a ROLLBACK tag if an earlier
-      // statement error left the transaction aborted.
-      if (compiledQuery.sql === 'commit' && command === 'ROLLBACK') {
-        throw new Error('Transaction was rolled back instead of committed')
+      if (command === 'ROLLBACK' || command === 'COMMIT') {
+        return { rows: [{ command } as O] }
       }
 
       return {
