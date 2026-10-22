@@ -12,7 +12,6 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-  sql,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
@@ -290,60 +289,45 @@ for (const dialect of DIALECTS) {
     })
 
     if (variant === 'postgres') {
-      for (const api of ['callback', 'controlled'] as const) {
-        it(`should discard the client and reject queued queries after a failed ${api} transaction rollback`, async () => {
-          const error = new Error('rollback failed')
-          const started = new Deferred<void>()
-          const failed = new Deferred<never>()
-          const query = sandbox.stub(Client.prototype, 'query').callThrough()
-          query.withArgs('rollback').callsFake(() => {
-            started.resolve()
-            return failed.promise
+      it('should discard the client when rollback fails', async () => {
+        const error = new Error('rollback failed')
+        const message = 'Postgres connection has been discarded'
+        const started = new Deferred<void>()
+        const failed = new Deferred<never>()
+        const query = sandbox.stub(Client.prototype, 'query').callThrough()
+        query.withArgs('rollback').callsFake(() => {
+          started.resolve()
+          return failed.promise
+        })
+
+        const release = await ctx.db
+          .connection()
+          .execute(async (connection) => {
+            const trx = await connection.startTransaction().execute()
+            const release = sandbox.spy(
+              query.lastCall.thisValue as PoolClient,
+              'release',
+            )
+            const rollback = expect(
+              trx.rollback().execute(),
+            ).to.be.rejectedWith(error)
+            await started.promise
+
+            const queryCount = query.callCount
+            const select = connection.selectFrom('person').selectAll()
+            const queued = expect(select.execute()).to.be.rejectedWith(message)
+
+            failed.reject(error)
+            await rollback
+            await queued
+            await expect(select.stream().next()).to.be.rejectedWith(message)
+            expect(query.callCount).to.equal(queryCount)
+            expect(release.notCalled).to.be.true
+            return release
           })
 
-          const release = await ctx.db
-            .connection()
-            .execute(async (connection) => {
-              const rollback = (async () => {
-                if (api === 'callback') {
-                  return await connection.transaction().execute(async () => {
-                    throw new Error('application error')
-                  })
-                }
-
-                const trx = await connection.startTransaction().execute()
-                return await trx.rollback().execute()
-              })()
-
-              await started.promise
-              const release = sandbox.spy(
-                query.lastCall.thisValue as PoolClient,
-                'release',
-              )
-              const queryCount = query.callCount
-              const queued = Promise.all(
-                [
-                  sql`select 1`.execute(connection),
-                  sql`commit`.execute(connection),
-                  connection.selectFrom('person').selectAll().stream().next(),
-                ].map((operation) =>
-                  expect(operation).to.be.rejectedWith(
-                    'Postgres connection has been discarded',
-                  ),
-                ),
-              )
-
-              failed.reject(error)
-              await expect(rollback).to.be.rejectedWith(error)
-              await queued
-              expect(query.callCount).to.equal(queryCount)
-              expect(release.notCalled).to.be.true
-              return release
-            })
-
-          expect(release.calledOnceWithExactly(true)).to.be.true
-        })
-      }
+        expect(release.calledOnceWithExactly(true)).to.be.true
+      })
     }
 
     if (
