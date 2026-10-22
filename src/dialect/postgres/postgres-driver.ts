@@ -257,13 +257,13 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
-    this.#assertNotDiscarded()
-
     if (!this.#options.cursor) {
       throw new Error(
         "`cursor` is not present in your postgres dialect config. It's required to make streaming work in postgres.",
       )
     }
+
+    this.#assertNotDiscarded()
 
     // this helps ensure we don't cancel the wrong query when aborted.
     this.#queryId = compiledQuery.queryId
