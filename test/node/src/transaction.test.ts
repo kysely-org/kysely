@@ -9,6 +9,7 @@ import {
   SqliteDriver,
   Transaction,
   TRANSACTION_ACCESS_MODES,
+  TransactionRollbackError,
 } from '../../../dist/index.js'
 
 import {
@@ -192,8 +193,11 @@ for (const dialect of DIALECTS) {
 
     if (variant === 'postgres') {
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
+        let escapedTrx: Transaction<Database> | undefined
+
         await expect(
           ctx.db.transaction().execute(async (trx) => {
+            escapedTrx = trx
             const person = {
               id: 1000000,
               first_name: 'Foo',
@@ -207,7 +211,14 @@ for (const dialect of DIALECTS) {
 
             return 'success'
           }),
-        ).to.be.rejectedWith('Transaction was rolled back instead of committed')
+        ).to.be.rejectedWith(TransactionRollbackError)
+
+        await expect(
+          escapedTrx!.selectFrom('person').selectAll().execute(),
+        ).to.be.rejectedWith('Transaction is already rolled back')
+        expect(executedQueries.map((query) => query.sql)).to.not.include(
+          'rollback',
+        )
 
         expect(
           await ctx.db

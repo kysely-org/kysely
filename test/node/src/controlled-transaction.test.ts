@@ -16,6 +16,7 @@ import {
   PostgresQueryCompiler,
   sql,
   TRANSACTION_ACCESS_MODES,
+  TransactionRollbackError,
 } from '../../../dist/index.js'
 import {
   DIALECTS,
@@ -104,6 +105,9 @@ for (const dialect of DIALECTS) {
     if (variant === 'postgres') {
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
         const trx = await ctx.db.startTransaction().execute()
+        const derivedTrx = trx.withSchema('public')
+        const savedQuery = derivedTrx.selectFrom('person').selectAll()
+        const savedCommit = derivedTrx.commit()
         const person = {
           id: 1000000,
           first_name: 'Foo',
@@ -117,11 +121,23 @@ for (const dialect of DIALECTS) {
           ).to.be.rejectedWith(PostgresError, 'duplicate key')
 
           await expect(trx.commit().execute()).to.be.rejectedWith(
-            'Transaction was rolled back instead of committed',
+            TransactionRollbackError,
           )
           expect(trx.isCommitted).to.be.false
+          expect(trx.isRolledBack).to.be.true
+          expect(derivedTrx.isCommitted).to.be.false
+          expect(derivedTrx.isRolledBack).to.be.true
+          await expect(savedQuery.execute()).to.be.rejectedWith(
+            'Transaction is already rolled back',
+          )
+          await expect(savedCommit.execute()).to.be.rejectedWith(
+            'Transaction is already rolled back',
+          )
+          await expect(trx.rollback().execute()).to.be.rejectedWith(
+            'Transaction is already rolled back',
+          )
         } finally {
-          if (!trx.isCommitted) {
+          if (!trx.isCommitted && !trx.isRolledBack) {
             await trx.rollback().execute()
           }
         }
@@ -995,6 +1011,34 @@ describe('controlled transaction', () => {
     expect(error).to.equal(beginError)
     expect(releaseSpy.calledOnce, 'connection released once').to.be.true
     expect(releaseSpy.firstCall.args[0]).to.equal(connection)
+  })
+
+  it('should block queued queries and release once when commit reports a rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const finished = new Deferred<void>()
+    const rollbackError = new TransactionRollbackError()
+    sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const querySpy = sandbox.spy(connection, 'executeQuery')
+    const completion = expect(derivedTrx.commit().execute()).to.be.rejectedWith(
+      rollbackError,
+    )
+    const query = expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith('Transaction is already rolled back')
+
+    finished.reject(rollbackError)
+    await completion
+    await query
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(querySpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
   })
 
   it('should allow retrying a failed commit', async () => {
