@@ -17,6 +17,7 @@ import {
   sql,
   TRANSACTION_ACCESS_MODES,
   TransactionRollbackError,
+  type Transaction,
 } from '../../../dist/index.js'
 import {
   DIALECTS,
@@ -1013,29 +1014,55 @@ describe('controlled transaction', () => {
     expect(releaseSpy.firstCall.args[0]).to.equal(connection)
   })
 
-  it('should block queued queries and release once when commit reports a rollback', async () => {
-    const trx = await db.startTransaction().execute()
-    const derivedTrx = trx.withSchema('public')
-    const finished = new Deferred<void>()
-    const rollbackError = new TransactionRollbackError()
-    sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
+  for (const otherCopy of [false, true]) {
+    it(`should block queued queries and release once when commit reports a rollback${otherCopy ? ' from another package copy' : ''}`, async () => {
+      const trx = await db.startTransaction().execute()
+      const derivedTrx = trx.withSchema('public')
+      const finished = new Deferred<void>()
+      const rollbackError = otherCopy
+        ? await createRollbackErrorFromOtherCopy()
+        : new TransactionRollbackError()
+      sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
+      const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+      const querySpy = sandbox.spy(connection, 'executeQuery')
+      const completion = expect(
+        derivedTrx.commit().execute(),
+      ).to.be.rejectedWith(rollbackError)
+      const query = expect(
+        trx.selectFrom('person').selectAll().execute(),
+      ).to.be.rejectedWith('Transaction is already rolled back')
+
+      finished.reject(rollbackError)
+      await completion
+      await query
+
+      expect(trx.isCommitted).to.be.false
+      expect(trx.isRolledBack).to.be.true
+      expect(derivedTrx.isRolledBack).to.be.true
+      expect(querySpy.notCalled).to.be.true
+      expect(rollbackSpy.notCalled).to.be.true
+      expect(releaseSpy.calledOnce).to.be.true
+    })
+  }
+
+  it('should recognize a rollback from another package copy in a managed transaction', async () => {
+    const rollbackError = await createRollbackErrorFromOtherCopy()
+    sandbox.stub(driver, 'commitTransaction').rejects(rollbackError)
     const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
     const releaseSpy = sandbox.spy(driver, 'releaseConnection')
     const querySpy = sandbox.spy(connection, 'executeQuery')
-    const completion = expect(derivedTrx.commit().execute()).to.be.rejectedWith(
-      rollbackError,
-    )
-    const query = expect(
-      trx.selectFrom('person').selectAll().execute(),
+    let escapedTrx: Transaction<Database> | undefined
+
+    await expect(
+      db.transaction().execute(async (trx) => {
+        escapedTrx = trx
+      }),
+    ).to.be.rejectedWith(rollbackError)
+
+    await expect(
+      escapedTrx!.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith('Transaction is already rolled back')
-
-    finished.reject(rollbackError)
-    await completion
-    await query
-
-    expect(trx.isCommitted).to.be.false
-    expect(trx.isRolledBack).to.be.true
-    expect(derivedTrx.isRolledBack).to.be.true
     expect(querySpy.notCalled).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
@@ -1438,4 +1465,19 @@ async function insertSomethingElse(db: Kysely<Database>) {
       gender: 'female',
     })
     .executeTakeFirstOrThrow()
+}
+
+async function createRollbackErrorFromOtherCopy(): Promise<Error> {
+  const otherCopy: typeof import('../../../dist/driver/transaction-rollback-error.js') =
+    await import(
+      new URL(
+        '../../../dist/driver/transaction-rollback-error.js?other-copy',
+        import.meta.url,
+      ).href
+    )
+
+  expect(otherCopy.TransactionRollbackError).to.not.equal(
+    TransactionRollbackError,
+  )
+  return new otherCopy.TransactionRollbackError()
 }

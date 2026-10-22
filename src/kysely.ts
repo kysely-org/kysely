@@ -9,7 +9,10 @@ import { DefaultQueryExecutor } from './query-executor/default-query-executor.js
 import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
-import { TransactionRollbackError } from './driver/transaction-rollback-error.js'
+import {
+  isTransactionRollbackError,
+  type TransactionRollbackError,
+} from './driver/transaction-rollback-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
   type Driver,
@@ -921,7 +924,7 @@ export class TransactionBuilder<DB> {
 
         return result
       } catch (error) {
-        if (error instanceof TransactionRollbackError) {
+        if (isTransactionRollbackError(error)) {
           state.isRolledBack = true
         } else if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
@@ -1059,7 +1062,7 @@ export class ControlledTransaction<
         try {
           await this.#props.driver.commitTransaction(connection)
         } catch (error) {
-          if (error instanceof TransactionRollbackError) {
+          if (isTransactionRollbackError(error)) {
             this.#props.state.isRolledBack = true
             this.#props.connection.release()
           }
