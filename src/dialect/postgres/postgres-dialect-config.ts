@@ -156,7 +156,8 @@ export type PostgresCursorConstructor = new <T>(
  * https://node-postgres.com/apis/result
  */
 export interface PostgresQueryResult<R> {
-  command: 'UPDATE' | 'DELETE' | 'INSERT' | 'SELECT' | 'MERGE'
+  command:
+    'UPDATE' | 'DELETE' | 'INSERT' | 'SELECT' | 'MERGE' | 'COMMIT' | 'ROLLBACK'
   rowCount: number
   rows: R[]
 }
