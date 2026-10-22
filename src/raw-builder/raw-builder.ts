@@ -16,6 +16,7 @@ import type {
 } from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { StreamOptions } from '../util/streamable.js'
 
 /**
  * An instance of this class can be used to create raw SQL snippets or queries.
@@ -141,6 +142,14 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<O>>
 
+  /**
+   * Executes the raw query and streams the rows.
+   */
+  stream(
+    executorOrProvider: QueryExecutorProvider,
+    options?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O>
+
   toOperationNode(): RawNode
 }
 
@@ -196,6 +205,29 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
     const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(this.#compile(executor), options)
+  }
+
+  async *stream(
+    executorProvider: QueryExecutorProvider,
+    chunkSizeOrOptions?: StreamOptions | StreamOptions['chunkSize'],
+  ): AsyncIterableIterator<O> {
+    const executor = this.#getExecutor(executorProvider)
+
+    if (typeof chunkSizeOrOptions !== 'object') {
+      chunkSizeOrOptions = {
+        chunkSize: chunkSizeOrOptions,
+      }
+    }
+
+    const stream = executor.stream<O>(
+      this.#compile(executor),
+      chunkSizeOrOptions.chunkSize ?? 100,
+      chunkSizeOrOptions,
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
   }
 
   #getExecutor(executorProvider?: QueryExecutorProvider): QueryExecutor {

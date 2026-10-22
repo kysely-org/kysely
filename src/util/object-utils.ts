@@ -75,10 +75,6 @@ export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
   return Object.getPrototypeOf(obj) === proto
 }
 
-export function getLast<T>(arr: ArrayLike<T>): T | undefined {
-  return arr[arr.length - 1]
-}
-
 export function freeze<T>(obj: T): Readonly<T> {
   return Object.freeze(obj)
 }

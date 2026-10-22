@@ -532,7 +532,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'postgres' && variant !== 'pglite') {
+    if (variant === 'postgres' || variant === 'sqlite') {
       it('should update multiple rows and stream returned results', async () => {
         const stream = ctx.db
           .updateTable('person')
@@ -547,13 +547,33 @@ for (const dialect of DIALECTS) {
         }
 
         expect(people).to.have.length(DEFAULT_DATA_SET.length)
-        expect(people).to.eql(
+        expect(people).to.have.deep.members(
           DEFAULT_DATA_SET.map(({ first_name, gender }) => ({
             first_name,
             last_name: 'Nobody',
             gender,
           })),
         )
+      })
+    }
+
+    if (variant === 'sqlite') {
+      it('should reject streaming writes without returning rows before executing them', async () => {
+        const stream = ctx.db
+          .updateTable('person')
+          .set('last_name', 'Updated')
+          .stream()
+
+        await expect(stream.next()).to.be.rejectedWith(
+          'Sqlite driver only supports streaming of queries that return rows',
+        )
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('id')
+            .where('last_name', '=', 'Updated')
+            .execute(),
+        ).to.eql([])
       })
     }
 
