@@ -20,6 +20,7 @@ import type {
 } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD: unique symbol = Symbol()
+const PRIVATE_MARK_FOR_DISCARD_METHOD: unique symbol = Symbol()
 
 export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig
@@ -97,8 +98,13 @@ export class PostgresDriver implements Driver {
     await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+  async rollbackTransaction(connection: PostgresConnection): Promise<void> {
+    try {
+      await connection.executeQuery(CompiledQuery.raw('rollback'))
+    } catch (err) {
+      connection[PRIVATE_MARK_FOR_DISCARD_METHOD]()
+      throw err
+    }
   }
 
   async savepoint(
@@ -164,6 +170,7 @@ class PostgresConnection implements DatabaseConnection {
   readonly #options: PostgresConnectionOptions
   #queryId?: QueryId
   #pid?: number
+  #discarded?: boolean
 
   constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
@@ -192,6 +199,8 @@ class PostgresConnection implements DatabaseConnection {
     if (processID) {
       this.#pid = processID
     } else {
+      this.#assertNotDiscarded()
+
       const {
         rows: [{ pid }],
       } = await this.#client.query<{ pid: string }>(
@@ -204,6 +213,8 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    this.#assertNotDiscarded()
+
     try {
       // this helps ensure we don't cancel the wrong query when aborted.
       this.#queryId = compiledQuery.queryId
@@ -252,6 +263,8 @@ class PostgresConnection implements DatabaseConnection {
       )
     }
 
+    this.#assertNotDiscarded()
+
     // this helps ensure we don't cancel the wrong query when aborted.
     this.#queryId = compiledQuery.queryId
 
@@ -282,7 +295,17 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
-    this.#client.release()
+    this.#client.release(Boolean(this.#discarded))
+  }
+
+  [PRIVATE_MARK_FOR_DISCARD_METHOD](): void {
+    this.#discarded = true
+  }
+
+  #assertNotDiscarded(): void {
+    if (this.#discarded) {
+      throw new Error('Postgres connection has been discarded')
+    }
   }
 
   async #executeControlQuery(
