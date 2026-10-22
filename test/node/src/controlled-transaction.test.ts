@@ -1,6 +1,6 @@
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
-import { Client, type PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { Connection, ISOLATION_LEVEL } from 'tedious'
 import {
   CompiledQuery,
@@ -10,12 +10,15 @@ import {
   DummyDriver,
   Kysely,
   PostgresAdapter,
+  PostgresDialect,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  sql,
   TRANSACTION_ACCESS_MODES,
 } from '../../../dist/index.js'
 import {
   DIALECTS,
+  DIALECT_CONFIGS,
   type Database,
   type TestContext,
   clearDatabase,
@@ -289,36 +292,33 @@ for (const dialect of DIALECTS) {
     })
 
     if (variant === 'postgres') {
-      it('should discard the client when rollback fails', async () => {
-        const started = new Deferred<void>()
-        const failed = new Deferred<never>()
-        const query = sandbox.stub(Client.prototype, 'query').callThrough()
-        query.withArgs('rollback').callsFake(() => {
-          started.resolve()
-          return failed.promise
+      it('should discard the client when rollback times out', async () => {
+        const db = new Kysely<Database>({
+          dialect: new PostgresDialect({
+            pool: new Pool({
+              ...DIALECT_CONFIGS.postgres,
+              max: 1,
+              query_timeout: 1_000,
+            }),
+          }),
         })
 
-        const client = await ctx.db.connection().execute(async (connection) => {
-          const trx = await connection.startTransaction().execute()
-          const client = query.lastCall.thisValue as PoolClient
-          const select = connection.selectFrom('person').selectAll()
-          const trxSelect = trx.selectFrom('person').selectAll()
-          const rollback = expect(trx.rollback().execute()).to.be.rejected
-          await started.promise
+        try {
+          const trx = await db.startTransaction().execute()
+          await expect(sql`select pg_sleep(2.5)`.execute(trx)).to.be.rejected
+          await expect(trx.rollback().execute()).to.be.rejected
+          await insertSomething(db)
+          await sql`rollback`.execute(db)
 
-          const queued = expect(select.execute()).to.be.rejected
-          const queuedTrx = expect(trxSelect.execute()).to.be.rejected
-
-          failed.reject(new Error())
-          await rollback
-          await queued
-          await queuedTrx
-          await expect(trxSelect.execute()).to.be.rejected
-          await expect(select.execute()).to.be.rejected
-          return client
-        })
-
-        await expect(client.query('select 1')).to.be.rejected
+          const person = await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('first_name', '=', 'Foo')
+            .executeTakeFirst()
+          expect(person).to.eql({ first_name: 'Foo' })
+        } finally {
+          await db.destroy()
+        }
       })
     }
 
