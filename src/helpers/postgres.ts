@@ -10,6 +10,13 @@ import type {
 /**
  * A postgres helper for aggregating a subquery (or other expression) into a JSONB array.
  *
+ * The result uses JSON value types, which can differ from a direct selection.
+ * For example, `Date` becomes `string`, and `bigint` and numeric strings become
+ * `number`. These are type-level transformations; Kysely doesn't perform runtime
+ * conversions. The database and driver determine the actual JSON values.
+ *
+ * See {@link ShallowDehydrateObject} and {@link NonDehydrateable} for details.
+ *
  * ### Examples
  *
  * <!-- siteExample("select", "Nested array", 110) -->
@@ -55,6 +62,27 @@ import type {
  * ) as "pets"
  * from "person"
  * ```
+ *
+ * JSON aggregation changes the type of a timestamp selection:
+ *
+ * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/postgres'
+ *
+ * const person = await db
+ *   .selectFrom('person')
+ *   .select((eb) => [
+ *     'created_at',
+ *     jsonArrayFrom(
+ *       eb.selectFrom('pet')
+ *         .select(['name', 'created_at'])
+ *         .whereRef('pet.owner_id', '=', 'person.id')
+ *     ).as('pets'),
+ *   ])
+ *   .executeTakeFirstOrThrow()
+ *
+ * const createdAt: Date = person.created_at
+ * const petCreatedAt: string | undefined = person.pets[0]?.created_at
+ * ```
  */
 export function jsonArrayFrom<O>(
   expr: Expression<O>,
@@ -65,7 +93,11 @@ export function jsonArrayFrom<O>(
 /**
  * A postgres helper for turning a subquery (or other expression) into a JSON object.
  *
- * The subquery must only return one row.
+ * The subquery must only return one row. If it returns no rows, the result is `null`.
+ *
+ * The result uses JSON value types. For example, a selected `Date` becomes a
+ * `string`. See {@link jsonArrayFrom} for an example and
+ * {@link ShallowDehydrateObject} for the type-level transformations.
  *
  * ### Examples
  *
