@@ -17,6 +17,8 @@ export interface KyselyPlugin {
    * ```ts
    * import type {
    *   KyselyPlugin,
+   *   PluginTransformQueryArgs,
+   *   PluginTransformResultArgs,
    *   QueryResult,
    *   RootOperationNode,
    *   UnknownRow
