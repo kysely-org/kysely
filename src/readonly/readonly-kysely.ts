@@ -63,9 +63,16 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  *
  * const db = getDB()
  *
- * db.selectFrom('person') // works!
+ * db.selectFrom('person').selectAll() // works!
  * // Attempting to use a write query produces a type error:
  * // db.deleteFrom('person').execute()
+ * ```
+ *
+ * The generated SQL (SQLite):
+ *
+ * ```sql
+ * select *
+ * from "person"
  * ```
  *
  * On PostgreSQL, request a database-enforced read-only transaction explicitly.
@@ -81,6 +88,17 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  *   .transaction()
  *   .setAccessMode('read only')
  *   .execute((trx) => trx.selectFrom('person').selectAll().execute())
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * start transaction read only;
+ *
+ * select *
+ * from "person";
+ *
+ * commit;
  * ```
  */
 export interface ReadonlyKysely<DB>
