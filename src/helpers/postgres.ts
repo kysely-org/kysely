@@ -83,6 +83,19 @@ import type {
  * const createdAt: Date = person.created_at
  * const petCreatedAt: string | undefined = person.pets[0]?.created_at
  * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "created_at", (
+ *   select coalesce(json_agg(agg), '[]') from (
+ *     select "name", "created_at"
+ *     from "pet"
+ *     where "pet"."owner_id" = "person"."id"
+ *   ) as agg
+ * ) as "pets"
+ * from "person"
+ * ```
  */
 export function jsonArrayFrom<O>(
   expr: Expression<O>,

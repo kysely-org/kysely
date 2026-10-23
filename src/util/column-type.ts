@@ -237,6 +237,18 @@ export type Updateable<R> = DrainOuterGeneric<{
  *   .execute()
  * ```
  *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "id", (
+ *   select coalesce(json_agg(agg), '[]') from (
+ *     select "a_column", "another_column", "column_too"
+ *     from "my_table"
+ *   ) as agg
+ * ) as "related"
+ * from "person"
+ * ```
+ *
  * In the example above, "a_column" will be dehydrated to `number`
  * given it is a numeric string - which is normally a numeric data type column
  * that gets output as a string by underlying database drivers to avoid
