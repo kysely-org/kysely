@@ -636,6 +636,38 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
+   * Returns a {@link QueryResult} containing `rows` and any metadata provided
+   * by the dialect, such as `numAffectedRows` or `insertId`.
+   * Unlike a query builder's `execute`, this method doesn't wrap write metadata
+   * in an {@link InsertResult}, {@link UpdateResult} or {@link DeleteResult}.
+   * Without `returning` or `output`, a write normally has an empty `rows` array.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const query = db
+   *   .selectFrom('person')
+   *   .select(['id', 'first_name'])
+   *   .where('id', '=', 123)
+   *   .compile()
+   *
+   * const { rows } = await db.executeQuery(query)
+   * console.log(rows[0]?.first_name)
+   * ```
+   *
+   * Read metadata from a write query:
+   *
+   * ```ts
+   * const query = db
+   *   .updateTable('person')
+   *   .set({ first_name: 'Jennifer' })
+   *   .where('id', '=', 123)
+   *   .compile()
+   *
+   * const { numAffectedRows } = await db.executeQuery(query)
+   * console.log(numAffectedRows)
+   * ```
+   *
    * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   async executeQuery<R>(
