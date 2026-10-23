@@ -1320,6 +1320,35 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     return result
   }
 
+  /**
+   * Executes the query and returns the first result or throws if the query
+   * returned no result.
+   *
+   * Without `returning` or `output`, the query returns a {@link InsertResult}
+   * even when no rows are affected. This method doesn't throw in that case.
+   * Check {@link InsertResult.numInsertedOrUpdatedRows} to determine whether any rows were affected.
+   *
+   * With `returning` or `output`, this method throws if no rows are returned.
+   *
+   * See {@link Executable.executeTakeFirstOrThrow} for custom errors.
+   *
+   * ### Examples
+   *
+   * On PostgreSQL, an ignored conflict still returns an `InsertResult` when
+   * `returning` is not used:
+   *
+   * ```ts
+   * const result = await db
+   *   .insertInto('person')
+   *   .values({ id: 123, first_name: 'Jennifer' })
+   *   .onConflict((oc) => oc.column('id').doNothing())
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (result.numInsertedOrUpdatedRows === 0n) {
+   *   console.log('Person already exists')
+   * }
+   * ```
+   */
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
       | ExecuteTakeFirstOrThrowOptions

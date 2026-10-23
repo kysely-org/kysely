@@ -7,6 +7,10 @@ export interface Executable<O> {
   /**
    * Executes the query and returns an array of rows.
    *
+   * Insert, update, delete and merge queries without `returning` or `output`
+   * return an array containing a single result object instead. The object
+   * contains the affected row count, even when no rows are affected.
+   *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   execute(options?: AbortableQueryOptions): Promise<SimplifyResult<O>[]>

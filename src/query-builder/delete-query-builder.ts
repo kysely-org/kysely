@@ -1087,6 +1087,31 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return result
   }
 
+  /**
+   * Executes the query and returns the first result or throws if the query
+   * returned no result.
+   *
+   * Without `returning` or `output`, the query returns a {@link DeleteResult}
+   * even when no rows are affected. This method doesn't throw in that case.
+   * Check {@link DeleteResult.numDeletedRows} to determine whether any rows were affected.
+   *
+   * With `returning` or `output`, this method throws if no rows are returned.
+   *
+   * See {@link Executable.executeTakeFirstOrThrow} for custom errors.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .deleteFrom('person')
+   *   .where('id', '=', 123)
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (result.numDeletedRows === 0n) {
+   *   throw new Error('Person not found')
+   * }
+   * ```
+   */
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
       | ExecuteTakeFirstOrThrowOptions
