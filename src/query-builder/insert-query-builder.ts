@@ -1324,6 +1324,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
    * Executes the query and returns the first result or throws if the query
    * returned no result.
    *
+   * This method doesn't modify the query or limit the number of rows affected
+   * or returned by the database. It executes the query as-is and returns only
+   * the first result.
+   *
    * Without `returning` or `output`, the query returns a {@link InsertResult}
    * even when no rows are affected. This method doesn't throw in that case.
    * Check {@link InsertResult.numInsertedOrUpdatedRows} to determine whether any rows were affected.
