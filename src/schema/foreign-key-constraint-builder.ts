@@ -25,6 +25,15 @@ export interface ForeignKeyConstraintBuilderInterface<R> {
    *   )
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer,
+   *   constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") on delete cascade
+   * )
+   * ```
    */
   onDelete(onDelete: OnModifyForeignAction): R
 
@@ -71,6 +80,15 @@ export interface ForeignKeyConstraintBuilderInterface<R> {
    *     (fk) => fk.deferrable().initiallyDeferred(),
    *   )
    *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer,
+   *   constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") deferrable initially deferred
+   * )
    * ```
    */
   initiallyDeferred(): R

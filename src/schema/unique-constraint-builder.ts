@@ -60,6 +60,15 @@ export class UniqueConstraintNodeBuilder implements OperationNodeSource {
    *   )
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "example" (
+   *   "id" integer not null,
+   *   constraint "example_id_key" unique ("id") deferrable initially deferred
+   * )
+   * ```
    */
   initiallyDeferred(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(

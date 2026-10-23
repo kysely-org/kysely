@@ -49,6 +49,15 @@ export class PrimaryKeyConstraintBuilder implements OperationNodeSource {
    *   )
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "example" (
+   *   "id" integer not null,
+   *   constraint "example_id_key" primary key ("id") deferrable initially deferred
+   * )
+   * ```
    */
   initiallyDeferred(): PrimaryKeyConstraintBuilder {
     return new PrimaryKeyConstraintBuilder(
