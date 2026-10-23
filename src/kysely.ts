@@ -523,6 +523,17 @@ export class Kysely<DB>
    *   }
    * })
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create temporary table "temp_table" ("some_column" integer);
+   *
+   * insert into "temp_table" ("some_column")
+   * values ($1);
+   *
+   * drop table "temp_table";
+   * ```
    */
   $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
     DrainOuterGeneric<DB & T>
