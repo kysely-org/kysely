@@ -1348,6 +1348,14 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
    *   console.log('Person already exists')
    * }
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("id", "first_name")
+   * values ($1, $2)
+   * on conflict ("id") do nothing
+   * ```
    */
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:

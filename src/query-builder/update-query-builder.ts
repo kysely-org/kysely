@@ -1212,6 +1212,14 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * }
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = $1
+   * where "id" = $2
+   * ```
+   *
    * On PostgreSQL, use `returning` to throw when no person matches:
    *
    * ```ts
@@ -1221,6 +1229,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .where('id', '=', 123)
    *   .returning('id')
    *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = $1
+   * where "id" = $2
+   * returning "id"
    * ```
    */
   async executeTakeFirstOrThrow(

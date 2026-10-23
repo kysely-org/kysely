@@ -1111,6 +1111,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   throw new Error('Person not found')
    * }
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "person"
+   * where "id" = $1
+   * ```
    */
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
