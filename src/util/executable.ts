@@ -19,8 +19,8 @@ export interface Executable<O> {
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    *
-   * This method doesn't modify the query or limit the number of rows returned
-   * by the database. It executes the query as-is and returns only the first
+   * This method doesn't modify the query or limit the number of rows affected
+   * or returned by the database. It executes the query as-is and returns only the first
    * result. Add `limit(1)` to a select query to limit the results on the
    * database side.
    */
@@ -32,8 +32,8 @@ export interface Executable<O> {
    * Executes the query and returns the first result or throws if
    * the query returned no result.
    *
-   * This method doesn't modify the query or limit the number of rows returned
-   * by the database. It executes the query as-is and returns only the first
+   * This method doesn't modify the query or limit the number of rows affected
+   * or returned by the database. It executes the query as-is and returns only the first
    * result. Add `limit(1)` to a select query to limit the results on the
    * database side.
    *

@@ -1185,20 +1185,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes the query and returns the first result or throws if the query
-   * returned no result.
-   *
-   * This method doesn't modify the query or limit the number of rows affected
-   * or returned by the database. It executes the query as-is and returns only
-   * the first result.
-   *
+   * @remarks
    * Without `returning` or `output`, the query returns a {@link UpdateResult}
    * even when no rows are affected. This method doesn't throw in that case.
    * Check {@link UpdateResult.numUpdatedRows} to determine whether any rows were affected.
    *
    * With `returning` or `output`, this method throws if no rows are returned.
-   *
-   * See {@link Executable.executeTakeFirstOrThrow} for custom errors.
    *
    * ### Examples
    *
