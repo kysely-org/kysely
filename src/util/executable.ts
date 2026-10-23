@@ -41,6 +41,14 @@ export interface Executable<O> {
    *     errorConstructor: () => new Error('Person not found'),
    *   })
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "id" = $1
+   * ```
    */
   executeTakeFirstOrThrow(
     options?:

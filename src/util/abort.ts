@@ -22,6 +22,13 @@ export interface AbortableOperationOptions {
    *   .selectAll()
    *   .execute({ signal: AbortSignal.timeout(1000) })
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * ```
    */
   readonly signal?: AbortSignal | undefined
 }
@@ -72,6 +79,13 @@ export interface AbortableQueryOptions extends AbortableOperationOptions {
    *   })
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * ```
+   *
    * Cancel waiting for a query using an `AbortController`:
    *
    * ```ts
@@ -90,6 +104,13 @@ export interface AbortableQueryOptions extends AbortableOperationOptions {
    *     throw error
    *   }
    * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
    * ```
    */
   readonly inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined

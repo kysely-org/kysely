@@ -30,6 +30,14 @@ export interface Streamable<O> {
    * }
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", "last_name"
+   * from "person"
+   * where "gender" = $1
+   * ```
+   *
    * Stop consuming rows when a timeout expires:
    *
    * ```ts
@@ -39,6 +47,13 @@ export interface Streamable<O> {
    *   .stream({ chunkSize: 100, signal: AbortSignal.timeout(1000) })) {
    *   console.log(person.id)
    * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
    * ```
    */
   stream(
