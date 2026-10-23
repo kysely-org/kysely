@@ -83,6 +83,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    * ```ts
    * await db.schema.alterTable('person').renameTo('person_backup').execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename to "person_backup"
+   * ```
    */
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
@@ -102,6 +108,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *
    * ```ts
    * await db.schema.alterTable('person').setSchema('archive').execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" set schema "archive"
    * ```
    */
   setSchema(newSchema: string): AlterTableExecutor {
@@ -169,6 +181,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *   .dropColumn('middle_name', (dc) => dc.ifExists())
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" drop column if exists "middle_name"
+   * ```
    */
   dropColumn(
     column: string,
@@ -197,6 +215,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *   .alterTable('person')
    *   .renameColumn('first_name', 'given_name')
    *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename column "first_name" to "given_name"
    * ```
    */
   renameColumn(
@@ -359,6 +383,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *   )
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "pet" add constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") on delete cascade
+   * ```
    */
   addForeignKeyConstraint(
     constraintName: string,
@@ -420,6 +450,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *   .ifExists()
    *   .execute()
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" drop constraint if exists "person_email_unique"
+   * ```
    */
   dropConstraint(constraintName: string): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
@@ -440,6 +476,12 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    *   .alterTable('person')
    *   .renameConstraint('person_email_unique', 'person_email_key')
    *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename constraint "person_email_unique" to "person_email_key"
    * ```
    */
   renameConstraint(
