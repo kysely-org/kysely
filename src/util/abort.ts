@@ -9,7 +9,19 @@ export interface AbortableOperationOptions {
    * This is useful for cancelling long-running queries, for example when
    * the user navigates away from the page or closes the browser tab.
    *
-   * See {@link inflightQueryAbortStrategy} for handling of database side query.
+   * Aborted operations reject with `signal.reason`.
+   *
+   * See {@link AbortableQueryOptions.inflightQueryAbortStrategy} for handling
+   * of the database side query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const people = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .execute({ signal: AbortSignal.timeout(1000) })
+   * ```
    */
   readonly signal?: AbortSignal | undefined
 }
@@ -25,22 +37,60 @@ export interface AbortableQueryOptions extends AbortableOperationOptions {
    *
    * `'cancel query'` attempts to cancel the query on the database side (e.g. `pg_cancel_backend`
    * in PostgreSQL or `kill query` in MySQL). This requires the dialect's connection
-   * to implement {@link DatabaseConnection.cancelQuery}. Otherwise, falls back
-   * to `'ignore query'` with a warning. Writes (insert, update, delete) are not
-   * cancellable in most database engines, so your mileage
-   * may vary. Also, some databases do not cancel the running query immediately
-   * resulting in changes being committed sometimes - consider `'kill session'`
-   * when you need stronger guarantees, at all costs.
+   * to implement {@link DatabaseConnection.cancelQuery}. Otherwise, throws an
+   * error before executing the query. Cancellation is best-effort: a write may
+   * finish before the cancellation reaches the database. Aborting doesn't undo
+   * changes that have already been committed.
    *
    * `'kill session'` attempts to kill the database process/session the query is
    * running in (e.g. `pg_terminate_backend` in PostgreSQL) and with it any running
    * queries, transactions and obtained locks. This requires the dialect's connection
-   * to implement {@link DatabaseConnection.killSession}. Otherwise, falls back
-   * to `'cancel query'` with a warning. Killing the session is very aggressive,
+   * to implement {@link DatabaseConnection.killSession}. Otherwise, throws an
+   * error before executing the query. Killing the session is very aggressive,
    * and will require reconnection on the next database operation if there are
    * no idle connections available in the pool.
    *
+   * Built-in PostgreSQL and MySQL connections support both cancellation and
+   * session termination. MSSQL connections support cancellation. SQLite and
+   * PGlite connections support neither strategy.
+   *
+   * This option only takes effect when a {@link signal} is provided.
+   *
    * Default is `'ignore query'`.
+   *
+   * ### Examples
+   *
+   * Attempt to cancel a PostgreSQL query when the timeout expires:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .execute({
+   *     signal: AbortSignal.timeout(1000),
+   *     inflightQueryAbortStrategy: 'cancel query',
+   *   })
+   * ```
+   *
+   * Cancel waiting for a query using an `AbortController`:
+   *
+   * ```ts
+   * const controller = new AbortController()
+   * const result = db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .execute({ signal: controller.signal })
+   *
+   * controller.abort(new Error('Request cancelled'))
+   *
+   * try {
+   *   await result
+   * } catch (error) {
+   *   if (error !== controller.signal.reason) {
+   *     throw error
+   *   }
+   * }
+   * ```
    */
   readonly inflightQueryAbortStrategy?: InflightQueryAbortStrategy | undefined
 }

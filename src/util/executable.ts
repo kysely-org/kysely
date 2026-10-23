@@ -26,6 +26,21 @@ export interface Executable<O> {
    * By default an instance of {@link NoResultError} is thrown, but you can
    * provide a custom error class, or callback to throw a different
    * error.
+   *
+   * ### Examples
+   *
+   * Provide a timeout and a custom error for an empty result:
+   *
+   * ```ts
+   * const person = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where('id', '=', 123)
+   *   .executeTakeFirstOrThrow({
+   *     signal: AbortSignal.timeout(1000),
+   *     errorConstructor: () => new Error('Person not found'),
+   *   })
+   * ```
    */
   executeTakeFirstOrThrow(
     options?:
