@@ -655,6 +655,14 @@ export class Kysely<DB>
    * console.log(rows[0]?.first_name)
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "id", "first_name"
+   * from "person"
+   * where "id" = $1
+   * ```
+   *
    * Read metadata from a write query:
    *
    * ```ts
@@ -666,6 +674,14 @@ export class Kysely<DB>
    *
    * const { numAffectedRows } = await db.executeQuery(query)
    * console.log(numAffectedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = $1
+   * where "id" = $2
    * ```
    *
    * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.

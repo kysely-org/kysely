@@ -77,6 +77,14 @@ type CompiledQueryFactory = Readonly<{
    *
    * const firstName: string | undefined = result.rows[0]?.first_name
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name"
+   * from "person"
+   * where "id" = $1
+   * ```
    */
   raw(sql: string, parameters?: unknown[]): Readonly<CompiledQuery>
 }>
