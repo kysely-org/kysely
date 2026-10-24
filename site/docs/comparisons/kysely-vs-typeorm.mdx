@@ -387,9 +387,11 @@ Kysely's compiler feedback also helps an agent catch stale callers and invalid r
 
 Start with a report whose `getRawMany<T>()` annotation must change whenever the selection changes, or a shared builder that needs careful cloning.
 
+Use [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) to reuse an existing TypeORM `DataSource` with Kysely. It provides a dialect and type helpers, including `KyselifyEntity` for translating entity types into Kysely table types.
+
 1. Keep TypeORM's entities, schema management, and migration history.
-2. Describe the database through [generated or handwritten Kysely types](/docs/generating-types), matching actual driver values and nullability.
-3. [Configure a Kysely dialect](/docs/getting-started), translate one query, inspect `.compile()`, and compare rows, ordering, nulls, and empty results.
+2. Translate entity types with the bridge's helpers, or use [generated or handwritten Kysely types](/docs/generating-types), matching actual driver values and nullability.
+3. Configure the bridge's dialect with your `DataSource`, or [configure a native dialect](/docs/getting-started). Translate one query, inspect `.compile()`, and compare rows, ordering, nulls, and empty results.
 4. Check callers against the inferred result before moving more queries.
 
-Separate clients need connection capacity and do not automatically share transactions. Keep each transaction on its owning client and connection. TypeORM migration history and entity lifecycle behavior are separate from moving query code.
+A separate pool needs connection capacity; the bridge reuses TypeORM's connections. Sharing a data source does not automatically enlist queries in an existing transaction. Keep each transaction on its owning client and connection. TypeORM migration history and entity lifecycle behavior are separate from moving query code.
