@@ -22,7 +22,6 @@ const regions: { libraries: Library[]; description: string }[] = [
       {
         name: 'Prisma 7 + Kysely',
         href: 'https://github.com/valtyr/prisma-kysely',
-        builder: 'Kysely',
       },
       {
         name: 'MikroORM 7',
