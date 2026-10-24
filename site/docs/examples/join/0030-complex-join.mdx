@@ -14,15 +14,21 @@ You can do all the same things with the
 `on` method that you can with the corresponding `where` method (like [OR expressions for example](https://kysely.dev/docs/examples/WHERE/or-where)).
 See the `where` method documentation for more examples.
 
-import { Playground } from '../../../src/components/Playground'
-
-import {
-  complexJoin
-} from './0030-complex-join'
-
-<div style={{ marginBottom: '1em' }}>
-  <Playground code={complexJoin} />
-</div>
+```ts twoslash playground
+await db.selectFrom('person')
+  .innerJoin(
+    'pet',
+    (join) => join
+      .onRef('pet.owner_id', '=', 'person.id')
+      .on('pet.name', '=', 'Doggo')
+      .on((eb) => eb.or([
+        eb('person.age', '>', 18),
+        eb('person.age', '<', 100)
+      ]))
+  )
+  .selectAll()
+  .execute()
+```
 
 :::info[More examples]
 The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),
