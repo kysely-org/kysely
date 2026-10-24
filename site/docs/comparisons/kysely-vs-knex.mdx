@@ -266,9 +266,7 @@ Measured **October 24, 2026**: [measurement details](https://github.com/kysely-o
 
 ## Agent experience
 
-Kysely ships version-matched method docs and CI-checked inline examples. Knex's [declarations](https://github.com/knex/knex/blob/master/types/index.d.ts) and detailed [query guide](https://knexjs.org/guide/query-builder.html) are separate.
-
-The joined-query failures above also give agents earlier compiler feedback. See [installed-version docs](/docs/integrations/llms#documentation-for-the-installed-version).
+Kysely ships [version-matched method docs and checked examples](/docs/integrations/llms#documentation-for-the-installed-version) beside its API. Knex's [declarations](https://github.com/knex/knex/blob/master/types/index.d.ts) and [query guide](https://knexjs.org/guide/query-builder.html) are separate.
 
 ## You can start with Kysely&lt;any&gt;
 
@@ -288,8 +286,6 @@ const rows = await untypedDb
 
 `Kysely<any>` retains composition, immutability, binding, execution methods, and docs. It gives up schema checks, schema-aware completion, and inferred column types.
 
-Replace `any` with handwritten or generated types later; the query API stays the same.
-
 ## Migrate a query at a time
 
 Start with a query whose joined aliases lose inference, or a base query that several callers extend. Use [kysely-knex](https://github.com/kysely-org/kysely-knex) to reuse a Knex instance, translate table types, and integrate migrations.
@@ -306,11 +302,7 @@ Keep existing Knex migrations while migrating queries. Knex includes a migration
 
 Migration-tool changes are separate: Kysely does not translate Knex files or adopt their history automatically. See [migrations](/docs/migrations).
 
-## Why choose Kysely over Knex?
-
-Kysely preserves SQL control while checking joins and aliases, inferring results, and keeping reused builders independent.
-
-Adopt one function at a time. JavaScript works too; the compile-time checks require TypeScript.
+JavaScript works too; the compile-time checks require TypeScript.
 
 - [SQL query builder vs raw SQL in TypeScript](/docs/comparisons/query-builder-vs-raw-sql-in-typescript): compare composition and inferred results.
 - [Get started with Kysely](/docs/getting-started): configure your driver and database types.
