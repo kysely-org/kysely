@@ -1,0 +1,395 @@
+---
+sidebar_position: 7
+title: Kysely vs TypeORM
+description: 'Compare Kysely and TypeORM query builders: inferred projections, checked SQL references, partial entities, immutable composition, and parameter binding, with tested PostgreSQL examples.'
+---
+
+# Kysely vs TypeORM
+
+Kysely checks table and alias references, infers selected fields, and lets callers extend a shared query without changing it.
+
+TypeORM is a data framework with a [SQL query builder](https://typeorm.io/docs/query-builder/select-query-builder/). It can build joins, aggregates, and custom projections, returning either entity instances or plain results. The difference below is what the compiler checks as those queries change. See [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) for the category distinction.
+
+Checked with **TypeORM 1.1.1 and 0.3.31**, **Kysely 0.29.7**, and PostgreSQL. Both bind values. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/typeorm).
+
+## The same joined projection
+
+Return adults' names alongside their pets' names, ordered by person and pet ID.
+
+<details>
+<summary>Matching database types and TypeORM entity definitions</summary>
+
+Kysely's database interface:
+
+{/* fixture: database */}
+
+```ts
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+```
+
+TypeORM's entities and mappings, using `EntitySchema` rather than decorators:
+
+```ts
+import { EntitySchema } from 'typeorm'
+```
+
+{/* fixture: entities */}
+
+```ts
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+```
+
+Assume configured `db` and `dataSource` clients. The TypeORM data source registers both schemas; the database already has the matching tables.
+
+</details>
+
+With TypeORM:
+
+{/* fixture: typeorm-joined */}
+
+```ts
+function typeormAdults() {
+  return dataSource
+    .getRepository(Person)
+    .createQueryBuilder('person')
+    .innerJoin(Pet, 'pet', 'pet.owner_id = person.id')
+    .select('person.first_name', 'person_name')
+    .addSelect('pet.name', 'pet_name')
+    .where('person.age >= :minAge', { minAge: 18 })
+    .orderBy('person.id')
+    .addOrderBy('pet.id')
+}
+
+async function typeormListing() {
+  return typeormAdults().getRawMany()
+}
+```
+
+With Kysely:
+
+{/* fixture: kysely-joined */}
+
+```ts
+function kyselyAdults() {
+  return db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select(['person.first_name as person_name', 'pet.name as pet_name'])
+    .where('person.age', '>=', 18)
+    .orderBy('person.id')
+    .orderBy('pet.id')
+}
+
+async function kyselyListing() {
+  return kyselyAdults().execute()
+}
+```
+
+Both return the same rows. TypeORM's `getRawMany()` defaults to `any[]`; Kysely infers `{ person_name: string; pet_name: string }[]` from the selection. TypeORM accepts a generic result type, but that annotation is maintained separately from the query.
+
+## Rename a field: does the caller's type follow?
+
+Rename `person_name` to `name`, leaving the supplied TypeORM result type unchanged:
+
+{/* fixture: stale-raw-type */}
+
+```ts
+async function staleRawType() {
+  const rows = await typeormAdults()
+    .select('person.first_name', 'name')
+    .addSelect('pet.name', 'pet_name')
+    .getRawMany<{ person_name: string; pet_name: string }>()
+
+  return rows[0]?.person_name // The declared person_name property is missing at runtime.
+}
+```
+
+This compiles in both tested TypeORM versions. The returned row has `name`; `person_name` is absent. The generic does not validate the selection.
+
+Kysely derives the new result from the query:
+
+{/* fixture: kysely-renamed */}
+
+```ts
+function kyselyRenamed() {
+  return kyselyAdults()
+    .clearSelect()
+    .select(['person.first_name as name', 'pet.name as pet_name'])
+    .execute()
+}
+```
+
+The result is `{ name: string; pet_name: string }[]`. A caller still reading `row.person_name` gets a TypeScript error.
+
+### Entity types do not describe every projection
+
+TypeORM's `getOne()` and `getMany()` hydrate entities. Selecting fewer fields does not narrow the entity's declared type:
+
+{/* fixture: partial-entity */}
+
+```ts
+async function partialEntity() {
+  const person = await dataSource
+    .getRepository(Person)
+    .createQueryBuilder('person')
+    .select(['person.id'])
+    .where('person.id = :id', { id: 1 })
+    .getOneOrFail()
+
+  return person.first_name // Typed as string; not selected at runtime.
+}
+```
+
+With the entity definition above, the query returns a `Person` instance containing `id`; `first_name` is `undefined`. Kysely's `.select('id')` infers only `{ id: number }`. This matters when a shared query stops selecting a field that callers still use.
+
+## Check references before execution
+
+These string-based edits compile in both tested TypeORM versions and fail in PostgreSQL:
+
+| Edit                                                       | TypeORM query builder                     | Kysely            |
+| ---------------------------------------------------------- | ----------------------------------------- | ----------------- |
+| Filter on `pet.name` without joining `pet`                 | Missing table reaches PostgreSQL.         | TypeScript error. |
+| Select the misspelled `person.first_nam`                   | Unknown column reaches PostgreSQL.        | TypeScript error. |
+| Alias `person` as `p`, then filter on `person.age`         | Invalid alias reaches PostgreSQL.         | TypeScript error. |
+| Compare integer `person.age` with the bound string `'old'` | Invalid integer input reaches PostgreSQL. | TypeScript error. |
+
+<details>
+<summary>The TypeORM queries used for these checks</summary>
+
+{/* fixture: typeorm-invalid */}
+
+```ts
+function invalidTypeormEdits() {
+  return [
+    dataSource
+      .getRepository(Person)
+      .createQueryBuilder('person')
+      .select('person.id', 'id')
+      .where('pet.name = :name', { name: 'Catto' }),
+    dataSource
+      .getRepository(Person)
+      .createQueryBuilder('person')
+      .select('person.first_nam', 'name'),
+    dataSource
+      .getRepository(Person)
+      .createQueryBuilder('p')
+      .select('p.id', 'id')
+      .where('person.age >= :age', { age: 18 }),
+    dataSource
+      .getRepository(Person)
+      .createQueryBuilder('person')
+      .select('person.id', 'id')
+      .where('person.age = :age', { age: 'old' }),
+  ]
+}
+```
+
+</details>
+
+TypeORM's object-based find APIs provide different checks; these findings concern the query builder's SQL strings. Kysely's checks also depend on accurate database types. Its raw SQL fragments and supplied `sql<T>` result annotations do not prove SQL grammar or runtime values.
+
+## Reuse a query without changing another caller's query
+
+TypeORM mutates a shared builder:
+
+{/* fixture: typeorm-reuse */}
+
+```ts
+function typeormBranches() {
+  const base = typeormAdults()
+  const preview = base.limit(1)
+  const everyone = base
+  // everyone now has LIMIT 1 too.
+  return { preview, everyone }
+}
+```
+
+Use TypeORM's `.clone()` to create independent branches:
+
+{/* fixture: typeorm-clone */}
+
+```ts
+function typeormIndependentBranches() {
+  const base = typeormAdults()
+  const preview = base.clone().limit(1)
+  const everyone = base.clone()
+  return { preview, everyone }
+}
+```
+
+Kysely returns independent builders:
+
+{/* fixture: kysely-reuse */}
+
+```ts
+function kyselyBranches() {
+  const base = kyselyAdults()
+  const preview = base.limit(1)
+  const everyone = base
+  return { preview, everyone }
+}
+```
+
+The fixtures execute both branches: the preview returns one row, while the independent full listing returns three. Keep each returned Kysely builder when extending it.
+
+## Bind values without coordinating parameter names
+
+TypeORM's [named parameters must be unique](https://typeorm.io/docs/query-builder/select-query-builder/#using-parameters-to-escape-data). Reusing a name overwrites its value:
+
+{/* fixture: parameter-collision */}
+
+```ts
+function collidingParameters() {
+  return typeormAdults()
+    .andWhere('person.first_name = :name', { name: 'Jennifer' })
+    .andWhere('pet.name = :name', { name: 'Catto' })
+    .getRawMany()
+}
+```
+
+The second `name` replaces the first, so this filters both the person and pet name by `Catto`. The intended Jennifer/Catto row disappears.
+
+Distinct names fix it:
+
+{/* fixture: unique-parameters */}
+
+```ts
+function uniqueParameters() {
+  return typeormAdults()
+    .andWhere('person.first_name = :personName', { personName: 'Jennifer' })
+    .andWhere('pet.name = :petName', { petName: 'Catto' })
+    .getRawMany()
+}
+```
+
+Kysely allocates the placeholders as it compiles the query:
+
+{/* fixture: kysely-parameters */}
+
+```ts
+function kyselyParameters() {
+  return kyselyAdults()
+    .where('person.first_name', '=', 'Jennifer')
+    .where('pet.name', '=', 'Catto')
+    .execute()
+}
+```
+
+Both corrected versions return the same row. Kysely helpers can compose value bindings without coordinating a parameter-name namespace.
+
+## SQL expressions with inferred results
+
+TypeORM supports grouping and `HAVING`; the distinction is expression construction and result inference.
+
+<details>
+<summary>Equivalent pet counts, filtered before returning rows</summary>
+
+TypeORM supplies the aggregate and cast as SQL, with a result annotation:
+
+{/* fixture: typeorm-aggregate */}
+
+```ts
+function typeormPetCounts() {
+  return dataSource
+    .getRepository(Person)
+    .createQueryBuilder('person')
+    .innerJoin(Pet, 'pet', 'pet.owner_id = person.id')
+    .select('person.id', 'person_id')
+    .addSelect('count(pet.id)::integer', 'pet_count')
+    .groupBy('person.id')
+    .having('count(pet.id) >= :minPets', { minPets: 2 })
+    .orderBy('person.id')
+    .getRawMany<{ person_id: number; pet_count: number }>()
+}
+```
+
+Kysely builds the expression and infers `{ person_id: number; pet_count: number }[]`:
+
+{/* fixture: kysely-aggregate */}
+
+```ts
+function kyselyPetCounts() {
+  return db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select('person.id as person_id')
+    .select((eb) =>
+      eb.cast<number>(eb.fn.count('pet.id'), 'integer').as('pet_count'),
+    )
+    .groupBy('person.id')
+    .having((eb) => eb.fn.count('pet.id'), '>=', 2)
+    .orderBy('person.id')
+    .execute()
+}
+```
+
+The integer cast makes PostgreSQL return a JavaScript number through `pg`. Both queries return the same counts.
+
+</details>
+
+TypeORM also supports [CTEs](https://typeorm.io/docs/query-builder/select-query-builder/#common-table-expressions), subqueries, and [row locking](https://typeorm.io/docs/query-builder/select-query-builder/#set-locking), including `skip_locked`. The fixtures exercise a CTE and locking too. These features do not require abandoning its builder. Kysely's advantage here is checking references and carrying inferred types through composition.
+
+## Keep model workflows where they help
+
+TypeORM's relationship joins can hydrate related entity instances, and its repositories provide model persistence. Kysely returns selected rows and leaves model lifecycle behavior to your application. Keep TypeORM for those responsibilities while moving queries that need checked projections and reusable SQL composition.
+
+Kysely's compiler feedback also helps an agent catch stale callers and invalid references before execution. See [installed-version documentation and checked examples](/docs/integrations/llms#documentation-for-the-installed-version).
+
+## Adopt Kysely one query at a time
+
+Start with a report whose `getRawMany<T>()` annotation must change whenever the selection changes, or a shared builder that needs careful cloning.
+
+1. Keep TypeORM's entities, schema management, and migration history.
+2. Describe the database through [generated or handwritten Kysely types](/docs/generating-types), matching actual driver values and nullability.
+3. [Configure a Kysely dialect](/docs/getting-started), translate one query, inspect `.compile()`, and compare rows, ordering, nulls, and empty results.
+4. Check callers against the inferred result before moving more queries.
+
+Separate clients need connection capacity and do not automatically share transactions. Keep each transaction on its owning client and connection. TypeORM migration history and entity lifecycle behavior are separate from moving query code.

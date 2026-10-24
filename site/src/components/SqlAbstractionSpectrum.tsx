@@ -44,7 +44,7 @@ const regions: { libraries: Library[]; description: string }[] = [
     libraries: [
       {
         name: 'TypeORM',
-        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
+        href: '/docs/comparisons/kysely-vs-typeorm',
       },
       {
         name: 'Objection.js',
