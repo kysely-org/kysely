@@ -14,7 +14,7 @@ const examples = [
     /\{\/\* fixture: ([\w-]+) \*\/\}\s*```ts[^\n]*\n([\s\S]*?)```/g,
   ),
 ]
-assert(examples.length >= 12, 'Missing documented fixture examples')
+assert(examples.length >= 16, 'Missing documented fixture examples')
 for (const [, name, code] of examples) {
   const start = source.indexOf(`// DOC:${name}\n`)
   const end = source.indexOf(`// END:${name}`, start)

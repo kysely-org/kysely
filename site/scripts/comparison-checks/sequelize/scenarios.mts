@@ -28,7 +28,12 @@ type Expect<T extends true> = T
 
 // DOC:database
 interface Database {
-  person: { id: number; first_name: string; age: number | null }
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
   pet: { id: number; name: string; owner_id: number }
 }
 // END:database
@@ -52,6 +57,7 @@ class Person extends Model<
   declare id: number
   declare first_name: string
   declare age: number | null
+  declare pet_target: number
   declare pets?: NonAttribute<Pet[]>
 }
 
@@ -66,6 +72,7 @@ Person.init(
     id: { type: DataTypes.INTEGER, primaryKey: true },
     first_name: { type: DataTypes.TEXT, allowNull: false },
     age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
   },
   { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
 )
@@ -82,16 +89,23 @@ Pet.init(
 Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
 // END:models
 
+// DOC:sequelize-report-scope
+Person.addScope('petCounts', {
+  attributes: [
+    'id',
+    'first_name',
+    [cast(fn('COUNT', col('pets.id')), 'integer'), 'pet_count'],
+  ],
+  include: [{ model: Pet, as: 'pets', attributes: [], required: false }],
+  group: ['Person.id', 'Person.first_name'],
+})
+// END:sequelize-report-scope
+
+const PetCountReport = scoped(Person, 'petCounts')
+
 // DOC:sequelize-counts
 function sequelizePetCounts(minPets: number) {
-  return Person.findAll({
-    attributes: [
-      'id',
-      'first_name',
-      [cast(fn('COUNT', col('pets.id')), 'integer'), 'pet_count'],
-    ],
-    include: [{ model: Pet, as: 'pets', attributes: [], required: false }],
-    group: ['Person.id', 'Person.first_name'],
+  return PetCountReport.findAll({
     having: where(fn('COUNT', col('pets.id')), Op.gte, minPets),
     order: [['id', 'ASC']],
     raw: true,
@@ -120,6 +134,68 @@ function kyselyPetCounts(minPets: number) {
     .execute()
 }
 // END:kysely-counts
+
+// DOC:sequelize-targets
+function sequelizeTargetCounts(pageSize = 20) {
+  return PetCountReport.findAll({
+    having: where(
+      fn('COUNT', col('pets.id')),
+      Op.gte,
+      col('Person.pet_target'),
+    ),
+    order: [
+      ['pet_count', 'DESC'],
+      ['id', 'ASC'],
+    ],
+    limit: pageSize,
+    subQuery: false,
+    raw: true,
+  })
+}
+// END:sequelize-targets
+
+// DOC:kysely-targets
+function kyselyTargetCounts(pageSize = 20) {
+  return personPetCounts()
+    .groupBy('person.pet_target')
+    .having((eb) =>
+      eb(eb.fn.count('pet.id'), '>=', eb.ref('person.pet_target')),
+    )
+    .orderBy('pet_count', 'desc')
+    .orderBy('person.id')
+    .limit(pageSize)
+    .execute()
+}
+// END:kysely-targets
+
+// DOC:sequelize-target-typo
+function misspelledTarget() {
+  return PetCountReport.findAll({
+    having: where(
+      fn('COUNT', col('pets.id')),
+      Op.gte,
+      col('Person.pet_targte'),
+    ),
+    raw: true,
+  })
+}
+// END:sequelize-target-typo
+
+function defaultPagedReport() {
+  return PetCountReport.findAll({
+    having: where(
+      fn('COUNT', col('pets.id')),
+      Op.gte,
+      col('Person.pet_target'),
+    ),
+    order: [
+      ['pet_count', 'DESC'],
+      ['id', 'ASC'],
+    ],
+    limit: 1,
+    raw: true,
+  })
+}
 
 // DOC:renamed-attribute
 async function renamedAttribute() {
@@ -187,6 +263,10 @@ function typeChecks() {
   type OnlyId = Awaited<ReturnType<typeof idOnly>>[number]
   // @ts-expect-error This query selects only id.
   const missing: OnlyId['first_name'] = ''
+  personPetCounts().having((eb) =>
+    // @ts-expect-error The new target column is misspelled.
+    eb(eb.fn.count('pet.id'), '>=', eb.ref('person.pet_targte')),
+  )
   return [old, missing]
 }
 void typeChecks
@@ -257,6 +337,12 @@ type InferredRename = Expect<
 type PartialModelStillSaysString = Expect<
   Equal<Awaited<ReturnType<typeof partialModel>>, string>
 >
+type InferredTargetCounts = Expect<
+  Equal<
+    Awaited<ReturnType<typeof kyselyTargetCounts>>,
+    Awaited<ReturnType<typeof kyselyPetCounts>>
+  >
+>
 
 try {
   await admin.query(`create schema "${schema}"`)
@@ -265,6 +351,7 @@ try {
     .addColumn('id', 'integer', (c) => c.primaryKey())
     .addColumn('first_name', 'text', (c) => c.notNull())
     .addColumn('age', 'integer')
+    .addColumn('pet_target', 'integer', (c) => c.notNull())
     .execute()
   await db.schema
     .createTable('pet')
@@ -277,10 +364,10 @@ try {
   await db
     .insertInto('person')
     .values([
-      { id: 1, first_name: 'Jennifer', age: 40 },
-      { id: 2, first_name: 'Arnold', age: 17 },
-      { id: 3, first_name: 'Ada', age: 30 },
-      { id: 4, first_name: 'NoPets', age: null },
+      { id: 1, first_name: 'Jennifer', age: 40, pet_target: 3 },
+      { id: 2, first_name: 'Arnold', age: 17, pet_target: 1 },
+      { id: 3, first_name: 'Ada', age: 30, pet_target: 0 },
+      { id: 4, first_name: 'NoPets', age: null, pet_target: 1 },
     ])
     .execute()
   await db
@@ -307,6 +394,36 @@ try {
   }
   console.log(
     'PASS: Sequelize aggregates, raw bound SQL, and Kysely match at four thresholds, including zero pets and empty results',
+  )
+
+  const targetMatches = [expected[1], expected[2]]
+  await assert.rejects(
+    defaultPagedReport(),
+    (error: any) => (error.cause ?? error.original)?.code === '42P01',
+  )
+  for (const pageSize of [1, 2, 20]) {
+    assert.deepEqual(
+      await sequelizeTargetCounts(pageSize),
+      targetMatches.slice(0, pageSize),
+    )
+    assert.deepEqual(
+      await kyselyTargetCounts(pageSize),
+      targetMatches.slice(0, pageSize),
+    )
+  }
+  await assert.rejects(
+    misspelledTarget(),
+    (error: any) => (error.cause ?? error.original)?.code === '42703',
+  )
+  const topBeforeFiltering = await personPetCounts()
+    .orderBy('pet_count', 'desc')
+    .orderBy('person.id')
+    .limit(1)
+    .execute()
+  assert.equal(topBeforeFiltering[0].id, 1)
+  assert.notEqual((await kyselyTargetCounts(1))[0].id, topBeforeFiltering[0].id)
+  console.log(
+    'PASS: reusable report scope and Kysely builder apply per-person targets before pagination; the target typo reaches PostgreSQL only with Sequelize',
   )
 
   assert.equal(await renamedAttribute(), undefined)

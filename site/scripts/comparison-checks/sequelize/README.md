@@ -16,6 +16,8 @@ The runner verifies package versions, documented snippets, and strict TypeScript
 Runtime assertions cover:
 
 - Equivalent grouped reports using Sequelize's built-in aggregate helpers, bound raw SQL, and Kysely, at four thresholds, including zero related rows and empty results.
+- A reusable Sequelize report scope and Kysely builder extended with per-person targets before pagination, at page sizes 1, 2, and 20. The default Sequelize subquery failure and its `subQuery: false` remedy are both checked.
+- A misspelled target column accepted by Sequelize and rejected by PostgreSQL, with the corresponding Kysely compile error.
 - Renamed attributes and partially selected models retaining stale declared fields.
 - Typed object filters rejecting unknown attributes, while `col` accepts unjoined or misspelled references that PostgreSQL rejects.
 - Independent Kysely query branches, Sequelize eager loading, empty related arrays, and reusable model scopes.
