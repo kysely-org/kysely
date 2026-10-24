@@ -7,7 +7,7 @@ type Library = { name: string; href: string; builder?: 'Kysely' | 'Knex' }
 const regions: { libraries: Library[]; description: string }[] = [
   {
     libraries: [{ name: 'Kysely', href: '/docs/getting-started' }],
-    description: 'SQL query builder',
+    description: 'SQL-first query builders',
   },
   {
     libraries: [
