@@ -1,0 +1,106 @@
+---
+sidebar_position: 1
+title: SQL query builder vs ORM
+description: 'Compare SQL query builders and ORMs: SQL vocabulary, model mappings, reads and persistence, schema ownership, and typed query composition.'
+---
+
+import { SqlAbstractionSpectrum } from '@site/src/components/SqlAbstractionSpectrum'
+
+# SQL query builder vs ORM
+
+A SQL query builder exposes SQL's vocabulary and structure through a programmatic API. You compose selections, joins, inserts, updates, and deletes using tables, columns, and expressions. The builder generates the SQL and binds parameters.
+
+An **object–relational mapper (ORM)** maps application models, their properties, and relationships to relational tables, columns, and keys. Its model API typically uses application-oriented vocabulary such as `findMany`, `save`, `include`, and `connect` to load and persist models, abstracting the SQL statements needed to perform the work.
+
+**Returning plain JavaScript objects does not make a library an ORM.** Even database drivers such as [node-postgres return arrays of plain row objects](https://node-postgres.com/features/queries#row-mode).
+
+An ORM supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those architectural decisions to your application. Assess which responsibilities you want the library to own.
+
+<SqlAbstractionSpectrum />
+
+These categories overlap. Some ORMs expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
+
+## Reading and persisting models
+
+An ORM's model API can express loading related records, saving changes, or creating a model together with its children. For example, [Prisma's nested writes](https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries#nested-writes) can create an author and their articles in one API call, coordinating the inserts, foreign keys, and transaction. With a query builder, your code specifies the inserts, how the author's key reaches the article rows, and the transaction boundary.
+
+Some ORMs also track object identity and changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work) tracks managed entities and writes their changes through `flush()`. Those features are optional: Prisma's model operations work with plain objects. Model persistence does not require class instances, automatic change tracking, or a unit of work.
+
+## When the result doesn't fit a model
+
+The **object–relational impedance mismatch** appears when the result you need does not fit model navigation: a joined projection, grouped aggregate, or recursive lookup. Forcing it through objects and relationships can introduce extra reads, overfetching, or application-side assembly. A builder lets the required result shape drive the SQL.
+
+## Production queries need room to tune
+
+Hot queries often need specialized joins, pagination, and database features. Teams inspect plans against real data and tune queries alongside indexes. Direct control over SQL shortens the path from a plan to the code that produced it.
+
+When model APIs run out, teams commonly drop to raw SQL. Binding values does not check references or infer results; manual result types can drift. SQL analyzers and generators offer a separate checking workflow. A capable builder keeps more tuning inside its API, with raw fragments local to operations that need them.
+
+## Start with a parent relation
+
+A page has an optional parent. Reading the page and its parent fits model navigation naturally. A query builder expresses the same relationship with a join or subquery.
+
+## The requirement changes: find the nearest permission rule
+
+Now find the nearest explicit permission for a user anywhere in the page's ancestor chain. The result needs the rule's page, level, and distance, rather than a nested page object.
+
+A fixed-depth parent selection does not cover arbitrary depth. This PostgreSQL query uses a recursive CTE, assuming an acyclic tree and at most one rule per page/user:
+
+```sql
+with recursive ancestors as (
+  select id, parent_id, 0 as depth
+  from page
+  where id = $1
+  union all
+  select parent.id, parent.parent_id, ancestors.depth + 1
+  from page as parent
+  inner join ancestors on ancestors.parent_id = parent.id
+)
+select ancestors.id as page_id, page_access.level, ancestors.depth
+from ancestors
+inner join page_access on page_access.page_id = ancestors.id
+where page_access.user_id = $2
+order by ancestors.depth
+limit 1;
+```
+
+The database performs traversal, rule lookup, ordering, and limiting in one statement. [Docmost uses recursive ancestors for page restrictions](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373); this query simplifies that requirement.
+
+The category distinction is how you reach that SQL:
+
+| Approach                             | How the query grows                                                                                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A builder with recursive CTE support | Compose the traversal, joins, projection, and limit through SQL-shaped operations.                                                                  |
+| An ORM model API                     | Use a dedicated hierarchy feature, its underlying query builder, or a raw SQL escape hatch. Fetching ancestors in a loop adds database round trips. |
+
+Some ORMs provide capable SQL builders. That capability matters more here than the ORM label.
+
+## Type safety depends on the library
+
+A query builder does not automatically check joins, references, expression inputs, or inferred outputs. An ORM's typed models do not guarantee those checks in its SQL API either.
+
+Check what happens when a query changes: remove a join, rename a selected alias, add a nullable expression, or compose a conditional selection. Does the caller's type follow the query, or must an annotation change separately?
+
+## “We'll change databases next year”
+
+**A portable model API does not make database engines drop-in replacements.** Translating supported operations leaves data conversion, constraints, collations, JSON behavior, transactions, indexes, query plans, and data movement to address.
+
+Agents can help rewrite query code; proving equivalent behavior and performance remains the hard work. A hypothetical switch is a weak reason to sacrifice database features and explicit SQL today. If multiple engines are required, test their shared behavior; an ORM alone does not establish that contract.
+
+## Querying a database you don't own
+
+Teams querying shared schemas, customer systems, or read-only views may have no control over schema design or migrations. Library authors face the same boundary when integrating with a consumer's database.
+
+Query construction can be their only responsibility. A builder can describe and query existing objects without managing their lifecycle. An adapter or SDK can accept a configured builder without owning the consumer's schema. An ORM's model setup must also fit those ownership and permission constraints.
+
+## Agent experience
+
+ORMs can boost development speed, especially for teams less comfortable with SQL. When an agent can write the SQL, hiding it becomes less necessary for authoring speed.
+
+The tradeoff shifts toward reviewing, composing, and validating the generated query. Look for visible SQL structure, compiler feedback, and documentation matching the installed version. Neither an ORM nor a builder proves correctness or performance through types alone.
+
+## When a query builder fits
+
+Choose a builder when you want direct SQL composition, custom result shapes, and room to tune database-specific behavior. Choose model APIs when their relationship operations and nested writes match the work. Both can coexist.
+
+Kysely is one example of a SQL-first builder, with query context checks and inferred results. Its [database types](/docs/generating-types) and [migrations](/docs/migrations) are separate choices. [Get started](/docs/getting-started).

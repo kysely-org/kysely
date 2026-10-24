@@ -1,0 +1,25 @@
+{
+  "name": "kysely-postgres-comparison-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node verify.mjs"
+  },
+  "devDependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@slonik/pg-driver": "49.11.0",
+    "knex": "3.3.0",
+    "pg": "8.23.1",
+    "postgres": "3.4.9",
+    "prisma": "7.10.1",
+    "slonik": "49.11.0",
+    "zod": "4.6.7",
+    "kysely": "0.29.7",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3",
+    "@types/node": "26.6.5",
+    "@types/pg": "8.23.1"
+  }
+}

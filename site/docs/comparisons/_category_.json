@@ -1,0 +1,8 @@
+{
+  "label": "Comparisons",
+  "position": 2.5,
+  "link": {
+    "type": "generated-index",
+    "description": "Compare SQL query builders with ORMs, SQL embedded in TypeScript, and typed SQL files, or compare Kysely with Knex, Prisma, and Drizzle."
+  }
+}
