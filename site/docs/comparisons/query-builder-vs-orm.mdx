@@ -14,7 +14,7 @@ An **object–relational mapper (ORM)** maps application models, their propertie
 
 **Returning plain JavaScript objects does not make a library an ORM.** Even database drivers such as [node-postgres return arrays of plain row objects](https://node-postgres.com/features/queries#row-mode).
 
-An ORM supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those architectural decisions to your application. Assess which responsibilities you want the library to own.
+An ORM supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those decisions to your application.
 
 <SqlAbstractionSpectrum />
 
@@ -28,13 +28,13 @@ Some ORMs also track object identity and changes. [MikroORM's unit of work](http
 
 ## When the result doesn't fit a model
 
-The **object–relational impedance mismatch** appears when the result you need does not fit model navigation: a joined projection, grouped aggregate, or recursive lookup. Forcing it through objects and relationships can introduce extra reads, overfetching, or application-side assembly. A builder lets the required result shape drive the SQL.
+The **object–relational impedance mismatch** appears when a joined projection, grouped aggregate, or recursive lookup does not fit model navigation. Forcing it through relationships can introduce extra reads, overfetching, or application-side assembly. A builder lets the result shape drive the SQL.
 
 ## Production queries need room to tune
 
-Hot queries often need specialized joins, pagination, and database features. Teams inspect plans against real data and tune queries alongside indexes. Direct control over SQL shortens the path from a plan to the code that produced it.
+Tuning hot queries means inspecting plans against real data and adjusting queries alongside indexes. Direct SQL control shortens the path from a plan to the code that produced it.
 
-When model APIs run out, teams commonly drop to raw SQL. Binding values does not check references or infer results; manual result types can drift. SQL analyzers and generators offer a separate checking workflow. A capable builder keeps more tuning inside its API, with raw fragments local to operations that need them.
+When model APIs run out, raw SQL restores control. Binding values does not check references or infer results; analyzers and generators provide separate checks. A capable builder keeps more tuning inside its typed API.
 
 ## Start with a parent relation
 
@@ -73,8 +73,6 @@ The category distinction is how you reach that SQL:
 | A builder with recursive CTE support | Compose the traversal, joins, projection, and limit through SQL-shaped operations.                                                                  |
 | An ORM model API                     | Use a dedicated hierarchy feature, its underlying query builder, or a raw SQL escape hatch. Fetching ancestors in a loop adds database round trips. |
 
-Some ORMs provide capable SQL builders. That capability matters more here than the ORM label.
-
 ## Type safety depends on the library
 
 A query builder does not automatically check joins, references, expression inputs, or inferred outputs. An ORM's typed models do not guarantee those checks in its SQL API either.
@@ -91,7 +89,7 @@ Agents can help rewrite query code; proving equivalent behavior and performance 
 
 Teams querying shared schemas, customer systems, or read-only views may have no control over schema design or migrations. Library authors face the same boundary when integrating with a consumer's database.
 
-Query construction can be their only responsibility. A builder can describe and query existing objects without managing their lifecycle. An adapter or SDK can accept a configured builder without owning the consumer's schema. An ORM's model setup must also fit those ownership and permission constraints.
+A builder can query existing objects without managing their lifecycle, and an adapter or SDK can accept one configured by its consumer. An ORM's model setup must also fit those ownership and permission constraints.
 
 ## Agent experience
 
