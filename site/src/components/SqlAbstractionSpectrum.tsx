@@ -20,7 +20,7 @@ const regions: { libraries: Library[]; description: string }[] = [
     libraries: [
       { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
     ],
-    description: 'Headless ORM with query builder',
+    description: 'Headless ORM with SQL-first query builder',
   },
   {
     libraries: [
