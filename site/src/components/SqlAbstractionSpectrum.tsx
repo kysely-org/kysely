@@ -56,6 +56,11 @@ const regions: { libraries: Library[]; description: string }[] = [
         href: 'https://lucid.adonisjs.com/',
         builder: 'Knex',
       },
+      {
+        name: 'Bookshelf.js',
+        href: 'https://bookshelfjs.org/',
+        builder: 'Knex',
+      },
     ],
     description: 'Data frameworks with application-oriented query builders',
   },
