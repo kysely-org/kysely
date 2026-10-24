@@ -11,6 +11,7 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
+      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
       { name: 'Knex', href: 'https://knexjs.org/guide/query-builder.html' },
       { name: 'Zapatos', href: 'https://jawj.github.io/zapatos/' },
     ],
@@ -18,7 +19,6 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
-      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
       {
         name: 'TypeORM',
         href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
