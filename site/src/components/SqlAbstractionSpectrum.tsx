@@ -29,6 +29,10 @@ const regions: { libraries: Library[]; description: string }[] = [
         builder: 'Kysely',
       },
       {
+        name: 'Prisma 8',
+        href: 'https://docs.prisma.io/docs/orm/v8/reference/sql-query-builder',
+      },
+      {
         name: 'ZenStack 3',
         href: 'https://zenstack.dev/docs/orm/query-builder',
         builder: 'Kysely',
