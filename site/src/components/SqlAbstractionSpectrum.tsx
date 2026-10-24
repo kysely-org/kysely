@@ -25,14 +25,14 @@ const regions: { libraries: Library[]; description: string }[] = [
         builder: 'Kysely',
       },
       {
-        name: 'ZenStack 3',
-        href: 'https://zenstack.dev/docs/orm/query-builder',
-        builder: 'Kysely',
-      },
-      {
         name: 'Objection.js',
         href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
         builder: 'Knex',
+      },
+      {
+        name: 'ZenStack 3',
+        href: 'https://zenstack.dev/docs/orm/query-builder',
+        builder: 'Kysely',
       },
     ],
     description: 'ORM with query builder',
