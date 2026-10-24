@@ -10,6 +10,8 @@ Kysely updates the result type as you change a selection, join, or optional fiel
 
 Checked **Kysely 0.29.7**, **Postgres.js 3.4.9**, and **Slonik 49.11.0** across the same **48 PostgreSQL fixture cases**, plus pagination and binding checks. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
 
+For separate files, see [SQL query builder vs SQL files](/docs/comparisons/query-builder-vs-sql-files).
+
 ## The selected name changes: does the type follow?
 
 Assume configured clients and an `asset` table with string `id` and `name` columns. Rename the selected `name` to `label`. The stale Postgres.js annotation compiles:
