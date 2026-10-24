@@ -11,11 +11,16 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
-      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
       { name: 'Knex', href: 'https://knexjs.org/guide/query-builder.html' },
       { name: 'Zapatos', href: 'https://jawj.github.io/zapatos/' },
     ],
     description: 'Query building with magic',
+  },
+  {
+    libraries: [
+      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
+    ],
+    description: 'Headless ORM',
   },
   {
     libraries: [
