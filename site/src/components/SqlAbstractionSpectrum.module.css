@@ -1,0 +1,116 @@
+.figure {
+  margin: 1.5rem 0;
+}
+
+.axis {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.line {
+  flex: 1;
+  height: 1px;
+  background: var(--ifm-color-emphasis-400);
+}
+
+.regions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.region {
+  position: relative;
+  padding-top: 0.8rem;
+  font-size: 0.85rem;
+}
+
+.region::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--ifm-color-primary);
+}
+
+.region:last-child {
+  grid-column: 5;
+}
+
+.libraries {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 700;
+}
+
+.description,
+.caption {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.description {
+  display: block;
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .regions {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .region {
+    padding: 0.25rem 0 1rem 1.25rem;
+    border-left: 1px solid var(--ifm-color-emphasis-400);
+  }
+
+  .region:last-child {
+    grid-column: auto;
+  }
+
+  .region::before {
+    top: 0.7rem;
+    left: -0.225rem;
+  }
+
+  .libraries {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .description {
+    margin-top: 0.1rem;
+  }
+
+  .axis {
+    display: none;
+  }
+
+  .regions::before,
+  .regions::after {
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .regions::before {
+    content: 'SQL query builder';
+    margin-bottom: 0.5rem;
+  }
+
+  .regions::after {
+    content: 'ORM';
+    margin-top: 0.25rem;
+  }
+}
