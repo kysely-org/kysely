@@ -262,9 +262,7 @@ Both return the same labels. Drizzle's [CASE recipe](https://orm.drizzle.team/do
 
 ### Nested arrays and objects through the SQL API
 
-Drizzle's [relational API](https://orm.drizzle.team/docs/rqb) supports nested relations with ordering, per-parent limits, inferred results, and empty arrays. The examples below compare composition through each library's SQL-style API.
-
-Kysely's built-in JSON helpers compose nested results from a typed subquery, including SQL aliases and an empty-array fallback. The equivalent Drizzle SQL-style wrapper supplies the aggregation manually.
+Drizzle's [relational API](https://orm.drizzle.team/docs/rqb) supports nested relations with ordering, per-parent limits, inferred results, and empty arrays. Through the SQL-style APIs compared below, Kysely ships typed JSON helpers; Drizzle's wrapper supplies aggregation and the empty-array fallback manually.
 
 <details>
 <summary>Equivalent nested queries and a JSON alias mismatch</summary>
@@ -480,9 +478,7 @@ Plugins do not change inferred result types automatically; result transformation
 
 ## Agent experience
 
-Kysely ships version-matched method docs and checked examples beside the API, with query context errors feeding back through TypeScript.
-
-See [installed-version documentation](/docs/integrations/llms#documentation-for-the-installed-version).
+Kysely ships [version-matched method docs and checked examples](/docs/integrations/llms#documentation-for-the-installed-version) beside the API.
 
 ## Package size and dependencies
 
