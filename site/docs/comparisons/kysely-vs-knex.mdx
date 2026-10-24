@@ -216,7 +216,7 @@ For a JSON `profile` column, Knex 3.3.0 emits these expressions:
 | MySQL      | `json_unquote(json_extract(profile, ?))`         |
 | SQLite     | `json_extract(profile, ?)`                       |
 
-PostgreSQL's `jsonb_path_query` is set-returning; this is more than changing identifier quotes or parameter markers. Kysely lets you choose the JSON operator or function explicitly, including typed JSON traversal.
+PostgreSQL's `jsonb_path_query` is set-returning; this is more than changing identifier quotes or parameter markers. Kysely lets you choose the JSON operator or function explicitly, including [typed JSON traversal](/docs/comparisons/kysely-vs-drizzle#type-safe-json-traversal).
 
 ## SQL coverage and escape hatches
 
