@@ -108,7 +108,7 @@ The category distinction is how you reach that SQL:
 
 A query builder does not automatically check joins, references, expression inputs, or inferred outputs. An ORM's typed models do not guarantee those checks in its SQL API either.
 
-Check what happens when a query changes: remove a join, rename a selected alias, add a nullable expression, or compose a conditional selection. Does the caller's type follow the query, or must an annotation change separately?
+Check what happens when a query changes: remove a join, rename a selected alias, add a nullable expression, or compose a conditional selection. Does the caller's type follow the query, or must an annotation change separately? See concrete examples for [Knex](/docs/comparisons/kysely-vs-knex).
 
 ## “We'll change databases next year”
 
@@ -161,4 +161,4 @@ Explicit SQL structure can help you review and compose queries written by an age
 
 Choose a builder when you want direct SQL composition, custom result shapes, and room to tune database-specific behavior. Choose model APIs when their relationship operations and nested writes match the work. Both can coexist.
 
-Kysely is one example of a SQL-first builder, with query context checks and inferred results. Its [database types](/docs/generating-types) and [migrations](/docs/migrations) are separate choices. [Get started](/docs/getting-started).
+Kysely is one example of a SQL-first builder, with query context checks and inferred results. Its [database types](/docs/generating-types) and [migrations](/docs/migrations) are separate choices. [Get started](/docs/getting-started), or compare it directly with [Knex](/docs/comparisons/kysely-vs-knex).

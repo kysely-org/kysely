@@ -11,7 +11,7 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
-      { name: 'Knex', href: 'https://knexjs.org/guide/query-builder.html' },
+      { name: 'Knex', href: '/docs/comparisons/kysely-vs-knex' },
       { name: 'Zapatos', href: 'https://jawj.github.io/zapatos/' },
     ],
     description: 'Application-oriented query builders',
