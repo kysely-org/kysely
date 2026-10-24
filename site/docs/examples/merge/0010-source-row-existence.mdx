@@ -6,15 +6,18 @@ title: 'Source row existence'
 
 Update a target column based on the existence of a source row:
 
-import { Playground } from '../../../src/components/Playground'
+```ts twoslash playground
+const result = await db
+  .mergeInto('person as target')
+  .using('pet as source', 'source.owner_id', 'target.id')
+  .whenMatchedAnd('target.has_pets', '!=', 'Y')
+  .thenUpdateSet({ has_pets: 'Y' })
+  .whenNotMatchedBySourceAnd('target.has_pets', '=', 'Y')
+  .thenUpdateSet({ has_pets: 'N' })
+  .executeTakeFirstOrThrow()
 
-import {
-  sourceRowExistence
-} from './0010-source-row-existence'
-
-<div style={{ marginBottom: '1em' }}>
-  <Playground code={sourceRowExistence} />
-</div>
+console.log(result.numChangedRows)
+```
 
 :::info[More examples]
 The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),
