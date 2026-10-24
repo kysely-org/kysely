@@ -1,18 +1,20 @@
 ---
 sidebar_position: 1
 title: SQL query builder vs ORM
-description: 'Compare SQL query builders and ORMs: abstraction level, dialect-specific SQL, database portability, schema ownership, and typed query composition.'
+description: 'Compare SQL query builders and ORMs: SQL vocabulary, model mappings, reads and persistence, schema ownership, and typed query composition.'
 ---
 
 import { SqlAbstractionSpectrum } from '@site/src/components/SqlAbstractionSpectrum'
 
 # SQL query builder vs ORM
 
-A SQL query builder generally follows SQL clauses and expressions. An ORM is a higher-level abstraction: you describe model operations and relationships, and it chooses the SQL.
+A SQL query builder exposes SQL's vocabulary and structure through a programmatic API. You compose selections, joins, inserts, updates, and deletes using tables, columns, and expressions. The builder generates the SQL and binds parameters.
 
-**Returning plain JavaScript objects does not make a library an ORM.** Even database drivers such as [node-postgres return arrays of plain row objects](https://node-postgres.com/features/queries#row-mode). A query builder such as Kysely composes SQL; an ORM adds a model and relationship abstraction over database operations.
+An **object–relational mapper (ORM)** maps application models, their properties, and relationships to relational tables, columns, and keys. Its model API typically uses application-oriented vocabulary such as `findMany`, `save`, `include`, and `connect` to load and persist models, abstracting the SQL statements needed to perform the work.
 
-An ORM provides an **opinionated data-access framework**. Its models, relationships, and persistence conventions can replace or postpone designing your own data-access layer. A query builder leaves more of those architectural decisions to your application. Adopting an ORM supplies an architecture; you still need to assess whether it fits.
+**Returning plain JavaScript objects does not make a library an ORM.** Even database drivers such as [node-postgres return arrays of plain row objects](https://node-postgres.com/features/queries#row-mode).
+
+An ORM supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those architectural decisions to your application. Assess which responsibilities you want the library to own.
 
 <SqlAbstractionSpectrum />
 
@@ -23,6 +25,12 @@ The categories overlap: some ORMs include query builders, and some builders add 
 [Objection.js exposes Knex directly](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex): `Model.knex()` returns the configured Knex instance, and `Model.knexQuery()` starts a Knex query for the model's table. Its model query builder also exposes Knex methods while returning model instances.
 
 [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) sits closer to the ORM end: `getOne()` and `getMany()` hydrate entity classes. It also offers `getRawOne()` and `getRawMany()` for raw results. Compare the API you will actually use.
+
+## Reading and persisting models
+
+An ORM's model API can express loading related records, saving changes, or creating a model together with its children. For example, [Prisma's nested writes](https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries#nested-writes) can create an author and their articles in one API call, coordinating the inserts, foreign keys, and transaction. With a query builder, your code specifies the inserts, how the author's key reaches the article rows, and the transaction boundary.
+
+Some ORMs also track object identity and changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work) tracks managed entities and writes their changes through `flush()`. Those features are optional: Prisma's model operations work with plain objects. Model persistence does not require class instances, automatic change tracking, or a unit of work.
 
 ## When the result doesn't fit a model
 
