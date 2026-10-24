@@ -28,6 +28,10 @@ const regions: { libraries: Library[]; description: string }[] = [
         href: 'https://zenstack.dev/docs/orm/query-builder',
         shipsKysely: true,
       },
+      {
+        name: 'Objection.js',
+        href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
+      },
     ],
     description: 'Query builder + ORM',
   },
@@ -36,10 +40,6 @@ const regions: { libraries: Library[]; description: string }[] = [
       {
         name: 'TypeORM',
         href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
-      },
-      {
-        name: 'Objection.js',
-        href: 'https://vincit.github.io/objection.js/api/query-builder/',
       },
     ],
     description: 'ORM with an entity-oriented query builder',
