@@ -18,13 +18,7 @@ An ORM supplies **model, relationship, and persistence conventions** for part of
 
 <SqlAbstractionSpectrum />
 
-The categories overlap: some ORMs include query builders, and some builders add portability abstractions. [MikroORM 7](https://mikro-orm.io/docs/kysely) exposes Kysely through `em.getKysely()`, replacing [v6's Knex access](https://mikro-orm.io/docs/upgrading-v6-to-v7#knex-replaced-with-kysely-as-query-runner).
-
-[ZenStack 3](https://zenstack.dev/docs/orm/query-builder) also ships Kysely, exposed through its client's `$qb` property alongside a Prisma-compatible model API.
-
-[Objection.js exposes Knex directly](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex): `Model.knex()` returns the configured Knex instance, and `Model.knexQuery()` starts a Knex query for the model's table. Its model query builder also exposes Knex methods while returning model instances.
-
-[TypeORM's query builder](https://typeorm.io/docs/query-builder/select-query-builder/) exposes SQL clauses through methods such as `select`, `from`, `innerJoin`, `where`, and `groupBy`. `getOne()` and `getMany()` hydrate entity instances; `getRawOne()` and `getRawMany()` return plain results, including custom projections and aggregates.
+These categories overlap. Some ORMs expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
 
 ## Reading and persisting models
 
