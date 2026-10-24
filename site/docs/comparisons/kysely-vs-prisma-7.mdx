@@ -1,0 +1,256 @@
+---
+sidebar_position: 5
+title: Kysely vs Prisma 7
+description: 'Compare Kysely and Prisma 7 through a tested activity leaderboard: joined aggregates, per-author thresholds, pagination, inferred results, and agent experience.'
+---
+
+# Kysely vs Prisma 7
+
+Kysely keeps joined aggregates, per-author thresholds, and pagination in one composable SQL query with inferred results.
+
+Kysely is a SQL query builder. Prisma 7 is an ORM; see [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm). The leaderboard below starts with a global minimum, then changes to each author's own target.
+
+Checked with **Prisma Client 7.10.1** and **Kysely 0.29.7** against PostgreSQL, including the pagination case. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
+
+## An activity leaderboard, with the same result
+
+Return the top 20 active authors in an organization by published-article count since a cutoff, above a configurable minimum. Include names; break ties by author ID.
+
+Assume configured `prisma`/`db` clients and one author per article.
+
+<details>
+<summary>Schema and database types used in this example</summary>
+
+Prisma maps these model fields to the PostgreSQL tables:
+
+```text
+model Author {
+  id Int @id
+  name String
+  organizationId Int @map("organization_id")
+  active Boolean
+  articleTarget Int @map("article_target")
+  articles Article[]
+  @@map("author")
+}
+
+model Article {
+  id Int @id
+  authorId Int @map("author_id")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+  author Author @relation(fields: [authorId], references: [id])
+  @@map("article")
+}
+```
+
+Kysely describes the same tables through types:
+
+```ts
+interface Database {
+  author: {
+    id: number
+    name: string
+    organization_id: number
+    active: boolean
+    article_target: number
+  }
+  article: { id: number; author_id: number; published_at: Date | null }
+}
+```
+
+</details>
+
+### Kysely: join, aggregate, and select in one statement
+
+Build the shared activity query:
+
+```ts
+function authorActivity(organizationId: number, since: Date) {
+  return db
+    .selectFrom('author')
+    .innerJoin('article', 'article.author_id', 'author.id')
+    .select(['author.id as author_id', 'author.name'])
+    .select((eb) =>
+      eb.cast<number>(eb.fn.count('article.id'), 'integer').as('article_count'),
+    )
+    .where('author.organization_id', '=', organizationId)
+    .where('author.active', '=', true)
+    .where('article.published_at', '>=', since)
+    .groupBy(['author.id', 'author.name', 'author.article_target'])
+}
+```
+
+Then add the threshold and page:
+
+```ts
+function kyselyLeaderboard(options: {
+  organizationId: number
+  since: Date
+  minArticles: number
+}) {
+  return authorActivity(options.organizationId, options.since)
+    .having((eb) => eb.fn.count('article.id'), '>=', options.minArticles)
+    .orderBy('article_count', 'desc')
+    .orderBy('author.id')
+    .limit(20)
+    .execute()
+}
+```
+
+One SQL statement; inferred result: `{ author_id: number; name: string; article_count: number }[]`. The integer cast makes the count a JavaScript number.
+
+### Prisma Client 7: group, fetch names, assemble the result
+
+Prisma [`groupBy()`](https://www.prisma.io/docs/orm/v7/prisma-client/queries/aggregation-grouping-summarizing) cannot select related author names. This model-API version groups articles, fetches names, and merges:
+
+<details>
+<summary>The Prisma Client 7 implementation</summary>
+
+```ts
+async function prismaLeaderboard(options: {
+  organizationId: number
+  since: Date
+  minArticles: number
+}) {
+  const groups = await prisma.article.groupBy({
+    by: ['authorId'],
+    where: {
+      publishedAt: { gte: options.since },
+      author: { organizationId: options.organizationId, active: true },
+    },
+    _count: { id: true },
+    having: { id: { _count: { gte: options.minArticles } } },
+    orderBy: [{ _count: { id: 'desc' } }, { authorId: 'asc' }],
+    take: 20,
+  })
+
+  const authors = await prisma.author.findMany({
+    where: { id: { in: groups.map((group) => group.authorId) } },
+    select: { id: true, name: true },
+  })
+  const names = new Map(authors.map((author) => [author.id, author.name]))
+
+  return groups.map((group) => ({
+    author_id: group.authorId,
+    name: names.get(group.authorId)!,
+    article_count: group._count.id,
+  }))
+}
+```
+
+</details>
+
+Two reads and a JavaScript merge. Use suitable transaction isolation for one snapshot. TypedSQL and `$queryRaw` offer SQL alternatives.
+
+Prisma also supports [filtered relation counts](https://www.prisma.io/docs/orm/v7/prisma-client/queries/aggregation-grouping-summarizing#filter-the-relation-count) alongside author names. Its relation-count ordering takes a sort direction, without a count filter; relation-list filters also lack an aggregate-count threshold. Selecting a filtered `_count` alone does not express this leaderboard.
+
+## The requirement changes: each author has a target
+
+Replace the global minimum with `author.article_target`, filtering before ranking and pagination:
+
+Reuse `authorActivity` with a column comparison:
+
+```ts
+function authorsMeetingTheirTarget(organizationId: number, since: Date) {
+  return authorActivity(organizationId, since)
+    .having((eb) =>
+      eb(eb.fn.count('article.id'), '>=', eb.ref('author.article_target')),
+    )
+    .orderBy('article_count', 'desc')
+    .orderBy('author.id')
+    .limit(20)
+    .execute()
+}
+```
+
+The rule stays in SQL before `LIMIT`; the inferred result is unchanged.
+
+Prisma Client 7 rejects the related-model reference:
+
+```ts
+prisma.article.groupBy({
+  by: ['authorId'],
+  having: {
+    id: {
+      _count: {
+        gte: prisma.author.fields.articleTarget, // TypeScript error
+      },
+    },
+  },
+})
+```
+
+Prisma [restricts field references to one model](https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference#fields-must-be-in-the-same-model). Fetch aggregates and targets and filter before pagination in application code, or use SQL.
+
+Filtering only the first 20 global rows can miss qualifying authors below that page.
+
+## What the change costs
+
+| Requirement                                          | Kysely                                                           | Prisma Client 7 model API                                                                                    |
+| ---------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Return grouped activity with author names            | One joined aggregate statement.                                  | Group Article records, fetch names, and merge, or choose a different query workflow.                         |
+| Compare the aggregate with a related author's target | Replace the `HAVING` expression with a checked column reference. | Cross-model field references are not supported in the aggregate filter.                                      |
+| Filter before ranking and pagination                 | The rule stays inside the SQL statement before `LIMIT`.          | Apply the rule before pagination in application code, or use SQL.                                            |
+| Keep the result typed as the query changes           | The builder infers selected names and aggregates.                | Model APIs are typed; raw `$queryRaw<T>` uses an asserted result type, while TypedSQL generates query types. |
+
+## A production example of the same pressure
+
+[Open Collective](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L780-L826) similarly composes a cross-table amount filter with a correlated exchange-rate lookup. The leaderboard is a separate illustration.
+
+## SQL coverage and escape hatches
+
+Other examples linked from the homepage:
+
+| Requirement                                                                                                                                                                                                                     | Kysely's built-in API                            | Prisma Client 7 model API                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------- |
+| [Docmost: arbitrary-depth ancestor lookup](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373)                              | `withRecursive(...)`, joins, and ordering.       | Use recursive SQL or traverse outside the model read. |
+| [Langfuse: rank within each trace in its query catalog](https://github.com/langfuse/langfuse/blob/536c2d6905d4311cc7c2b177454a084907328c43/packages/shared/src/server/query-ast/catalog.ts#L230-L250)                           | `fn.agg('rank').over(...)`.                      | Use SQL for the window expression.                    |
+| [Teable: skip locked work items](https://github.com/teableio/teable/blob/5ef2238883cad7c3980084de9a9031135fb9734f/packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts#L1415-L1447) | `forUpdate().skipLocked()` within a transaction. | Use SQL for `FOR UPDATE SKIP LOCKED`.                 |
+
+Prisma 7 [raw queries](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/raw-queries) bind values and compose `Prisma.sql`/`Prisma.join` fragments. TypedSQL infers SQL-file inputs and outputs.
+
+Kysely can embed [one SQL expression](/docs/recipes/raw-sql#a-small-escape-hatch-inside-a-typed-query) while the surrounding builder stays checked. Prisma 7 model `select` cannot take an arbitrary `Prisma.sql` field; it needs a SQL query workflow.
+
+## Schema and relation workflows
+
+Kysely types can be handwritten or [generated](/docs/generating-types), independently of migrations.
+
+Keep Prisma for concise relation reads and nested writes; use Kysely where SQL composition helps.
+
+## Package size and dependencies
+
+<details>
+<summary>Measured package sizes and dependency trees</summary>
+
+| Published package         | Compressed download | Unpacked size |
+| ------------------------- | ------------------- | ------------- |
+| Kysely 0.29.7             | **318.3 KiB**       | **1.65 MiB**  |
+| @prisma/client 7.10.1     | 25.59 MiB           | 71.01 MiB     |
+| @prisma/adapter-pg 7.10.1 | 13.4 KiB            | 0.07 MiB      |
+
+Kysely has **zero direct dependencies**. With `pg` 8.23.1: **14 production packages**, versus **22** for Prisma Client + adapter + pg.
+
+The separate Prisma CLI adds **13.52 MiB compressed / 40.10 MiB unpacked**, before dependencies. Runtime counts exclude it and project-generated client code. Retaining Prisma tooling retains that footprint.
+
+Measured **October 24, 2026**: [measurement details](https://github.com/kysely-org/kysely/blob/master/site/scripts/package-footprints.json), [script](https://github.com/kysely-org/kysely/blob/master/site/scripts/measure-package-footprints.mjs). Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks. CI caching reduces repeat downloads.
+
+</details>
+
+## Agent experience
+
+Kysely ships checked method examples with the installed API. Prisma 7 model types and separately installed [agent skills](https://www.prisma.io/docs/ai/tools/skills) guide its APIs; an unsupported report also needs a SQL workflow.
+
+See [Kysely's installed docs and example checks](/docs/integrations/llms#documentation-for-the-installed-version).
+
+## Try Kysely alongside an existing application
+
+Start with a report that already needs joined aggregates or SQL fragments. Keep Prisma schema/migrations and generate Kysely types with [prisma-kysely](https://github.com/valtyr/prisma-kysely):
+
+1. Keep the schema and migration workflow.
+2. Add its generator and run `prisma generate` after schema changes.
+3. [Configure a dialect](/docs/getting-started) and move one query.
+4. Compare rows, ordering, empty results, and pagination; inspect `.compile()` before moving more code.
+
+Budget connections for both clients; they do not automatically share transactions.
+
+Replacing Prisma relation operations or migration history is separate work.
