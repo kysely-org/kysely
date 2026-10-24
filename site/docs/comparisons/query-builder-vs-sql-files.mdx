@@ -251,8 +251,6 @@ This finding is specific to the tested TypedSQL version. [Reylo](https://reylo.d
 | [PgTyped](https://pgtyped.dev/docs/)                                                      | Import generated typed query objects.                                               | Analyzes annotated queries against PostgreSQL and generates TypeScript. It also supports queries in TypeScript files.                                                         |
 | [sqlc](https://docs.sqlc.dev/)                                                            | Call generated query functions.                                                     | Analyzes schema and query inputs; TypeScript output uses a [language plugin](https://github.com/sqlc-dev/sqlc-gen-typescript), whose README currently labels it early access. |
 
-Kysely uses ordinary TypeScript imports without per-query generation.
-
 </details>
 
 ## Composition support varies by tool
@@ -271,24 +269,18 @@ Embed a [local SQL expression](/docs/recipes/raw-sql#a-small-escape-hatch-inside
 
 ## Composition in production
 
-Production examples from the homepage:
+These production queries show composition beyond the asset illustration:
 
 - [Cal.com](https://github.com/calcom/cal.diy/blob/54343aa685ae8f33159d2f485ec4a57bad5c574a/packages/trpc/server/routers/viewer/bookings/get.handler.ts#L145-L438): optional branches, shared filters, UNION ALL, outer ordering, and pagination.
 - [Materialize](https://github.com/MaterializeInc/materialize/blob/adb829aee5913d08eaccce2aee2e0df31c0a2dfd/console/src/api/materialize/cluster/replicaUtilizationHistory.ts#L47-L169): filters pushed into both UNION branches before further CTEs and aggregation.
 - [Docmost](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373): recursive permission lookup, which could also suit a fixed SQL file.
 
-The asset examples are separate illustrations.
-
 ## Agent experience
 
-An agent edits one shared Kysely filter and type-checks its callers. SQL-file workflows need schema analysis and sometimes regeneration.
-
-Kysely also supplies [checked, installed-version examples](/docs/integrations/llms#documentation-for-the-installed-version). SQL-file tools can provide strong whole-statement diagnostics.
+Kysely supplies [checked, installed-version examples](/docs/integrations/llms#documentation-for-the-installed-version) and compiler feedback through ordinary TypeScript. SQL-file tools can provide whole-statement diagnostics through schema analysis, sometimes with regeneration.
 
 ## Choosing a workflow
 
-Use SQL files for stable statements and SQL-centric review/editor workflows. Complexity alone does not require a builder.
-
-Use Kysely when query shapes grow from shared parts and TypeScript control flow changes joins or selections.
+Use SQL files for stable statements and SQL-centric review/editor workflows; complexity alone does not require a builder. Use Kysely when callers extend shared parts or TypeScript control flow changes joins and selections.
 
 Start with a listing and count that repeat the same filters. Move those filters into one helper, inspect `.compile()`, and compare both outputs, including a full page with a larger total count. Both workflows can coexist; account for connection and transaction handling. [Get started](/docs/getting-started).
