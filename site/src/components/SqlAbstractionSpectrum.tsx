@@ -20,10 +20,15 @@ const regions: { libraries: Library[]; description: string }[] = [
     libraries: [
       { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
     ],
-    description: 'Headless ORM',
+    description: 'Headless ORM with query builder',
   },
   {
     libraries: [
+      {
+        name: 'Prisma 7 + Kysely',
+        href: 'https://github.com/valtyr/prisma-kysely',
+        builder: 'Kysely',
+      },
       {
         name: 'TypeORM',
         href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
