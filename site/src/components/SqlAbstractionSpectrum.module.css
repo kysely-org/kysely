@@ -66,6 +66,14 @@
   object-fit: contain;
 }
 
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: 0.4rem;
+  vertical-align: middle;
+}
+
 .description,
 .caption {
   color: var(--ifm-color-emphasis-700);

@@ -99,8 +99,27 @@ export function SqlAbstractionSpectrum() {
         ))}
       </ol>
       <figcaption className={styles.caption}>
-        Approximate ecosystem overview. Small logos identify the included query
-        builder.
+        Approximate ecosystem overview.
+        <span className={styles.legendItem}>
+          <img
+            className={styles.builderLogo}
+            src={builderLogos.Kysely}
+            width={14}
+            height={14}
+            alt=""
+          />
+          <span>- ships /w Kysely.</span>
+        </span>
+        <span className={styles.legendItem}>
+          <img
+            className={styles.builderLogo}
+            src={builderLogos.Knex}
+            width={14}
+            height={14}
+            alt=""
+          />
+          <span>- ships /w Knex.</span>
+        </span>
       </figcaption>
     </figure>
   )
