@@ -1,0 +1,26 @@
+{
+  "name": "kysely-typeorm-comparison-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node verify.mjs"
+  },
+  "devDependencies": {
+    "kysely": "0.29.7",
+    "typeorm-current": "npm:typeorm@1.1.1",
+    "typeorm-legacy": "npm:typeorm@0.3.31",
+    "pg": "8.23.1",
+    "reflect-metadata": "0.2.2",
+    "@types/pg": "8.23.1",
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3"
+  },
+  "imports": {
+    "#typeorm-under-test": {
+      "legacy": "typeorm-legacy",
+      "default": "typeorm-current"
+    }
+  }
+}
