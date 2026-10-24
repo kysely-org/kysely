@@ -209,11 +209,12 @@ function kyselyTargetCounts(pageSize = 20) {
 }
 ```
 
-The inferred result remains `{ id: number; first_name: string; pet_count: number }[]`.
+The inferred result is unchanged.
 
 The fixtures include Jennifer with two pets and a target of three, and Arnold with one pet and a target of one. With a page size of one, both corrected implementations return Arnold. Limiting to the highest count first and filtering afterward would miss him. They also agree on a zero-pet person with a zero target and on larger page sizes.
 
-### What happens when the target reference is misspelled?
+<details>
+<summary>A misspelled target reference: compiler error or database error?</summary>
 
 {/* fixture: sequelize-target-typo */}
 
@@ -232,7 +233,9 @@ function misspelledTarget() {
 
 This compiles in both Sequelize versions, then PostgreSQL rejects the unknown column. Kysely rejects `eb.ref('person.pet_targte')` through TypeScript.
 
-Both libraries reuse the report definition. Kysely carries the SQL reference context and inferred result through each extension; Sequelize's scope reuses model options while its `col` references remain unchecked.
+</details>
+
+Sequelize's scope reuses model options; Kysely also carries reference checks and inferred results through each extension.
 
 ## Rename a selected field: does the type follow?
 
@@ -395,9 +398,7 @@ Sequelize's expression helpers and SQL tag are useful escape hatches. Kysely kee
 
 Sequelize's eager loading constructs related model instances, and model methods provide persistence, validation, and hooks. A Kysely query selects rows without running Sequelize's model lifecycle. Keep those model workflows where your application depends on them.
 
-The fixtures verify Sequelize's related model instances and empty related arrays. The report comparison does not require replacing those features.
-
-Kysely's inferred results also give agents compiler feedback when a selected field changes. See [installed-version documentation and checked examples](/docs/integrations/llms#documentation-for-the-installed-version).
+For agent API guidance, see Kysely's [installed-version documentation and checked examples](/docs/integrations/llms#documentation-for-the-installed-version).
 
 ## Adopt Kysely one query at a time
 
@@ -410,4 +411,4 @@ Use [kysely-sequelize](https://github.com/kysely-org/kysely-sequelize) for a dia
 3. Configure the bridge, or a [native dialect](/docs/getting-started), and move one report.
 4. Inspect `.compile()` and compare rows, ordering, zero counts, nulls, and empty results. Check callers against the inferred output.
 
-With separate clients, budget pool capacity and keep each transaction on its owning connection. Moving report queries does not migrate Sequelize's schema history or model lifecycle behavior.
+With separate clients, budget pool capacity and keep each transaction on its owning connection.
