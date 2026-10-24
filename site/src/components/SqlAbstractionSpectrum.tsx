@@ -49,7 +49,7 @@ const regions: { libraries: Library[]; description: string }[] = [
         builder: 'Kysely',
       },
     ],
-    description: 'ORM with query builder',
+    description: 'Data frameworks with query builders',
   },
   {
     libraries: [
