@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: SQL query builder vs SQL files
-description: 'Compare Kysely with typed SQL files through tested optional-result and shared-filter examples, using generated Prisma TypedSQL plus Reylo, PgTyped, and sqlc workflows.'
+description: 'Compare Kysely with typed SQL files through tested optional-result and shared-filter examples, using generated Prisma TypedSQL plus PgTyped and sqlc workflows.'
 ---
 
 # SQL query builder vs SQL files
@@ -238,21 +238,20 @@ With `$1 = false`, `tags` is still present as `null`. An application mapper can 
 
 TypedSQL 7 generated `tags` as `JsonValue | null`; Kysely infers `{ id: string; name: string }[]` from the nested selection.
 
-[Reylo infers SQL-built JSON](https://reylo.dev/#inference), so the TypedSQL finding does not apply to every tool.
+This finding is specific to the tested TypedSQL version. [Reylo](https://reylo.dev/) is another SQL-file approach; we'll revisit it as it takes shape. It's too early to pass judgment on it here.
 
 ## How SQL files become typed calls
 
 <details>
-<summary>Reylo, Prisma TypedSQL, PgTyped, and sqlc workflows</summary>
+<summary>Prisma TypedSQL, PgTyped, and sqlc workflows</summary>
 
 | Tool                                                                                      | Application interface                                                               | Development workflow                                                                                                                                                          |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Reylo](https://reylo.dev/)                                                               | Import a `.sql` file and call its query object with a driver client and parameters. | Infers imports through TypeScript content mappers and database analysis; does not require generated query files.                                                              |
 | [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | Call a generated query function through Prisma Client.                              | Generates query functions and types from SQL files using an active database connection. This page refers to Prisma Client 7's TypedSQL workflow.                              |
 | [PgTyped](https://pgtyped.dev/docs/)                                                      | Import generated typed query objects.                                               | Analyzes annotated queries against PostgreSQL and generates TypeScript. It also supports queries in TypeScript files.                                                         |
 | [sqlc](https://docs.sqlc.dev/)                                                            | Call generated query functions.                                                     | Analyzes schema and query inputs; TypeScript output uses a [language plugin](https://github.com/sqlc-dev/sqlc-gen-typescript), whose README currently labels it early access. |
 
-Reylo requires TypeScript content mapper support and a loader/bundler integration. Kysely uses ordinary TypeScript imports without per-query generation.
+Kysely uses ordinary TypeScript imports without per-query generation.
 
 </details>
 
@@ -282,7 +281,7 @@ The asset examples are separate illustrations.
 
 ## Agent experience
 
-An agent edits one shared Kysely filter and type-checks its callers. SQL-file workflows need schema analysis and sometimes regeneration; Reylo uses content mappers.
+An agent edits one shared Kysely filter and type-checks its callers. SQL-file workflows need schema analysis and sometimes regeneration.
 
 Kysely also supplies [checked, installed-version examples](/docs/integrations/llms#documentation-for-the-installed-version). SQL-file tools can provide strong whole-statement diagnostics.
 
