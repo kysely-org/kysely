@@ -8,15 +8,23 @@ In addition to primitives, the values can also be arbitrary expressions.
 You can build the expressions by using a callback and calling the methods
 on the expression builder passed to it:
 
-import { Playground } from '../../../src/components/Playground'
+```ts twoslash playground
+import { sql } from 'kysely'
 
-import {
-  complexValues
-} from './0040-complex-values'
+const ani = "Ani"
+const ston = "ston"
 
-<div style={{ marginBottom: '1em' }}>
-  <Playground code={complexValues} />
-</div>
+const result = await db
+  .insertInto('person')
+  .values(({ ref, selectFrom, fn }) => ({
+    first_name: 'Jennifer',
+    last_name: sql<string>`concat(${ani}, ${ston})`,
+    middle_name: ref('first_name'),
+    age: selectFrom('person')
+      .select(fn.avg<number>('age').as('avg_age')),
+  }))
+  .executeTakeFirst()
+```
 
 :::info[More examples]
 The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),

@@ -6,14 +6,13 @@ import type { Config } from '@docusaurus/types'
 import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
-import { darkPlus, lightPlus } from './src/prismThemes'
 import { socialIconPaths } from './src/components/socialIconPaths'
-import deferPrism from './plugins/defer-prism'
 import preloadDemoPoster from './plugins/preload-demo-poster'
 import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
 import generateBrandLogoSprite from './plugins/generate-brand-logo-sprite'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
+import remarkShiki from './plugins/remark-shiki.mjs'
 import packageJson from './package.json'
 
 const title = 'Kysely'
@@ -118,7 +117,6 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
-    deferPrism,
     preloadDemoPoster,
     generateAgentDiscoveryCatalogs,
     generateBrandLogoSprite,
@@ -188,12 +186,15 @@ export default {
       {
         blog: false,
         docs: {
+          remarkPlugins: [remarkShiki],
           editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
           sidebarPath: require.resolve('./sidebars.js'),
         },
         theme: {
           customCss: [
             require.resolve('./src/css/custom.css'),
+            require.resolve('@shikijs/twoslash/style-rich.css'),
+            require.resolve('./src/css/shiki.css'),
             require.resolve('@radix-ui/colors/sky.css'),
             require.resolve('@radix-ui/colors/gray.css'),
             require.resolve('@radix-ui/colors/blue.css'),
@@ -317,10 +318,6 @@ export default {
         width: 32,
       },
       title: 'Kysely',
-    },
-    prism: {
-      darkTheme: darkPlus,
-      theme: lightPlus,
     },
   } satisfies PresetClassicThemeConfig,
   clientModules: ['./src/clientModules/navbarScroll.ts'],
