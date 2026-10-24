@@ -52,6 +52,20 @@
   font-weight: 700;
 }
 
+.library {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.builderLogo {
+  display: block;
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  object-fit: contain;
+}
+
 .description,
 .caption {
   color: var(--ifm-color-emphasis-700);

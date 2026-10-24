@@ -1,7 +1,8 @@
 import Link from '@docusaurus/Link'
+import useBaseUrl from '@docusaurus/useBaseUrl'
 import styles from './SqlAbstractionSpectrum.module.css'
 
-type Library = { name: string; href: string; shipsKysely?: boolean }
+type Library = { name: string; href: string; builder?: 'Kysely' | 'Knex' }
 
 const regions: { libraries: Library[]; description: string }[] = [
   {
@@ -21,19 +22,20 @@ const regions: { libraries: Library[]; description: string }[] = [
       {
         name: 'MikroORM 7',
         href: 'https://mikro-orm.io/docs/kysely',
-        shipsKysely: true,
+        builder: 'Kysely',
       },
       {
         name: 'ZenStack 3',
         href: 'https://zenstack.dev/docs/orm/query-builder',
-        shipsKysely: true,
+        builder: 'Kysely',
       },
       {
         name: 'Objection.js',
         href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
+        builder: 'Knex',
       },
     ],
-    description: 'Query builder + ORM',
+    description: 'ORM with query builder',
   },
   {
     libraries: [
@@ -57,6 +59,11 @@ const regions: { libraries: Library[]; description: string }[] = [
 ]
 
 export function SqlAbstractionSpectrum() {
+  const builderLogos = {
+    Kysely: useBaseUrl('/img/logo.svg'),
+    Knex: useBaseUrl('/img/knex-logo.svg'),
+  }
+
   return (
     <figure
       className={styles.figure}
@@ -71,16 +78,18 @@ export function SqlAbstractionSpectrum() {
         {regions.map(({ libraries, description }) => (
           <li key={libraries[0].name} className={styles.region}>
             <div className={styles.libraries}>
-              {libraries.map(({ name, href, shipsKysely }) => (
-                <Link key={name} to={href}>
+              {libraries.map(({ name, href, builder }) => (
+                <Link key={name} to={href} className={styles.library}>
                   {name}
-                  {shipsKysely && (
-                    <>
-                      {' '}
-                      <span role="img" aria-label="ships Kysely">
-                        ❤️
-                      </span>
-                    </>
+                  {builder && (
+                    <img
+                      className={styles.builderLogo}
+                      src={builderLogos[builder]}
+                      width={14}
+                      height={14}
+                      alt={`ships ${builder}`}
+                      title={`ships ${builder}`}
+                    />
                   )}
                 </Link>
               ))}
@@ -90,8 +99,8 @@ export function SqlAbstractionSpectrum() {
         ))}
       </ol>
       <figcaption className={styles.caption}>
-        Approximate ecosystem overview. The middle combines query builders with
-        ORM APIs. <span aria-hidden="true">❤️</span> = ships Kysely.
+        Approximate ecosystem overview. Small logos identify the included query
+        builder.
       </figcaption>
     </figure>
   )
