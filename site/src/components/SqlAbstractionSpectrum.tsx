@@ -49,7 +49,7 @@ const regions: { libraries: Library[]; description: string }[] = [
         href: 'https://sequelize.org/docs/v6/core-concepts/model-instances/',
       },
     ],
-    description: 'ORM',
+    description: 'Data frameworks',
   },
 ]
 
