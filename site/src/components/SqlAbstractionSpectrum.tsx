@@ -20,6 +20,10 @@ const regions: { libraries: Library[]; description: string }[] = [
     libraries: [
       { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
       {
+        name: 'TypeORM',
+        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
+      },
+      {
         name: 'MikroORM 7',
         href: 'https://mikro-orm.io/docs/kysely',
         builder: 'Kysely',
@@ -28,10 +32,6 @@ const regions: { libraries: Library[]; description: string }[] = [
         name: 'Objection.js',
         href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
         builder: 'Knex',
-      },
-      {
-        name: 'TypeORM',
-        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
       },
       {
         name: 'ZenStack 3',
