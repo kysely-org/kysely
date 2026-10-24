@@ -19,19 +19,10 @@ const regions: { libraries: Library[]; description: string }[] = [
   {
     libraries: [
       { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
-    ],
-    description: 'Headless ORM with SQL-first query builder',
-  },
-  {
-    libraries: [
       {
         name: 'Prisma 7 + Kysely',
         href: 'https://github.com/valtyr/prisma-kysely',
         builder: 'Kysely',
-      },
-      {
-        name: 'TypeORM',
-        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
       },
       {
         name: 'MikroORM 7',
@@ -39,17 +30,26 @@ const regions: { libraries: Library[]; description: string }[] = [
         builder: 'Kysely',
       },
       {
-        name: 'Objection.js',
-        href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
-        builder: 'Knex',
-      },
-      {
         name: 'ZenStack 3',
         href: 'https://zenstack.dev/docs/orm/query-builder',
         builder: 'Kysely',
       },
     ],
-    description: 'Data frameworks with query builders',
+    description: 'Data frameworks with SQL-first query builders',
+  },
+  {
+    libraries: [
+      {
+        name: 'TypeORM',
+        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
+      },
+      {
+        name: 'Objection.js',
+        href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
+        builder: 'Knex',
+      },
+    ],
+    description: 'Data frameworks with application-oriented query builders',
   },
   {
     libraries: [
