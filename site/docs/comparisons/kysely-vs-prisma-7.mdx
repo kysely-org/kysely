@@ -213,12 +213,6 @@ Prisma 7 [raw queries](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw
 
 Kysely can embed [one SQL expression](/docs/recipes/raw-sql#a-small-escape-hatch-inside-a-typed-query) while the surrounding builder stays checked. Prisma 7 model `select` cannot take an arbitrary `Prisma.sql` field; it needs a SQL query workflow.
 
-## Schema and relation workflows
-
-Kysely types can be handwritten or [generated](/docs/generating-types), independently of migrations.
-
-Keep Prisma for concise relation reads and nested writes; use Kysely where SQL composition helps.
-
 ## Package size and dependencies
 
 <details>
@@ -240,19 +234,15 @@ Measured **October 24, 2026**: [measurement details](https://github.com/kysely-o
 
 ## Agent experience
 
-Kysely ships checked method examples with the installed API. Prisma 7 model types and separately installed [agent skills](https://www.prisma.io/docs/ai/tools/skills) guide its APIs; an unsupported report also needs a SQL workflow.
-
-See [Kysely's installed docs and example checks](/docs/integrations/llms#documentation-for-the-installed-version).
+Kysely's [installed method docs and checked examples](/docs/integrations/llms#documentation-for-the-installed-version) guide agents through its API. Prisma 7 supplies model types and separately installed [agent skills](https://www.prisma.io/docs/ai/tools/skills).
 
 ## Try Kysely alongside an existing application
 
-Start with a report that already needs joined aggregates or SQL fragments. Keep Prisma schema/migrations and generate Kysely types with [prisma-kysely](https://github.com/valtyr/prisma-kysely):
+Start with a report that needs joined aggregates or SQL fragments. Generate Kysely types with [prisma-kysely](https://github.com/valtyr/prisma-kysely):
 
-1. Keep the schema and migration workflow.
+1. Keep Prisma's relation reads, nested writes, schema, and migrations.
 2. Add its generator and run `prisma generate` after schema changes.
 3. [Configure a dialect](/docs/getting-started) and move one query.
 4. Compare rows, ordering, empty results, and pagination; inspect `.compile()` before moving more code.
 
 Budget connections for both clients; they do not automatically share transactions.
-
-Replacing Prisma relation operations or migration history is separate work.
