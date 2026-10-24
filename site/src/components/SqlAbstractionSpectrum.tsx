@@ -48,6 +48,11 @@ const regions: { libraries: Library[]; description: string }[] = [
         href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
         builder: 'Knex',
       },
+      {
+        name: 'Lucid',
+        href: 'https://lucid.adonisjs.com/',
+        builder: 'Knex',
+      },
     ],
     description: 'Data frameworks with application-oriented query builders',
   },
