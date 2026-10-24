@@ -169,7 +169,8 @@ function kyselyRenamed() {
 
 The result is `{ name: string; pet_name: string }[]`. A caller still reading `row.person_name` gets a TypeScript error.
 
-### Entity types do not describe every projection
+<details>
+<summary>Partial entity types do not narrow with the selection</summary>
 
 TypeORM's `getOne()` and `getMany()` hydrate entities. Selecting fewer fields does not narrow the entity's declared type:
 
@@ -188,7 +189,9 @@ async function partialEntity() {
 }
 ```
 
-With the entity definition above, the query returns a `Person` instance containing `id`; `first_name` is `undefined`. Kysely's `.select('id')` infers only `{ id: number }`. This matters when a shared query stops selecting a field that callers still use.
+With the entity definition above, the query returns a `Person` instance containing `id`; `first_name` is `undefined`. Kysely's `.select('id')` infers only `{ id: number }`.
+
+</details>
 
 ## Check references before execution
 
@@ -375,13 +378,13 @@ The integer cast makes PostgreSQL return a JavaScript number through `pg`. Both 
 
 </details>
 
-TypeORM also supports [CTEs](https://typeorm.io/docs/query-builder/select-query-builder/#common-table-expressions), subqueries, and [row locking](https://typeorm.io/docs/query-builder/select-query-builder/#set-locking), including `skip_locked`. The fixtures exercise a CTE and locking too. These features do not require abandoning its builder. Kysely's advantage here is checking references and carrying inferred types through composition.
+TypeORM also supports [CTEs](https://typeorm.io/docs/query-builder/select-query-builder/#common-table-expressions), subqueries, and [row locking](https://typeorm.io/docs/query-builder/select-query-builder/#set-locking), including `skip_locked`. The fixtures exercise a CTE and locking too.
 
 ## Keep model workflows where they help
 
-TypeORM's relationship joins can hydrate related entity instances, and its repositories provide model persistence. Kysely returns selected rows and leaves model lifecycle behavior to your application. Keep TypeORM for those responsibilities while moving queries that need checked projections and reusable SQL composition.
+TypeORM provides relationship hydration and model persistence. Keep those workflows while moving queries to Kysely, which returns selected rows without TypeORM's entity lifecycle.
 
-Kysely's compiler feedback also helps an agent catch stale callers and invalid references before execution. See [installed-version documentation and checked examples](/docs/integrations/llms#documentation-for-the-installed-version).
+For agent API guidance, see Kysely's [installed-version documentation and checked examples](/docs/integrations/llms#documentation-for-the-installed-version).
 
 ## Adopt Kysely one query at a time
 
@@ -394,4 +397,4 @@ Use [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) to reuse an e
 3. Configure the bridge's dialect with your `DataSource`, or [configure a native dialect](/docs/getting-started). Translate one query, inspect `.compile()`, and compare rows, ordering, nulls, and empty results.
 4. Check callers against the inferred result before moving more queries.
 
-A separate pool needs connection capacity; the bridge reuses TypeORM's connections. Sharing a data source does not automatically enlist queries in an existing transaction. Keep each transaction on its owning client and connection. TypeORM migration history and entity lifecycle behavior are separate from moving query code.
+A separate pool needs connection capacity; the bridge reuses TypeORM's connections. Sharing a data source does not automatically enlist queries in an existing transaction. Keep each transaction on its owning client and connection.
