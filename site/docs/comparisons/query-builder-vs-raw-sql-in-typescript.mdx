@@ -115,9 +115,7 @@ function assetListing(options: AssetOptions) {
 
 Execute with `await assetListing(options).execute()`. Inferred: `{ id: string; name: string; tags?: { id: string; name: string }[] }[]`.
 
-Requested tags use `[]` when none exist; otherwise the key and subquery are absent.
-
-Joins, correlated references, aliases, and optional output stay checked. See [conditional selects](/docs/recipes/conditional-selects) and [nested relations](/docs/recipes/relations).
+Requested tags use `[]` when none exist; unrequested tags omit the key and subquery. See [conditional selects](/docs/recipes/conditional-selects) and [nested relations](/docs/recipes/relations).
 
 ### Postgres.js: fragments plus a result annotation
 
@@ -256,16 +254,14 @@ Embedded SQL supports those operations too. Kysely checks their structure and pe
 
 ## Composition in production
 
-Production examples from the homepage, separate from this illustration:
+These production queries show composition beyond the asset illustration:
 
 - [Immich](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L570-L624): optional relation selections and a lateral subquery for stacked assets.
 - [Open Collective](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L780-L826): conditional currency conversion through a correlated exchange-rate lookup.
 
 ## Agent experience
 
-The alias edit gives agents a compiler error at the caller. Template annotations alone cannot; external checkers must reconstruct the query.
-
-Kysely also ships checked API examples with the installed version. Postgres.js documents composition in its README; Slonik documents its helpers. See [the local documentation workflow](/docs/integrations/llms#documentation-for-the-installed-version).
+Kysely's [installed-version examples](/docs/integrations/llms#documentation-for-the-installed-version) give agents API guidance alongside compiler feedback. Postgres.js documents composition in its README; Slonik documents its helpers.
 
 ## Dependency footprint
 
@@ -290,6 +286,6 @@ Measured **October 24, 2026**: [measurement details](https://github.com/kysely-o
 
 Use embedded SQL when its fragment API and checking tools cover your queries. Slonik's runtime result validation can be independently useful.
 
-Use Kysely for optional joins/selections and shared typed building blocks. Keep [raw expressions](/docs/recipes/raw-sql) where useful.
+Use Kysely for optional joins/selections and shared typed building blocks, with [raw expressions](/docs/recipes/raw-sql) where useful.
 
 Start with an endpoint that repeats filters or maintains a result annotation separately from its SQL. Move that query, inspect `.compile()`, and compare rows, ordering, and optional fields before switching the caller. [Get started](/docs/getting-started).
