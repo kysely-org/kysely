@@ -24,7 +24,7 @@ The categories overlap: some ORMs include query builders, and some builders add 
 
 [Objection.js exposes Knex directly](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex): `Model.knex()` returns the configured Knex instance, and `Model.knexQuery()` starts a Knex query for the model's table. Its model query builder also exposes Knex methods while returning model instances.
 
-[TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) sits closer to the ORM end: `getOne()` and `getMany()` hydrate entity classes. It also offers `getRawOne()` and `getRawMany()` for raw results. Compare the API you will actually use.
+[TypeORM's query builder](https://typeorm.io/docs/query-builder/select-query-builder/) exposes SQL clauses through methods such as `select`, `from`, `innerJoin`, `where`, and `groupBy`. `getOne()` and `getMany()` hydrate entity instances; `getRawOne()` and `getRawMany()` return plain results, including custom projections and aggregates.
 
 ## Reading and persisting models
 

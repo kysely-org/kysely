@@ -30,21 +30,16 @@ const regions: { libraries: Library[]; description: string }[] = [
         builder: 'Knex',
       },
       {
+        name: 'TypeORM',
+        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
+      },
+      {
         name: 'ZenStack 3',
         href: 'https://zenstack.dev/docs/orm/query-builder',
         builder: 'Kysely',
       },
     ],
     description: 'ORM with query builder',
-  },
-  {
-    libraries: [
-      {
-        name: 'TypeORM',
-        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
-      },
-    ],
-    description: 'ORM with an entity-oriented query builder',
   },
   {
     libraries: [
