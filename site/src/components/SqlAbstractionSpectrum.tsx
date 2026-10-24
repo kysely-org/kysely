@@ -18,7 +18,7 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
-      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
+      { name: 'Drizzle', href: '/docs/comparisons/kysely-vs-drizzle' },
       {
         name: 'Prisma 7 + Kysely',
         href: '/docs/comparisons/kysely-vs-prisma-7#try-kysely-alongside-an-existing-application',
