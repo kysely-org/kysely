@@ -21,7 +21,11 @@ A data framework supplies **model, relationship, and persistence conventions** f
 
 <SqlAbstractionSpectrum />
 
-The builder groups summarize how directly their core query APIs expose SQL constructs. Knex supports SQL clauses, joins, and recursive CTEs; its application-oriented placement reflects higher-level, cross-dialect operations. For example, [`.onConflict().merge()`](https://knexjs.org/guide/query-builder.html#merge) generates PostgreSQL's `ON CONFLICT ... DO UPDATE` or MySQL's `ON DUPLICATE KEY UPDATE`, which ignores the specified conflict target. [`.jsonExtract()`](https://knexjs.org/guide/query-builder.html#jsonextract) similarly chooses `jsonb_path_query` on PostgreSQL and `json_extract` with `json_unquote` on MySQL. Likewise, [`.returning()`](https://knexjs.org/guide/query-builder.html#returning) becomes PostgreSQL's `RETURNING` or SQL Server's `OUTPUT`, using `inserted` for inserts/updates and `deleted` for deletes.
+The builder groups summarize how directly their core query APIs expose SQL constructs. Knex supports SQL clauses, joins, and recursive CTEs; its application-oriented placement reflects higher-level, cross-dialect operations:
+
+- **Upserts:** [`.onConflict().merge()`](https://knexjs.org/guide/query-builder.html#merge) generates PostgreSQL's `ON CONFLICT ... DO UPDATE` or MySQL's `ON DUPLICATE KEY UPDATE`, which ignores the specified conflict target.
+- **JSON functions:** [`.jsonExtract()`](https://knexjs.org/guide/query-builder.html#jsonextract) chooses `jsonb_path_query` on PostgreSQL and `json_extract` with `json_unquote` on MySQL.
+- **Returned rows:** [`.returning()`](https://knexjs.org/guide/query-builder.html#returning) becomes PostgreSQL's `RETURNING` or SQL Server's `OUTPUT`, using `inserted` for inserts/updates and `deleted` for deletes.
 
 For these upsert clauses and JSON function calls, the dedicated built-in route is the cross-dialect abstraction. Choosing different engine-specific SQL requires raw SQL; JSON expressions can use `knex.raw` fragments within an otherwise built query. Kysely exposes the upsert clauses separately, keeps `.returning()` and `.output()` distinct, and provides a general SQL function API.
 
