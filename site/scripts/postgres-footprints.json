@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-25T19:12:32.246Z",
+  "measuredAt": "2026-10-25T19:27:54.625Z",
   "node": "v26.7.0",
   "platform": "darwin",
   "arch": "arm64",
@@ -7,7 +7,7 @@
   "assumedPackages": [
     "typescript"
   ],
-  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, Knex, TypeORM, and Sequelize ts-node loaders with their assumed TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. TypeScript is assumed and excluded from package counts and both byte totals in every setup, even when required as a tool peer; excluded placements remain recorded. Shared Node.js and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
+  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, kysely-typegen, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, Knex, TypeORM, and Sequelize ts-node loaders with their assumed TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are generated programmatically from PostgreSQL using kysely-typegen 2.1.0; seeding tools and additional generators are not added. TypeScript is assumed and excluded from package counts and both byte totals in every setup, even when required as a tool peer; excluded placements remain recorded. Shared Node.js and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
   "stacks": [
     {
       "id": "kysely",
@@ -18,6 +18,7 @@
       "roots": {
         "kysely": "0.29.7",
         "kysely-ctl": "0.22.0",
+        "kysely-typegen": "2.1.0",
         "pg": "8.23.1"
       },
       "placements": [
@@ -90,6 +91,11 @@
           "path": "node_modules/kysely-ctl",
           "name": "kysely-ctl",
           "version": "0.22.0"
+        },
+        {
+          "path": "node_modules/kysely-typegen",
+          "name": "kysely-typegen",
+          "version": "2.1.0"
         },
         {
           "path": "node_modules/node-fetch-native",
@@ -223,9 +229,9 @@
         }
       ],
       "excludedPlacements": [],
-      "uniquePackages": 40,
-      "compressedBytes": 1561549,
-      "unpackedBytes": 6374143,
+      "uniquePackages": 41,
+      "compressedBytes": 1569083,
+      "unpackedBytes": 6396867,
       "packageVersions": [
         "c12@3.3.4",
         "chokidar@5.0.0",
@@ -240,6 +246,7 @@
         "giget@3.3.1",
         "jiti@2.7.0",
         "kysely-ctl@0.22.0",
+        "kysely-typegen@2.1.0",
         "kysely@0.29.7",
         "node-fetch-native@1.6.7",
         "nypm@0.6.11",
@@ -3430,6 +3437,14 @@
       "unpackedBytes": 96141,
       "tarball": "https://registry.npmjs.org/kysely-ctl/-/kysely-ctl-0.22.0.tgz",
       "integrity": "sha512-KqmjbJvFv58PLPaYizPmTnJqgpnclR4k39Vw3mCXZz2kcbxygZgtM4hBtmlbzt03yqvVJlhJ3shLKCPUsmxNuw=="
+    },
+    "kysely-typegen@2.1.0": {
+      "name": "kysely-typegen",
+      "version": "2.1.0",
+      "compressedBytes": 7534,
+      "unpackedBytes": 22724,
+      "tarball": "https://registry.npmjs.org/kysely-typegen/-/kysely-typegen-2.1.0.tgz",
+      "integrity": "sha512-sXrHq/80L+gmWgxlhN0XjUJnqhoPvo7pbhqKxcyUt7xFsvJIW+FoZ9lVaKRj51mIYTFXXh412nMm7ZVmuw6PWA=="
     },
     "node-fetch-native@1.6.7": {
       "name": "node-fetch-native",
