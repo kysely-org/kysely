@@ -265,7 +265,7 @@ Kysely helpers return unfinished builders that callers can extend. See [reusable
 
 Fixed recursive CTEs and window queries fit SQL files too. Kysely builds CTEs, lateral joins, aggregate filters, windows, and set operations, subject to dialect support.
 
-Embed a [local SQL expression](/docs/recipes/raw-sql#a-small-escape-hatch-inside-a-typed-query) while retaining surrounding builder checks. SQL-file tools instead analyze complete statements against schema inputs.
+Embed a [local SQL expression](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) while retaining surrounding builder checks. SQL-file tools instead analyze complete statements against schema inputs.
 
 ## Composition in production
 
