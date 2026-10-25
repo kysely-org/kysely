@@ -34,6 +34,19 @@ For these upsert clauses and JSON function calls, the dedicated built-in route i
 
 </details>
 
+<details>
+<summary>Why is Zapatos in the application-oriented group?</summary>
+
+[Zapatos](https://jawj.github.io/zapatos/) targets PostgreSQL. Its automatically typed CRUD shortcuts use SQL names, but express complete operations through table names, data objects, and options rather than composing individual SQL clauses:
+
+- **Single-row results:** `selectOne` adds a limit and returns an object or `undefined`. `selectExactlyOne` also throws when no row is found; it does not check for multiple matching rows.
+- **Upserts:** `upsert` takes inserted values and a conflict target, generating `INSERT ... ON CONFLICT` and reporting whether each row was inserted or updated through a `$action` property.
+- **Nested results:** nested `select` calls in the `lateral` option generate `LATERAL JOIN`s and JSON construction/aggregation for related objects and arrays.
+
+These operation and result-shaping shortcuts explain its placement here. Zapatos also provides a `db.sql` template API for writing and composing PostgreSQL SQL directly, with typed interpolations and manually supplied result types. SQL fragments can also be embedded in its shortcuts.
+
+</details>
+
 These categories overlap. Data frameworks can expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
 
 ## Reading and persisting models
