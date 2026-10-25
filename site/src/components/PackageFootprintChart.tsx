@@ -44,7 +44,7 @@ const packages: Package[] = [
   },
   {
     name: '@prisma/client',
-    label: 'Prisma 7 + CLI',
+    label: 'Prisma',
     version: '7.10.1',
     kind: 'framework',
     packageCount: 155,
