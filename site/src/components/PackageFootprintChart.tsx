@@ -65,9 +65,9 @@ const packages: Package[] = [
     label: 'Sequelize',
     version: '6.37.8',
     kind: 'framework',
-    packageCount: 121,
-    compressedBytes: 5209894,
-    unpackedBytes: 26394336,
+    packageCount: 133,
+    compressedBytes: 5343869,
+    unpackedBytes: 27001637,
   },
   {
     name: '@mikro-orm/postgresql',
