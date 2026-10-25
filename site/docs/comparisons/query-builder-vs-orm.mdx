@@ -5,6 +5,7 @@ description: 'Compare SQL query builders and ORMs: SQL vocabulary, model mapping
 ---
 
 import { SqlAbstractionSpectrum } from '@site/src/components/SqlAbstractionSpectrum'
+import { PackageFootprintChart } from '@site/src/components/PackageFootprintChart'
 
 # SQL query builder vs ORM
 
@@ -89,18 +90,11 @@ A builder can query existing objects without managing their lifecycle, and an ad
 
 ## Library size
 
-A query builder's narrower scope can also mean a smaller package. ORMs ship model mapping, persistence, and other framework features alongside their query APIs. These published releases illustrate the difference:
+A query builder's narrower scope can also mean a smaller package. ORMs ship model mapping, persistence, and other framework features alongside their query APIs. Compare these published packages by download or unpacked size:
 
-| Package | Compressed download | Unpacked size |
-| --- | --- | --- |
-| [Kysely 0.29.7](https://www.npmjs.com/package/kysely/v/0.29.7) | 318.3 KiB | 1.65 MiB |
-| [Knex 3.3.0](https://www.npmjs.com/package/knex/v/3.3.0) | 215.3 KiB | 0.90 MiB |
-| [Drizzle 0.45.4](https://www.npmjs.com/package/drizzle-orm/v/0.45.4) | 1205.7 KiB | 10.03 MiB |
-| [Prisma Client 7.10.1](https://www.npmjs.com/package/@prisma/client/v/7.10.1) | 25.59 MiB | 71.01 MiB |
+<PackageFootprintChart />
 
-Measured October 24, 2026 from npm tarballs. Sizes exclude dependencies, drivers, generated client code, and separate CLI packages. These are package sizes; application bundle size depends on the imports and tooling you use.
-
-Kysely has zero runtime package dependencies; install the database driver you need separately.
+The MikroORM row measures `@mikro-orm/core`; its database integrations are separate packages. Kysely has zero runtime package dependencies; install the database driver you need separately.
 
 ## Agent experience
 
