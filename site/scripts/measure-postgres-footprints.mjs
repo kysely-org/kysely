@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
@@ -29,7 +29,7 @@ const setups = {
     version: '0.45.4',
     kind: 'framework',
     package: 'drizzle-orm',
-    roots: { 'drizzle-orm': '0.45.4', pg },
+    roots: { 'drizzle-orm': '0.45.4', 'drizzle-kit': '0.31.11', pg },
   },
   prisma: {
     label: 'Prisma',
@@ -55,14 +55,14 @@ const setups = {
     version: '6.37.8',
     kind: 'framework',
     package: 'sequelize',
-    roots: { sequelize: '6.37.8', pg, 'pg-hstore': '2.3.4' },
+    roots: { sequelize: '6.37.8', 'sequelize-cli': '6.6.5', pg, 'pg-hstore': '2.3.4' },
   },
   mikroorm: {
     label: 'MikroORM',
     version: '7.2.5',
     kind: 'framework',
     package: '@mikro-orm/postgresql',
-    roots: { '@mikro-orm/core': '7.2.5', '@mikro-orm/postgresql': '7.2.5', pg },
+    roots: { '@mikro-orm/core': '7.2.5', '@mikro-orm/postgresql': '7.2.5', '@mikro-orm/cli': '7.2.5', '@mikro-orm/migrations': '7.2.5', pg },
   },
 }
 
@@ -80,10 +80,8 @@ async function resolveSetup([id, setup]) {
     'npm',
     [
       'install',
-      '--package-lock-only',
       '--ignore-scripts',
       '--omit=dev',
-      '--omit=optional',
       '--workspaces=false',
       '--no-audit',
       '--no-fund',
@@ -94,10 +92,11 @@ async function resolveSetup([id, setup]) {
     { cwd: directory, maxBuffer: 8 * 1024 ** 2 },
   )
   const lock = JSON.parse(
-    await readFile(join(directory, 'package-lock.json'), 'utf8'),
+    await readFile(join(directory, 'node_modules', '.package-lock.json'), 'utf8'),
   )
+  await rm(directory, { recursive: true, force: true })
   const placements = Object.entries(lock.packages)
-    .filter(([path, pkg]) => path && !pkg.dev && !pkg.optional)
+    .filter(([path, pkg]) => path && !pkg.dev)
     .map(([path, pkg]) => ({
       path,
       name: pkg.name ?? path.split('node_modules/').at(-1),
@@ -127,7 +126,7 @@ async function resolveSetup([id, setup]) {
     )
   }
   console.log(
-    `Resolved ${setup.label}: ${placements.length} hard-dependency placements`,
+    `Resolved ${setup.label}: ${placements.length} installed dependency placements`,
   )
   return { id, ...setup, placements }
 }
@@ -248,9 +247,11 @@ const stacks = resolved.map((setup) => {
 const result = {
   measuredAt: new Date().toISOString(),
   node: process.version,
+  platform: process.platform,
+  arch: process.arch,
   npm: (await exec('npm', ['--version'])).stdout.trim(),
   methodology:
-    'Each PostgreSQL setup includes explicit roots, pg 8.23.1, and all hard production dependencies resolved by npm. Prisma includes its CLI, client, and PostgreSQL adapter; MikroORM includes its core and PostgreSQL driver; Sequelize includes pg-hstore. Required peers are resolved by npm; optional and dev dependencies are excluded. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when older releases omit that metadata. Compressed bytes sum each unique package version once. Unpacked bytes sum package contents for every lockfile placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and downloads performed by install scripts. These are npm package payloads, not application bundles or timing benchmarks.',
+    'Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver, and Sequelize CLI/pg-hstore. Kysely schema/migration APIs and Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.',
   stacks,
   packages,
 }

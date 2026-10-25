@@ -41,15 +41,31 @@ are not executed by this suite.
 
 ## Cumulative PostgreSQL measurements
 
-The ORM chart compares complete PostgreSQL package setups, including `pg` 8.23.1 and hard dependencies. Prisma includes the CLI, client, and PostgreSQL adapter; MikroORM includes its core and PostgreSQL driver; Sequelize includes `pg-hstore`.
+The ORM chart compares code-first PostgreSQL development setups: hand-authored schema/model definitions, migrations, querying, and required code generation. Every setup includes `pg` 8.23.1 and transitive dependencies.
+
+| Setup | Explicit packages beyond `pg` | Schema/migration workflow |
+| --- | --- | --- |
+| Kysely | `kysely` | Hand-authored database types; bundled schema builder and migration APIs. |
+| Knex | `knex` | Bundled schema builder and migration CLI. |
+| Drizzle | `drizzle-orm`, `drizzle-kit` | Hand-authored table definitions; Kit generates and runs migrations. |
+| Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` | Hand-authored Prisma schema; CLI migrates and generates client code. |
+| TypeORM | `typeorm` | Hand-authored entities; bundled CLI generates and runs migrations. |
+| Sequelize | `sequelize`, `sequelize-cli`, `pg-hstore` | Model definitions and migrations authored or scaffolded with the CLI. |
+| MikroORM | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations` | Hand-authored entities; CLI generates and runs migrations. |
+
+Package choices follow the official [Kysely](https://kysely.dev/docs/migrations), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
 
 ```sh
 node site/scripts/measure-postgres-footprints.mjs site/scripts/postgres-footprints.json
 ```
 
-Run this from the repository root. npm resolves required peers; optional and dev dependencies are omitted. Compressed totals count each unique package version once. Unpacked totals count each dependency placement, including duplicate copies. Tarball integrity is checked before sizes are recorded. For older packages missing unpacked-size metadata, regular-file bytes are counted from the archive.
+Run this from the repository root. A real npm install with scripts disabled records the packages actually installed on the report's OS/architecture. This includes required peers and compatible optional dependencies, including packaged native tool binaries. CLI and migration tools are explicit roots even if an application would put them in `devDependencies`; their transitive development dependencies are not installed.
 
-The recorded report includes roots, resolved placements, package versions, and per-package sizes. Install scripts are disabled, so their extra downloads and generated application code are excluded. These are npm package payloads, not bundle sizes or performance benchmarks.
+Compressed totals count each unique package version once. Unpacked totals count each dependency placement, including duplicate copies. Tarball integrity is checked before sizes are recorded. For older packages missing unpacked-size metadata, regular-file bytes are counted from the archive.
+
+The report records roots, installed placements, package versions, platform, and per-package sizes. Shared Node.js, TypeScript, and application type declarations are outside the comparison unless pulled in by a tool. Optional introspection/codegen add-ons (such as `kysely-codegen`), seeding tools, and unrelated integrations are excluded. Schema types/entities are hand-authored where supported; Prisma's mandatory generator is included.
+
+Install scripts are disabled, so extra downloads and generated application code are excluded. These are accumulated npm package payloads for development, not deployed bundle sizes, complete disk usage, or performance benchmarks.
 
 ## Package-only measurements
 
