@@ -98,7 +98,7 @@ Teams querying shared schemas, customer systems, or read-only views may have no 
 
 A builder can query existing objects without managing their lifecycle, and an adapter or SDK can accept one configured by its consumer. An ORM's model setup must also fit those ownership and permission constraints.
 
-## Library size
+## Development setup package footprint
 
 A query builder's narrower scope can also mean a smaller development dependency footprint. These code-first PostgreSQL setups cover defining schema/models, migrating the database, and authoring queries, including their schema/type generation tools. Each includes `pg` 8.23.1, library-specific tools, and their installed transitive dependencies.
 
