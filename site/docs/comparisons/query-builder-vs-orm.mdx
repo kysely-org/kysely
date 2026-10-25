@@ -29,6 +29,12 @@ These categories overlap. Data frameworks can expose SQL builders directly: [Mik
 
 An ORM's model API can express loading related records, saving changes, or creating a model together with its children. For example, [Prisma's nested writes](https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries#nested-writes) can create an author and their articles in one API call, coordinating the inserts, foreign keys, and transaction. With a query builder, your code specifies the inserts, how the author's key reaches the article rows, and the transaction boundary.
 
+For ordinary query execution, a SQL-first query builder runs the statement you explicitly compose. Loading related data is part of that statement or a separate query your code requests. An ORM model operation may issue multiple statements for nested reads or writes, depending on its loading strategy and persistence behavior. **One API call does not necessarily mean one SQL statement.**
+
+For example, [Prisma 7's relation loading strategies](https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries#relation-load-strategies-preview), behind its `relationJoins` preview flag, offer `join` for a single query and `query` for multiple queries assembled in application code. [MikroORM 7](https://mikro-orm.io/docs/loading-strategies) offers `joined`, `select-in` (separate queries), and `balanced` (joins for to-one relations, separate queries for to-many relations).
+
+Multiple queries can be a deliberate performance choice. The builder's advantage is **predictability and control over the statements executed**. Transactions, connection setup, and extensions can issue additional statements even with a query builder.
+
 Some ORMs also track object identity and changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work) tracks managed entities and writes their changes through `flush()`. Identity maps and change tracking are not requirements for an ORM. Prisma's model operations work with plain objects. Model persistence does not require class instances or a unit of work.
 
 ## When the result doesn't fit a model
