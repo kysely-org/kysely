@@ -90,11 +90,11 @@ A builder can query existing objects without managing their lifecycle, and an ad
 
 ## Library size
 
-A query builder's narrower scope can also mean a smaller package. ORMs ship model mapping, persistence, and other framework features alongside their query APIs. Compare these published packages by download or unpacked size:
+A query builder's narrower scope can also mean a smaller dependency footprint. Compare the accumulated package sizes for PostgreSQL setups below: each includes the library, its PostgreSQL integration, `pg` 8.23.1, and all hard dependencies.
 
 <PackageFootprintChart />
 
-The MikroORM row measures `@mikro-orm/core`; its database integrations are separate packages. Kysely has zero runtime package dependencies; install the database driver you need separately.
+Prisma includes its CLI as well as its client and PostgreSQL adapter. MikroORM includes its core, SQL layer, PostgreSQL driver, and bundled Kysely dependency. Sequelize includes `pg-hstore`. Kysely itself has no runtime dependencies, but its PostgreSQL setup still includes `pg` and that driver's dependencies.
 
 ## Agent experience
 

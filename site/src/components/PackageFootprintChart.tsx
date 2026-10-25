@@ -2,73 +2,81 @@ import Link from '@docusaurus/Link'
 import { useState } from 'react'
 import styles from './PackageFootprintChart.module.css'
 
-type Metric = 'tarballBytes' | 'unpackedBytes'
+type Metric = 'compressedBytes' | 'unpackedBytes'
 type Package = {
   name: string
   label: string
   version: string
   kind: 'builder' | 'framework'
-  tarballBytes: number
+  packageCount: number
+  compressedBytes: number
   unpackedBytes: number
 }
 
-// Published npm tarballs measured October 24–25, 2026.
+// Accumulated PostgreSQL package footprints, including pg and hard dependencies.
 const packages: Package[] = [
   {
     name: 'kysely',
     label: 'Kysely',
     version: '0.29.7',
     kind: 'builder',
-    tarballBytes: 325969,
-    unpackedBytes: 1734447,
+    packageCount: 14,
+    compressedBytes: 443114,
+    unpackedBytes: 2178431,
   },
   {
     name: 'knex',
     label: 'Knex',
     version: '3.3.0',
     kind: 'builder',
-    tarballBytes: 220501,
-    unpackedBytes: 941393,
+    packageCount: 36,
+    compressedBytes: 919135,
+    unpackedBytes: 3736021,
   },
   {
     name: 'drizzle-orm',
     label: 'Drizzle',
     version: '0.45.4',
     kind: 'framework',
-    tarballBytes: 1234631,
-    unpackedBytes: 10517974,
+    packageCount: 14,
+    compressedBytes: 1351776,
+    unpackedBytes: 10961958,
   },
   {
     name: '@prisma/client',
-    label: 'Prisma Client',
+    label: 'Prisma + CLI',
     version: '7.10.1',
     kind: 'framework',
-    tarballBytes: 26828672,
-    unpackedBytes: 74458622,
+    packageCount: 154,
+    compressedBytes: 83661565,
+    unpackedBytes: 285142427,
   },
   {
     name: 'typeorm',
     label: 'TypeORM',
     version: '1.1.1',
     kind: 'framework',
-    tarballBytes: 3200022,
-    unpackedBytes: 21667474,
+    packageCount: 40,
+    compressedBytes: 3746288,
+    unpackedBytes: 24021826,
   },
   {
     name: 'sequelize',
     label: 'Sequelize',
     version: '6.37.8',
     kind: 'framework',
-    tarballBytes: 608337,
-    unpackedBytes: 2909753,
+    packageCount: 35,
+    compressedBytes: 3166734,
+    unpackedBytes: 17337652,
   },
   {
-    name: '@mikro-orm/core',
-    label: 'MikroORM core',
+    name: '@mikro-orm/postgresql',
+    label: 'MikroORM',
     version: '7.2.5',
     kind: 'framework',
-    tarballBytes: 397089,
-    unpackedBytes: 1705531,
+    packageCount: 21,
+    compressedBytes: 1124972,
+    unpackedBytes: 5094994,
   },
 ]
 
@@ -79,22 +87,25 @@ function formatSize(bytes: number) {
 }
 
 export function PackageFootprintChart() {
-  const [metric, setMetric] = useState<Metric>('tarballBytes')
+  const [metric, setMetric] = useState<Metric>('compressedBytes')
   const ordered = [...packages].sort((a, b) => a[metric] - b[metric])
   const maximum = Math.max(...ordered.map((entry) => entry[metric]))
 
   return (
-    <figure className={styles.figure} aria-label="Published package sizes">
+    <figure
+      className={styles.figure}
+      aria-label="PostgreSQL package footprints"
+    >
       <div className={styles.header}>
         <label className={styles.control}>
           Show
           <select
-            aria-label="Package size metric"
+            aria-label="PostgreSQL footprint metric"
             value={metric}
             onChange={(event) => setMetric(event.target.value as Metric)}
           >
-            <option value="tarballBytes">Compressed download</option>
-            <option value="unpackedBytes">Unpacked size</option>
+            <option value="compressedBytes">Compressed downloads</option>
+            <option value="unpackedBytes">Unpacked packages</option>
           </select>
         </label>
         <div className={styles.legend}>
@@ -122,7 +133,9 @@ export function PackageFootprintChart() {
                 >
                   {entry.label}
                 </Link>
-                <span className={styles.version}>{entry.version}</span>
+                <span className={styles.version}>
+                  {entry.version} · {entry.packageCount} packages
+                </span>
               </div>
               <span className={styles.size}>{formatSize(entry[metric])}</span>
             </div>
@@ -136,10 +149,11 @@ export function PackageFootprintChart() {
         ))}
       </ol>
       <figcaption className={styles.caption}>
-        Measured October 24–25, 2026 from published npm tarballs. All bars use
-        the same linear scale. Library packages only: excludes dependencies,
-        drivers, generated client code, and separate CLIs. Package size does not
-        measure application bundle size.
+        Measured October 25, 2026. Every setup includes pg 8.23.1 and hard
+        dependencies; Prisma includes its CLI, client, and PostgreSQL adapter.
+        Bars share a linear scale. Excludes optional dependencies, generated
+        application code, and install-script downloads. These are npm package
+        payloads, not application bundle sizes.
       </figcaption>
     </figure>
   )
