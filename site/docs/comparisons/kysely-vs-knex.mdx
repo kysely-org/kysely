@@ -244,7 +244,7 @@ db.selectFrom('person')
   .where((eb) => sql<SqlBool>`${eb.ref('person.first_name')} = ${'Jennifer'}`)
 ```
 
-Both parameterize values for the chosen dialect. Kysely also checks `eb.ref(...)` against the query context. SQL grammar and supplied result types remain unchecked; see [the example](/docs/recipes/raw-sql#a-small-escape-hatch-inside-a-typed-query).
+Both parameterize values for the chosen dialect. Kysely also checks `eb.ref(...)` against the query context. SQL grammar and supplied result types remain unchecked; see [SQL fragment examples](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
 
 ## A smaller dependency tree
 
