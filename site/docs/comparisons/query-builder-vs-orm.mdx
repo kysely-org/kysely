@@ -13,13 +13,15 @@ A SQL query builder exposes SQL's vocabulary and structure through a programmati
 
 An **object–relational mapper (ORM)** maps application models, their properties, and relationships to relational tables, columns, and keys. Its model API typically uses application-oriented vocabulary such as `findMany`, `save`, `include`, and `connect` to load and persist models, abstracting the SQL statements needed to perform the work.
 
+Most modern products marketed as ORMs are broader **data frameworks**. They pair model mapping and persistence with schema definitions, migrations, and development tooling. Some also include code generation or a SQL query builder. Here, **ORM** describes the mapping/persistence layer; **data framework** describes the larger stack.
+
 **Returning plain JavaScript objects does not make a library an ORM.** Even database drivers such as [node-postgres return arrays of plain row objects](https://node-postgres.com/features/queries#row-mode).
 
-An ORM supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those decisions to your application.
+A data framework supplies **model, relationship, and persistence conventions** for part of your data-access layer. A query builder leaves more of those decisions to your application.
 
 <SqlAbstractionSpectrum />
 
-These categories overlap. Some ORMs expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
+These categories overlap. Data frameworks can expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
 
 ## Reading and persisting models
 
@@ -97,14 +99,14 @@ A query builder's narrower scope can also mean a smaller development dependency 
 <details>
 <summary>What's included in each setup?</summary>
 
-All rows include `pg`. Versions of the main libraries appear in the chart; additional tools are pinned below.
+Every setup includes `pg` 8.23.1 and the installed dependencies of the packages below. Main library versions appear in the chart; versions of additional tools are listed here.
 
 | Setup | Packages beyond `pg` | Schema, migrations, and generation |
 | --- | --- | --- |
 | [Kysely](/docs/migrations) | `kysely`, `kysely-ctl` 0.22.0, `kysely-typegen` 2.1.0 | Bundled schema builder and migration APIs, CLI migration authoring/execution, and [database types generated programmatically](https://github.com/theoludwig/kysely-typegen) from PostgreSQL. |
 | [Knex](https://knexjs.org/guide/migrations.html) | `knex`, `ts-node` 10.9.2 | Bundled schema builder and migration CLI, with ts-node loading TypeScript configuration/migrations. No code generation required. |
 | [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate) | `drizzle-orm`, `drizzle-kit` 0.31.11 | Hand-authored table definitions; Kit generates and runs migrations. |
-| Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
+| Prisma | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
 | [TypeORM](https://typeorm.io/docs/migrations/executing/) | `typeorm`, `ts-node` 10.9.2 | Decorated entities; bundled CLI generates and runs migrations, with ts-node loading TypeScript sources. Includes reflect-metadata. |
 | [Sequelize](https://sequelize.org/docs/v6/other-topics/typescript/) | `sequelize`, `sequelize-cli` 6.6.5, `pg-hstore` 2.3.4, `sequelize-typescript` 2.1.6, `reflect-metadata` 0.2.2, `ts-node` 10.9.2 | Decorated TypeScript models using the recommended add-on; CLI scaffolds JavaScript migrations and discovers TypeScript migrations, with ts-node registered to execute them. |
 | [MikroORM](https://mikro-orm.io/docs/guide/project-setup) | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, all 7.2.5, plus `jiti` 2.7.0 | Entities authored with [defineEntity](https://mikro-orm.io/docs/define-entity), MikroORM 7’s primary documented approach; CLI generates and runs migrations, with [jiti loading TypeScript migrations](https://mikro-orm.io/docs/typescript-loaders). Includes its SQL layer and Kysely dependency. |
@@ -113,7 +115,7 @@ TypeScript is assumed for every setup and excluded from package counts and both 
 
 CLI and migration packages count even when installed as development dependencies. The measurement includes hard dependencies, required peers, and compatible optional dependencies installed by npm, including packaged native tool binaries. Compressed downloads count each package version once; unpacked sizes count every installed copy.
 
-Shared Node.js and application type declarations are excluded unless pulled in by a tool. Kysely database types are generated with `kysely-typegen`; the other setups use hand-authored model/table definitions, with Prisma client generation included. Additional generators such as `kysely-codegen`, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
+Shared Node.js and application type declarations are excluded unless pulled in by a tool. Kysely database types are generated with `kysely-typegen`; the other setups use hand-authored model/table definitions, with Prisma client generation included. Additional generators, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
 
 </details>
 
