@@ -105,9 +105,11 @@ All rows include `pg`. Versions of the main libraries appear in the chart; addit
 | [Knex](https://knexjs.org/guide/migrations.html) | `knex` | Bundled schema builder and migration CLI. No code generation required. |
 | [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate) | `drizzle-orm`, `drizzle-kit` 0.31.11 | Hand-authored table definitions; Kit generates and runs migrations. |
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
-| [TypeORM](https://typeorm.io/docs/migrations/executing/) | `typeorm` | Hand-authored entities; bundled CLI generates and runs migrations. |
+| [TypeORM](https://typeorm.io/docs/migrations/executing/) | `typeorm`, `ts-node` 10.9.2, `typescript` 6.0.3 | Hand-authored entities; bundled CLI generates and runs migrations, with ts-node loading TypeScript sources. Includes reflect-metadata. |
 | [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/) | `sequelize`, `sequelize-cli` 6.6.5, `pg-hstore` 2.3.4 | Model definitions and migrations authored or scaffolded with the CLI. |
 | [MikroORM](https://mikro-orm.io/docs/guide/project-setup) | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, all 7.2.5, plus `jiti` 2.7.0 | Hand-authored entities; CLI generates and runs migrations, with [jiti loading TypeScript migrations](https://mikro-orm.io/docs/typescript-loaders). Includes its SQL layer and Kysely dependency. |
+
+TypeORM's total includes ts-node's required TypeScript compiler and Node type declarations.
 
 CLI and migration packages count even when installed as development dependencies. The measurement includes hard dependencies, required peers, and compatible optional dependencies installed by npm, including packaged native tool binaries. Compressed downloads count each package version once; unpacked sizes count every installed copy.
 

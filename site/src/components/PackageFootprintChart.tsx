@@ -56,9 +56,9 @@ const packages: Package[] = [
     label: 'TypeORM',
     version: '1.1.1',
     kind: 'framework',
-    packageCount: 41,
-    compressedBytes: 3753533,
-    unpackedBytes: 24047527,
+    packageCount: 61,
+    compressedBytes: 9316462,
+    unpackedBytes: 53183197,
   },
   {
     name: 'sequelize',
