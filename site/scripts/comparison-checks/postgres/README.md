@@ -48,3 +48,5 @@ node site/scripts/measure-package-footprints.mjs /tmp/kysely-package-footprints.
 ```
 
 The recorded report is `site/scripts/package-footprints.json`. The script downloads package metadata and tarballs and resolves production trees using temporary npm projects, with install scripts disabled. Its report includes the measurement time and methodology; these values are not application bundle sizes.
+
+Later package additions carry their own `measuredAt` timestamps. Dependency-tree counts retain the original report timestamp; package-only measurements exclude dependencies and drivers.

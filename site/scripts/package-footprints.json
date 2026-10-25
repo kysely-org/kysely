@@ -154,6 +154,67 @@
       },
       "tarball": "https://registry.npmjs.org/pg/-/pg-8.23.1.tgz",
       "integrity": "sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ=="
+    },
+    {
+      "name": "typeorm",
+      "version": "1.1.1",
+      "tarballBytes": 3200022,
+      "unpackedBytes": 21667474,
+      "directDependencies": 10,
+      "dependencies": {
+        "ansis": "^4.3.1",
+        "dayjs": "^1.11.21",
+        "debug": "^4.4.3",
+        "tslib": "^2.8.1",
+        "yargs": "^18.0.0",
+        "dedent": "^1.7.2",
+        "tinyglobby": "^0.2.17",
+        "sql-highlight": "^6.1.0",
+        "reflect-metadata": "^0.2.2",
+        "@sqltools/formatter": "^1.2.5"
+      },
+      "tarball": "https://registry.npmjs.org/typeorm/-/typeorm-1.1.1.tgz",
+      "integrity": "sha512-og9mG4Lwlvj6MfvYd8yRCzXy73gETtwgTKQ/ISLYvEOpJPy4IrjU/89HK4ZAFmRIbEg1hkIk04v8phTrxfgPmQ==",
+      "measuredAt": "2026-10-25T17:59:16.553Z"
+    },
+    {
+      "name": "sequelize",
+      "version": "6.37.8",
+      "tarballBytes": 608337,
+      "unpackedBytes": 2909753,
+      "directDependencies": 16,
+      "dependencies": {
+        "wkx": "^0.5.0",
+        "uuid": "^8.3.2",
+        "debug": "^4.3.4",
+        "dottie": "^2.0.6",
+        "lodash": "^4.17.21",
+        "moment": "^2.29.4",
+        "semver": "^7.5.4",
+        "validator": "^13.9.0",
+        "inflection": "^1.13.4",
+        "@types/debug": "^4.1.8",
+        "sequelize-pool": "^7.1.0",
+        "toposort-class": "^1.0.1",
+        "moment-timezone": "^0.5.43",
+        "@types/validator": "^13.7.17",
+        "retry-as-promised": "^7.0.4",
+        "pg-connection-string": "^2.6.1"
+      },
+      "tarball": "https://registry.npmjs.org/sequelize/-/sequelize-6.37.8.tgz",
+      "integrity": "sha512-HJ0IQFqcTsTiqbEgiuioYFMSD00TP6Cz7zoTti+zVVBwVe9fEhev9cH6WnM3XU31+ABS356durAb99ZuOthnKw==",
+      "measuredAt": "2026-10-25T17:59:16.476Z"
+    },
+    {
+      "name": "@mikro-orm/core",
+      "version": "7.2.5",
+      "tarballBytes": 397089,
+      "unpackedBytes": 1705531,
+      "directDependencies": 0,
+      "dependencies": {},
+      "tarball": "https://registry.npmjs.org/@mikro-orm/core/-/core-7.2.5.tgz",
+      "integrity": "sha512-YF2q2Druxw4PQf/DoN1jZgYZdWfgQUWZWEapXIs0Oc/mC5HvD21nVncruDz2qMitmihro1oPhb9gI4LR5u8BEw==",
+      "measuredAt": "2026-10-25T17:59:16.785Z"
     }
   ],
   "stacks": {
@@ -362,7 +423,9 @@
         "postgres": "3.4.9"
       },
       "uniquePackages": 1,
-      "packageVersions": ["postgres@3.4.9"]
+      "packageVersions": [
+        "postgres@3.4.9"
+      ]
     }
   }
 }

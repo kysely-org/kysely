@@ -16,6 +16,9 @@ const packages = [
   ['slonik', '49.11.0'],
   ['postgres', '3.4.9'],
   ['pg', '8.23.1'],
+  ['typeorm', '1.1.1'],
+  ['sequelize', '6.37.8'],
+  ['@mikro-orm/core', '7.2.5'],
 ]
 const stacks = {
   kysely: { kysely: '0.29.7', pg: '8.23.1' },
@@ -42,6 +45,7 @@ async function measurePackage([name, version]) {
   return {
     name,
     version,
+    measuredAt: new Date().toISOString(),
     tarballBytes: (await tarball.arrayBuffer()).byteLength,
     unpackedBytes: manifest.dist.unpackedSize,
     directDependencies: Object.keys(manifest.dependencies ?? {}).length,
