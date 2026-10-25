@@ -51,9 +51,9 @@ The ORM chart compares code-first PostgreSQL development setups: hand-authored s
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` | Hand-authored Prisma schema; CLI migrates and generates client code. |
 | TypeORM | `typeorm` | Hand-authored entities; bundled CLI generates and runs migrations. |
 | Sequelize | `sequelize`, `sequelize-cli`, `pg-hstore` | Model definitions and migrations authored or scaffolded with the CLI. |
-| MikroORM | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations` | Hand-authored entities; CLI generates and runs migrations. |
+| MikroORM | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, `jiti` 2.7.0 | Hand-authored entities; CLI generates and runs migrations, with jiti loading TypeScript migrations. |
 
-Package choices follow the official [Kysely](https://kysely.dev/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
+Package choices follow the official [Kysely](https://kysely.dev/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. MikroORM includes the supported [jiti TypeScript loader](https://mikro-orm.io/docs/typescript-loaders), matching the loader installed by kysely-ctl. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
 
 ```sh
 node site/scripts/measure-postgres-footprints.mjs site/scripts/postgres-footprints.json
