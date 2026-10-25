@@ -90,7 +90,7 @@ A builder can query existing objects without managing their lifecycle, and an ad
 
 ## Library size
 
-A query builder's narrower scope can also mean a smaller development dependency footprint. These code-first PostgreSQL setups cover defining schema/models, migrating the database, and authoring queries, including required code generation. Each includes `pg` 8.23.1, library-specific tools, and their installed transitive dependencies.
+A query builder's narrower scope can also mean a smaller development dependency footprint. These code-first PostgreSQL setups cover defining schema/models, migrating the database, and authoring queries, including their schema/type generation tools. Each includes `pg` 8.23.1, library-specific tools, and their installed transitive dependencies.
 
 <PackageFootprintChart />
 
@@ -101,7 +101,7 @@ All rows include `pg`. Versions of the main libraries appear in the chart; addit
 
 | Setup | Packages beyond `pg` | Schema, migrations, and generation |
 | --- | --- | --- |
-| [Kysely](/docs/migrations) | `kysely`, `kysely-ctl` 0.22.0 | Hand-authored database types; bundled schema builder and migration APIs, with CLI migration authoring/execution. No code generation required. |
+| [Kysely](/docs/migrations) | `kysely`, `kysely-ctl` 0.22.0, `kysely-typegen` 2.1.0 | Bundled schema builder and migration APIs, CLI migration authoring/execution, and [database types generated programmatically](https://github.com/theoludwig/kysely-typegen) from PostgreSQL. |
 | [Knex](https://knexjs.org/guide/migrations.html) | `knex`, `ts-node` 10.9.2 | Bundled schema builder and migration CLI, with ts-node loading TypeScript configuration/migrations. No code generation required. |
 | [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate) | `drizzle-orm`, `drizzle-kit` 0.31.11 | Hand-authored table definitions; Kit generates and runs migrations. |
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
@@ -113,7 +113,7 @@ TypeScript is assumed for every setup and excluded from package counts and both 
 
 CLI and migration packages count even when installed as development dependencies. The measurement includes hard dependencies, required peers, and compatible optional dependencies installed by npm, including packaged native tool binaries. Compressed downloads count each package version once; unpacked sizes count every installed copy.
 
-Shared Node.js and application type declarations are excluded unless pulled in by a tool. This workflow uses hand-authored types/entities where supported; optional introspection/codegen add-ons such as `kysely-codegen`, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
+Shared Node.js and application type declarations are excluded unless pulled in by a tool. Kysely database types are generated with `kysely-typegen`; the other setups use hand-authored model/table definitions, with Prisma client generation included. Additional generators such as `kysely-codegen`, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
 
 </details>
 
