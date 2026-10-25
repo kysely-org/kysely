@@ -21,7 +21,7 @@ const regions: { libraries: Library[]; description: string }[] = [
       { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
       {
         name: 'Prisma 7 + Kysely',
-        href: '/docs/comparisons/kysely-vs-prisma-7#try-kysely-alongside-an-existing-application',
+        href: 'https://github.com/valtyr/prisma-kysely',
       },
       {
         name: 'MikroORM 7',
@@ -66,7 +66,7 @@ const regions: { libraries: Library[]; description: string }[] = [
   },
   {
     libraries: [
-      { name: 'Prisma 7', href: '/docs/comparisons/kysely-vs-prisma-7' },
+      { name: 'Prisma 7', href: 'https://www.prisma.io/docs/orm/v7' },
       {
         name: 'Sequelize',
         href: 'https://sequelize.org/docs/v6/core-concepts/model-instances/',
