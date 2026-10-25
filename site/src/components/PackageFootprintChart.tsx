@@ -29,9 +29,9 @@ const packages: Package[] = [
     label: 'Knex',
     version: '3.3.0',
     kind: 'builder',
-    packageCount: 37,
-    compressedBytes: 926380,
-    unpackedBytes: 3761722,
+    packageCount: 56,
+    compressedBytes: 1973455,
+    unpackedBytes: 8550565,
   },
   {
     name: 'drizzle-orm',
