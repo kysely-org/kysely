@@ -39,9 +39,9 @@ For these upsert clauses and JSON function calls, the dedicated built-in route i
 
 [Zapatos](https://jawj.github.io/zapatos/) targets PostgreSQL. Its automatically typed CRUD shortcuts use SQL names, but express complete operations through table names, data objects, and options rather than composing individual SQL clauses:
 
-- **Single-row results:** `selectOne` adds a limit and returns an object or `undefined`. `selectExactlyOne` also throws when no row is found; it does not check for multiple matching rows.
-- **Upserts:** `upsert` takes inserted values and a conflict target, generating `INSERT ... ON CONFLICT` and reporting whether each row was inserted or updated through a `$action` property.
 - **Nested results:** nested `select` calls in the `lateral` option generate `LATERAL JOIN`s and JSON construction/aggregation for related objects and arrays.
+- **Upserts:** `upsert` takes inserted values and a conflict target, generating `INSERT ... ON CONFLICT` and reporting whether each row was inserted or updated through a `$action` property.
+- **Single-row operations:** `selectOne` and `selectExactlyOne` add `LIMIT 1` to the SQL. The former returns an object or `undefined`; the latter throws when no row is found, without checking for multiple matching rows. Kysely's `executeTakeFirst()` and `executeTakeFirstOrThrow()` control how the result is returned; they do not change the SQL. Add `.limit(1)` explicitly when the statement should have that limit.
 
 These operation and result-shaping shortcuts explain its placement here. Zapatos also provides a `db.sql` template API for writing and composing PostgreSQL SQL directly, with typed interpolations and manually supplied result types. SQL fragments can also be embedded in its shortcuts.
 
