@@ -87,6 +87,21 @@ Teams querying shared schemas, customer systems, or read-only views may have no 
 
 A builder can query existing objects without managing their lifecycle, and an adapter or SDK can accept one configured by its consumer. An ORM's model setup must also fit those ownership and permission constraints.
 
+## Library size
+
+A query builder's narrower scope can also mean a smaller package. ORMs ship model mapping, persistence, and other framework features alongside their query APIs. These published releases illustrate the difference:
+
+| Package | Compressed download | Unpacked size |
+| --- | --- | --- |
+| [Kysely 0.29.7](https://www.npmjs.com/package/kysely/v/0.29.7) | 318.3 KiB | 1.65 MiB |
+| [Knex 3.3.0](https://www.npmjs.com/package/knex/v/3.3.0) | 215.3 KiB | 0.90 MiB |
+| [Drizzle 0.45.4](https://www.npmjs.com/package/drizzle-orm/v/0.45.4) | 1205.7 KiB | 10.03 MiB |
+| [Prisma Client 7.10.1](https://www.npmjs.com/package/@prisma/client/v/7.10.1) | 25.59 MiB | 71.01 MiB |
+
+Measured October 24, 2026 from npm tarballs. Sizes exclude dependencies, drivers, generated client code, and separate CLI packages. These are package sizes; application bundle size depends on the imports and tooling you use.
+
+Kysely has zero runtime package dependencies; install the database driver you need separately.
+
 ## Agent experience
 
 ORMs can boost development speed, especially for teams less comfortable with SQL. When an agent can write the SQL, hiding it becomes less necessary for authoring speed.
