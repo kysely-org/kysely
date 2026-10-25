@@ -74,9 +74,9 @@ const packages: Package[] = [
     label: 'MikroORM',
     version: '7.2.5',
     kind: 'framework',
-    packageCount: 41,
-    compressedBytes: 1332599,
-    unpackedBytes: 5909462,
+    packageCount: 42,
+    compressedBytes: 1759919,
+    unpackedBytes: 7660755,
   },
 ]
 
