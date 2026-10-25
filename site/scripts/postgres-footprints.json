@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-10-25T18:32:34.730Z",
+  "measuredAt": "2026-10-25T18:41:09.027Z",
   "node": "v26.7.0",
   "platform": "darwin",
   "arch": "arm64",
   "npm": "11.19.0",
-  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver, and Sequelize CLI/pg-hstore. Kysely schema/migration APIs and Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
+  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
   "stacks": [
     {
       "id": "kysely",
@@ -14,13 +14,109 @@
       "package": "kysely",
       "roots": {
         "kysely": "0.29.7",
+        "kysely-ctl": "0.22.0",
         "pg": "8.23.1"
       },
       "placements": [
         {
+          "path": "node_modules/c12",
+          "name": "c12",
+          "version": "3.3.4"
+        },
+        {
+          "path": "node_modules/c12/node_modules/confbox",
+          "name": "confbox",
+          "version": "0.2.4"
+        },
+        {
+          "path": "node_modules/chokidar",
+          "name": "chokidar",
+          "version": "5.0.0"
+        },
+        {
+          "path": "node_modules/citty",
+          "name": "citty",
+          "version": "0.2.2"
+        },
+        {
+          "path": "node_modules/confbox",
+          "name": "confbox",
+          "version": "0.3.1"
+        },
+        {
+          "path": "node_modules/consola",
+          "name": "consola",
+          "version": "3.4.2"
+        },
+        {
+          "path": "node_modules/defu",
+          "name": "defu",
+          "version": "6.1.7"
+        },
+        {
+          "path": "node_modules/destr",
+          "name": "destr",
+          "version": "2.0.5"
+        },
+        {
+          "path": "node_modules/dotenv",
+          "name": "dotenv",
+          "version": "17.4.2"
+        },
+        {
+          "path": "node_modules/exsolve",
+          "name": "exsolve",
+          "version": "1.1.3"
+        },
+        {
+          "path": "node_modules/giget",
+          "name": "giget",
+          "version": "3.3.1"
+        },
+        {
+          "path": "node_modules/jiti",
+          "name": "jiti",
+          "version": "2.7.0"
+        },
+        {
           "path": "node_modules/kysely",
           "name": "kysely",
           "version": "0.29.7"
+        },
+        {
+          "path": "node_modules/kysely-ctl",
+          "name": "kysely-ctl",
+          "version": "0.22.0"
+        },
+        {
+          "path": "node_modules/node-fetch-native",
+          "name": "node-fetch-native",
+          "version": "1.6.7"
+        },
+        {
+          "path": "node_modules/nypm",
+          "name": "nypm",
+          "version": "0.6.11"
+        },
+        {
+          "path": "node_modules/ofetch",
+          "name": "ofetch",
+          "version": "1.5.1"
+        },
+        {
+          "path": "node_modules/ohash",
+          "name": "ohash",
+          "version": "2.0.12"
+        },
+        {
+          "path": "node_modules/pathe",
+          "name": "pathe",
+          "version": "2.0.3"
+        },
+        {
+          "path": "node_modules/perfect-debounce",
+          "name": "perfect-debounce",
+          "version": "2.1.0"
         },
         {
           "path": "node_modules/pg",
@@ -63,6 +159,11 @@
           "version": "1.0.5"
         },
         {
+          "path": "node_modules/pkg-types",
+          "name": "pkg-types",
+          "version": "2.4.0"
+        },
+        {
           "path": "node_modules/postgres-array",
           "name": "postgres-array",
           "version": "2.0.0"
@@ -83,9 +184,34 @@
           "version": "1.2.0"
         },
         {
+          "path": "node_modules/rc9",
+          "name": "rc9",
+          "version": "3.1.0"
+        },
+        {
+          "path": "node_modules/readdirp",
+          "name": "readdirp",
+          "version": "5.1.1"
+        },
+        {
           "path": "node_modules/split2",
           "name": "split2",
           "version": "4.2.0"
+        },
+        {
+          "path": "node_modules/std-env",
+          "name": "std-env",
+          "version": "4.3.0"
+        },
+        {
+          "path": "node_modules/tinyexec",
+          "name": "tinyexec",
+          "version": "1.3.1"
+        },
+        {
+          "path": "node_modules/ufo",
+          "name": "ufo",
+          "version": "1.6.4"
         },
         {
           "path": "node_modules/xtend",
@@ -93,11 +219,30 @@
           "version": "4.0.2"
         }
       ],
-      "uniquePackages": 15,
-      "compressedBytes": 450359,
-      "unpackedBytes": 2204132,
+      "uniquePackages": 40,
+      "compressedBytes": 1561549,
+      "unpackedBytes": 6374143,
       "packageVersions": [
+        "c12@3.3.4",
+        "chokidar@5.0.0",
+        "citty@0.2.2",
+        "confbox@0.2.4",
+        "confbox@0.3.1",
+        "consola@3.4.2",
+        "defu@6.1.7",
+        "destr@2.0.5",
+        "dotenv@17.4.2",
+        "exsolve@1.1.3",
+        "giget@3.3.1",
+        "jiti@2.7.0",
+        "kysely-ctl@0.22.0",
         "kysely@0.29.7",
+        "node-fetch-native@1.6.7",
+        "nypm@0.6.11",
+        "ofetch@1.5.1",
+        "ohash@2.0.12",
+        "pathe@2.0.3",
+        "perfect-debounce@2.1.0",
         "pg-cloudflare@1.4.1",
         "pg-connection-string@2.14.1",
         "pg-int8@1.0.1",
@@ -106,11 +251,17 @@
         "pg-types@2.2.0",
         "pg@8.23.1",
         "pgpass@1.0.5",
+        "pkg-types@2.4.0",
         "postgres-array@2.0.0",
         "postgres-bytea@1.0.1",
         "postgres-date@1.0.7",
         "postgres-interval@1.2.0",
+        "rc9@3.1.0",
+        "readdirp@5.1.1",
         "split2@4.2.0",
+        "std-env@4.3.0",
+        "tinyexec@1.3.1",
+        "ufo@1.6.4",
         "xtend@4.0.2"
       ]
     },
@@ -2782,6 +2933,102 @@
     }
   ],
   "packages": {
+    "c12@3.3.4": {
+      "name": "c12",
+      "version": "3.3.4",
+      "compressedBytes": 12603,
+      "unpackedBytes": 40337,
+      "tarball": "https://registry.npmjs.org/c12/-/c12-3.3.4.tgz",
+      "integrity": "sha512-cM0ApFQSBXuourJejzwv/AuPRvAxordTyParRVcHjjtXirtkzM0uK2L9TTn9s0cXZbG7E55jCivRQzoxYmRAlA=="
+    },
+    "confbox@0.2.4": {
+      "name": "confbox",
+      "version": "0.2.4",
+      "compressedBytes": 40812,
+      "unpackedBytes": 137033,
+      "tarball": "https://registry.npmjs.org/confbox/-/confbox-0.2.4.tgz",
+      "integrity": "sha512-ysOGlgTFbN2/Y6Cg3Iye8YKulHw+R2fNXHrgSmXISQdMnomY6eNDprVdW9R5xBguEqI954+S6709UyiO7B+6OQ=="
+    },
+    "chokidar@5.0.0": {
+      "name": "chokidar",
+      "version": "5.0.0",
+      "compressedBytes": 23399,
+      "unpackedBytes": 82062,
+      "tarball": "https://registry.npmjs.org/chokidar/-/chokidar-5.0.0.tgz",
+      "integrity": "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="
+    },
+    "citty@0.2.2": {
+      "name": "citty",
+      "version": "0.2.2",
+      "compressedBytes": 10298,
+      "unpackedBytes": 34558,
+      "tarball": "https://registry.npmjs.org/citty/-/citty-0.2.2.tgz",
+      "integrity": "sha512-+6vJA3L98yv+IdfKGZHBNiGW5KHn22e/JwID0Strsz8h4S/csAu/OuICwxrg44k5MRiZHWIo8XXuJgQTriRP4w=="
+    },
+    "confbox@0.3.1": {
+      "name": "confbox",
+      "version": "0.3.1",
+      "compressedBytes": 41408,
+      "unpackedBytes": 133217,
+      "tarball": "https://registry.npmjs.org/confbox/-/confbox-0.3.1.tgz",
+      "integrity": "sha512-cKUSoKa8YxFZZSmraVi7onONx3amu77ngK3kGpsYHDH7drPwCRkQE1RYMPlLRrMtnciRj274XNRxcHxnKmDSnA=="
+    },
+    "consola@3.4.2": {
+      "name": "consola",
+      "version": "3.4.2",
+      "compressedBytes": 83357,
+      "unpackedBytes": 321586,
+      "tarball": "https://registry.npmjs.org/consola/-/consola-3.4.2.tgz",
+      "integrity": "sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA=="
+    },
+    "defu@6.1.7": {
+      "name": "defu",
+      "version": "6.1.7",
+      "compressedBytes": 4897,
+      "unpackedBytes": 20683,
+      "tarball": "https://registry.npmjs.org/defu/-/defu-6.1.7.tgz",
+      "integrity": "sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ=="
+    },
+    "destr@2.0.5": {
+      "name": "destr",
+      "version": "2.0.5",
+      "compressedBytes": 3807,
+      "unpackedBytes": 11035,
+      "tarball": "https://registry.npmjs.org/destr/-/destr-2.0.5.tgz",
+      "integrity": "sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA=="
+    },
+    "dotenv@17.4.2": {
+      "name": "dotenv",
+      "version": "17.4.2",
+      "compressedBytes": 28377,
+      "unpackedBytes": 103493,
+      "tarball": "https://registry.npmjs.org/dotenv/-/dotenv-17.4.2.tgz",
+      "integrity": "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="
+    },
+    "exsolve@1.1.3": {
+      "name": "exsolve",
+      "version": "1.1.3",
+      "compressedBytes": 14966,
+      "unpackedBytes": 55426,
+      "tarball": "https://registry.npmjs.org/exsolve/-/exsolve-1.1.3.tgz",
+      "integrity": "sha512-kuzL9zherLQoqDeQaS55AiiIg1kb4KYXaSusTtgZTPlvKP2gGCI82LNmBNh5RjDVUXIcmgx+/Mx7vPwRzBbhJA=="
+    },
+    "giget@3.3.1": {
+      "name": "giget",
+      "version": "3.3.1",
+      "compressedBytes": 51726,
+      "unpackedBytes": 184274,
+      "tarball": "https://registry.npmjs.org/giget/-/giget-3.3.1.tgz",
+      "integrity": "sha512-r+mvuDjrjMpsdw46Kmeydb8bdHm7wOKw8wNBtTndkjbPjgAp5oUJUxRE76wZFknxIPokfWvep2qSXK37aXE6zg=="
+    },
+    "jiti@2.7.0": {
+      "name": "jiti",
+      "version": "2.7.0",
+      "compressedBytes": 427320,
+      "unpackedBytes": 1751293,
+      "tarball": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz",
+      "integrity": "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="
+    },
     "kysely@0.29.7": {
       "name": "kysely",
       "version": "0.29.7",
@@ -2789,6 +3036,62 @@
       "unpackedBytes": 1734447,
       "tarball": "https://registry.npmjs.org/kysely/-/kysely-0.29.7.tgz",
       "integrity": "sha512-fmIq+7kv4WbFm2tcfznRzikqB4cuNpgZ40PSU2fAJ2/OO5XhojqnTPrmgrCjYSRJVwBln03XcRXJGnw9H099IQ=="
+    },
+    "kysely-ctl@0.22.0": {
+      "name": "kysely-ctl",
+      "version": "0.22.0",
+      "compressedBytes": 26887,
+      "unpackedBytes": 96141,
+      "tarball": "https://registry.npmjs.org/kysely-ctl/-/kysely-ctl-0.22.0.tgz",
+      "integrity": "sha512-KqmjbJvFv58PLPaYizPmTnJqgpnclR4k39Vw3mCXZz2kcbxygZgtM4hBtmlbzt03yqvVJlhJ3shLKCPUsmxNuw=="
+    },
+    "node-fetch-native@1.6.7": {
+      "name": "node-fetch-native",
+      "version": "1.6.7",
+      "compressedBytes": 224182,
+      "unpackedBytes": 738781,
+      "tarball": "https://registry.npmjs.org/node-fetch-native/-/node-fetch-native-1.6.7.tgz",
+      "integrity": "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="
+    },
+    "nypm@0.6.11": {
+      "name": "nypm",
+      "version": "0.6.11",
+      "compressedBytes": 9637,
+      "unpackedBytes": 52471,
+      "tarball": "https://registry.npmjs.org/nypm/-/nypm-0.6.11.tgz",
+      "integrity": "sha512-wrVBTLWDu7nTUKGWplQebWOXWnhaIwyKQhBxobH/CGxJHoVw27r9vG5ba7kdZnxG+f4rC6dZd6m2oHmpkOcO7g=="
+    },
+    "ofetch@1.5.1": {
+      "name": "ofetch",
+      "version": "1.5.1",
+      "compressedBytes": 16809,
+      "unpackedBytes": 63925,
+      "tarball": "https://registry.npmjs.org/ofetch/-/ofetch-1.5.1.tgz",
+      "integrity": "sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA=="
+    },
+    "ohash@2.0.12": {
+      "name": "ohash",
+      "version": "2.0.12",
+      "compressedBytes": 8973,
+      "unpackedBytes": 24287,
+      "tarball": "https://registry.npmjs.org/ohash/-/ohash-2.0.12.tgz",
+      "integrity": "sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw=="
+    },
+    "pathe@2.0.3": {
+      "name": "pathe",
+      "version": "2.0.3",
+      "compressedBytes": 10514,
+      "unpackedBytes": 51332,
+      "tarball": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
+      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="
+    },
+    "perfect-debounce@2.1.0": {
+      "name": "perfect-debounce",
+      "version": "2.1.0",
+      "compressedBytes": 3779,
+      "unpackedBytes": 9566,
+      "tarball": "https://registry.npmjs.org/perfect-debounce/-/perfect-debounce-2.1.0.tgz",
+      "integrity": "sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g=="
     },
     "pg@8.23.1": {
       "name": "pg",
@@ -2854,6 +3157,14 @@
       "tarball": "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz",
       "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug=="
     },
+    "pkg-types@2.4.0": {
+      "name": "pkg-types",
+      "version": "2.4.0",
+      "compressedBytes": 14642,
+      "unpackedBytes": 52063,
+      "tarball": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.4.0.tgz",
+      "integrity": "sha512-07Fys7iVx0X6TcviMOgogM1Lk33ZyqOezMnU79S+kffWqwolG/5W9V8EgQSeYCIfFTYVgssRbnH630Oa2+soBA=="
+    },
     "postgres-array@2.0.0": {
       "name": "postgres-array",
       "version": "2.0.0",
@@ -2886,6 +3197,22 @@
       "tarball": "https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz",
       "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ=="
     },
+    "rc9@3.1.0": {
+      "name": "rc9",
+      "version": "3.1.0",
+      "compressedBytes": 6516,
+      "unpackedBytes": 22228,
+      "tarball": "https://registry.npmjs.org/rc9/-/rc9-3.1.0.tgz",
+      "integrity": "sha512-ufjkNVzbRHKcCOmTahZkmVsyc3W+MSk3jY03m+a7tGHkIsdVMG9l10/3HvFbWkkKzY5VFp3pkRsIo/UYgmFL7Q=="
+    },
+    "readdirp@5.1.1": {
+      "name": "readdirp",
+      "version": "5.1.1",
+      "compressedBytes": 9058,
+      "unpackedBytes": 26832,
+      "tarball": "https://registry.npmjs.org/readdirp/-/readdirp-5.1.1.tgz",
+      "integrity": "sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA=="
+    },
     "split2@4.2.0": {
       "name": "split2",
       "version": "4.2.0",
@@ -2893,6 +3220,30 @@
       "unpackedBytes": 17419,
       "tarball": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
       "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="
+    },
+    "std-env@4.3.0": {
+      "name": "std-env",
+      "version": "4.3.0",
+      "compressedBytes": 6608,
+      "unpackedBytes": 18175,
+      "tarball": "https://registry.npmjs.org/std-env/-/std-env-4.3.0.tgz",
+      "integrity": "sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag=="
+    },
+    "tinyexec@1.3.1": {
+      "name": "tinyexec",
+      "version": "1.3.1",
+      "compressedBytes": 9187,
+      "unpackedBytes": 26969,
+      "tarball": "https://registry.npmjs.org/tinyexec/-/tinyexec-1.3.1.tgz",
+      "integrity": "sha512-GCvB3aoys96IuDFBMcTB46JOR6mdMtAToqwiW8JlWhsoh1mhHi/xn9ss/Dg7N555GiJyEt2qzoG/NHCwM6h1EA=="
+    },
+    "ufo@1.6.4": {
+      "name": "ufo",
+      "version": "1.6.4",
+      "compressedBytes": 21428,
+      "unpackedBytes": 112244,
+      "tarball": "https://registry.npmjs.org/ufo/-/ufo-1.6.4.tgz",
+      "integrity": "sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA=="
     },
     "xtend@4.0.2": {
       "name": "xtend",
@@ -3686,22 +4037,6 @@
       "tarball": "https://registry.npmjs.org/better-result/-/better-result-2.10.0.tgz",
       "integrity": "sha512-oQhh0y1qo2/ZKdAAEvHZAqKKiHOFU5k/bW96fE2ScgQOVkJRiHwB+nOS1SgFsYqRlxMDWvefXi9Q3px7QvgNDw=="
     },
-    "c12@3.3.4": {
-      "name": "c12",
-      "version": "3.3.4",
-      "compressedBytes": 12603,
-      "unpackedBytes": 40337,
-      "tarball": "https://registry.npmjs.org/c12/-/c12-3.3.4.tgz",
-      "integrity": "sha512-cM0ApFQSBXuourJejzwv/AuPRvAxordTyParRVcHjjtXirtkzM0uK2L9TTn9s0cXZbG7E55jCivRQzoxYmRAlA=="
-    },
-    "chokidar@5.0.0": {
-      "name": "chokidar",
-      "version": "5.0.0",
-      "compressedBytes": 23399,
-      "unpackedBytes": 82062,
-      "tarball": "https://registry.npmjs.org/chokidar/-/chokidar-5.0.0.tgz",
-      "integrity": "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="
-    },
     "classnames@2.5.1": {
       "name": "classnames",
       "version": "2.5.1",
@@ -3709,14 +4044,6 @@
       "unpackedBytes": 23581,
       "tarball": "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz",
       "integrity": "sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow=="
-    },
-    "confbox@0.2.4": {
-      "name": "confbox",
-      "version": "0.2.4",
-      "compressedBytes": 40812,
-      "unpackedBytes": 137033,
-      "tarball": "https://registry.npmjs.org/confbox/-/confbox-0.2.4.tgz",
-      "integrity": "sha512-ysOGlgTFbN2/Y6Cg3Iye8YKulHw+R2fNXHrgSmXISQdMnomY6eNDprVdW9R5xBguEqI954+S6709UyiO7B+6OQ=="
     },
     "cross-spawn@7.0.6": {
       "name": "cross-spawn",
@@ -3830,14 +4157,6 @@
       "tarball": "https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-8.0.2.tgz",
       "integrity": "sha512-uqbvqLUMrc6p0MO+WBRtTxY55hmyh94WRwI5a++PZe54X+bfVh59FSN7uWCBCW1CCVjzjnrwzfI8zidE2obMMw=="
     },
-    "defu@6.1.7": {
-      "name": "defu",
-      "version": "6.1.7",
-      "compressedBytes": 4897,
-      "unpackedBytes": 20683,
-      "tarball": "https://registry.npmjs.org/defu/-/defu-6.1.7.tgz",
-      "integrity": "sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ=="
-    },
     "delaunator@5.1.0": {
       "name": "delaunator",
       "version": "5.1.0",
@@ -3845,22 +4164,6 @@
       "unpackedBytes": 66939,
       "tarball": "https://registry.npmjs.org/delaunator/-/delaunator-5.1.0.tgz",
       "integrity": "sha512-AGrQ4QSgssa1NGmWmLPqN5NY2KajF5MqxetNEO+o0n3ZwZZeTmt7bBnvzHWrmkZFxGgr4HdyFgelzgi06otLuQ=="
-    },
-    "destr@2.0.5": {
-      "name": "destr",
-      "version": "2.0.5",
-      "compressedBytes": 3807,
-      "unpackedBytes": 11035,
-      "tarball": "https://registry.npmjs.org/destr/-/destr-2.0.5.tgz",
-      "integrity": "sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA=="
-    },
-    "dotenv@17.4.2": {
-      "name": "dotenv",
-      "version": "17.4.2",
-      "compressedBytes": 28377,
-      "unpackedBytes": 103493,
-      "tarball": "https://registry.npmjs.org/dotenv/-/dotenv-17.4.2.tgz",
-      "integrity": "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="
     },
     "effect@3.20.0": {
       "name": "effect",
@@ -3893,14 +4196,6 @@
       "unpackedBytes": 9815,
       "tarball": "https://registry.npmjs.org/env-paths/-/env-paths-3.0.0.tgz",
       "integrity": "sha512-dtJUTepzMW3Lm/NPxRf3wP4642UWhjL2sQxc+ym2YMj1m/H2zDNQOlezafzkHwn6sMstjHTwG6iQQsctDW/b1A=="
-    },
-    "exsolve@1.1.3": {
-      "name": "exsolve",
-      "version": "1.1.3",
-      "compressedBytes": 14966,
-      "unpackedBytes": 55426,
-      "tarball": "https://registry.npmjs.org/exsolve/-/exsolve-1.1.3.tgz",
-      "integrity": "sha512-kuzL9zherLQoqDeQaS55AiiIg1kb4KYXaSusTtgZTPlvKP2gGCI82LNmBNh5RjDVUXIcmgx+/Mx7vPwRzBbhJA=="
     },
     "fast-check@3.23.2": {
       "name": "fast-check",
@@ -3974,14 +4269,6 @@
       "tarball": "https://registry.npmjs.org/get-port-please/-/get-port-please-3.2.0.tgz",
       "integrity": "sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A=="
     },
-    "giget@3.3.1": {
-      "name": "giget",
-      "version": "3.3.1",
-      "compressedBytes": 51726,
-      "unpackedBytes": 184274,
-      "tarball": "https://registry.npmjs.org/giget/-/giget-3.3.1.tgz",
-      "integrity": "sha512-r+mvuDjrjMpsdw46Kmeydb8bdHm7wOKw8wNBtTndkjbPjgAp5oUJUxRE76wZFknxIPokfWvep2qSXK37aXE6zg=="
-    },
     "graceful-fs@4.2.11": {
       "name": "graceful-fs",
       "version": "4.2.11",
@@ -4038,14 +4325,6 @@
       "tarball": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
       "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw=="
     },
-    "jiti@2.7.0": {
-      "name": "jiti",
-      "version": "2.7.0",
-      "compressedBytes": 427320,
-      "unpackedBytes": 1751293,
-      "tarball": "https://registry.npmjs.org/jiti/-/jiti-2.7.0.tgz",
-      "integrity": "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="
-    },
     "json-schema-traverse@1.0.0": {
       "name": "json-schema-traverse",
       "version": "1.0.0",
@@ -4086,14 +4365,6 @@
       "tarball": "https://registry.npmjs.org/named-placeholders/-/named-placeholders-1.1.6.tgz",
       "integrity": "sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w=="
     },
-    "ohash@2.0.12": {
-      "name": "ohash",
-      "version": "2.0.12",
-      "compressedBytes": 8973,
-      "unpackedBytes": 24287,
-      "tarball": "https://registry.npmjs.org/ohash/-/ohash-2.0.12.tgz",
-      "integrity": "sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw=="
-    },
     "path-key@3.1.1": {
       "name": "path-key",
       "version": "3.1.1",
@@ -4101,38 +4372,6 @@
       "unpackedBytes": 4553,
       "tarball": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
       "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q=="
-    },
-    "pathe@2.0.3": {
-      "name": "pathe",
-      "version": "2.0.3",
-      "compressedBytes": 10514,
-      "unpackedBytes": 51332,
-      "tarball": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
-      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="
-    },
-    "perfect-debounce@2.1.0": {
-      "name": "perfect-debounce",
-      "version": "2.1.0",
-      "compressedBytes": 3779,
-      "unpackedBytes": 9566,
-      "tarball": "https://registry.npmjs.org/perfect-debounce/-/perfect-debounce-2.1.0.tgz",
-      "integrity": "sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g=="
-    },
-    "pkg-types@2.4.0": {
-      "name": "pkg-types",
-      "version": "2.4.0",
-      "compressedBytes": 14642,
-      "unpackedBytes": 52063,
-      "tarball": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.4.0.tgz",
-      "integrity": "sha512-07Fys7iVx0X6TcviMOgogM1Lk33ZyqOezMnU79S+kffWqwolG/5W9V8EgQSeYCIfFTYVgssRbnH630Oa2+soBA=="
-    },
-    "confbox@0.3.1": {
-      "name": "confbox",
-      "version": "0.3.1",
-      "compressedBytes": 41408,
-      "unpackedBytes": 133217,
-      "tarball": "https://registry.npmjs.org/confbox/-/confbox-0.3.1.tgz",
-      "integrity": "sha512-cKUSoKa8YxFZZSmraVi7onONx3amu77ngK3kGpsYHDH7drPwCRkQE1RYMPlLRrMtnciRj274XNRxcHxnKmDSnA=="
     },
     "postgres@3.4.7": {
       "name": "postgres",
@@ -4182,14 +4421,6 @@
       "tarball": "https://registry.npmjs.org/pure-rand/-/pure-rand-6.1.0.tgz",
       "integrity": "sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA=="
     },
-    "rc9@3.1.0": {
-      "name": "rc9",
-      "version": "3.1.0",
-      "compressedBytes": 6516,
-      "unpackedBytes": 22228,
-      "tarball": "https://registry.npmjs.org/rc9/-/rc9-3.1.0.tgz",
-      "integrity": "sha512-ufjkNVzbRHKcCOmTahZkmVsyc3W+MSk3jY03m+a7tGHkIsdVMG9l10/3HvFbWkkKzY5VFp3pkRsIo/UYgmFL7Q=="
-    },
     "react@19.3.1": {
       "name": "react",
       "version": "19.3.1",
@@ -4205,14 +4436,6 @@
       "unpackedBytes": 8067632,
       "tarball": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.1.tgz",
       "integrity": "sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ=="
-    },
-    "readdirp@5.1.1": {
-      "name": "readdirp",
-      "version": "5.1.1",
-      "compressedBytes": 9058,
-      "unpackedBytes": 26832,
-      "tarball": "https://registry.npmjs.org/readdirp/-/readdirp-5.1.1.tgz",
-      "integrity": "sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA=="
     },
     "remeda@2.33.4": {
       "name": "remeda",

@@ -45,7 +45,7 @@ The ORM chart compares code-first PostgreSQL development setups: hand-authored s
 
 | Setup | Explicit packages beyond `pg` | Schema/migration workflow |
 | --- | --- | --- |
-| Kysely | `kysely` | Hand-authored database types; bundled schema builder and migration APIs. |
+| Kysely | `kysely` 0.29.7, `kysely-ctl` 0.22.0 | Hand-authored database types; bundled schema builder and migration APIs, with CLI migration authoring/execution. |
 | Knex | `knex` | Bundled schema builder and migration CLI. |
 | Drizzle | `drizzle-orm`, `drizzle-kit` | Hand-authored table definitions; Kit generates and runs migrations. |
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` | Hand-authored Prisma schema; CLI migrates and generates client code. |
@@ -53,7 +53,7 @@ The ORM chart compares code-first PostgreSQL development setups: hand-authored s
 | Sequelize | `sequelize`, `sequelize-cli`, `pg-hstore` | Model definitions and migrations authored or scaffolded with the CLI. |
 | MikroORM | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations` | Hand-authored entities; CLI generates and runs migrations. |
 
-Package choices follow the official [Kysely](https://kysely.dev/docs/migrations), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
+Package choices follow the official [Kysely](https://kysely.dev/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
 
 ```sh
 node site/scripts/measure-postgres-footprints.mjs site/scripts/postgres-footprints.json
