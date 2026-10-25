@@ -69,7 +69,7 @@ const regions: { libraries: Library[]; description: string }[] = [
       { name: 'Prisma 7', href: 'https://www.prisma.io/docs/orm/v7' },
       {
         name: 'Sequelize',
-        href: '/docs/comparisons/kysely-vs-sequelize',
+        href: 'https://sequelize.org/docs/v6/core-concepts/model-instances/',
       },
       { name: 'Orange ORM', href: 'https://orange-orm.io/' },
     ],
