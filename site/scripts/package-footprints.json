@@ -1,0 +1,368 @@
+{
+  "measuredAt": "2026-10-24T01:11:07.004Z",
+  "node": "v24.14.1",
+  "npm": "11.11.0",
+  "methodology": "Package bytes are the gzip tarball body and npm dist.unpackedSize, excluding dependencies. PostgreSQL stacks count unique name@version production packages including the listed roots and explicit pg driver; optional dependencies and peer auto-installation are excluded. No install scripts run. Counts are not application bundle sizes.",
+  "packages": [
+    {
+      "name": "kysely",
+      "version": "0.29.7",
+      "tarballBytes": 325969,
+      "unpackedBytes": 1734447,
+      "directDependencies": 0,
+      "dependencies": {},
+      "tarball": "https://registry.npmjs.org/kysely/-/kysely-0.29.7.tgz",
+      "integrity": "sha512-fmIq+7kv4WbFm2tcfznRzikqB4cuNpgZ40PSU2fAJ2/OO5XhojqnTPrmgrCjYSRJVwBln03XcRXJGnw9H099IQ=="
+    },
+    {
+      "name": "knex",
+      "version": "3.3.0",
+      "tarballBytes": 220501,
+      "unpackedBytes": 941393,
+      "directDependencies": 14,
+      "dependencies": {
+        "esm": "^3.2.25",
+        "tarn": "^3.1.0",
+        "debug": "4.3.4",
+        "lodash": "^4.18.1",
+        "getopts": "2.3.0",
+        "rechoir": "^0.8.0",
+        "tildify": "2.0.0",
+        "escalade": "^3.1.1",
+        "colorette": "2.0.19",
+        "commander": "^10.0.0",
+        "interpret": "^2.2.0",
+        "resolve-from": "^5.0.0",
+        "get-package-type": "^0.1.0",
+        "pg-connection-string": "2.6.2"
+      },
+      "tarball": "https://registry.npmjs.org/knex/-/knex-3.3.0.tgz",
+      "integrity": "sha512-LgWl031hNuLv9Lhxdd9093zULa2aNcoP04Bk29e5NidgRcEr/T0rAr2WYi4BhjTiCDoQiRU56meUE5rppLKZzQ=="
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "0.45.4",
+      "tarballBytes": 1234631,
+      "unpackedBytes": 10517974,
+      "directDependencies": 0,
+      "dependencies": {},
+      "tarball": "https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-0.45.4.tgz",
+      "integrity": "sha512-NiM1YZpJ2UxyeE67DpDDZ+Tsw4YLX3trSlkNT7Tm9eKoUNb1LvaAaQzXgYQsWs+AQ9TUmmwMmBOCXuqqxUWKKQ=="
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "1.0.0-rc.5",
+      "tarballBytes": 3060689,
+      "unpackedBytes": 17842566,
+      "directDependencies": 0,
+      "dependencies": {},
+      "tarball": "https://registry.npmjs.org/drizzle-orm/-/drizzle-orm-1.0.0-rc.5.tgz",
+      "integrity": "sha512-7BMYTsAZbQ9DcQCtLG4G202Hq6nc/e8o1EBKN6nBweRI8EGPFe/VdyvWQCsU9fuZSiRjNpELolUSi//JFBq+lw=="
+    },
+    {
+      "name": "@prisma/client",
+      "version": "7.10.1",
+      "tarballBytes": 26828672,
+      "unpackedBytes": 74458622,
+      "directDependencies": 1,
+      "dependencies": {
+        "@prisma/client-runtime-utils": "7.10.1"
+      },
+      "tarball": "https://registry.npmjs.org/@prisma/client/-/client-7.10.1.tgz",
+      "integrity": "sha512-5tgAbFGh//zVOC6WPNVgziOErJHYkUE+wmqCwbIyq6IrTXUYtv9y2iBFGh/Owo99Mx0+cr0j1FOrxkYBMuyhaQ=="
+    },
+    {
+      "name": "@prisma/adapter-pg",
+      "version": "7.10.1",
+      "tarballBytes": 13734,
+      "unpackedBytes": 72298,
+      "directDependencies": 4,
+      "dependencies": {
+        "pg": "^8.16.3",
+        "@types/pg": "^8.16.0",
+        "postgres-array": "3.0.4",
+        "@prisma/driver-adapter-utils": "7.10.1"
+      },
+      "tarball": "https://registry.npmjs.org/@prisma/adapter-pg/-/adapter-pg-7.10.1.tgz",
+      "integrity": "sha512-EP9ruPYHjKP80WZlb5qVaEXKgZjJieBFjAxcBtQnDAHD6+16UN4keVmBh6L/RUpuDQT2FQRbvKNgq5d4Ix+IkQ=="
+    },
+    {
+      "name": "prisma",
+      "version": "7.10.1",
+      "tarballBytes": 14172358,
+      "unpackedBytes": 42043752,
+      "directDependencies": 6,
+      "dependencies": {
+        "mysql2": "3.24.4",
+        "postgres": "3.4.7",
+        "@prisma/dev": "0.24.17",
+        "@prisma/config": "7.10.1",
+        "@prisma/engines": "7.10.1",
+        "@prisma/studio-core": "0.33.0"
+      },
+      "tarball": "https://registry.npmjs.org/prisma/-/prisma-7.10.1.tgz",
+      "integrity": "sha512-GoVeErHGGtsSjsflQ1r2BA3RKTXtxNraQJz8OLkLhoLr7OgCscdx4qw4WMM4HnERYc+a1cq2VnMNbep+vOjNcQ=="
+    },
+    {
+      "name": "slonik",
+      "version": "49.11.0",
+      "tarballBytes": 167712,
+      "unpackedBytes": 1017841,
+      "directDependencies": 14,
+      "dependencies": {
+        "zod": "^4.3.6",
+        "roarr": "^7.21.7",
+        "p-queue": "^9.3.0",
+        "@slonik/driver": "^49.11.0",
+        "@slonik/errors": "^49.11.0",
+        "@slonik/sql-tag": "^49.11.0",
+        "serialize-error": "^12.0.0",
+        "iso8601-duration": "^2.1.3",
+        "@slonik/pg-driver": "^49.11.0",
+        "@slonik/utilities": "^49.11.0",
+        "postgres-interval": "^4.0.2",
+        "@opentelemetry/api": "^1.9.0",
+        "@standard-schema/spec": "^1.0.0",
+        "strict-event-emitter-types": "^2.0.0"
+      },
+      "tarball": "https://registry.npmjs.org/slonik/-/slonik-49.11.0.tgz",
+      "integrity": "sha512-Mf9n+xa4qII1Vkn4lu7UHhpUo9wP69e4JXWHYQ9T6xyk0o2s9tIQOcoNzjo672Fr0CCAmFwXkdQDGWrj6TGeuA=="
+    },
+    {
+      "name": "postgres",
+      "version": "3.4.9",
+      "tarballBytes": 47571,
+      "unpackedBytes": 299744,
+      "directDependencies": 0,
+      "dependencies": {},
+      "tarball": "https://registry.npmjs.org/postgres/-/postgres-3.4.9.tgz",
+      "integrity": "sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw=="
+    },
+    {
+      "name": "pg",
+      "version": "8.23.1",
+      "tarballBytes": 28809,
+      "unpackedBytes": 102632,
+      "directDependencies": 6,
+      "dependencies": {
+        "pgpass": "1.0.5",
+        "pg-pool": "^3.14.0",
+        "pg-types": "2.2.0",
+        "pg-protocol": "^1.16.1",
+        "pg-cloudflare": "^1.4.1",
+        "pg-connection-string": "^2.14.1"
+      },
+      "tarball": "https://registry.npmjs.org/pg/-/pg-8.23.1.tgz",
+      "integrity": "sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ=="
+    }
+  ],
+  "stacks": {
+    "kysely": {
+      "roots": {
+        "kysely": "0.29.7",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 14,
+      "packageVersions": [
+        "kysely@0.29.7",
+        "pg-connection-string@2.14.1",
+        "pg-int8@1.0.1",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-types@2.2.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-bytea@1.0.1",
+        "postgres-date@1.0.7",
+        "postgres-interval@1.2.0",
+        "split2@4.2.0",
+        "xtend@4.0.2"
+      ]
+    },
+    "knex": {
+      "roots": {
+        "knex": "3.3.0",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 36,
+      "packageVersions": [
+        "colorette@2.0.19",
+        "commander@10.0.1",
+        "debug@4.3.4",
+        "es-errors@1.3.0",
+        "escalade@3.2.0",
+        "esm@3.2.25",
+        "function-bind@1.1.2",
+        "get-package-type@0.1.0",
+        "getopts@2.3.0",
+        "hasown@2.0.4",
+        "interpret@2.2.0",
+        "is-core-module@2.17.0",
+        "knex@3.3.0",
+        "lodash@4.18.1",
+        "ms@2.1.2",
+        "path-parse@1.0.7",
+        "pg-connection-string@2.14.1",
+        "pg-connection-string@2.6.2",
+        "pg-int8@1.0.1",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-types@2.2.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-bytea@1.0.1",
+        "postgres-date@1.0.7",
+        "postgres-interval@1.2.0",
+        "rechoir@0.8.0",
+        "resolve-from@5.0.0",
+        "resolve@1.22.13",
+        "split2@4.2.0",
+        "supports-preserve-symlinks-flag@1.0.0",
+        "tarn@3.1.2",
+        "tildify@2.0.0",
+        "xtend@4.0.2"
+      ]
+    },
+    "drizzleStable": {
+      "roots": {
+        "drizzle-orm": "0.45.4",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 14,
+      "packageVersions": [
+        "drizzle-orm@0.45.4",
+        "pg-connection-string@2.14.1",
+        "pg-int8@1.0.1",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-types@2.2.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-bytea@1.0.1",
+        "postgres-date@1.0.7",
+        "postgres-interval@1.2.0",
+        "split2@4.2.0",
+        "xtend@4.0.2"
+      ]
+    },
+    "drizzleRc": {
+      "roots": {
+        "drizzle-orm": "1.0.0-rc.5",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 14,
+      "packageVersions": [
+        "drizzle-orm@1.0.0-rc.5",
+        "pg-connection-string@2.14.1",
+        "pg-int8@1.0.1",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-types@2.2.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-bytea@1.0.1",
+        "postgres-date@1.0.7",
+        "postgres-interval@1.2.0",
+        "split2@4.2.0",
+        "xtend@4.0.2"
+      ]
+    },
+    "prisma7": {
+      "roots": {
+        "@prisma/client": "7.10.1",
+        "@prisma/adapter-pg": "7.10.1",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 22,
+      "packageVersions": [
+        "@prisma/adapter-pg@7.10.1",
+        "@prisma/client-runtime-utils@7.10.1",
+        "@prisma/client@7.10.1",
+        "@prisma/debug@7.10.1",
+        "@prisma/driver-adapter-utils@7.10.1",
+        "@types/node@26.6.5",
+        "@types/pg@8.23.1",
+        "pg-connection-string@2.14.1",
+        "pg-int8@1.0.1",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-types@2.2.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-array@3.0.4",
+        "postgres-bytea@1.0.1",
+        "postgres-date@1.0.7",
+        "postgres-interval@1.2.0",
+        "split2@4.2.0",
+        "undici-types@8.9.0",
+        "xtend@4.0.2"
+      ]
+    },
+    "slonik": {
+      "roots": {
+        "slonik": "49.11.0",
+        "pg": "8.23.1"
+      },
+      "uniquePackages": 45,
+      "packageVersions": [
+        "@opentelemetry/api@1.10.0",
+        "@slonik/driver@49.11.0",
+        "@slonik/errors@49.11.0",
+        "@slonik/pg-driver@49.11.0",
+        "@slonik/sql-tag@49.11.0",
+        "@slonik/types@49.11.0",
+        "@slonik/utilities@49.11.0",
+        "@standard-schema/spec@1.1.0",
+        "eventemitter3@5.0.4",
+        "fast-printf@1.6.10",
+        "iso8601-duration@2.2.0",
+        "obuf@1.1.2",
+        "p-queue@9.3.5",
+        "p-timeout@7.0.2",
+        "pg-connection-string@2.14.1",
+        "pg-cursor@2.22.1",
+        "pg-int8@1.0.1",
+        "pg-numeric@1.0.2",
+        "pg-pool@3.14.0",
+        "pg-protocol@1.16.1",
+        "pg-query-stream@4.17.1",
+        "pg-types@2.2.0",
+        "pg-types@4.1.0",
+        "pg@8.23.1",
+        "pgpass@1.0.5",
+        "postgres-array@2.0.0",
+        "postgres-array@3.0.4",
+        "postgres-bytea@1.0.1",
+        "postgres-bytea@3.0.0",
+        "postgres-date@1.0.7",
+        "postgres-date@2.1.0",
+        "postgres-interval@1.2.0",
+        "postgres-interval@3.0.0",
+        "postgres-interval@4.1.0",
+        "postgres-range@1.1.4",
+        "roarr@7.21.7",
+        "safe-stable-stringify@2.5.0",
+        "semver-compare@1.0.0",
+        "serialize-error@12.0.0",
+        "slonik@49.11.0",
+        "split2@4.2.0",
+        "strict-event-emitter-types@2.0.0",
+        "type-fest@4.41.0",
+        "xtend@4.0.2",
+        "zod@4.6.7"
+      ]
+    },
+    "postgresJs": {
+      "roots": {
+        "postgres": "3.4.9"
+      },
+      "uniquePackages": 1,
+      "packageVersions": ["postgres@3.4.9"]
+    }
+  }
+}
