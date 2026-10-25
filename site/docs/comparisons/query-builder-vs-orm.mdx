@@ -90,11 +90,30 @@ A builder can query existing objects without managing their lifecycle, and an ad
 
 ## Library size
 
-A query builder's narrower scope can also mean a smaller dependency footprint. Compare the accumulated package sizes for PostgreSQL setups below: each includes the library, its PostgreSQL integration, `pg` 8.23.1, and all hard dependencies.
+A query builder's narrower scope can also mean a smaller development dependency footprint. These code-first PostgreSQL setups cover defining schema/models, migrating the database, and authoring queries, including required code generation. Each includes `pg` 8.23.1, library-specific tools, and their installed transitive dependencies.
 
 <PackageFootprintChart />
 
-Prisma 7 includes its CLI as well as its client and PostgreSQL adapter. MikroORM includes its core, SQL layer, PostgreSQL driver, and bundled Kysely dependency. Sequelize includes `pg-hstore`. Kysely itself has no runtime dependencies, but its PostgreSQL setup still includes `pg` and that driver's dependencies.
+<details>
+<summary>What's included in each setup?</summary>
+
+All rows include `pg`. Versions of the main libraries appear in the chart; additional tools are pinned below.
+
+| Setup | Packages beyond `pg` | Schema, migrations, and generation |
+| --- | --- | --- |
+| [Kysely](/docs/migrations) | `kysely` | Hand-authored database types; bundled schema builder and migration APIs. No code generation required. |
+| [Knex](https://knexjs.org/guide/migrations.html) | `knex` | Bundled schema builder and migration CLI. No code generation required. |
+| [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate) | `drizzle-orm`, `drizzle-kit` 0.31.11 | Hand-authored table definitions; Kit generates and runs migrations. |
+| Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
+| [TypeORM](https://typeorm.io/docs/migrations/executing/) | `typeorm` | Hand-authored entities; bundled CLI generates and runs migrations. |
+| [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/) | `sequelize`, `sequelize-cli` 6.6.5, `pg-hstore` 2.3.4 | Model definitions and migrations authored or scaffolded with the CLI. |
+| [MikroORM](https://mikro-orm.io/docs/guide/project-setup) | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, all 7.2.5 | Hand-authored entities; CLI generates and runs migrations. Includes its SQL layer and Kysely dependency. |
+
+CLI and migration packages count even when installed as development dependencies. The measurement includes hard dependencies, required peers, and compatible optional dependencies installed by npm, including packaged native tool binaries. Compressed downloads count each package version once; unpacked sizes count every installed copy.
+
+Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. This workflow uses hand-authored types/entities where supported; optional introspection/codegen add-ons such as `kysely-codegen`, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
+
+</details>
 
 ## Agent experience
 

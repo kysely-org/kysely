@@ -13,70 +13,70 @@ type Package = {
   unpackedBytes: number
 }
 
-// Accumulated PostgreSQL package footprints, including pg and hard dependencies.
+// PostgreSQL development package payloads, including library-specific tooling.
 const packages: Package[] = [
   {
     name: 'kysely',
     label: 'Kysely',
     version: '0.29.7',
     kind: 'builder',
-    packageCount: 14,
-    compressedBytes: 443114,
-    unpackedBytes: 2178431,
+    packageCount: 15,
+    compressedBytes: 450359,
+    unpackedBytes: 2204132,
   },
   {
     name: 'knex',
     label: 'Knex',
     version: '3.3.0',
     kind: 'builder',
-    packageCount: 36,
-    compressedBytes: 919135,
-    unpackedBytes: 3736021,
+    packageCount: 37,
+    compressedBytes: 926380,
+    unpackedBytes: 3761722,
   },
   {
     name: 'drizzle-orm',
     label: 'Drizzle',
     version: '0.45.4',
     kind: 'framework',
-    packageCount: 14,
-    compressedBytes: 1351776,
-    unpackedBytes: 10961958,
+    packageCount: 32,
+    compressedBytes: 16125650,
+    unpackedBytes: 53789641,
   },
   {
     name: '@prisma/client',
     label: 'Prisma 7 + CLI',
     version: '7.10.1',
     kind: 'framework',
-    packageCount: 154,
-    compressedBytes: 83661565,
-    unpackedBytes: 285142427,
+    packageCount: 155,
+    compressedBytes: 83668810,
+    unpackedBytes: 285168128,
   },
   {
     name: 'typeorm',
     label: 'TypeORM',
     version: '1.1.1',
     kind: 'framework',
-    packageCount: 40,
-    compressedBytes: 3746288,
-    unpackedBytes: 24021826,
+    packageCount: 41,
+    compressedBytes: 3753533,
+    unpackedBytes: 24047527,
   },
   {
     name: 'sequelize',
     label: 'Sequelize',
     version: '6.37.8',
     kind: 'framework',
-    packageCount: 35,
-    compressedBytes: 3166734,
-    unpackedBytes: 17337652,
+    packageCount: 104,
+    compressedBytes: 4663662,
+    unpackedBytes: 24272447,
   },
   {
     name: '@mikro-orm/postgresql',
     label: 'MikroORM',
     version: '7.2.5',
     kind: 'framework',
-    packageCount: 21,
-    compressedBytes: 1124972,
-    unpackedBytes: 5094994,
+    packageCount: 41,
+    compressedBytes: 1332599,
+    unpackedBytes: 5909462,
   },
 ]
 
@@ -149,11 +149,11 @@ export function PackageFootprintChart() {
         ))}
       </ol>
       <figcaption className={styles.caption}>
-        Measured October 25, 2026. Every setup includes pg 8.23.1 and hard
-        dependencies; Prisma 7 includes its CLI, client, and PostgreSQL adapter.
-        Bars share a linear scale. Excludes optional dependencies, generated
-        application code, and install-script downloads. These are npm package
-        payloads, not application bundle sizes.
+        Measured October 25, 2026 on macOS arm64. Includes pg 8.23.1, each
+        setup's schema/migration/generation tools, and installed transitive
+        dependencies. Bars share a linear scale. These are npm package payloads,
+        excluding shared Node.js/TypeScript tools, generated application files,
+        and install-script downloads.
       </figcaption>
     </figure>
   )
