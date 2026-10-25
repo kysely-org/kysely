@@ -21,6 +21,9 @@ A data framework supplies **model, relationship, and persistence conventions** f
 
 <SqlAbstractionSpectrum />
 
+<details>
+<summary>Why is Knex in the application-oriented group?</summary>
+
 The builder groups summarize how directly their core query APIs expose SQL constructs. Knex supports SQL clauses, joins, and recursive CTEs; its application-oriented placement reflects higher-level, cross-dialect operations:
 
 - **Upserts:** [`.onConflict().merge()`](https://knexjs.org/guide/query-builder.html#merge) generates PostgreSQL's `ON CONFLICT ... DO UPDATE` or MySQL's `ON DUPLICATE KEY UPDATE`, which ignores the specified conflict target.
@@ -28,6 +31,8 @@ The builder groups summarize how directly their core query APIs expose SQL const
 - **Returned rows:** [`.returning()`](https://knexjs.org/guide/query-builder.html#returning) becomes PostgreSQL's `RETURNING` or SQL Server's `OUTPUT`, using `inserted` for inserts/updates and `deleted` for deletes.
 
 For these upsert clauses and JSON function calls, the dedicated built-in route is the cross-dialect abstraction. Choosing different engine-specific SQL requires raw SQL; JSON expressions can use `knex.raw` fragments within an otherwise built query. Kysely exposes the upsert clauses separately, keeps `.returning()` and `.output()` distinct, and provides a general SQL function API.
+
+</details>
 
 These categories overlap. Data frameworks can expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
 
