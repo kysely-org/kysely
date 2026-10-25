@@ -129,9 +129,9 @@ Shared Node.js and application type declarations are excluded unless pulled in b
 
 ## Agent experience
 
-ORMs can boost development speed, especially for teams less comfortable with SQL. When an agent can write the SQL, hiding it becomes less necessary for authoring speed.
+Using a coding agent may change the authoring tradeoff. An agent may reduce the effort of composing SQL, while ORM relationship APIs can still save work by coordinating related records, nested writes, and transaction boundaries. Which approach is more productive depends on the task and the tooling.
 
-The tradeoff shifts toward reviewing, composing, and validating the generated query. Look for visible SQL structure, compiler feedback, and documentation matching the installed version. Neither an ORM nor a builder proves correctness or performance through types alone.
+Explicit SQL structure can help you review and compose queries written by an agent. Weigh that against the persistence logic a model API handles for you. Look for compiler feedback and documentation matching the installed version. Neither an ORM nor a builder proves correctness or performance through types alone.
 
 ## When a query builder fits
 
