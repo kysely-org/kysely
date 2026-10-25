@@ -39,7 +39,19 @@ The SQL-file execution checks cover Prisma TypedSQL. References to SafeQL,
 Reylo, PgTyped, and sqlc describe their documented capabilities; these tools
 are not executed by this suite.
 
-## Package measurements
+## Cumulative PostgreSQL measurements
+
+The ORM chart compares complete PostgreSQL package setups, including `pg` 8.23.1 and hard dependencies. Prisma includes the CLI, client, and PostgreSQL adapter; MikroORM includes its core and PostgreSQL driver; Sequelize includes `pg-hstore`.
+
+```sh
+node site/scripts/measure-postgres-footprints.mjs site/scripts/postgres-footprints.json
+```
+
+Run this from the repository root. npm resolves required peers; optional and dev dependencies are omitted. Compressed totals count each unique package version once. Unpacked totals count each dependency placement, including duplicate copies. Tarball integrity is checked before sizes are recorded. For older packages missing unpacked-size metadata, regular-file bytes are counted from the archive.
+
+The recorded report includes roots, resolved placements, package versions, and per-package sizes. Install scripts are disabled, so their extra downloads and generated application code are excluded. These are npm package payloads, not bundle sizes or performance benchmarks.
+
+## Package-only measurements
 
 From the repository root, reproduce the pinned package downloads and PostgreSQL dependency trees:
 
