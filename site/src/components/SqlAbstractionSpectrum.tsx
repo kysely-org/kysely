@@ -127,7 +127,7 @@ export function SqlAbstractionSpectrum() {
             height={14}
             alt=""
           />
-          <span>- ships /w Kysely.</span>
+          <span>- ships with Kysely.</span>
         </span>
         <span className={styles.legendItem}>
           <img
@@ -137,7 +137,7 @@ export function SqlAbstractionSpectrum() {
             height={14}
             alt=""
           />
-          <span>- ships /w Knex.</span>
+          <span>- ships with Knex.</span>
         </span>
       </figcaption>
     </figure>

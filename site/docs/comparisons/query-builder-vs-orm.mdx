@@ -21,17 +21,19 @@ A data framework supplies **model, relationship, and persistence conventions** f
 
 <SqlAbstractionSpectrum />
 
+The builder groups summarize how directly their core query APIs expose SQL constructs. Knex supports SQL clauses, joins, and recursive CTEs; its application-oriented placement reflects higher-level, cross-dialect operations such as [`.onConflict().merge()`](https://knexjs.org/guide/query-builder.html#merge). That one chain generates PostgreSQL's `ON CONFLICT ... DO UPDATE` or MySQL's `ON DUPLICATE KEY UPDATE`, and MySQL ignores the specified conflict target. Kysely exposes those dialect-specific operations through separate APIs.
+
 These categories overlap. Data frameworks can expose SQL builders directly: [MikroORM 7](https://mikro-orm.io/docs/kysely) and [ZenStack 3](https://zenstack.dev/docs/orm/query-builder) expose Kysely; [Objection.js](https://vincit.github.io/objection.js/api/model/static-methods.html#static-knex) exposes Knex. [TypeORM's builder](https://typeorm.io/docs/query-builder/select-query-builder/) supports SQL clauses and either hydrated entities or plain results. Assess the API you use, alongside the responsibilities of the broader library.
 
 ## Reading and persisting models
 
 An ORM's model API can express loading related records, saving changes, or creating a model together with its children. For example, [Prisma's nested writes](https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries#nested-writes) can create an author and their articles in one API call, coordinating the inserts, foreign keys, and transaction. With a query builder, your code specifies the inserts, how the author's key reaches the article rows, and the transaction boundary.
 
-Some ORMs also track object identity and changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work) tracks managed entities and writes their changes through `flush()`. Those features are optional: Prisma's model operations work with plain objects. Model persistence does not require class instances, automatic change tracking, or a unit of work.
+Some ORMs also track object identity and changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work) tracks managed entities and writes their changes through `flush()`. Identity maps and change tracking are not requirements for an ORM. Prisma's model operations work with plain objects. Model persistence does not require class instances or a unit of work.
 
 ## When the result doesn't fit a model
 
-The **object–relational impedance mismatch** appears when a joined projection, grouped aggregate, or recursive lookup does not fit model navigation. Forcing it through relationships can introduce extra reads, overfetching, or application-side assembly. A builder lets the result shape drive the SQL.
+One manifestation of the **object–relational impedance mismatch** occurs when a joined projection, grouped aggregate, or recursive lookup does not fit model navigation. Forcing it through relationships can introduce extra reads, overfetching, or application-side assembly. A builder lets the result shape drive the SQL.
 
 ## Production queries need room to tune
 

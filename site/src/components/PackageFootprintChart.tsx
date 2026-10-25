@@ -152,8 +152,8 @@ export function PackageFootprintChart() {
         Measured October 25, 2026 on macOS arm64. Includes pg 8.23.1, each
         setup's schema/migration/generation tools, and installed transitive
         dependencies. Bars share a linear scale. These are npm package payloads,
-        excluding shared Node.js/TypeScript tools, generated application files,
-        and install-script downloads.
+        excluding Node.js itself and the TypeScript compiler. Generated
+        application files and install-script downloads are also excluded.
       </figcaption>
     </figure>
   )
