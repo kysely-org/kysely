@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-25T19:08:19.492Z",
+  "measuredAt": "2026-10-25T19:12:32.246Z",
   "node": "v26.7.0",
   "platform": "darwin",
   "arch": "arm64",
@@ -7,7 +7,7 @@
   "assumedPackages": [
     "typescript"
   ],
-  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, Knex and TypeORM ts-node loaders with their assumed TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. TypeScript is assumed and excluded from package counts and both byte totals in every setup, even when required as a tool peer; excluded placements remain recorded. Shared Node.js and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
+  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, Knex, TypeORM, and Sequelize ts-node loaders with their assumed TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. TypeScript is assumed and excluded from package counts and both byte totals in every setup, even when required as a tool peer; excluded placements remain recorded. Shared Node.js and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
   "stacks": [
     {
       "id": "kysely",
@@ -2211,14 +2211,36 @@
       "roots": {
         "sequelize": "6.37.8",
         "sequelize-cli": "6.6.5",
+        "ts-node": "10.9.2",
+        "typescript": "6.0.3",
         "pg": "8.23.1",
         "pg-hstore": "2.3.4"
       },
       "placements": [
         {
+          "path": "node_modules/@cspotcode/source-map-support",
+          "name": "@cspotcode/source-map-support",
+          "version": "0.8.1"
+        },
+        {
           "path": "node_modules/@isaacs/cliui",
           "name": "@isaacs/cliui",
           "version": "8.0.2"
+        },
+        {
+          "path": "node_modules/@jridgewell/resolve-uri",
+          "name": "@jridgewell/resolve-uri",
+          "version": "3.1.2"
+        },
+        {
+          "path": "node_modules/@jridgewell/sourcemap-codec",
+          "name": "@jridgewell/sourcemap-codec",
+          "version": "1.6.0"
+        },
+        {
+          "path": "node_modules/@jridgewell/trace-mapping",
+          "name": "@jridgewell/trace-mapping",
+          "version": "0.3.9"
         },
         {
           "path": "node_modules/@one-ini/wasm",
@@ -2229,6 +2251,26 @@
           "path": "node_modules/@pkgjs/parseargs",
           "name": "@pkgjs/parseargs",
           "version": "0.11.0"
+        },
+        {
+          "path": "node_modules/@tsconfig/node10",
+          "name": "@tsconfig/node10",
+          "version": "1.0.13"
+        },
+        {
+          "path": "node_modules/@tsconfig/node12",
+          "name": "@tsconfig/node12",
+          "version": "1.0.11"
+        },
+        {
+          "path": "node_modules/@tsconfig/node14",
+          "name": "@tsconfig/node14",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/@tsconfig/node16",
+          "name": "@tsconfig/node16",
+          "version": "1.0.4"
         },
         {
           "path": "node_modules/@types/debug",
@@ -2256,6 +2298,16 @@
           "version": "2.0.0"
         },
         {
+          "path": "node_modules/acorn",
+          "name": "acorn",
+          "version": "8.19.0"
+        },
+        {
+          "path": "node_modules/acorn-walk",
+          "name": "acorn-walk",
+          "version": "8.3.5"
+        },
+        {
           "path": "node_modules/ansi-regex",
           "name": "ansi-regex",
           "version": "6.4.0"
@@ -2264,6 +2316,11 @@
           "path": "node_modules/ansi-styles",
           "name": "ansi-styles",
           "version": "6.2.3"
+        },
+        {
+          "path": "node_modules/arg",
+          "name": "arg",
+          "version": "4.1.3"
         },
         {
           "path": "node_modules/at-least-node",
@@ -2341,6 +2398,11 @@
           "version": "1.1.13"
         },
         {
+          "path": "node_modules/create-require",
+          "name": "create-require",
+          "version": "1.1.1"
+        },
+        {
           "path": "node_modules/cross-spawn",
           "name": "cross-spawn",
           "version": "7.0.6"
@@ -2349,6 +2411,11 @@
           "path": "node_modules/debug",
           "name": "debug",
           "version": "4.4.3"
+        },
+        {
+          "path": "node_modules/diff",
+          "name": "diff",
+          "version": "4.0.4"
         },
         {
           "path": "node_modules/dottie",
@@ -2469,6 +2536,11 @@
           "path": "node_modules/lru-cache",
           "name": "lru-cache",
           "version": "10.4.3"
+        },
+        {
+          "path": "node_modules/make-error",
+          "name": "make-error",
+          "version": "1.3.6"
         },
         {
           "path": "node_modules/minimatch",
@@ -2701,6 +2773,16 @@
           "version": "1.0.1"
         },
         {
+          "path": "node_modules/ts-node",
+          "name": "ts-node",
+          "version": "10.9.2"
+        },
+        {
+          "path": "node_modules/typescript",
+          "name": "typescript",
+          "version": "6.0.3"
+        },
+        {
           "path": "node_modules/umzug",
           "name": "umzug",
           "version": "2.3.0"
@@ -2724,6 +2806,11 @@
           "path": "node_modules/uuid",
           "name": "uuid",
           "version": "8.3.2"
+        },
+        {
+          "path": "node_modules/v8-compile-cache-lib",
+          "name": "v8-compile-cache-lib",
+          "version": "3.0.1"
         },
         {
           "path": "node_modules/validator",
@@ -2814,25 +2901,47 @@
           "path": "node_modules/yargs/node_modules/strip-ansi",
           "name": "strip-ansi",
           "version": "6.0.1"
+        },
+        {
+          "path": "node_modules/yn",
+          "name": "yn",
+          "version": "3.1.1"
         }
       ],
-      "excludedPlacements": [],
-      "uniquePackages": 104,
-      "compressedBytes": 4663662,
-      "unpackedBytes": 24272447,
+      "excludedPlacements": [
+        {
+          "path": "node_modules/typescript",
+          "name": "typescript",
+          "version": "6.0.3"
+        }
+      ],
+      "uniquePackages": 121,
+      "compressedBytes": 5209894,
+      "unpackedBytes": 26394336,
       "packageVersions": [
+        "@cspotcode/source-map-support@0.8.1",
         "@isaacs/cliui@8.0.2",
+        "@jridgewell/resolve-uri@3.1.2",
+        "@jridgewell/sourcemap-codec@1.6.0",
+        "@jridgewell/trace-mapping@0.3.9",
         "@one-ini/wasm@0.1.1",
         "@pkgjs/parseargs@0.11.0",
+        "@tsconfig/node10@1.0.13",
+        "@tsconfig/node12@1.0.11",
+        "@tsconfig/node14@1.0.3",
+        "@tsconfig/node16@1.0.4",
         "@types/debug@4.1.13",
         "@types/ms@2.1.0",
         "@types/node@26.6.5",
         "@types/validator@13.15.10",
         "abbrev@2.0.0",
+        "acorn-walk@8.3.5",
+        "acorn@8.19.0",
         "ansi-regex@5.0.1",
         "ansi-regex@6.4.0",
         "ansi-styles@4.3.0",
         "ansi-styles@6.2.3",
+        "arg@4.1.3",
         "at-least-node@1.0.0",
         "balanced-match@1.0.2",
         "bluebird@3.7.2",
@@ -2842,8 +2951,10 @@
         "color-name@1.1.4",
         "commander@10.0.1",
         "config-chain@1.1.13",
+        "create-require@1.1.1",
         "cross-spawn@7.0.6",
         "debug@4.4.3",
+        "diff@4.0.4",
         "dottie@2.0.7",
         "eastasianwidth@0.2.0",
         "editorconfig@1.0.7",
@@ -2869,6 +2980,7 @@
         "jsonfile@6.2.1",
         "lodash@4.18.1",
         "lru-cache@10.4.3",
+        "make-error@1.3.6",
         "minimatch@9.0.9",
         "minipass@7.1.3",
         "moment-timezone@0.5.48",
@@ -2911,11 +3023,13 @@
         "strip-ansi@7.2.0",
         "supports-preserve-symlinks-flag@1.0.0",
         "toposort-class@1.0.1",
+        "ts-node@10.9.2",
         "umzug@2.3.0",
         "underscore@1.13.8",
         "undici-types@8.9.0",
         "universalify@2.0.1",
         "uuid@8.3.2",
+        "v8-compile-cache-lib@3.0.1",
         "validator@13.15.35",
         "which@2.0.2",
         "wkx@0.5.0",
@@ -2924,7 +3038,8 @@
         "xtend@4.0.2",
         "y18n@5.0.8",
         "yargs-parser@20.2.9",
-        "yargs@16.2.2"
+        "yargs@16.2.2",
+        "yn@3.1.1"
       ]
     },
     {
