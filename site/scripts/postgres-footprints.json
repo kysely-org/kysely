@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-10-25T18:56:19.662Z",
+  "measuredAt": "2026-10-25T19:00:39.283Z",
   "node": "v26.7.0",
   "platform": "darwin",
   "arch": "arm64",
   "npm": "11.19.0",
-  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
+  "methodology": "Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, TypeORM ts-node with its TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.",
   "stacks": [
     {
       "id": "kysely",
@@ -1679,13 +1679,70 @@
       "package": "typeorm",
       "roots": {
         "typeorm": "1.1.1",
+        "ts-node": "10.9.2",
+        "typescript": "6.0.3",
         "pg": "8.23.1"
       },
       "placements": [
         {
+          "path": "node_modules/@cspotcode/source-map-support",
+          "name": "@cspotcode/source-map-support",
+          "version": "0.8.1"
+        },
+        {
+          "path": "node_modules/@jridgewell/resolve-uri",
+          "name": "@jridgewell/resolve-uri",
+          "version": "3.1.2"
+        },
+        {
+          "path": "node_modules/@jridgewell/sourcemap-codec",
+          "name": "@jridgewell/sourcemap-codec",
+          "version": "1.6.0"
+        },
+        {
+          "path": "node_modules/@jridgewell/trace-mapping",
+          "name": "@jridgewell/trace-mapping",
+          "version": "0.3.9"
+        },
+        {
           "path": "node_modules/@sqltools/formatter",
           "name": "@sqltools/formatter",
           "version": "1.2.5"
+        },
+        {
+          "path": "node_modules/@tsconfig/node10",
+          "name": "@tsconfig/node10",
+          "version": "1.0.13"
+        },
+        {
+          "path": "node_modules/@tsconfig/node12",
+          "name": "@tsconfig/node12",
+          "version": "1.0.11"
+        },
+        {
+          "path": "node_modules/@tsconfig/node14",
+          "name": "@tsconfig/node14",
+          "version": "1.0.3"
+        },
+        {
+          "path": "node_modules/@tsconfig/node16",
+          "name": "@tsconfig/node16",
+          "version": "1.0.4"
+        },
+        {
+          "path": "node_modules/@types/node",
+          "name": "@types/node",
+          "version": "26.6.5"
+        },
+        {
+          "path": "node_modules/acorn",
+          "name": "acorn",
+          "version": "8.19.0"
+        },
+        {
+          "path": "node_modules/acorn-walk",
+          "name": "acorn-walk",
+          "version": "8.3.5"
         },
         {
           "path": "node_modules/ansi-regex",
@@ -1703,6 +1760,11 @@
           "version": "4.4.0"
         },
         {
+          "path": "node_modules/arg",
+          "name": "arg",
+          "version": "4.1.3"
+        },
+        {
           "path": "node_modules/cliui",
           "name": "cliui",
           "version": "9.0.1"
@@ -1711,6 +1773,11 @@
           "path": "node_modules/cliui/node_modules/string-width",
           "name": "string-width",
           "version": "7.2.0"
+        },
+        {
+          "path": "node_modules/create-require",
+          "name": "create-require",
+          "version": "1.1.1"
         },
         {
           "path": "node_modules/dayjs",
@@ -1726,6 +1793,11 @@
           "path": "node_modules/dedent",
           "name": "dedent",
           "version": "1.7.2"
+        },
+        {
+          "path": "node_modules/diff",
+          "name": "diff",
+          "version": "4.0.4"
         },
         {
           "path": "node_modules/emoji-regex",
@@ -1751,6 +1823,11 @@
           "path": "node_modules/get-east-asian-width",
           "name": "get-east-asian-width",
           "version": "1.7.0"
+        },
+        {
+          "path": "node_modules/make-error",
+          "name": "make-error",
+          "version": "1.3.6"
         },
         {
           "path": "node_modules/ms",
@@ -1853,6 +1930,11 @@
           "version": "0.2.17"
         },
         {
+          "path": "node_modules/ts-node",
+          "name": "ts-node",
+          "version": "10.9.2"
+        },
+        {
           "path": "node_modules/tslib",
           "name": "tslib",
           "version": "2.8.1"
@@ -1861,6 +1943,21 @@
           "path": "node_modules/typeorm",
           "name": "typeorm",
           "version": "1.1.1"
+        },
+        {
+          "path": "node_modules/typescript",
+          "name": "typescript",
+          "version": "6.0.3"
+        },
+        {
+          "path": "node_modules/undici-types",
+          "name": "undici-types",
+          "version": "8.9.0"
+        },
+        {
+          "path": "node_modules/v8-compile-cache-lib",
+          "name": "v8-compile-cache-lib",
+          "version": "3.0.1"
         },
         {
           "path": "node_modules/wrap-ansi",
@@ -1891,25 +1988,45 @@
           "path": "node_modules/yargs-parser",
           "name": "yargs-parser",
           "version": "22.0.0"
+        },
+        {
+          "path": "node_modules/yn",
+          "name": "yn",
+          "version": "3.1.1"
         }
       ],
-      "uniquePackages": 41,
-      "compressedBytes": 3753533,
-      "unpackedBytes": 24047527,
+      "uniquePackages": 61,
+      "compressedBytes": 9316462,
+      "unpackedBytes": 53183197,
       "packageVersions": [
+        "@cspotcode/source-map-support@0.8.1",
+        "@jridgewell/resolve-uri@3.1.2",
+        "@jridgewell/sourcemap-codec@1.6.0",
+        "@jridgewell/trace-mapping@0.3.9",
         "@sqltools/formatter@1.2.5",
+        "@tsconfig/node10@1.0.13",
+        "@tsconfig/node12@1.0.11",
+        "@tsconfig/node14@1.0.3",
+        "@tsconfig/node16@1.0.4",
+        "@types/node@26.6.5",
+        "acorn-walk@8.3.5",
+        "acorn@8.19.0",
         "ansi-regex@6.4.0",
         "ansi-styles@6.2.3",
         "ansis@4.4.0",
+        "arg@4.1.3",
         "cliui@9.0.1",
+        "create-require@1.1.1",
         "dayjs@1.11.23",
         "debug@4.4.3",
         "dedent@1.7.2",
+        "diff@4.0.4",
         "emoji-regex@10.6.0",
         "escalade@3.2.0",
         "fdir@6.5.0",
         "get-caller-file@2.0.5",
         "get-east-asian-width@1.7.0",
+        "make-error@1.3.6",
         "ms@2.1.3",
         "pg-cloudflare@1.4.1",
         "pg-connection-string@2.14.1",
@@ -1931,13 +2048,18 @@
         "string-width@8.3.0",
         "strip-ansi@7.2.0",
         "tinyglobby@0.2.17",
+        "ts-node@10.9.2",
         "tslib@2.8.1",
         "typeorm@1.1.1",
+        "typescript@6.0.3",
+        "undici-types@8.9.0",
+        "v8-compile-cache-lib@3.0.1",
         "wrap-ansi@9.0.2",
         "xtend@4.0.2",
         "y18n@5.0.8",
         "yargs-parser@22.0.0",
-        "yargs@18.2.0"
+        "yargs@18.2.0",
+        "yn@3.1.1"
       ]
     },
     {
@@ -4580,6 +4702,38 @@
       "tarball": "https://registry.npmjs.org/zeptomatch/-/zeptomatch-2.1.0.tgz",
       "integrity": "sha512-KiGErG2J0G82LSpniV0CtIzjlJ10E04j02VOudJsPyPwNZgGnRKQy7I1R7GMyg/QswnE4l7ohSGrQbQbjXPPDA=="
     },
+    "@cspotcode/source-map-support@0.8.1": {
+      "name": "@cspotcode/source-map-support",
+      "version": "0.8.1",
+      "compressedBytes": 31413,
+      "unpackedBytes": 102089,
+      "tarball": "https://registry.npmjs.org/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz",
+      "integrity": "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="
+    },
+    "@jridgewell/resolve-uri@3.1.2": {
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "compressedBytes": 9622,
+      "unpackedBytes": 53153,
+      "tarball": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="
+    },
+    "@jridgewell/sourcemap-codec@1.6.0": {
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "compressedBytes": 18401,
+      "unpackedBytes": 96626,
+      "tarball": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz",
+      "integrity": "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw=="
+    },
+    "@jridgewell/trace-mapping@0.3.9": {
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.9",
+      "compressedBytes": 21014,
+      "unpackedBytes": 92278,
+      "tarball": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.9.tgz",
+      "integrity": "sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ=="
+    },
     "@sqltools/formatter@1.2.5": {
       "name": "@sqltools/formatter",
       "version": "1.2.5",
@@ -4587,6 +4741,54 @@
       "unpackedBytes": 74950,
       "tarball": "https://registry.npmjs.org/@sqltools/formatter/-/formatter-1.2.5.tgz",
       "integrity": "sha512-Uy0+khmZqUrUGm5dmMqVlnvufZRSK0FbYzVgp0UMstm+F5+W2/jnEEQyc9vo1ZR/E5ZI/B1WjjoTqBqwJL6Krw=="
+    },
+    "@tsconfig/node10@1.0.13": {
+      "name": "@tsconfig/node10",
+      "version": "1.0.13",
+      "compressedBytes": 1306,
+      "unpackedBytes": 2356,
+      "tarball": "https://registry.npmjs.org/@tsconfig/node10/-/node10-1.0.13.tgz",
+      "integrity": "sha512-gcLdvR9HO1ZJBypsOGqaP6TFEzb6vIta0KSTLt9NAQ6pXQO3cRgSVyCN6pzYqI9DlJgY71XKO0dpDhCf08b3pg=="
+    },
+    "@tsconfig/node12@1.0.11": {
+      "name": "@tsconfig/node12",
+      "version": "1.0.11",
+      "compressedBytes": 1355,
+      "unpackedBytes": 2497,
+      "tarball": "https://registry.npmjs.org/@tsconfig/node12/-/node12-1.0.11.tgz",
+      "integrity": "sha512-cqefuRsh12pWyGsIoBKJA9luFu3mRxCA+ORZvA4ktLSzIuCUtWVxGIuXigEwO5/ywWFMZ2QEGKWvkZG1zDMTag=="
+    },
+    "@tsconfig/node14@1.0.3": {
+      "name": "@tsconfig/node14",
+      "version": "1.0.3",
+      "compressedBytes": 1329,
+      "unpackedBytes": 2392,
+      "tarball": "https://registry.npmjs.org/@tsconfig/node14/-/node14-1.0.3.tgz",
+      "integrity": "sha512-ysT8mhdixWK6Hw3i1V2AeRqZ5WfXg1G43mqoYlM2nc6388Fq5jcXyr5mRsqViLx/GJYdoL0bfXD8nmF+Zn/Iow=="
+    },
+    "@tsconfig/node16@1.0.4": {
+      "name": "@tsconfig/node16",
+      "version": "1.0.4",
+      "compressedBytes": 1311,
+      "unpackedBytes": 2447,
+      "tarball": "https://registry.npmjs.org/@tsconfig/node16/-/node16-1.0.4.tgz",
+      "integrity": "sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA=="
+    },
+    "acorn@8.19.0": {
+      "name": "acorn",
+      "version": "8.19.0",
+      "compressedBytes": 134282,
+      "unpackedBytes": 568532,
+      "tarball": "https://registry.npmjs.org/acorn/-/acorn-8.19.0.tgz",
+      "integrity": "sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw=="
+    },
+    "acorn-walk@8.3.5": {
+      "name": "acorn-walk",
+      "version": "8.3.5",
+      "compressedBytes": 9793,
+      "unpackedBytes": 53765,
+      "tarball": "https://registry.npmjs.org/acorn-walk/-/acorn-walk-8.3.5.tgz",
+      "integrity": "sha512-HEHNfbars9v4pgpW6SO1KSPkfoS0xVOM/9UzkJltjlsHZmJasxg8aXkuZa7SMf8vKGIBhpUsPluQSqhJFCqebw=="
     },
     "ansi-regex@6.4.0": {
       "name": "ansi-regex",
@@ -4612,6 +4814,14 @@
       "tarball": "https://registry.npmjs.org/ansis/-/ansis-4.4.0.tgz",
       "integrity": "sha512-9k3v7xcHwgdO/DruxGIg4HtjvlAZlcnsX/mzqUb1t3NkYnl9kK2UJ+Gq0io+vQf7iT//BD/HB/NBkUR1LWxoeA=="
     },
+    "arg@4.1.3": {
+      "name": "arg",
+      "version": "4.1.3",
+      "compressedBytes": 5352,
+      "unpackedBytes": 12901,
+      "tarball": "https://registry.npmjs.org/arg/-/arg-4.1.3.tgz",
+      "integrity": "sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA=="
+    },
     "cliui@9.0.1": {
       "name": "cliui",
       "version": "9.0.1",
@@ -4627,6 +4837,14 @@
       "unpackedBytes": 7773,
       "tarball": "https://registry.npmjs.org/string-width/-/string-width-7.2.0.tgz",
       "integrity": "sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ=="
+    },
+    "create-require@1.1.1": {
+      "name": "create-require",
+      "version": "1.1.1",
+      "compressedBytes": 2710,
+      "unpackedBytes": 6254,
+      "tarball": "https://registry.npmjs.org/create-require/-/create-require-1.1.1.tgz",
+      "integrity": "sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ=="
     },
     "dayjs@1.11.23": {
       "name": "dayjs",
@@ -4651,6 +4869,14 @@
       "unpackedBytes": 28385,
       "tarball": "https://registry.npmjs.org/dedent/-/dedent-1.7.2.tgz",
       "integrity": "sha512-WzMx3mW98SN+zn3hgemf4OzdmyNhhhKz5Ay0pUfQiMQ3e1g+xmTJWp/pKdwKVXhdSkAEGIIzqeuWrL3mV/AXbA=="
+    },
+    "diff@4.0.4": {
+      "name": "diff",
+      "version": "4.0.4",
+      "compressedBytes": 98055,
+      "unpackedBytes": 332353,
+      "tarball": "https://registry.npmjs.org/diff/-/diff-4.0.4.tgz",
+      "integrity": "sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ=="
     },
     "emoji-regex@10.6.0": {
       "name": "emoji-regex",
@@ -4683,6 +4909,14 @@
       "unpackedBytes": 14724,
       "tarball": "https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.7.0.tgz",
       "integrity": "sha512-XjH1AECxf0giL2V1aU8vKyRR2ppRUb5c0EvT7zuJTokQ74bNo52zOtghqdWIqrhUD79fo3x0WfKZdOqxF6LG1Q=="
+    },
+    "make-error@1.3.6": {
+      "name": "make-error",
+      "version": "1.3.6",
+      "compressedBytes": 4430,
+      "unpackedBytes": 12434,
+      "tarball": "https://registry.npmjs.org/make-error/-/make-error-1.3.6.tgz",
+      "integrity": "sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw=="
     },
     "ms@2.1.3": {
       "name": "ms",
@@ -4740,6 +4974,14 @@
       "tarball": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.17.tgz",
       "integrity": "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g=="
     },
+    "ts-node@10.9.2": {
+      "name": "ts-node",
+      "version": "10.9.2",
+      "compressedBytes": 196739,
+      "unpackedBytes": 757333,
+      "tarball": "https://registry.npmjs.org/ts-node/-/ts-node-10.9.2.tgz",
+      "integrity": "sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ=="
+    },
     "tslib@2.8.1": {
       "name": "tslib",
       "version": "2.8.1",
@@ -4755,6 +4997,22 @@
       "unpackedBytes": 21667474,
       "tarball": "https://registry.npmjs.org/typeorm/-/typeorm-1.1.1.tgz",
       "integrity": "sha512-og9mG4Lwlvj6MfvYd8yRCzXy73gETtwgTKQ/ISLYvEOpJPy4IrjU/89HK4ZAFmRIbEg1hkIk04v8phTrxfgPmQ=="
+    },
+    "typescript@6.0.3": {
+      "name": "typescript",
+      "version": "6.0.3",
+      "compressedBytes": 4515854,
+      "unpackedBytes": 24346827,
+      "tarball": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
+      "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="
+    },
+    "v8-compile-cache-lib@3.0.1": {
+      "name": "v8-compile-cache-lib",
+      "version": "3.0.1",
+      "compressedBytes": 6391,
+      "unpackedBytes": 18165,
+      "tarball": "https://registry.npmjs.org/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.1.tgz",
+      "integrity": "sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg=="
     },
     "wrap-ansi@9.0.2": {
       "name": "wrap-ansi",
@@ -4787,6 +5045,14 @@
       "unpackedBytes": 85628,
       "tarball": "https://registry.npmjs.org/yargs-parser/-/yargs-parser-22.0.0.tgz",
       "integrity": "sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw=="
+    },
+    "yn@3.1.1": {
+      "name": "yn",
+      "version": "3.1.1",
+      "compressedBytes": 2729,
+      "unpackedBytes": 6314,
+      "tarball": "https://registry.npmjs.org/yn/-/yn-3.1.1.tgz",
+      "integrity": "sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q=="
     },
     "@isaacs/cliui@8.0.2": {
       "name": "@isaacs/cliui",
