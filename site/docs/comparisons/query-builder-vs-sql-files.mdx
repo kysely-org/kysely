@@ -1,0 +1,286 @@
+---
+sidebar_position: 3
+title: SQL query builder vs SQL files
+description: 'Compare Kysely with typed SQL files through tested optional-result and shared-filter examples, using generated Prisma TypedSQL plus PgTyped and sqlc workflows.'
+---
+
+# SQL query builder vs SQL files
+
+Kysely defines filters once and lets callers extend the same typed builder for listings, nested results, and counts. SQL-file workflows check individual statements; composition depends on the tool.
+
+A listing and its total count must agree on which rows match. When a filter changes, separate SQL statements can drift apart. The endpoint below adds an optional album filter and name prefix; Kysely defines them once for both outputs. A second listing adds nested tags, reusing those filters too.
+
+**Prisma 7.10.1 TypedSQL** and **Kysely 0.29.7** matched across **48 PostgreSQL fixture cases**, plus pagination and binding checks. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
+
+For SQL templates in application code, see [raw SQL in TypeScript](/docs/comparisons/query-builder-vs-raw-sql-in-typescript).
+
+## Keep the same endpoint contract
+
+List an owner's assets, optionally filtered by album and name prefix. Sort by name and ID, limit to 50, and provide a total count using the same filters.
+
+The endpoint also offers nested tags on request. This example omits the `tags` property when unrequested; that output convention is separate from filter reuse. Assume one row per album/asset pair. The prefix filter uses SQL LIKE-pattern semantics.
+
+<details>
+<summary>Database types and request options</summary>
+
+```ts
+interface Database {
+  asset: { id: string; name: string; owner_id: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+```
+
+```ts
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+```
+
+</details>
+
+## Kysely: one shared filter builder, different outputs
+
+Keep the filtering rules in one function:
+
+```ts
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$if(options.albumId !== undefined, (qb) =>
+      qb
+        .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+        .where('album_asset.album_id', '=', options.albumId!),
+    )
+    .$if(options.namePrefix !== undefined, (qb) =>
+      qb.where('asset.name', 'like', options.namePrefix! + '%'),
+    )
+}
+```
+
+Add the listing, using `jsonArrayFrom` from `kysely/helpers/postgres`:
+
+```ts
+function assetListing(options: AssetOptions) {
+  return matchingAssets(options)
+    .select(['asset.id', 'asset.name'])
+    .$if(options.includeTags, (qb) =>
+      qb.select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_tag')
+            .innerJoin('tag', 'tag.id', 'asset_tag.tag_id')
+            .select(['tag.id', 'tag.name'])
+            .whereRef('asset_tag.asset_id', '=', 'asset.id')
+            .orderBy('tag.name'),
+        ).as('tags'),
+      ),
+    )
+    .orderBy('asset.name')
+    .orderBy('asset.id')
+    .limit(50)
+}
+```
+
+Reuse those filters for the count:
+
+```ts
+function assetCount(options: AssetOptions) {
+  return matchingAssets(options).select((eb) =>
+    eb.cast<number>(eb.fn.countAll(), 'integer').as('count'),
+  )
+}
+```
+
+The listing infers optional nested tags; the integer-cast count infers `{ count: number }`. Each builder executes separately; shared construction does not cache results.
+
+## A filter changes: how many places must change?
+
+Adding the prefix filter changes:
+
+| Change                                             | Kysely                                                           | SQL-file implementation below                                                       |
+| -------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Add the optional prefix rule                       | Add one condition in `matchingAssets`.                           | Add the predicate and parameter to all three statements.                            |
+| Use exactly the same filters for listing and count | Both derive from the same builder function.                      | Keep the WHERE clauses aligned, or introduce a shared SQL abstraction.              |
+| Request tags only for some callers                 | Compose the selection with `$if`.                                | Choose the generated statement matching that output.                                |
+| Add another output over the filtered set           | Add a selection or aggregation to the helper's returned builder. | Add another statement with those filters, or use the tool's composition facilities. |
+
+SQL functions or preprocessing can centralize the rule too. Kysely keeps reuse in ordinary TypeScript with checks through each extension.
+
+## SQL files: checked statements for each output
+
+The completed listing without tags uses nullable parameters to disable filters:
+
+```sql title="findAssets.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select asset.id, asset.name
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+The tags variant selects an extra column and repeats the filters:
+
+<details>
+<summary>findAssetsWithTags.sql</summary>
+
+```sql title="findAssetsWithTags.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select asset.id, asset.name,
+  coalesce((
+    select json_agg(tag_rows)
+    from (
+      select tag.id, tag.name
+      from asset_tag
+      inner join tag on tag.id = asset_tag.tag_id
+      where asset_tag.asset_id = asset.id
+      order by tag.name
+    ) as tag_rows
+  ), '[]'::json) as tags
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+</details>
+
+The count repeats the filters:
+
+<details>
+<summary>countAssets.sql</summary>
+
+```sql title="countAssets.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select count(*)::integer as count
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%');
+```
+
+</details>
+
+Run `prisma generate --sql`, import the generated functions, and choose the listing:
+
+<details>
+<summary>Call the generated listing functions</summary>
+
+```ts
+function findAssetsFromFiles(options: AssetOptions) {
+  if (options.includeTags) {
+    return prisma.$queryRawTyped(
+      findAssetsWithTags(
+        options.ownerId,
+        options.albumId ?? null,
+        options.namePrefix ?? null,
+      ),
+    )
+  }
+  return prisma.$queryRawTyped(
+    findAssets(
+      options.ownerId,
+      options.albumId ?? null,
+      options.namePrefix ?? null,
+    ),
+  )
+}
+```
+
+</details>
+
+Execute generated `countAssets` through `$queryRawTyped` with the same parameters.
+
+<details>
+<summary>Optional tags: an absent property versus a null value</summary>
+
+CASE changes a value, not which columns are selected:
+
+```sql
+select id, name,
+  case when $1 then json_build_array() else null end as tags
+from asset;
+```
+
+With `$1 = false`, `tags` is still present as `null`. An application mapper can remove it, or an endpoint can accept a nullable property. The two listing files above preserve this example's output convention directly in SQL. Either choice leaves the shared-filter maintenance question.
+
+</details>
+
+### Nested JSON inference depends on the tool
+
+TypedSQL 7 generated `tags` as `JsonValue | null`; Kysely infers `{ id: string; name: string }[]` from the nested selection.
+
+This finding is specific to the tested TypedSQL version. [Reylo](https://reylo.dev/) is another SQL-file approach; we'll revisit it as it takes shape. It's too early to pass judgment on it here.
+
+## How SQL files become typed calls
+
+<details>
+<summary>Prisma TypedSQL, PgTyped, and sqlc workflows</summary>
+
+| Tool                                                                                      | Application interface                                                               | Development workflow                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | Call a generated query function through Prisma Client.                              | Generates query functions and types from SQL files using an active database connection. This page refers to Prisma Client 7's TypedSQL workflow.                              |
+| [PgTyped](https://pgtyped.dev/docs/)                                                      | Import generated typed query objects.                                               | Analyzes annotated queries against PostgreSQL and generates TypeScript. It also supports queries in TypeScript files.                                                         |
+| [sqlc](https://docs.sqlc.dev/)                                                            | Call generated query functions.                                                     | Analyzes schema and query inputs; TypeScript output uses a [language plugin](https://github.com/sqlc-dev/sqlc-gen-typescript), whose README currently labels it early access. |
+
+</details>
+
+## Composition support varies by tool
+
+[PgTyped excludes composition/concatenation](https://pgtyped.dev/docs/dynamic-queries). [TypedSQL 7](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql#dynamic-sql-queries-with-dynamic-columns) cannot natively add columns dynamically. Nullable predicates and CASE can retain a fixed structure.
+
+[sqlc macros](https://docs.sqlc.dev/en/stable/reference/macros.html) add preprocessing syntax; support depends on the generator and language plugin.
+
+Kysely helpers return unfinished builders that callers can extend. See [reusable helpers](/docs/recipes/reusable-helpers) and [conditional selects](/docs/recipes/conditional-selects).
+
+## SQL coverage and the escape boundary
+
+Fixed recursive CTEs and window queries fit SQL files too. Kysely builds CTEs, lateral joins, aggregate filters, windows, and set operations, subject to dialect support.
+
+Embed a [local SQL expression](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) while retaining surrounding builder checks. SQL-file tools instead analyze complete statements against schema inputs.
+
+## Composition in production
+
+These production queries show composition beyond the asset illustration:
+
+- [Cal.com](https://github.com/calcom/cal.diy/blob/54343aa685ae8f33159d2f485ec4a57bad5c574a/packages/trpc/server/routers/viewer/bookings/get.handler.ts#L145-L438): optional branches, shared filters, UNION ALL, outer ordering, and pagination.
+- [Materialize](https://github.com/MaterializeInc/materialize/blob/adb829aee5913d08eaccce2aee2e0df31c0a2dfd/console/src/api/materialize/cluster/replicaUtilizationHistory.ts#L47-L169): filters pushed into both UNION branches before further CTEs and aggregation.
+- [Docmost](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373): recursive permission lookup, which could also suit a fixed SQL file.
+
+## Agent experience
+
+Kysely supplies [checked, installed-version examples](https://github.com/kysely-org/kysely/blob/v0.29.7/src/query-builder/select-query-builder.ts) and compiler feedback through ordinary TypeScript. SQL-file tools can provide whole-statement diagnostics through schema analysis, sometimes with regeneration.
+
+## Choosing a workflow
+
+Use SQL files for stable statements and SQL-centric review/editor workflows; complexity alone does not require a builder. Use Kysely when callers extend shared parts or TypeScript control flow changes joins and selections.
+
+Start with a listing and count that repeat the same filters. Move those filters into one helper, inspect `.compile()`, and compare both outputs, including a full page with a larger total count. Both workflows can coexist; account for connection and transaction handling. [Get started](/docs/getting-started).
