@@ -36,15 +36,11 @@ Tuning hot queries means inspecting plans against real data and adjusting querie
 
 When model APIs run out, raw SQL restores control. Binding values does not check references or infer results; analyzers and generators provide separate checks. A capable builder keeps more tuning inside its typed API.
 
-## Start with a parent relation
+## Example: inherited page permissions
 
-A page has an optional parent. Reading the page and its parent fits model navigation naturally. A query builder expresses the same relationship with a join or subquery.
+A documentation app stores pages in a tree using an optional `page.parent_id`. A user's permission comes from the nearest explicit rule: on the requested page itself, or on one of its ancestors.
 
-## The requirement changes: find the nearest permission rule
-
-Now find the nearest explicit permission for a user anywhere in the page's ancestor chain. The result needs the rule's page, level, and distance, rather than a nested page object.
-
-A fixed-depth parent selection does not cover arbitrary depth. This PostgreSQL query uses a recursive CTE, assuming an acyclic tree and at most one rule per page/user:
+The query must return the rule's page, level, and distance. The number of ancestor steps is not known in advance, so a fixed-depth parent selection does not cover the requirement. This PostgreSQL query uses a recursive CTE, assuming an acyclic tree and at most one rule per page/user:
 
 ```sql
 with recursive ancestors as (
