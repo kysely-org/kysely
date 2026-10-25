@@ -49,11 +49,11 @@ The ORM chart compares code-first PostgreSQL development setups: hand-authored s
 | Knex | `knex` | Bundled schema builder and migration CLI. |
 | Drizzle | `drizzle-orm`, `drizzle-kit` | Hand-authored table definitions; Kit generates and runs migrations. |
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` | Hand-authored Prisma schema; CLI migrates and generates client code. |
-| TypeORM | `typeorm`, `ts-node` 10.9.2, `typescript` 6.0.3 | Hand-authored entities; bundled CLI generates and runs migrations, with ts-node loading TypeScript sources. |
+| TypeORM | `typeorm`, `ts-node` 10.9.2 | Hand-authored entities; bundled CLI generates and runs migrations, with ts-node loading TypeScript sources. |
 | Sequelize | `sequelize`, `sequelize-cli`, `pg-hstore` | Model definitions and migrations authored or scaffolded with the CLI. |
 | MikroORM | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, `jiti` 2.7.0 | Hand-authored entities; CLI generates and runs migrations, with jiti loading TypeScript migrations. |
 
-Package choices follow the official [Kysely](https://kysely.dev/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. MikroORM includes the supported [jiti TypeScript loader](https://mikro-orm.io/docs/typescript-loaders), matching the loader installed by kysely-ctl. TypeORM includes ts-node and its required peers; TypeScript is pinned to 6.0.3 for its JavaScript compiler API. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
+Package choices follow the official [Kysely](https://kysely.dev/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl), [Knex](https://knexjs.org/guide/migrations.html), [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate), [TypeORM](https://typeorm.io/docs/migrations/executing/), [Sequelize](https://sequelize.org/docs/v6/other-topics/migrations/), and [MikroORM](https://mikro-orm.io/docs/guide/project-setup) migration workflows. MikroORM includes the supported [jiti TypeScript loader](https://mikro-orm.io/docs/typescript-loaders), matching the loader installed by kysely-ctl. TypeORM includes ts-node and its required peers. TypeScript 6.0.3 is installed to satisfy its compiler API requirement, but is assumed shared tooling and excluded from package counts and both size totals for every setup. Excluded placements remain recorded in the report. Prisma is pinned to version 7; its CLI/client generation is also exercised by this suite.
 
 ```sh
 node site/scripts/measure-postgres-footprints.mjs site/scripts/postgres-footprints.json
@@ -63,7 +63,7 @@ Run this from the repository root. A real npm install with scripts disabled reco
 
 Compressed totals count each unique package version once. Unpacked totals count each dependency placement, including duplicate copies. Tarball integrity is checked before sizes are recorded. For older packages missing unpacked-size metadata, regular-file bytes are counted from the archive.
 
-The report records roots, installed placements, package versions, platform, and per-package sizes. Shared Node.js, TypeScript, and application type declarations are outside the comparison unless pulled in by a tool. Optional introspection/codegen add-ons (such as `kysely-codegen`), seeding tools, and unrelated integrations are excluded. Schema types/entities are hand-authored where supported; Prisma's mandatory generator is included.
+The report records roots, installed placements, package versions, platform, and per-package sizes. TypeScript is always excluded from the totals, including compiler peers pulled in by tools. Shared Node.js and application type declarations are outside the comparison unless pulled in by a tool. Optional introspection/codegen add-ons (such as `kysely-codegen`), seeding tools, and unrelated integrations are excluded. Schema types/entities are hand-authored where supported; Prisma's mandatory generator is included.
 
 Install scripts are disabled, so extra downloads and generated application code are excluded. These are accumulated npm package payloads for development, not deployed bundle sizes, complete disk usage, or performance benchmarks.
 

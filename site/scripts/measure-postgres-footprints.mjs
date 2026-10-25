@@ -9,6 +9,7 @@ import { gunzipSync } from 'node:zlib'
 
 const exec = promisify(execFile)
 const pg = '8.23.1'
+const assumedPackages = new Set(['typescript'])
 const setups = {
   kysely: {
     label: 'Kysely',
@@ -227,17 +228,20 @@ for (let i = 0; i < all.length; i += 6) {
   )
 }
 const stacks = resolved.map((setup) => {
+  const excludedPlacements = setup.placements.filter((p) => assumedPackages.has(p.name))
+  const countedPlacements = setup.placements.filter((p) => !assumedPackages.has(p.name))
   const versions = [
-    ...new Set(setup.placements.map((p) => `${p.name}@${p.version}`)),
+    ...new Set(countedPlacements.map((p) => `${p.name}@${p.version}`)),
   ].sort()
   return {
     ...setup,
+    excludedPlacements,
     uniquePackages: versions.length,
     compressedBytes: versions.reduce(
       (sum, id) => sum + packages[id].compressedBytes,
       0,
     ),
-    unpackedBytes: setup.placements.reduce(
+    unpackedBytes: countedPlacements.reduce(
       (sum, p) => sum + packages[`${p.name}@${p.version}`].unpackedBytes,
       0,
     ),
@@ -250,8 +254,9 @@ const result = {
   platform: process.platform,
   arch: process.arch,
   npm: (await exec('npm', ['--version'])).stdout.trim(),
+  assumedPackages: [...assumedPackages],
   methodology:
-    'Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, TypeORM ts-node with its TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. Shared Node.js, TypeScript, and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.',
+    'Code-first PostgreSQL development setups support hand-authored schema/model definitions, migrations, querying, and mandatory code generation. Explicit roots include pg 8.23.1, kysely-ctl, Drizzle Kit, Prisma 7 CLI/client/adapter, MikroORM CLI/migrations/core/driver with jiti for TypeScript migration loading, TypeORM ts-node with its TypeScript peer, and Sequelize CLI/pg-hstore. Kysely includes its bundled schema/migration APIs plus kysely-ctl; Knex/TypeORM migration CLIs are bundled. Kysely database types are hand-authored; optional introspection, seeding, and extra generators are not added. TypeScript is assumed and excluded from package counts and both byte totals in every setup, even when required as a tool peer; excluded placements remain recorded. Shared Node.js and application type declarations are excluded unless pulled in by a tool. npm performs a real install with scripts disabled; the installed lockfile captures hard dependencies, required peers, and platform-compatible optional dependencies, including packaged native tool binaries. Tool roots are included regardless of whether an application would classify them as devDependencies. Unpacked sizes use npm metadata, or regular-file payloads from the tarball when metadata is missing. Compressed bytes sum each unique package version once. Unpacked bytes sum every installed placement, including duplicate copies. Sizes exclude filesystem overhead, generated application code, and install-script downloads. These are npm package payloads, not deployed application bundles or a total machine footprint.',
   stacks,
   packages,
 }
