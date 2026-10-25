@@ -44,7 +44,7 @@ const packages: Package[] = [
   },
   {
     name: '@prisma/client',
-    label: 'Prisma + CLI',
+    label: 'Prisma 7 + CLI',
     version: '7.10.1',
     kind: 'framework',
     packageCount: 154,
@@ -150,7 +150,7 @@ export function PackageFootprintChart() {
       </ol>
       <figcaption className={styles.caption}>
         Measured October 25, 2026. Every setup includes pg 8.23.1 and hard
-        dependencies; Prisma includes its CLI, client, and PostgreSQL adapter.
+        dependencies; Prisma 7 includes its CLI, client, and PostgreSQL adapter.
         Bars share a linear scale. Excludes optional dependencies, generated
         application code, and install-script downloads. These are npm package
         payloads, not application bundle sizes.
