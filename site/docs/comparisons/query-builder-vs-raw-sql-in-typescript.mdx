@@ -250,7 +250,7 @@ Kysely checks builder composition through TypeScript. Raw `sql<T>` still asserts
 
 Other builder APIs: [Immich's `filterWhere`](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L710-L722), [Langfuse's window-ranking catalog](https://github.com/langfuse/langfuse/blob/536c2d6905d4311cc7c2b177454a084907328c43/packages/shared/src/server/query-ast/catalog.ts#L230-L250), and [Docmost's recursive CTEs](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373).
 
-Embedded SQL supports those operations too. Kysely checks their structure and permits a [local SQL fragment](/docs/recipes/raw-sql#a-small-escape-hatch-inside-a-typed-query) where needed; that fragment's grammar and result type remain unchecked.
+Embedded SQL supports those operations too. Kysely checks their structure and permits a [local SQL fragment](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) where needed; that fragment's grammar and result type remain unchecked.
 
 ## Composition in production
 
