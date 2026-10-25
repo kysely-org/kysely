@@ -1,0 +1,414 @@
+---
+sidebar_position: 8
+title: Kysely vs Sequelize
+description: 'Compare Kysely and Sequelize through a tested grouped report: per-person targets, pagination, aggregate result types, checked references, reusable scopes, raw SQL, and gradual adoption.'
+---
+
+# Kysely vs Sequelize
+
+Kysely infers selected fields and aggregates from the query, checks table and alias references, and lets callers extend shared SQL without changing the base builder.
+
+Sequelize provides model operations, associations, scopes, and SQL-expression helpers. It can express the grouped report below through its model API. The difference is how the result type and reference checks follow that query as it changes. See [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm).
+
+Checked with **Sequelize 6.37.8**, **Sequelize 7.0.0-alpha.48**, and **Kysely 0.29.7** against PostgreSQL. The v7 observations cover that prerelease. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/sequelize).
+
+## A grouped report, using built-in APIs on both sides
+
+Return each person's ID, name, and pet count, including people without pets. Apply a configurable minimum count before returning rows.
+
+<details>
+<summary>Matching table types, Sequelize models, and association</summary>
+
+Kysely's database interface:
+
+{/* fixture: database */}
+
+```ts
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+```
+
+The Sequelize model definitions use its built-in inference utilities:
+
+```ts
+import { Model, DataTypes } from 'sequelize'
+import type {
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute,
+} from 'sequelize'
+```
+
+{/* fixture: models */}
+
+```ts
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+```
+
+Assume configured `sequelize` and `db` clients and existing matching tables. Sequelize 7 imports the model APIs from `@sequelize/core` and uses its PostgreSQL dialect package.
+
+</details>
+
+### Sequelize: attributes, association, and aggregate helpers
+
+Put the shared report options in a [model scope](https://sequelize.org/docs/v6/other-topics/scopes/):
+
+{/* fixture: sequelize-report-scope */}
+
+```ts
+Person.addScope('petCounts', {
+  attributes: [
+    'id',
+    'first_name',
+    [cast(fn('COUNT', col('pets.id')), 'integer'), 'pet_count'],
+  ],
+  include: [{ model: Pet, as: 'pets', attributes: [], required: false }],
+  group: ['Person.id', 'Person.first_name'],
+})
+```
+
+Use `const PetCountReport = Person.scope('petCounts')` in Sequelize 6, or `Person.withScope('petCounts')` in Sequelize 7. Then apply the global minimum:
+
+{/* fixture: sequelize-counts */}
+
+```ts
+function sequelizePetCounts(minPets: number) {
+  return PetCountReport.findAll({
+    having: where(fn('COUNT', col('pets.id')), Op.gte, minPets),
+    order: [['id', 'ASC']],
+    raw: true,
+  })
+}
+```
+
+Sequelize builds the left join, count, grouping, and `HAVING` through its model API. `raw: true` returns plain objects. The integer cast makes PostgreSQL return the count as a JavaScript number through `pg`.
+
+The returned type does not infer the added `pet_count` attribute from this selection. The model's declared attributes remain the basis of the default result type.
+
+### Kysely: a typed report callers can extend
+
+{/* fixture: kysely-base */}
+
+```ts
+function personPetCounts() {
+  return db
+    .selectFrom('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .select(['person.id', 'person.first_name'])
+    .select((eb) =>
+      eb.cast<number>(eb.fn.count('pet.id'), 'integer').as('pet_count'),
+    )
+    .groupBy(['person.id', 'person.first_name'])
+}
+```
+
+Add the minimum and execute:
+
+{/* fixture: kysely-counts */}
+
+```ts
+function kyselyPetCounts(minPets: number) {
+  return personPetCounts()
+    .having((eb) => eb.fn.count('pet.id'), '>=', minPets)
+    .orderBy('person.id')
+    .execute()
+}
+```
+
+Kysely infers `{ id: number; first_name: string; pet_count: number }[]`. The selected aliases and expression types determine the output.
+
+Both implementations return matching rows for minimums of 0, 1, 2, and 3. The fixtures include people without pets and a threshold that returns no rows.
+
+## The requirement changes: each person has a target
+
+Replace the global minimum with the integer `person.pet_target`, then return the top 20 qualifying people by pet count, breaking ties by ID. The filter must apply before pagination.
+
+Sequelize reuses the report scope and compares the aggregate with a column:
+
+{/* fixture: sequelize-targets */}
+
+```ts
+function sequelizeTargetCounts(pageSize = 20) {
+  return PetCountReport.findAll({
+    having: where(
+      fn('COUNT', col('pets.id')),
+      Op.gte,
+      col('Person.pet_target'),
+    ),
+    order: [
+      ['pet_count', 'DESC'],
+      ['id', 'ASC'],
+    ],
+    limit: pageSize,
+    subQuery: false,
+    raw: true,
+  })
+}
+```
+
+Adding a limit to a query with an included association can [enable Sequelize's automatic subquery](https://sequelize.org/api/v7/interfaces/_sequelize_core.index.findoptions#limit). In this grouped report, the default puts the aggregate's `pets` reference inside a subquery without its join; both tested versions fail in PostgreSQL. `subQuery: false` keeps the join and aggregate together. Here `GROUP BY` produces one row per person before the limit.
+
+Kysely extends the shared builder with a checked column reference:
+
+{/* fixture: kysely-targets */}
+
+```ts
+function kyselyTargetCounts(pageSize = 20) {
+  return personPetCounts()
+    .groupBy('person.pet_target')
+    .having((eb) =>
+      eb(eb.fn.count('pet.id'), '>=', eb.ref('person.pet_target')),
+    )
+    .orderBy('pet_count', 'desc')
+    .orderBy('person.id')
+    .limit(pageSize)
+    .execute()
+}
+```
+
+The inferred result is unchanged.
+
+The fixtures include Jennifer with two pets and a target of three, and Arnold with one pet and a target of one. With a page size of one, both corrected implementations return Arnold. Limiting to the highest count first and filtering afterward would miss him. They also agree on a zero-pet person with a zero target and on larger page sizes.
+
+<details>
+<summary>A misspelled target reference: compiler error or database error?</summary>
+
+{/* fixture: sequelize-target-typo */}
+
+```ts
+function misspelledTarget() {
+  return PetCountReport.findAll({
+    having: where(
+      fn('COUNT', col('pets.id')),
+      Op.gte,
+      col('Person.pet_targte'),
+    ),
+    raw: true,
+  })
+}
+```
+
+This compiles in both Sequelize versions, then PostgreSQL rejects the unknown column. Kysely rejects `eb.ref('person.pet_targte')` through TypeScript.
+
+</details>
+
+Sequelize's scope reuses model options; Kysely also carries reference checks and inferred results through each extension.
+
+## Rename a selected field: does the type follow?
+
+Sequelize supports selected aliases. Rename `first_name` to `name`:
+
+{/* fixture: renamed-attribute */}
+
+```ts
+async function renamedAttribute() {
+  const rows = await Person.findAll({
+    attributes: [['first_name', 'name']],
+    order: [['id', 'ASC']],
+    raw: true,
+  })
+
+  return rows[0]?.first_name // The declared property is absent at runtime.
+}
+```
+
+Both tested Sequelize versions return objects with `name`. The default type still exposes `first_name`, so this caller compiles and receives `undefined`.
+
+Kysely derives the result from the alias:
+
+{/* fixture: kysely-renamed */}
+
+```ts
+function kyselyRenamed() {
+  return db
+    .selectFrom('person')
+    .select('first_name as name')
+    .orderBy('id')
+    .execute()
+}
+```
+
+The result is `{ name: string }[]`; a caller reading `row.first_name` gets a TypeScript error.
+
+<details>
+<summary>Partial model instances also retain the full declared type</summary>
+
+Selecting only the ID does not narrow the model's declared fields:
+
+{/* fixture: partial-model */}
+
+```ts
+async function partialModel() {
+  const person = await Person.findByPk(1, {
+    attributes: ['id'],
+    rejectOnEmpty: true,
+  })
+  return person.first_name // Typed as string; not selected at runtime.
+}
+```
+
+The returned model instance has no selected `first_name` value. Kysely's `.select('id')` infers only `{ id: number }`.
+
+</details>
+
+These findings concern query-dependent output types. Sequelize's `InferAttributes` and `InferCreationAttributes` help define typed models; they do not infer a different result shape from each selection.
+
+## Check column references against the query context
+
+Sequelize's typed object filters reject an unknown model attribute such as `where: { first_nam: 'Jennifer' }`. Its expression helpers accept column names independently of the tables included in a query:
+
+{/* fixture: unjoined-reference */}
+
+```ts
+function unjoinedReference() {
+  return Person.findAll({
+    attributes: ['id', [col('pets.name'), 'pet_name']],
+    raw: true,
+  })
+}
+```
+
+Both tested versions accept this through TypeScript, then PostgreSQL rejects the missing `pets` reference. A typo also compiles:
+
+{/* fixture: misspelled-reference */}
+
+```ts
+function misspelledReference() {
+  return Person.findAll({
+    attributes: ['id', [col('first_nam'), 'name']],
+    raw: true,
+  })
+}
+```
+
+PostgreSQL rejects `first_nam`. Kysely rejects an unjoined `pet.name` or misspelled `first_nam` through TypeScript.
+
+Kysely's checks depend on accurate database types. Raw SQL fragments and supplied `sql<T>` result annotations still leave SQL grammar and runtime values unchecked.
+
+## Raw SQL remains available
+
+Sequelize can execute arbitrary SQL, with bind parameters and an explicit result type:
+
+<details>
+<summary>The same report through sequelize.query</summary>
+
+{/* fixture: sequelize-raw */}
+
+```ts
+interface PetCountRow {
+  id: number
+  first_name: string
+  pet_count: number
+}
+
+function sequelizeRawCounts(minPets: number) {
+  return sequelize.query<PetCountRow>(
+    `
+    select person.id, person.first_name, count(pet.id)::integer as pet_count
+    from person
+    left join pet on pet.owner_id = person.id
+    group by person.id, person.first_name
+    having count(pet.id) >= $minPets
+    order by person.id
+  `,
+    { bind: { minPets }, type: QueryTypes.SELECT },
+  )
+}
+```
+
+This version returns the same rows as both model-API and Kysely implementations. `PetCountRow` describes the expected result separately from the SQL; changing the selected alias does not update that interface.
+
+</details>
+
+Sequelize 7 also provides a built-in [`sql` template tag](https://sequelize.org/docs/v7/querying/raw-queries/), with helpers such as `sql.attribute`. It handles interpolated values and can embed expressions in model queries.
+
+<details>
+<summary>Sequelize 7's SQL tag</summary>
+
+Using `sql` and `QueryTypes` from `@sequelize/core`:
+
+{/* fixture: v7-tag */}
+
+```ts
+function sequelize7Names(prefix: string) {
+  return sequelize.query<{ id: number; name: string }>(
+    sql`
+    select id, first_name as name
+    from person
+    where first_name like ${prefix + '%'}
+    order by id
+  `,
+    { type: QueryTypes.SELECT },
+  )
+}
+```
+
+The fixture checks matching names, empty results, and a prefix containing SQL punctuation. The explicit `{ id: number; name: string }` type is still an annotation, not inferred from the SQL.
+
+The tested v7 alpha also accepts an explicit raw model result type through `findAll<Person, Row>({ raw: true, ... })`. That can describe custom projections; a stale annotation still compiles when the selection changes.
+
+</details>
+
+Sequelize's expression helpers and SQL tag are useful escape hatches. Kysely keeps reference checks and inferred results through its SQL builders, with [local raw expressions](/docs/recipes/raw-sql) where needed.
+
+## Keep model responsibilities while moving queries
+
+Sequelize's eager loading constructs related model instances, and model methods provide persistence, validation, and hooks. A Kysely query selects rows without running Sequelize's model lifecycle. Keep those model workflows where your application depends on them.
+
+For agent API guidance, see Kysely's [installed-version documentation and checked examples](https://github.com/kysely-org/kysely/blob/v0.29.7/src/query-builder/select-query-builder.ts).
+
+## Adopt Kysely one query at a time
+
+Start with a report whose computed fields or raw result interface need manual maintenance when the SQL changes.
+
+Use [kysely-sequelize](https://github.com/kysely-org/kysely-sequelize) for a dialect and type translators that let Kysely reuse a Sequelize setup. Follow its model-typing and dialect configuration instructions for the versions you use.
+
+1. Keep Sequelize's model operations, associations, and migration history.
+2. Translate model attributes with the bridge's helpers, or use [generated or handwritten Kysely types](/docs/generating-types) matching database columns, driver values, and nullability.
+3. Configure the bridge, or a [native dialect](/docs/getting-started), and move one report.
+4. Inspect `.compile()` and compare rows, ordering, zero counts, nulls, and empty results. Check callers against the inferred output.
+
+With separate clients, budget pool capacity and keep each transaction on its owning connection.

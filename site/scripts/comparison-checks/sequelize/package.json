@@ -1,0 +1,27 @@
+{
+  "name": "kysely-sequelize-comparison-checks",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#sequelize-under-test": {
+      "sequelize7": "./sequelize7.mts",
+      "default": "./sequelize6.mts"
+    }
+  },
+  "scripts": {
+    "test": "node verify.mjs"
+  },
+  "devDependencies": {
+    "kysely": "0.29.7",
+    "sequelize": "6.37.8",
+    "@sequelize/core": "7.0.0-alpha.48",
+    "@sequelize/postgres": "7.0.0-alpha.48",
+    "pg": "8.23.1",
+    "pg-hstore": "2.3.4",
+    "@types/pg": "8.23.1",
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3"
+  }
+}
