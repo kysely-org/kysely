@@ -20,9 +20,9 @@ const packages: Package[] = [
     label: 'Kysely',
     version: '0.29.7',
     kind: 'builder',
-    packageCount: 15,
-    compressedBytes: 450359,
-    unpackedBytes: 2204132,
+    packageCount: 40,
+    compressedBytes: 1561549,
+    unpackedBytes: 6374143,
   },
   {
     name: 'knex',

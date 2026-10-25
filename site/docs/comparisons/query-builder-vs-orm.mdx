@@ -101,7 +101,7 @@ All rows include `pg`. Versions of the main libraries appear in the chart; addit
 
 | Setup | Packages beyond `pg` | Schema, migrations, and generation |
 | --- | --- | --- |
-| [Kysely](/docs/migrations) | `kysely` | Hand-authored database types; bundled schema builder and migration APIs. No code generation required. |
+| [Kysely](/docs/migrations) | `kysely`, `kysely-ctl` 0.22.0 | Hand-authored database types; bundled schema builder and migration APIs, with CLI migration authoring/execution. No code generation required. |
 | [Knex](https://knexjs.org/guide/migrations.html) | `knex` | Bundled schema builder and migration CLI. No code generation required. |
 | [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate) | `drizzle-orm`, `drizzle-kit` 0.31.11 | Hand-authored table definitions; Kit generates and runs migrations. |
 | Prisma 7 | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1 | Hand-authored Prisma schema; CLI migrates and generates client code. |
