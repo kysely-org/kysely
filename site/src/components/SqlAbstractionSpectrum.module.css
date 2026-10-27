@@ -4,135 +4,78 @@
 
 .axis {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 700;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--ifm-color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
-.line {
-  flex: 1;
-  height: 1px;
-  background: var(--ifm-color-emphasis-400);
-}
-
-.regions {
+.groups {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
-  margin: 0.75rem 0 1rem;
+}
+
+.group {
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.5rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.group:first-child {
+  border-color: var(--ifm-color-primary);
+}
+
+.group h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.group ul {
   padding: 0;
+  margin: 0 0 0.75rem;
   list-style: none;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.region {
-  position: relative;
-  padding-top: 0.8rem;
-  font-size: 0.85rem;
+.group li + li {
+  margin-top: 0.35rem;
 }
 
-.region::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: var(--ifm-color-primary);
-}
-
-.region:last-child {
-  grid-column: 5;
-}
-
-.libraries {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-weight: 700;
-}
-
-.library {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.builderLogo {
+.group li span {
   display: block;
-  flex: none;
-  width: 0.875rem;
-  height: 0.875rem;
-  object-fit: contain;
+  color: var(--ifm-color-emphasis-700);
+  font-weight: 400;
+  font-size: 0.8rem;
 }
 
-.legendItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-inline-start: 0.4rem;
-  vertical-align: middle;
-}
-
-.description,
+.group p,
 .caption {
   color: var(--ifm-color-emphasis-700);
   font-size: 0.8rem;
   line-height: 1.5;
 }
 
-.description {
-  display: block;
-  margin-top: 0.4rem;
+.group p {
+  margin-bottom: 0;
+}
+
+.caption {
+  margin-top: 0.75rem;
 }
 
 @media (max-width: 600px) {
-  .regions {
+  .groups {
     grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .region {
-    padding: 0.25rem 0 1rem 1.25rem;
-    border-left: 1px solid var(--ifm-color-emphasis-400);
-  }
-
-  .region:last-child {
-    grid-column: auto;
-  }
-
-  .region::before {
-    top: 0.7rem;
-    left: -0.225rem;
-  }
-
-  .libraries {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-  }
-
-  .description {
-    margin-top: 0.1rem;
   }
 
   .axis {
     display: none;
-  }
-
-  .regions::before,
-  .regions::after {
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  .regions::before {
-    content: 'SQL query builder';
-    margin-bottom: 0.5rem;
-  }
-
-  .regions::after {
-    content: 'ORM';
-    margin-top: 0.25rem;
   }
 }

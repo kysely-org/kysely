@@ -1,144 +1,88 @@
-import Link from '@docusaurus/Link'
-import useBaseUrl from '@docusaurus/useBaseUrl'
 import styles from './SqlAbstractionSpectrum.module.css'
 
-type Library = { name: string; href: string; builder?: 'Kysely' | 'Knex' }
-
-const regions: { libraries: Library[]; description: string }[] = [
-  {
-    libraries: [{ name: 'Kysely', href: '/docs/getting-started' }],
-    description: 'SQL-first query builders',
-  },
-  {
-    libraries: [
-      { name: 'Knex', href: 'https://knexjs.org/guide/query-builder.html' },
-      { name: 'Zapatos', href: 'https://jawj.github.io/zapatos/' },
-    ],
-    description: 'Application-oriented query builders',
-  },
-  {
-    libraries: [
-      { name: 'Drizzle', href: 'https://orm.drizzle.team/docs/overview' },
-      {
-        name: 'Prisma 7 + Kysely',
-        href: 'https://github.com/valtyr/prisma-kysely',
-      },
-      {
-        name: 'MikroORM 7',
-        href: 'https://mikro-orm.io/docs/kysely',
-        builder: 'Kysely',
-      },
-      {
-        name: 'Prisma 8',
-        href: 'https://docs.prisma.io/docs/orm/v8/reference/sql-query-builder',
-      },
-      {
-        name: 'ZenStack 3',
-        href: 'https://zenstack.dev/docs/orm/query-builder',
-        builder: 'Kysely',
-      },
-    ],
-    description: 'Data frameworks with SQL-first query builders',
-  },
-  {
-    libraries: [
-      {
-        name: 'TypeORM',
-        href: 'https://typeorm.io/docs/query-builder/select-query-builder/',
-      },
-      {
-        name: 'Objection.js',
-        href: 'https://vincit.github.io/objection.js/api/model/static-methods.html#static-knexquery',
-        builder: 'Knex',
-      },
-      {
-        name: 'Lucid',
-        href: 'https://lucid.adonisjs.com/',
-        builder: 'Knex',
-      },
-      {
-        name: 'Bookshelf.js',
-        href: 'https://bookshelfjs.org/',
-        builder: 'Knex',
-      },
-    ],
-    description: 'Data frameworks with application-oriented query builders',
-  },
-  {
-    libraries: [
-      { name: 'Prisma 7', href: 'https://www.prisma.io/docs/orm/v7' },
-      {
-        name: 'Sequelize',
-        href: 'https://sequelize.org/docs/v6/core-concepts/model-instances/',
-      },
-      { name: 'Orange ORM', href: 'https://orange-orm.io/' },
-    ],
-    description: 'Data frameworks',
-  },
-]
-
 export function SqlAbstractionSpectrum() {
-  const builderLogos = {
-    Kysely: useBaseUrl('/img/logo.svg'),
-    Knex: useBaseUrl('/img/knex-logo.svg'),
-  }
-
   return (
     <figure
       className={styles.figure}
-      aria-label="SQL query builder to ORM spectrum"
+      aria-label="SQL query builders and ORM model APIs"
     >
-      <div className={styles.axis}>
-        <span>SQL query builder</span>
-        <span className={styles.line} aria-hidden="true" />
-        <span>ORM</span>
+      <div className={styles.axis} aria-hidden="true">
+        <span>Compose SQL</span>
+        <span>Work with models</span>
       </div>
-      <ol className={styles.regions}>
-        {regions.map(({ libraries, description }) => (
-          <li key={libraries[0].name} className={styles.region}>
-            <div className={styles.libraries}>
-              {libraries.map(({ name, href, builder }) => (
-                <Link key={name} to={href} className={styles.library}>
-                  {name}
-                  {builder && (
-                    <img
-                      className={styles.builderLogo}
-                      src={builderLogos[builder]}
-                      width={14}
-                      height={14}
-                      alt={`ships ${builder}`}
-                      title={`ships ${builder}`}
-                    />
-                  )}
-                </Link>
-              ))}
-            </div>
-            <span className={styles.description}>{description}</span>
-          </li>
-        ))}
-      </ol>
+      <div className={styles.groups}>
+        <div className={styles.group}>
+          <h3>SQL query builders &amp; toolkits</h3>
+          <ul>
+            <li>
+              <a href="/docs/getting-started">Kysely</a>
+            </li>
+            <li>
+              <a href="https://knexjs.org/">Knex</a>
+            </li>
+            <li>
+              <a href="https://jawj.github.io/zapatos/">Zapatos</a>
+            </li>
+          </ul>
+          <p>Compose queries against tables and columns.</p>
+        </div>
+        <div className={styles.group}>
+          <h3>ORMs with query builders</h3>
+          <ul>
+            <li>
+              <a href="https://orm.drizzle.team/docs/select">Drizzle</a>
+              <span>SQL and relational query APIs</span>
+            </li>
+            <li>
+              <a href="https://typeorm.io/docs/query-builder/select-query-builder/">
+                TypeORM
+              </a>
+              <span>with its own query builder</span>
+            </li>
+            <li>
+              <a href="https://lucid.adonisjs.com/docs/introduction">Lucid</a>
+              <span>with Knex</span>
+            </li>
+            <li>
+              <a href="https://vincit.github.io/objection.js/guide/query-examples.html">
+                Objection.js
+              </a>{' '}
+              <span>with Knex</span>
+            </li>
+            <li>
+              <a href="https://mikro-orm.io/docs/kysely">MikroORM</a>{' '}
+              <span>with Kysely</span>
+            </li>
+          </ul>
+          <p>Combine SQL composition with model and relationship operations.</p>
+        </div>
+        <div className={styles.group}>
+          <h3>ORM model APIs</h3>
+          <ul>
+            <li>
+              <a href="https://sequelize.org/docs/v6/core-concepts/model-querying-basics/">
+                Sequelize
+              </a>
+            </li>
+            <li>
+              <a href="https://orange-orm.io/">Orange ORM</a>
+            </li>
+            <li>
+              <a href="https://www.prisma.io/docs/orm/prisma-client/queries">
+                Prisma 7
+              </a>
+            </li>
+          </ul>
+          <p>
+            Query models and persist related records through model operations.
+          </p>
+        </div>
+      </div>
       <figcaption className={styles.caption}>
-        Approximate ecosystem overview.
-        <span className={styles.legendItem}>
-          <img
-            className={styles.builderLogo}
-            src={builderLogos.Kysely}
-            width={14}
-            height={14}
-            alt=""
-          />
-          <span>- ships with Kysely.</span>
-        </span>
-        <span className={styles.legendItem}>
-          <img
-            className={styles.builderLogo}
-            src={builderLogos.Knex}
-            width={14}
-            height={14}
-            alt=""
-          />
-          <span>- ships with Knex.</span>
-        </span>
+        Grouped by the interfaces they offer, not ranked by capability. Zapatos
+        combines SQL templates with typed query helpers; Prisma also supports
+        raw SQL and TypedSQL. An ORM can include a builder without making the
+        builder itself an ORM.
       </figcaption>
     </figure>
   )
