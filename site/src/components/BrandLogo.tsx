@@ -60,6 +60,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 101 22',
     id: 'cal-com',
   },
+  // Official CraigChat/craig.chat public/favicon.svg embeds a 96px PNG.
+  // Source: f771865a23846fbc713d1997381f68f3fe58bf22. Keep the mascot colors.
+  Craig: {
+    label: 'Craig',
+    viewBox: '0 0 96 96',
+    id: 'craig',
+  },
   Cypress: {
     label: 'Cypress',
     viewBox: '0 0 119 48',
