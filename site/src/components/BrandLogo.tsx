@@ -282,6 +282,14 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 24 24',
     id: 'teable',
   },
+  // Official lockup: liketrek/TREK client/public/logo-light.svg; its white
+  // fills inherit currentColor and the icon's clip+rect flattens to a
+  // direct path (the clip path already carried the four-facet shape).
+  TREK: {
+    label: 'TREK',
+    viewBox: '0 0 158 60',
+    id: 'trek',
+  },
   // Official wordmark: truefoundry/trueforge docs/logo/light.svg
   TrueForge: {
     label: 'TrueForge',

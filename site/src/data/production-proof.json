@@ -465,6 +465,15 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "TREK",
+    "repo": "liketrek/TREK",
+    "path": "server/src/db/repositories/Trips.repository.ts",
+    "sha": "d4da05bbc93bcfa9668e7a8f4e5384b788452418",
+    "href": "https://github.com/liketrek/TREK/blob/d4da05bbc93bcfa9668e7a8f4e5384b788452418/server/src/db/repositories/Trips.repository.ts",
+    "group": "built-into",
+    "provenAt": "2026-10-25"
+  },
+  {
     "name": "TrueForge",
     "repo": "truefoundry/trueforge",
     "path": "packages/trueforge/src/db/postgres/session-store/queries/turns.ts",
