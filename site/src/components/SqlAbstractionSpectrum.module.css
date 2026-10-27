@@ -1,0 +1,81 @@
+.figure {
+  margin: 1.5rem 0;
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--ifm-color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.group {
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.5rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.group:first-child {
+  border-color: var(--ifm-color-primary);
+}
+
+.group h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.group ul {
+  padding: 0;
+  margin: 0 0 0.75rem;
+  list-style: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.group li + li {
+  margin-top: 0.35rem;
+}
+
+.group li span {
+  display: block;
+  color: var(--ifm-color-emphasis-700);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.group p,
+.caption {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.group p {
+  margin-bottom: 0;
+}
+
+.caption {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .groups {
+    grid-template-columns: 1fr;
+  }
+
+  .axis {
+    display: none;
+  }
+}

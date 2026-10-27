@@ -1,0 +1,394 @@
+---
+sidebar_position: 1
+title: SQL query builder vs ORM in TypeScript
+description: 'Compare SQL query builders and ORMs with TypeScript examples. Learn how Kysely composes typed SQL and when to choose it over a model-based API.'
+---
+
+import { PackageFootprintChart } from '@site/src/components/PackageFootprintChart'
+import { SqlAbstractionSpectrum } from '@site/src/components/SqlAbstractionSpectrum'
+
+# SQL query builder vs ORM in TypeScript
+
+**Kysely is a type-safe SQL query builder for TypeScript, not an ORM.** A SQL query builder is a library that constructs SQL through a programming language API: you choose the tables, columns, joins, and expressions; the library generates the SQL and binds the parameters. Kysely also checks those queries against your database types and infers their results.
+
+An **object–relational mapper (ORM)** maps application models and relationships to database tables and keys. Its model API lets you request related objects or save a graph of records, coordinating the SQL needed to perform that work.
+
+**A model API has you work backwards from the statement you need to the options that produce it; a query builder has you write the statement.** Reuse a query, add a computed selection, change its joins, or introduce a subquery, all through the same interface.
+
+**Reads multiply and keep changing; write workflows settle into a few shared functions.** A few shared transaction functions can handle creating pages and comments while lists, searches, exports, and reports keep changing. Query composition pays off across those reads; your application coordinates the related writes an ORM could automate. That asymmetry is the case for a query builder, and the examples below follow it.
+
+## A query builder composes SQL; an ORM maps models
+
+<SqlAbstractionSpectrum />
+
+Objects and relational queries organize data differently: an application might work with a page and its comments as an object graph, while a report needs rows containing an author, a page count, and a computed flag. This difference is part of the **object–relational impedance mismatch**. An ORM bridges the representations through model mappings and relationship operations; a query builder lets each query define its result directly, including results that don't correspond to a persistent model.
+
+An ORM can provide both interfaces. [Objection.js builds on Knex](https://vincit.github.io/objection.js/guide/query-examples.html), adding model and relationship operations. [MikroORM integrates Kysely](https://mikro-orm.io/docs/kysely), so you can keep ORM persistence and compose queries with Kysely in the same transaction. Using that integration is a query builder choice too.
+
+Returning JavaScript objects does not make a library an ORM: even [node-postgres returns plain row objects](https://node-postgres.com/features/queries#row-mode). Neither do TypeScript result types or migration tools. The distinction is the model mapping and the operations built around it.
+
+### Is Kysely an ORM?
+
+No. Kysely has no model classes, no relationship mappings, and no persistence layer. It composes SQL statements, checks them against your database types, and infers their result types; the rows it returns are plain objects, not managed entities. By the definition above, typed results and bundled [migration APIs](/docs/migrations) don't make it an ORM. To add model persistence on top of it, use an ORM that integrates it, such as [MikroORM](https://mikro-orm.io/docs/kysely).
+
+<details id="orms-data-frameworks-and-plain-objects">
+<summary>What about schema definitions, migrations, and code generation?</summary>
+
+Products marketed as ORMs often bundle mapping and persistence with schema definitions, migrations, and code generation. Here, **ORM** describes the model mapping and persistence layer; **data framework** describes the larger stack. A standalone builder can also supply schema and migration tools without introducing model persistence.
+
+</details>
+
+## Query builder composition survives changing requirements
+
+Start with pages owned by a user and an optional title filter. Both approaches handle this list well. The examples follow how the query changes as it needs a parent title, a computed flag, and eventually a recursive permission lookup. They use Kysely with PostgreSQL:
+
+```ts
+// db is a Kysely<Database> instance. Here, page has numeric id and
+// owner_id columns, nullable numeric parent_id, non-null text title,
+// and non-null updated_at timestamps represented by Date values.
+function searchPages(userId: number, title: string | undefined) {
+  let query = db.selectFrom('page').where('page.owner_id', '=', userId)
+
+  if (title !== undefined) {
+    query = query.where('page.title', '=', title)
+  }
+
+  return query
+}
+
+const pageQuery = searchPages(userId, title)
+  .select(['page.id', 'page.title'])
+  .orderBy('page.id')
+  .limit(20)
+
+const pages = await pageQuery.execute()
+// Inferred result:
+// { id: number; title: string }[]
+```
+
+### Reusing filters for an export and parent titles
+
+An export reuses the filters, adds the timestamp, and leaves out pagination:
+
+```ts
+const exportedPages = await searchPages(userId, title)
+  .select(['page.id', 'page.title', 'page.updated_at'])
+  .orderBy('page.id')
+  .execute()
+// Inferred result:
+// { id: number; title: string; updated_at: Date }[]
+```
+
+An admin view needs each parent's title. Extend the paginated query before execution:
+
+```ts
+const pagesWithParents = await pageQuery
+  .leftJoin('page as parent', 'parent.id', 'page.parent_id')
+  .select('parent.title as parent_title')
+  .execute()
+// Inferred result:
+// { id: number; title: string; parent_title: string | null }[]
+```
+
+**Both views reuse the same query function; each statement carries only the selections and joins it needs.** The result gains a nullable `parent_title` because a page may have no parent. Rename the alias and the caller's result type changes with it.
+
+Assuming `page.id` is unique, the parent join above preserves one row per page. A to-many join could multiply rows and change which pages fit within the limit. SQL composition gives you control over that structure; it still requires understanding its effect on the result.
+
+### Adding a computed result
+
+The list now needs to flag pages with an immediate child updated more recently than the page itself. Add a correlated `exists` expression:
+
+```ts
+const pagesWithNewerChildren = await pageQuery
+  .select((eb) =>
+    eb
+      .exists(
+        eb
+          .selectFrom('page as child')
+          .select('child.id')
+          .whereRef('child.parent_id', '=', 'page.id')
+          .whereRef('child.updated_at', '>', 'page.updated_at'),
+      )
+      .as('has_newer_children'),
+  )
+  .execute()
+// Inferred result:
+// { id: number; title: string; has_newer_children: SqlBool }[]
+```
+
+PostgreSQL returns a boolean for each page without loading its children or multiplying the outer rows. Kysely checks the references in both scopes and infers the new result property.
+
+**Each new requirement so far was one addition to an existing query, and the result type followed it.** Kysely's builders are immutable, so extending `pageQuery` leaves the original list query available to other callers.
+
+A model API may require a mapped computed property: MikroORM's [SQL formulas](https://mikro-orm.io/docs/defining-entities#formulas), for example, put the expression in entity metadata. That is useful for a shared model property. Here, the flag is needed only for this list, so its query defines the expression and result name together.
+
+### What a model API adds
+
+When you want a page and its comments as related objects, a model API can handle the loading and assembly. With Objection.js, assume a `Page` model mapped to `page` and a declared `comments` relation:
+
+```ts
+const pagesWithComments = await Page.query()
+  .where('owner_id', userId)
+  .orderBy('id')
+  .limit(20)
+  .withGraphFetched('comments')
+```
+
+Objection's [`withGraphFetched`](https://vincit.github.io/objection.js/guide/query-examples.html#eager-loading) loads the relation through additional queries and attaches comment models to each page. Its Knex-based builder remains available for SQL composition. The model mapping earns its place when those relationship operations are work you want the library to handle. The next requirement is different: no relation mapping describes a rule inherited through an unknown number of ancestors.
+
+## The same query builder interface for recursive queries
+
+A documentation app stores pages in a tree using a nullable `page.parent_id`. A user's permission comes from the nearest explicit rule: on the requested page itself, or on one of its ancestors.
+
+The query must return the rule's page, level, and distance. The number of ancestor steps is not known in advance, so a fixed-depth parent selection does not cover the requirement. A recursive CTE expresses that traversal in one statement. Assume PostgreSQL, an acyclic tree, and at most one rule per page/user.
+
+<details>
+<summary>The SQL for the permission lookup</summary>
+
+```sql
+with recursive ancestors as (
+  select id, parent_id, 0 as depth
+  from page
+  where id = $1
+  union all
+  select parent.id, parent.parent_id, ancestors.depth + 1
+  from page as parent
+  inner join ancestors on ancestors.parent_id = parent.id
+)
+select ancestors.id as page_id, page_access.level, ancestors.depth
+from ancestors
+inner join page_access on page_access.page_id = ancestors.id
+where page_access.user_id = $2
+order by ancestors.depth
+limit 1;
+```
+
+</details>
+
+The database performs traversal, rule lookup, ordering, and limiting in one statement. [Docmost uses recursive ancestors for page restrictions](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373); this query simplifies that requirement.
+
+Compose it with Kysely using the same query operations as the earlier queries. Assume the page column types above, numeric `page_access.page_id` and `page_access.user_id`, and a non-null string `page_access.level`. The `pageId` and `userId` values are numbers:
+
+```ts
+import { sql } from 'kysely'
+
+const nearestRule = db
+  .withRecursive('ancestors', (qb) =>
+    qb
+      .selectFrom('page')
+      .select(['id', 'parent_id', sql<number>`0`.as('depth')])
+      .where('id', '=', pageId)
+      .unionAll((qb) =>
+        qb
+          .selectFrom('page as parent')
+          .innerJoin('ancestors', 'ancestors.parent_id', 'parent.id')
+          .select(['parent.id', 'parent.parent_id'])
+          .select((eb) => eb('ancestors.depth', '+', 1).as('depth')),
+      ),
+  )
+  .selectFrom('ancestors')
+  .innerJoin('page_access', 'page_access.page_id', 'ancestors.id')
+  .where('page_access.user_id', '=', userId)
+  .select(['ancestors.id as page_id', 'page_access.level', 'ancestors.depth'])
+  .orderBy('ancestors.depth')
+  .limit(1)
+
+const rule = await nearestRule.executeTakeFirst()
+// Inferred: { page_id: number; level: string; depth: number } | undefined
+```
+
+Remove the `page_access` join and its remaining references become type errors. The seed expression declares its `number` result type explicitly; arbitrary SQL fragments are not checked by Kysely.
+
+A relationship loader can fetch an ancestor graph; this requirement asks the database to return just the nearest matching rule. A recursive CTE combines traversal, filtering, and limiting in one statement.
+
+### What changed as the requirements grew?
+
+| Requirement                           | Query builder                                              | Model API                                                         |
+| ------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| List, export, and parent title        | Reuse a query function; vary selections, joins, and limit. | Reuse filters and model selections; request mapped relationships. |
+| Computed flag for one list            | Add an `exists` selection to the existing query.           | Use a computed-property feature or the SQL builder.               |
+| Choose the flag's SQL structure       | Rewrite the join and aggregation as a subquery.            | Adjust the mapped expression or use the SQL builder.              |
+| Find the nearest inherited permission | Compose a recursive CTE, join, order, and limit.           | Use a suitable hierarchy feature or move to a SQL API.            |
+
+**The builder's advantage is continuity as the query changes.** The same selections, joins, expressions, and query functions serve the lists, exports, and permission lookup, whether you use a standalone builder or an ORM's integrated one.
+
+## A query builder gives production queries room to tune
+
+When a model operation produces an expensive query, you still need to understand the SQL: its joins, row counts, and execution plan. Then you must map that understanding back into model options, or switch to a SQL API. This is where the abstraction **leaks**: the database details become necessary to use the higher-level interface effectively.
+
+**A query builder keeps those SQL decisions in the interface you already use.** Tuning is writing the statement you want, not working backwards to the model options that produce it. Inspect the generated statement and its plan against real data, then adjust the query and indexes. Kysely's [`.compile()`](/docs/recipes/splitting-query-building-and-execution) exposes the SQL and bound parameters for inspection.
+
+Suppose the flag above was first implemented by joining children, grouping by page, and counting the matches:
+
+```ts
+const flaggedPages = await pageQuery
+  .leftJoin('page as child', (join) =>
+    join
+      .onRef('child.parent_id', '=', 'page.id')
+      .onRef('child.updated_at', '>', 'page.updated_at'),
+  )
+  .select((eb) => eb(eb.fn.count('child.id'), '>', 0).as('has_newer_children'))
+  .groupBy('page.id')
+  .execute()
+```
+
+Rewriting this as the correlated `exists` query takes a few local edits: drop the join and grouping, and move the two join conditions into the subquery. The filters, callers, and one-row-per-page result shape stay as they are. The join-and-count version asks for matching children to be aggregated; `exists` asks whether any qualifying child exists. Compare the generated SQL and plans to establish whether the rewrite helps on your data.
+
+**The builder gives you a direct path from the SQL change to the application change.** Tuning changes the query through the same interface that built it. Raw SQL gives the same statement control; a builder also lets callers extend shared queries through functions and ordinary control flow.
+
+The SQL concepts you use with a database specialist or in a SQL console carry into application code.
+
+## Statement count is explicit; N+1 is a composition choice
+
+**One model API call does not necessarily mean one SQL statement.** Relationship loaders can use joins or separate queries. Either can be appropriate: joins across collections can multiply rows, while querying each parent's children in a loop creates N+1 round trips. [Objection.js explains its fetching and joining strategies](https://vincit.github.io/objection.js/api/query-builder/eager-methods.html). **With a query builder, the statement count is whatever your code composed; there is no loading strategy to configure or audit.**
+
+Some ORMs also track object identity and pending changes. [MikroORM's unit of work](https://mikro-orm.io/docs/unit-of-work), for example, writes managed-entity changes through `flush()`. These services can save coordination when several operations share managed entities within a request. **A standalone builder's results are ordinary values: mutating them never schedules a database write.**
+
+## Your code owns the writes an ORM would coordinate
+
+**An ORM can coordinate related writes from a graph of models.** With Objection.js, assume `Page` and `Comment` models with a `comments` relation joining `page.id` to `comment.page_id`:
+
+```ts
+const page = await Page.transaction(async (trx) => {
+  return await Page.query(trx).insertGraph({
+    title: 'Getting started',
+    comments: [{ body: 'Add an installation example.' }],
+  })
+})
+```
+
+Objection's [`insertGraph`](https://vincit.github.io/objection.js/guide/query-examples.html#graph-inserts) uses the relationship mapping to order inserts and pass generated keys. The explicit transaction makes the operation atomic; `insertGraph` does not start one automatically.
+
+With Kysely and PostgreSQL, your code coordinates the same writes, typically as an ordinary shared function. For this example, assume `page` has a generated numeric `id` and a required `title`, and `comment` requires `page_id` and `body`, with no other required insert inputs:
+
+```ts
+async function createPageWithComment(title: string, body: string) {
+  return await db.transaction().execute(async (trx) => {
+    const page = await trx
+      .insertInto('page')
+      .values({ title })
+      .returning('id')
+      .executeTakeFirstOrThrow()
+
+    await trx.insertInto('comment').values({ page_id: page.id, body }).execute()
+
+    return page
+  })
+}
+
+const page = await createPageWithComment(
+  'Getting started',
+  'Add an installation example.',
+)
+```
+
+The transaction commits when the callback succeeds and rolls back if it throws. Your function owns insert ordering and key passing; callers need only its inputs and result. Write policies such as timestamps and optimistic version checks also belong in application code.
+
+The asymmetry holds here: adding the computed flag, export, or permission lookup does not change `createPageWithComment`. When shared functions cover the write workflows, that coordination is a modest cost beside the recurring benefit of query composition. Frequently changing graphs of related records give an ORM more work to save.
+
+## Type safety depends on the library
+
+SQL-first composition does not require result type inference. Query builders differ in whether they check references and expressions or infer result types, and an ORM's typed models do not guarantee those capabilities in its SQL API either. To assess a library's type safety, try removing a join, renaming an alias, or adding a nullable selection: does the caller's type follow the query?
+
+The examples above run that test. The [left-joined parent title](#reusing-filters-for-an-export-and-parent-titles) arrives as `string | null`, and renaming its alias changes the caller's result type. Removing the `page_access` join from the [permission lookup](#the-same-query-builder-interface-for-recursive-queries) turns its remaining references into type errors.
+
+Inferred types depend on accurate database declarations and the driver's runtime value mapping. Kysely does not validate returned rows against those types or convert values to match a TypeScript annotation.
+
+## Other practical considerations
+
+<details>
+<summary>Schema tooling and production migrations</summary>
+
+**A query builder lets you choose schema tooling independently of model persistence.** You can author migrations through SQL or a schema API, use a dedicated migration tool, and [generate database types](/docs/generating-types) from the resulting schema.
+
+Model-diff generators save work by drafting migrations. Production rollout still requires deployment decisions: adding a replacement column, deploying code that writes both, backfilling, switching readers, and eventually removing the old column. [Prisma documents expand-and-contract migrations](https://www.prisma.io/docs/guides/database/data-migration) within its own workflow. Either approach can support staged rollouts; the team chooses their order and deployment boundaries.
+
+Generated and hand-authored migrations also need review against database constraints. PostgreSQL's [`CREATE INDEX CONCURRENTLY`](https://www.postgresql.org/docs/current/sql-createindex.html), for example, allows writes during the build but cannot run inside a transaction block.
+
+</details>
+
+<details>
+<summary>Database-specific features and portability</summary>
+
+A builder can support multiple engines while exposing their specific features. Kysely, for example, provides distinct operations for PostgreSQL-style conflict handling and MySQL-style duplicate-key updates. Assess how directly a library exposes the SQL your application needs.
+
+Both builders and model APIs can reduce the code needed to target multiple engines. Differences in constraints, collations, JSON behavior, transactions, indexes, and query plans still require testing. If portability is required, test the shared behavior and performance your application depends on.
+
+</details>
+
+<details>
+<summary>Querying a database you don't own</summary>
+
+Teams querying shared schemas, customer systems, or read-only views may have no control over schema design or migrations. **When the job is querying an existing database, an ORM can add a model layer with little work to do.** In a read-only integration, cascade persistence, change tracking for writes, and model-driven migrations provide little value, while entity mappings still need to be defined and kept consistent with someone else's schema.
+
+A builder lets you compose queries against the tables, views, and joins the database exposes, with database types supplied separately if needed. An adapter or SDK can accept a builder configured by its consumer, leaving schema ownership with that consumer.
+
+ORM relationship loading and value conversion can still be useful, and [Objection.js treats schema management as a separate concern](https://vincit.github.io/objection.js/guide/models.html). Choose a model layer when those services simplify the integration enough to justify its mappings. For query-specific reads, a standalone builder often covers the requirement directly.
+
+</details>
+
+<details>
+<summary>Comparing development package footprints</summary>
+
+Package footprint depends on the implementation, rather than the category. These measurements compare particular setups: two standalone query builders and five [data frameworks](#orms-data-frameworks-and-plain-objects).
+
+These representative PostgreSQL development setups include `pg` 8.23.1, schema/model definitions, migration and generation tools, and installed transitive dependencies. Their capabilities differ: Kysely includes migration authoring and execution, while several data framework setups also generate migrations from model changes.
+
+<PackageFootprintChart />
+
+Footprint varies substantially by implementation: this MikroORM setup is close to Kysely despite including model persistence and migration generation. These measurements compare the selected development setups; they do not predict runtime performance or deployment bundle size.
+
+<details>
+<summary>What's included in each setup?</summary>
+
+Main library versions appear in the chart; additional tool versions and the selected workflows are listed here. The Prisma measurement uses version 7.10.1, not version 8.
+
+| Setup                                                               | Packages beyond `pg`                                                                                                            | Schema, migrations, and generation                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Kysely](/docs/migrations)                                          | `kysely`, `kysely-ctl` 0.22.0, `kysely-typegen` 2.1.0                                                                           | Bundled schema builder and migration APIs, CLI migration authoring/execution, and [database types generated programmatically](https://github.com/theoludwig/kysely-typegen) from PostgreSQL.                                                                                                        |
+| [Knex](https://knexjs.org/guide/migrations.html)                    | `knex`, `ts-node` 10.9.2                                                                                                        | Bundled schema builder and migration CLI, with ts-node loading TypeScript configuration/migrations. No code generation required.                                                                                                                                                                    |
+| [Drizzle](https://orm.drizzle.team/docs/drizzle-kit-generate)       | `drizzle-orm`, `drizzle-kit` 0.31.11                                                                                            | Hand-authored table definitions; Kit generates and runs migrations.                                                                                                                                                                                                                                 |
+| Prisma 7                                                            | `@prisma/client`, `@prisma/adapter-pg`, `prisma` CLI, all 7.10.1                                                                | Hand-authored Prisma schema; CLI migrates and generates client code.                                                                                                                                                                                                                                |
+| [TypeORM](https://typeorm.io/docs/migrations/executing/)            | `typeorm`, `ts-node` 10.9.2                                                                                                     | Decorated entities; bundled CLI generates and runs migrations, with ts-node loading TypeScript sources. Includes reflect-metadata.                                                                                                                                                                  |
+| [Sequelize](https://sequelize.org/docs/v6/other-topics/typescript/) | `sequelize`, `sequelize-cli` 6.6.5, `pg-hstore` 2.3.4, `sequelize-typescript` 2.1.6, `reflect-metadata` 0.2.2, `ts-node` 10.9.2 | Decorated TypeScript models using the recommended add-on; CLI scaffolds JavaScript migrations and discovers TypeScript migrations, with ts-node registered to execute them.                                                                                                                         |
+| [MikroORM](https://mikro-orm.io/docs/guide/project-setup)           | `@mikro-orm/core`, `@mikro-orm/postgresql`, `@mikro-orm/cli`, `@mikro-orm/migrations`, all 7.2.5, plus `jiti` 2.7.0             | Entities authored with [defineEntity](https://mikro-orm.io/docs/define-entity), MikroORM 7’s primary documented approach; CLI generates and runs migrations, with [jiti loading TypeScript migrations](https://mikro-orm.io/docs/typescript-loaders). Includes its SQL layer and Kysely dependency. |
+
+TypeScript is assumed for every setup and excluded from package counts and both size totals, including when a tool requires it as a peer. Knex, TypeORM, and Sequelize still include ts-node and its other dependencies.
+
+CLI and migration packages count even when installed as development dependencies. The measurement includes hard dependencies, required peers, and compatible optional dependencies installed by npm, including packaged native tool binaries. Compressed downloads count each package version once; unpacked sizes count every installed copy.
+
+Shared Node.js and application type declarations are excluded unless pulled in by a tool. Kysely database types are generated with `kysely-typegen`; the other setups use hand-authored model/table definitions, with Prisma client generation included. Additional generators, seeders, and unrelated integrations are excluded. Install-script downloads and generated application files are also excluded, so these totals measure development package payloads rather than complete disk usage or deployed application bundles.
+
+</details>
+
+</details>
+
+## Choosing a query builder or ORM
+
+**Choose a query builder when you need direct control over how queries are composed and changed.** The list, computed flag, recursive lookup, and SQL rewrite above use the same operations. You can change the statement's structure without looking for a model API option that produces it.
+
+A standalone builder lets you work from the database schema, with query functions for reads and shared transaction functions for related writes. Compare that with maintaining an ORM model layer:
+
+| Responsibility                                        | Standalone builder with database-generated types               | ORM model layer with an integrated builder                               |
+| ----------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Describe tables and columns                           | Database schema plus generated declarations.                   | Entity mappings; the integrated builder can derive types from them.      |
+| Express the list, flag, export, and permission lookup | Query functions.                                               | Query functions through the builder, or model operations where they fit. |
+| Create a page and comment                             | A transaction function owns insert order and key passing.      | Model operations can coordinate the related writes.                      |
+| Add a column such as `archived_at`                    | Migrate, regenerate declarations, and update affected queries. | Update the schema and entity mapping, and update affected queries.       |
+
+**Keep the model layer when its relationship loading, related writes, or managed entities save recurring work.** An integrated builder lets you retain those services and use SQL composition where you need it. [MikroORM's Kysely integration](https://mikro-orm.io/docs/kysely) is one way to combine them.
+
+Try one related write and one query that has needed substantial changes. Compare the persistence code you must own, how easily each API expresses the next requirement, and the statements it executes.
+
+**Choose Kysely when you want SQL composition with checked references and inferred results, without maintaining an ORM model layer.**
+
+[Get started with Kysely](/docs/getting-started), explore [query examples](/docs/category/examples), or learn how to [generate database types](/docs/generating-types).
+
+<details>
+<summary>Adoption: OpenClaw uses Kysely for runtime queries</summary>
+
+OpenClaw's [contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71) requires Kysely for ordinary SQLite access, reserving raw SQL for schema, migrations, bootstrap, and justified primitives. Its creator, Peter Steinberger, also [described replacing Drizzle with Kysely in one of his projects](https://x.com/steipete/status/2005692454553673900).
+
+A builder gives coding agents SQL operations to compose and compiler feedback as references and result shapes change. Your team can review the resulting query structure directly.
+
+</details>

@@ -1,0 +1,127 @@
+.figure {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.5rem;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.control select {
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 0.25rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font: inherit;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend i {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 0.15rem;
+}
+
+.builder {
+  background: var(--ifm-color-primary);
+}
+
+.framework {
+  background: var(--ifm-color-emphasis-600);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.85rem 0 0.4rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rows {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rowTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.35;
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  min-width: 0;
+  column-gap: 0.4rem;
+}
+
+.version {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.size {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.track {
+  overflow: hidden;
+  height: 0.6rem;
+  border-radius: 0.2rem;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.caption {
+  margin-top: 1rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.825rem;
+  line-height: 1.5;
+}
