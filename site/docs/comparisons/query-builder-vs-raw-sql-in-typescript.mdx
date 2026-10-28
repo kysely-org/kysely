@@ -403,6 +403,26 @@ Raw-SQL tools can move feedback earlier too. SafeQL supplies editor diagnostics 
 
 **Kysely separates schema declarations from individual query inference.** Adding `owner_id` to the export above uses the existing declarations; the result changes immediately through TypeScript. If the schema itself changes, update or regenerate those declarations. A live database is still needed to test runtime behavior, but it does not need to participate in every query's static check.
 
+### Database support for checking varies
+
+**Executing SQL and analyzing its result types are different capabilities.** A client's supported databases do not establish which databases its checker supports, what metadata it can obtain, or how precisely it can infer a result. Preparing or describing a statement can obtain metadata without executing the application query, but the available information differs by engine.
+
+<details>
+<summary>Checking without query execution: PostgreSQL, MySQL, SQLite, and SQL Server</summary>
+
+| Database                                                                                                                                    | Metadata available without executing the application query                                                                      | Limits to account for                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [PostgreSQL](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY)                                            | The extended protocol's statement `Describe` returns parameter and result-column metadata before `Execute`.                     | That metadata alone does not describe every TypeScript-level property, such as a nested JSON object's shape.                                 |
+| [MySQL](https://dev.mysql.com/doc/c-api/8.4/en/mysql-stmt-result-metadata.html)                                                             | Prepared-statement result metadata is available after preparation and before execution.                                         | Pre-execution types are determined by the optimizer; the documented types after execution can differ.                                        |
+| [SQLite](https://www.sqlite.org/c3ref/column_decltype.html)                                                                                 | A statement can be prepared without stepping through its results; declared-type metadata is available for direct table columns. | The declared-type API returns no type for an expression or subquery. Dynamic value types and computed expressions need additional analysis.  |
+| [SQL Server](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-describe-first-result-set-transact-sql) | `sp_describe_first_result_set` statically analyzes a batch's first result set.                                                  | Some constructs cannot be described, including statements using temporary tables; control flow can also prevent a usable result description. |
+
+</details>
+
+This is a summary of database facilities, not a claim that every checker uses them. Tools can supplement metadata with catalog queries or their own SQL analysis, as sqlc does. For a particular tool, check its engine and driver support, parameter inference, nullability, expression types, and JSON handling. Also establish whether checking prepares statements, analyzes them locally, or executes anything; database access alone does not mean the application query runs.
+
+Kysely's builder checks use TypeScript database declarations across its supported dialects, without depending on a server's describe API for each query edit. Those checks still depend on accurate declarations and do not prove that a statement will succeed against the database.
+
 ## Keeping SQL and TypeScript result types in sync
 
 **Type inference connects the query you change to the callers that use it.** Both Kysely and SQL-aware raw-SQL tools can do this. The following example shows the narrower difference between inferred results and a handwritten annotation.
