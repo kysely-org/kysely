@@ -451,13 +451,19 @@ rows[0]?.label // string | undefined
 rows[0]?.name // TypeScript error
 ```
 
-With Slonik, a result schema that still requires `name` compiles, then fails configured runtime validation. Kysely rejects the stale caller before execution.
+With Slonik alone, a result schema that still requires `name` compiles, then fails configured runtime validation when an incompatible row is returned. The schema supplies the caller's type; it does not establish that the SQL selects the required fields. Kysely rejects the stale caller before execution.
 
 ### Can raw SQL be type-safe?
 
-Yes. A handwritten annotation is one option, and does not check the SQL by itself. Runtime schemas can validate actual rows. SQL-aware tools can check statements against a database schema and help maintain their result types.
+Yes, but a typed template is not necessarily a statically checked query. Distinguish the guarantees:
+
+- **A handwritten result type is a typed assumption.** TypeScript checks callers against that type, but does not establish that the SQL returns it. Supplying `sql<AssetRow[]>` does not itself check the SQL-to-result contract.
+- **A validation schema can verify returned rows at runtime.** The caller's static type can be inferred from the schema, but the SQL string is not thereby checked against it. With validation enabled, incompatible rows cause a failure after execution, when they are validated.
+- **SQL-aware analysis can check the statement before execution.** It analyzes supported SQL against a schema and can compare its output with the supplied result contract. This is additional checking, beyond providing a type argument or a validation schema.
 
 [SafeQL](https://safeql.dev/) checks supported SQL calls against PostgreSQL. Its [Postgres.js support matrix](https://safeql.dev/compatibility/postgres.js.html#support-matrix) supports direct nested fragments but excludes conditional fragment selection, including the ternaries in the asset example. Check the supported forms against the queries you actually need to compose.
+
+For supported forms, [SafeQL's Slonik integration](https://safeql.dev/compatibility/slonik.html#zod-schema-validation) can also compare the SQL output with a supplied Zod schema during linting. That supplies the pre-execution check that attaching a schema alone does not provide.
 
 Kysely checks its builder composition through TypeScript. That depends on accurate database declarations and the driver's runtime value mapping. It does not validate returned rows or convert values to match the declared types. [Generating database types](/docs/generating-types) helps keep declarations aligned with the schema; runtime validation can still be useful at application boundaries.
 
@@ -516,7 +522,7 @@ function findAssetsWithPostgres(options: AssetOptions) {
 
 </details>
 
-Postgres.js [supports conditional fragments](https://github.com/porsager/postgres#building-queries) and binds values. `AssetRow` does not update when the SQL selection changes.
+Postgres.js [supports conditional fragments](https://github.com/porsager/postgres#building-queries) and binds values. Without additional SQL-aware checking, `AssetRow` is an unchecked declaration of the result: it does not update when the SQL selection changes.
 
 ### Slonik: fragments plus a result schema
 
@@ -573,7 +579,7 @@ function findAssetsWithSlonik(options: AssetOptions) {
 
 </details>
 
-The schema is separately maintained. A required-field mismatch fails at runtime, rather than changing the expected type from the SQL.
+The schema is separately maintained. TypeScript takes the result type from that schema without comparing it to the SQL. With the configured runtime validator, a required-field mismatch fails when an incompatible row is returned; it does not make the query a compile-time error. Additional SQL-aware analysis is needed to check that contract before execution.
 
 ### What changes with each requirement?
 
