@@ -129,6 +129,15 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "Craig",
+    "repo": "CraigChat/craig",
+    "path": "packages/db/src/queries.ts",
+    "sha": "ad9837dd3b5d57b22bdd7527123068aaa8ad9432",
+    "href": "https://github.com/CraigChat/craig/blob/ad9837dd3b5d57b22bdd7527123068aaa8ad9432/packages/db/src/queries.ts",
+    "group": "production",
+    "provenAt": "2026-10-25"
+  },
+  {
     "name": "Cypress",
     "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.4.0/dist/database/queries.js",
     "group": "production",

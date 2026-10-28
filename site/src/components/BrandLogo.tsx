@@ -60,6 +60,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 101 22',
     id: 'cal-com',
   },
+  // Monochrome trace of CraigChat/craig apps/dashboard/src/assets/craig.png.
+  // Dark facial outlines and microphone inherit currentColor; other areas are cutouts.
+  Craig: {
+    label: 'Craig',
+    viewBox: '0 0 723 723',
+    id: 'craig',
+  },
   Cypress: {
     label: 'Cypress',
     viewBox: '0 0 119 48',
