@@ -48,7 +48,7 @@ export function SqlQueryWorkflows() {
           </p>
         </div>
         <div className={styles.group}>
-          <h3>SQL in SQL files</h3>
+          <h3>SQL / SQLish in SQL files</h3>
           <ul>
             <li>
               <a href="https://reylo.dev/">Reylo</a>
@@ -70,7 +70,8 @@ export function SqlQueryWorkflows() {
             </li>
           </ul>
           <p>
-            Write statements in SQL files and import or generate typed calls.
+            Write SQL with tool-specific parameters or syntax, then import or
+            generate typed calls.
           </p>
         </div>
       </div>
