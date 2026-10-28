@@ -359,6 +359,52 @@ The complete asset-listing implementations were checked with **Kysely 0.29.7**, 
 
 </details>
 
+## Error feedback and the query-editing loop
+
+**Finding one error per database round trip makes a long query expensive to correct.** A database generally stops processing a statement when it encounters an error. PostgreSQL can return a [message, hint, and position in the submitted SQL string](https://www.postgresql.org/docs/current/protocol-error-fields.html). That points to the reported problem, not a complete set of mistakes in the query.
+
+With the asset schema above, this statement has three independent errors:
+
+```sql
+select id, nmae
+from asset
+where owner_id = 42
+  and label like 'F%'
+order by name;
+```
+
+PostgreSQL first reports the missing `nmae` column. Correct it to `name` and resubmit: comparing the text `owner_id` to an integer now fails. Change `42` to a string and resubmit: the missing `label` column is reported next. These successive diagnostics were checked against PostgreSQL.
+
+In a long query assembled from fragments, the reported position refers to the assembled SQL. You must also trace that position back to the fragment or helper that produced it. Each correction can mean rebuilding the statement and asking the database again.
+
+Kysely can report these mistakes in one TypeScript check, at the operations that introduce them:
+
+```ts
+db.selectFrom('asset')
+  .where('asset.owner_id', '=', 42) // Error: owner_id requires a string.
+  .where('asset.label', 'like', 'F%') // Error: label is not a column.
+  .select(['asset.id', 'asset.nmae']) // Error: nmae is not a column.
+  .orderBy('asset.name')
+```
+
+TypeScript 6 and 7 both report all three operations in this example. **Feedback arrives while editing, without submitting the query or reaching the application path that executes it.** Completion also offers the tables, columns, and operations available at the current point in the builder.
+
+Raw-SQL tools can move feedback earlier too. SafeQL supplies editor diagnostics, and Reylo maps database errors into SQL files. A generator can reject an invalid statement before application execution. Assess the actual feedback loop: where an error appears, how many problems a check exposes, and whether the checked form covers your conditional query. Kysely's compiler checks still do not replace database validation: raw expressions, stale schema declarations, constraints, and SQL rules beyond its types can fail at the database.
+
+### Query changes can require generation even when the schema is stable
+
+**A query changes more often than its tables need to.** Adding a selection, changing a filter, or renaming an alias can require refreshing generated query code even when the database schema has been unchanged for months. A watcher can automate that step, but the generator and its schema inputs still participate in the editing loop.
+
+| Tool                                                                                      | Schema input for checking                                                  | What happens after a query edit?                                                                                            |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Kysely                                                                                    | Existing TypeScript database declarations.                                 | TypeScript checks the builder and re-infers its result; no per-query generation or live connection is required.             |
+| [PgTyped](https://pgtyped.dev/docs/cli)                                                   | A running PostgreSQL database.                                             | Run generation, manually or in watch mode, to refresh typed query code.                                                     |
+| [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | A database connection for generation.                                      | Refresh query functions with `prisma generate --sql`, optionally in watch mode.                                             |
+| [sqlc](https://docs.sqlc.dev/en/stable/howto/generate.html)                               | Local schema/query files by default; database-backed analysis is optional. | Run generation to refresh application code, including TypeScript plugin output.                                             |
+| [Reylo](https://reylo.dev/)                                                               | A live database in its documented PostgreSQL workflow.                     | Changed queries are checked against the database through the compiler integration, without a separate code-generation step. |
+
+**Reylo removes the code-generation step; query edits still require database-backed analysis.** Kysely separates schema declarations from individual query inference. Adding `owner_id` to the export above uses the existing declarations; the result changes immediately through TypeScript. If the schema itself changes, update or regenerate those declarations. A live database is still needed to test runtime behavior, but it does not need to participate in every query's static check.
+
 ## Keeping SQL and TypeScript result types in sync
 
 **Type inference connects the query you change to the callers that use it.** Both Kysely and SQL-aware raw-SQL tools can do this. The following example shows the narrower difference between inferred results and a handwritten annotation.
@@ -596,6 +642,8 @@ Raw SQL can express these operations too. The builder's value is carrying checke
 **Choose raw SQL when writing the statement directly is the clearest workflow for your team.** SQL templates suit queries composed close to application code; typed SQL files suit complete statements reviewed and edited as SQL. Runtime schemas, SQL-aware checkers, typed imports, and generators can provide strong guarantees. Complexity alone does not require a builder.
 
 For a SQL-file tool, try the next conditional join, selection, and shared filter. Check how much stays database SQL, what becomes tool-specific syntax, and what must be translated to reproduce a request in TablePlus. A file that looks like SQL can still carry a substantial query-construction API.
+
+Also make a few deliberate mistakes and change a selection without changing the schema. Compare how many edit/check cycles it takes to correct the query, whether a database connection is required, and when the caller's result type updates.
 
 **Choose Kysely when queries keep acquiring variations and you want their references and results checked as you compose them.** Shared filters, different list/export selections, optional joins, and nested results are recurring opportunities to reuse a builder. Before building another layer of SQL helpers, account for the composition rules, injection boundaries, tests, and types that layer would need. Kysely lets the application reuse an established implementation of that work.
 
