@@ -4,6 +4,8 @@ title: SQL query builder vs raw SQL in TypeScript
 description: 'Compare Kysely with raw SQL, SQL templates, and typed SQL files: composition, type safety, injection risks, and when a query builder earns its place.'
 ---
 
+import { SqlQueryWorkflows } from '@site/src/components/SqlQueryWorkflows'
+
 # SQL query builder vs raw SQL in TypeScript
 
 **A SQL query builder constructs SQL through a programming language API; raw SQL expresses the statement directly.** Both let you choose the tables, joins, subqueries, and expressions the database executes. A builder can preserve that control while making queries easier to extend and reuse in application code.
@@ -16,14 +18,9 @@ description: 'Compare Kysely with raw SQL, SQL templates, and typed SQL files: c
 
 With raw SQL, you write the statement and pass values separately, through placeholders or a client's tagged template. With a builder, you call operations such as `selectFrom`, `where`, and `innerJoin`; the library compiles those operations into SQL and parameters.
 
-Raw SQL covers several workflows, with different ways to connect statements to application types:
+<SqlQueryWorkflows />
 
-| Workflow                               | Examples                                 | Where checking and types come from                                                                                                       |
-| -------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| SQL strings with separate parameters   | node-postgres and other database drivers | Parameter binding protects values; result annotations alone do not check the statement.                                                  |
-| SQL embedded in TypeScript             | Postgres.js, Slonik, SafeQL              | Template clients compose fragments; Slonik can validate rows; SafeQL checks supported SQL against a schema. These tools can be combined. |
-| SQL files with typed application calls | Reylo, PgTyped, Prisma TypedSQL, sqlc    | Analyze SQL to supply typed parameters and results, through imports or generated code. Syntax, inference, and composition support vary.  |
-| Query builder                          | Kysely                                   | Compose the statement through an API, check references against database declarations, and infer results through each extension.          |
+Plain SQL strings with separate parameters fit here too: drivers such as node-postgres execute statements without a template or generator. Parameter binding protects values; a handwritten result annotation alone does not check the statement. The groups above show the additional interfaces and checking tools teams can choose.
 
 ### SQL in TypeScript and SQL in SQL files
 
