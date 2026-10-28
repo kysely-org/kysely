@@ -28,7 +28,6 @@ SQL embedded in TypeScript stays close to application control flow. A tagged tem
 
 SQL-file workflows keep statements in a SQL editor and connect them to application code:
 
-- [Reylo](https://reylo.dev/) supplies typed `.sql` imports through TypeScript content mappers, without generated files. Its documented setup requires TypeScript 7.1 and a live database.
 - [PgTyped](https://pgtyped.dev/docs/) analyzes annotated queries against PostgreSQL and generates typed query objects. It supports queries in both SQL and TypeScript files.
 - [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) generates query functions and parameter/result types from SQL files, executed through Prisma Client.
 - [sqlc](https://docs.sqlc.dev/) analyzes schema and query inputs to generate application calls. TypeScript output uses a [language plugin](https://github.com/sqlc-dev/sqlc-gen-typescript), whose documented status is early access.
@@ -58,11 +57,11 @@ where owner_id = $1
   and ($2::text is null or name like $2 || '%');
 ```
 
-**The tool input cannot simply be pasted into TablePlus and executed as ordinary PostgreSQL SQL.** It needs macro expansion and parameter values. A plain parameterized statement also needs values supplied, but it does not additionally need a tool's macro language translated. PgTyped's [parameter expansions and required-parameter syntax](https://pgtyped.dev/docs/sql-file) and [Reylo's custom parameter casts](https://reylo.dev/) are other examples of a layer beyond database SQL. Metadata stored only in SQL comments, such as the TypedSQL annotations below, does not itself change the executable syntax.
+**The tool input cannot simply be pasted into TablePlus and executed as ordinary PostgreSQL SQL.** It needs macro expansion and parameter values. A plain parameterized statement also needs values supplied, but it does not additionally need a tool's macro language translated. PgTyped's [parameter expansions and required-parameter syntax](https://pgtyped.dev/docs/sql-file) also add a layer beyond database SQL. Metadata stored only in SQL comments, such as the TypedSQL annotations below, does not itself change the executable syntax.
 
 This affects the SQL-console workflow: inspect the emitted statement, supply its parameters, tune it, then carry the change back into the tool's source syntax. Kysely also requires compilation before its output runs in a SQL console. Its case is that this translation layer provides checked composition, reusable queries, and inferred results as requirements change. The useful comparison is what each translation layer buys: a SQL-file workflow can also have an abstraction to learn and translate.
 
-**Type safety is not exclusive to builders, and SQL files do not necessarily require code generation.** Changing a selected alias can update a SQL-file caller's type too, once its analysis or generation step runs. The stronger builder argument is that callers can keep extending a shared query while its references and result shape stay connected.
+**Type safety is not exclusive to builders.** Changing a selected alias can update a SQL-file caller's type too, once its query code is regenerated. The stronger builder argument is that callers can keep extending a shared query while its references and result shape stay connected.
 
 A builder has an API to learn alongside SQL. A self-contained statement may read best as SQL; a complex recursive query can still be a good SQL file. For model mapping and related writes, see [query builders vs ORMs](/docs/comparisons/query-builder-vs-orm).
 
@@ -348,14 +347,14 @@ function findAssetsFromFiles(options: AssetOptions) {
 
 </details>
 
-The tested Prisma TypedSQL 7.10.1 output describes `tags` as `JsonValue | null`; Kysely infers the nested `{ id: string; name: string }[]`. That is a finding about this tool and version. Reylo also documents nested JSON inference; SQL-file tools should be assessed individually.
+The tested Prisma TypedSQL 7.10.1 output describes `tags` as `JsonValue | null`; Kysely infers the nested `{ id: string; name: string }[]`. That is a finding about this tool and version. SQL-file tools should be assessed individually.
 
-[PgTyped documents nullable predicates instead of query composition](https://pgtyped.dev/docs/dynamic-queries). [TypedSQL documents its dynamic-column limit](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql#dynamic-sql-queries-with-dynamic-columns). Reylo documents parameter-driven filtering and sorting; [sqlc macros](https://docs.sqlc.dev/en/stable/reference/macros.html) add tool-specific preprocessing. Supporting parameters or macros does not by itself mean an application can extend a checked statement with an arbitrary join or selection.
+[PgTyped documents nullable predicates instead of query composition](https://pgtyped.dev/docs/dynamic-queries). [TypedSQL documents its dynamic-column limit](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql#dynamic-sql-queries-with-dynamic-columns). [sqlc macros](https://docs.sqlc.dev/en/stable/reference/macros.html) add tool-specific preprocessing. Supporting parameters or macros does not by itself mean an application can extend a checked statement with an arbitrary join or selection.
 
 <details>
 <summary>Versions and verification</summary>
 
-The complete asset-listing implementations were checked with **Kysely 0.29.7**, **Postgres.js 3.4.9**, **Slonik 49.11.0**, and generated **Prisma TypedSQL 7.10.1** across **48 PostgreSQL option combinations**, plus pagination and binding checks. The fixtures cover empty tags, omitted keys, selected aliases, and a 50-row page with a 60-row total. These are correctness checks, not performance benchmarks. SafeQL, Reylo, PgTyped, and sqlc capabilities above describe their documentation; these tools are not executed by this suite. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
+The complete asset-listing implementations were checked with **Kysely 0.29.7**, **Postgres.js 3.4.9**, **Slonik 49.11.0**, and generated **Prisma TypedSQL 7.10.1** across **48 PostgreSQL option combinations**, plus pagination and binding checks. The fixtures cover empty tags, omitted keys, selected aliases, and a 50-row page with a 60-row total. These are correctness checks, not performance benchmarks. SafeQL, PgTyped, and sqlc capabilities above describe their documentation; these tools are not executed by this suite. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
 
 </details>
 
@@ -389,21 +388,20 @@ db.selectFrom('asset')
 
 TypeScript 6 and 7 both report all three operations in this example. **Feedback arrives while editing, without submitting the query or reaching the application path that executes it.** Completion also offers the tables, columns, and operations available at the current point in the builder.
 
-Raw-SQL tools can move feedback earlier too. SafeQL supplies editor diagnostics, and Reylo maps database errors into SQL files. A generator can reject an invalid statement before application execution. Assess the actual feedback loop: where an error appears, how many problems a check exposes, and whether the checked form covers your conditional query. Kysely's compiler checks still do not replace database validation: raw expressions, stale schema declarations, constraints, and SQL rules beyond its types can fail at the database.
+Raw-SQL tools can move feedback earlier too. SafeQL supplies editor diagnostics for supported SQL. A generator can reject an invalid statement before application execution. Assess the actual feedback loop: where an error appears, how many problems a check exposes, and whether the checked form covers your conditional query. Kysely's compiler checks still do not replace database validation: raw expressions, stale schema declarations, constraints, and SQL rules beyond its types can fail at the database.
 
 ### Query changes can require generation even when the schema is stable
 
 **A query changes more often than its tables need to.** Adding a selection, changing a filter, or renaming an alias can require refreshing generated query code even when the database schema has been unchanged for months. A watcher can automate that step, but the generator and its schema inputs still participate in the editing loop.
 
-| Tool                                                                                      | Schema input for checking                                                  | What happens after a query edit?                                                                                            |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Kysely                                                                                    | Existing TypeScript database declarations.                                 | TypeScript checks the builder and re-infers its result; no per-query generation or live connection is required.             |
-| [PgTyped](https://pgtyped.dev/docs/cli)                                                   | A running PostgreSQL database.                                             | Run generation, manually or in watch mode, to refresh typed query code.                                                     |
-| [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | A database connection for generation.                                      | Refresh query functions with `prisma generate --sql`, optionally in watch mode.                                             |
-| [sqlc](https://docs.sqlc.dev/en/stable/howto/generate.html)                               | Local schema/query files by default; database-backed analysis is optional. | Run generation to refresh application code, including TypeScript plugin output.                                             |
-| [Reylo](https://reylo.dev/)                                                               | A live database in its documented PostgreSQL workflow.                     | Changed queries are checked against the database through the compiler integration, without a separate code-generation step. |
+| Tool                                                                                      | Schema input for checking                                                  | What happens after a query edit?                                                                                |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Kysely                                                                                    | Existing TypeScript database declarations.                                 | TypeScript checks the builder and re-infers its result; no per-query generation or live connection is required. |
+| [PgTyped](https://pgtyped.dev/docs/cli)                                                   | A running PostgreSQL database.                                             | Run generation, manually or in watch mode, to refresh typed query code.                                         |
+| [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | A database connection for generation.                                      | Refresh query functions with `prisma generate --sql`, optionally in watch mode.                                 |
+| [sqlc](https://docs.sqlc.dev/en/stable/howto/generate.html)                               | Local schema/query files by default; database-backed analysis is optional. | Run generation to refresh application code, including TypeScript plugin output.                                 |
 
-**Reylo removes the code-generation step; query edits still require database-backed analysis.** Kysely separates schema declarations from individual query inference. Adding `owner_id` to the export above uses the existing declarations; the result changes immediately through TypeScript. If the schema itself changes, update or regenerate those declarations. A live database is still needed to test runtime behavior, but it does not need to participate in every query's static check.
+**Kysely separates schema declarations from individual query inference.** Adding `owner_id` to the export above uses the existing declarations; the result changes immediately through TypeScript. If the schema itself changes, update or regenerate those declarations. A live database is still needed to test runtime behavior, but it does not need to participate in every query's static check.
 
 ## Keeping SQL and TypeScript result types in sync
 
@@ -639,7 +637,7 @@ Raw SQL can express these operations too. The builder's value is carrying checke
 
 ## When to choose raw SQL or Kysely
 
-**Choose raw SQL when writing the statement directly is the clearest workflow for your team.** SQL templates suit queries composed close to application code; typed SQL files suit complete statements reviewed and edited as SQL. Runtime schemas, SQL-aware checkers, typed imports, and generators can provide strong guarantees. Complexity alone does not require a builder.
+**Choose raw SQL when writing the statement directly is the clearest workflow for your team.** SQL templates suit queries composed close to application code; typed SQL files suit complete statements reviewed and edited as SQL. Runtime schemas, SQL-aware checkers, and generated query APIs can provide strong guarantees. Complexity alone does not require a builder.
 
 For a SQL-file tool, try the next conditional join, selection, and shared filter. Check how much stays database SQL, what becomes tool-specific syntax, and what must be translated to reproduce a request in TablePlus. A file that looks like SQL can still carry a substantial query-construction API.
 

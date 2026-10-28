@@ -51,10 +51,6 @@ export function SqlQueryWorkflows() {
           <h3>SQL / SQLish in SQL files</h3>
           <ul>
             <li>
-              <a href="https://reylo.dev/">Reylo</a>
-              <span>Typed SQL-file imports</span>
-            </li>
-            <li>
               <a href="https://pgtyped.dev/docs/">PgTyped</a>
               <span>Generated typed query objects</span>
             </li>
@@ -70,8 +66,8 @@ export function SqlQueryWorkflows() {
             </li>
           </ul>
           <p>
-            Write SQL with tool-specific parameters or syntax, then import or
-            generate typed calls.
+            Write SQL with tool-specific parameters or syntax, then generate
+            typed calls.
           </p>
         </div>
       </div>
