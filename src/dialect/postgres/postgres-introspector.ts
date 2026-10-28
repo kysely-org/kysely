@@ -52,7 +52,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'a.attnotnull as not_null',
         'a.atthasdef as has_default',
         'c.relname as table',
-        'c.relkind as table_type',
+        // `relkind` has the internal type "char", which some drivers
+        // (e.g. the RDS Data API) can't return. Cast it to text.
+        sql<string>`c.relkind::text`.as('table_type'),
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
@@ -65,7 +67,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           'auto_incrementing',
         ),
       ])
-      .where('c.relkind', 'in', [
+      .where(sql<string>`c.relkind::text`, 'in', [
         'r' /*regular table*/,
         'v' /*view*/,
         'p' /*partitioned table*/,
