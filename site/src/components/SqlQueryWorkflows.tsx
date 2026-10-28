@@ -17,8 +17,7 @@ export function SqlQueryWorkflows() {
               <a href="https://knexjs.org/guide/query-builder.html">Knex</a>
             </li>
             <li>
-              <a href="https://orm.drizzle.team/docs/select">Drizzle</a>
-              <span>SQL query API</span>
+              <a href="https://jawj.github.io/zapatos/">Zapatos</a>
             </li>
           </ul>
           <p>
@@ -41,10 +40,6 @@ export function SqlQueryWorkflows() {
             <li>
               <a href="https://safeql.dev/">SafeQL</a>
               <span>Schema-aware SQL checking</span>
-            </li>
-            <li>
-              <a href="https://jawj.github.io/zapatos/">Zapatos</a>
-              <span>SQL templates and typed query helpers</span>
             </li>
           </ul>
           <p>
