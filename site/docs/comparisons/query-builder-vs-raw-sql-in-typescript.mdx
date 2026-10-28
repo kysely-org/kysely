@@ -1,51 +1,66 @@
 ---
 sidebar_position: 2
 title: SQL query builder vs raw SQL in TypeScript
-description: 'Compare tested dynamic queries in Kysely, Postgres.js, and Slonik: optional joins and JSON results, result-type drift, shared filters, and SafeQL boundaries.'
+description: 'Compare SQL query builders and raw SQL in TypeScript: query composition, inferred results, SQL injection, performance, and when to choose Kysely or SQL templates.'
 ---
 
 # SQL query builder vs raw SQL in TypeScript
 
-Kysely updates the result type as you change a selection, join, or optional field. SQL-template clients compose fragments too; their result annotations or schemas describe the output separately.
+**A SQL query builder constructs SQL through a programming language API; raw SQL expresses the statement directly.** Both let you choose the tables, joins, subqueries, and expressions the database executes. A builder can preserve that control while making queries easier to extend and reuse in application code.
 
-Checked **Kysely 0.29.7**, **Postgres.js 3.4.9**, and **Slonik 49.11.0** across the same **48 PostgreSQL fixture cases**, plus pagination and binding checks. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
+**The difference becomes useful as queries change.** A list gains optional filters, an export reuses those filters with different selections, and a detail view adds nested data. Kysely lets those queries share typed building blocks, checking references and inferring each result as you extend them.
 
-## The selected name changes: does the type follow?
+Raw SQL is a good fit for self-contained statements and workflows with effective SQL checking. SQL-template clients also compose fragments and bind parameters. The question is what your tools keep checked as the fragments, selections, and callers change.
 
-Assume configured clients and an `asset` table with string `id` and `name` columns. Rename the selected `name` to `label`. The stale Postgres.js annotation compiles:
+## What is the difference between a query builder and raw SQL?
+
+With raw SQL, you write the statement and pass values separately, through placeholders or a client's tagged template. With a builder, you call operations such as `selectFrom`, `where`, and `innerJoin`; the library compiles those operations into SQL and parameters.
+
+| Concern                      | SQL query builder                                                    | Raw SQL in application code                                                                                |
+| ---------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Express a statement          | Compose clauses and expressions through an API.                      | Write SQL directly, optionally with reusable fragments.                                                    |
+| Reuse a query                | Extend a shared builder with new clauses or selections.              | Share SQL fragments or functions that construct statements.                                                |
+| Check references and results | Depends on the builder; Kysely checks references and infers results. | Depends on the tooling; annotations, runtime schemas, and SQL-aware checkers provide different guarantees. |
+| Use a database feature       | Use the builder operation or an embedded SQL expression.             | Use the database's SQL syntax directly.                                                                    |
+| Understand execution         | Inspect the generated SQL and its plan.                              | Inspect the written SQL and its plan.                                                                      |
+
+A builder has an API to learn alongside SQL. A short, stable statement may be clearest as SQL, especially when a team already has SQL editing and checking tools. The examples below show where Kysely's API starts saving recurring work.
+
+This comparison uses SQL embedded in TypeScript, through Postgres.js and Slonik, with PostgreSQL examples. Queries maintained as separate SQL files have a different editing and generation workflow. For model mapping and related writes, see [query builders vs ORMs](/docs/comparisons/query-builder-vs-orm).
+
+## Composing optional filters, joins, and selections
+
+An asset list starts with an owner's assets, sorted by name and ID and limited to 50. Assume configured clients and an `asset` table with string `id`, `name`, and `owner_id` columns.
+
+With Postgres.js, the statement is close to the SQL you would run in a console:
 
 ```ts
 const rows = await sql<{ id: string; name: string }[]>`
-  select id, name as label from asset order by id limit 1
+  select id, name from asset
+  where owner_id = ${ownerId}
+  order by name, id
+  limit 50
 `
-
-rows[0]?.name // Typed as a string property; actually undefined.
 ```
 
-Kysely infers the new field:
+With Kysely, the same operations use its builder API:
 
 ```ts
 const rows = await db
   .selectFrom('asset')
-  .select(['id', 'name as label'])
+  .select(['id', 'name'])
+  .where('owner_id', '=', ownerId)
+  .orderBy('name')
   .orderBy('id')
-  .limit(1)
+  .limit(50)
   .execute()
-
-rows[0]?.label // string | undefined
-rows[0]?.name // TypeScript error
+// Inferred: { id: string; name: string }[]
 ```
 
-With Slonik, a result schema that still requires `name` compiles, then fails configured runtime validation. Kysely rejects the stale caller before execution.
-
-## One endpoint, three implementations
-
-List an owner's assets with optional album/prefix filters and optional nested tags. Sort by name and ID; limit to 50.
-
-Assume one row per album/asset pair. The prefix filter uses SQL LIKE-pattern semantics.
+Both handle this query well. Now the list needs an optional album filter and name prefix. The album filter adds both a join and a predicate; other requests should omit them.
 
 <details>
-<summary>Database types and request options</summary>
+<summary>Database types and request options for the following examples</summary>
 
 ```ts
 interface Database {
@@ -56,8 +71,6 @@ interface Database {
 }
 ```
 
-Request options:
-
 ```ts
 type AssetOptions = {
   ownerId: string
@@ -67,11 +80,13 @@ type AssetOptions = {
 }
 ```
 
+Assume a `Kysely<Database>` instance named `db`, one row per album/asset pair, and PostgreSQL. The prefix filter uses SQL LIKE-pattern semantics: `%` and `_` in the input remain wildcards.
+
 </details>
 
-### Kysely: compose clauses and infer the result
+### Add the optional join and filters
 
-Share the filters:
+Put the shared query in a function. Kysely's `$if` applies each addition when its condition is true:
 
 ```ts
 function matchingAssets(options: AssetOptions) {
@@ -89,7 +104,65 @@ function matchingAssets(options: AssetOptions) {
 }
 ```
 
-Add fields and optional tags, using `jsonArrayFrom` from `kysely/helpers/postgres`:
+The join and its album predicate are composed together. Inside that branch, Kysely checks references against the added table. The non-null assertions correspond to the conditions outside the callbacks.
+
+Postgres.js can express the same condition with fragments:
+
+```ts
+const albumJoin =
+  options.albumId !== undefined
+    ? sql`inner join album_asset on album_asset.asset_id = asset.id`
+    : sql``
+const albumFilter =
+  options.albumId !== undefined
+    ? sql`and album_asset.album_id = ${options.albumId}`
+    : sql``
+```
+
+Those fragments compose the SQL, but their TypeScript types alone do not establish whether `album_asset` is present wherever its columns are referenced. SQL-aware tools can add checks; their supported composition forms matter too.
+
+### Reuse the filters for a list, count, and export
+
+The list chooses its fields and pagination after calling `matchingAssets`:
+
+```ts
+const assets = await matchingAssets(options)
+  .select(['asset.id', 'asset.name'])
+  .orderBy('asset.name')
+  .orderBy('asset.id')
+  .limit(50)
+  .execute()
+// Inferred: { id: string; name: string }[]
+```
+
+The total reuses the same filters without inheriting the list's limit:
+
+```ts
+function assetCount(options: AssetOptions) {
+  return matchingAssets(options).select((eb) =>
+    eb.cast<number>(eb.fn.countAll(), 'integer').as('count'),
+  )
+}
+```
+
+Execute with `await assetCount(options).executeTakeFirstOrThrow()`. PostgreSQL's integer cast makes the count a JavaScript number within the PostgreSQL integer range.
+
+An export adds `owner_id` and omits pagination:
+
+```ts
+const exportedAssets = await matchingAssets(options)
+  .select(['asset.id', 'asset.name', 'asset.owner_id'])
+  .orderBy('asset.name')
+  .orderBy('asset.id')
+  .execute()
+// Inferred: { id: string; name: string; owner_id: string }[]
+```
+
+**Each consumer chooses its result and clauses while sharing the filtering rules.** Kysely's builders are immutable, so extending one does not change another. A SQL-template implementation can share the join and filter fragments too; its result annotations or schemas still need to describe each consumer separately.
+
+### Add optional nested tags
+
+The list now needs tags when requested. Add a correlated JSON subquery using `jsonArrayFrom` from `kysely/helpers/postgres`:
 
 ```ts
 function assetListing(options: AssetOptions) {
@@ -115,7 +188,56 @@ function assetListing(options: AssetOptions) {
 
 Execute with `await assetListing(options).execute()`. Inferred: `{ id: string; name: string; tags?: { id: string; name: string }[] }[]`.
 
-Requested tags use `[]` when none exist; unrequested tags omit the key and subquery. See [conditional selects](/docs/recipes/conditional-selects) and [nested relations](/docs/recipes/relations).
+Requested tags use `[]` when none exist; unrequested tags omit the key and subquery. The nested query keeps the outer result at one row per asset. Kysely checks the inner table references and their reference to the outer `asset`, then carries the nested result shape into `tags`.
+
+The optional property reflects the runtime condition: callers must account for tags being absent. See [conditional selects](/docs/recipes/conditional-selects) and [nested relations](/docs/recipes/relations).
+
+<details>
+<summary>Versions and verification</summary>
+
+The complete asset-listing implementations were checked with **Kysely 0.29.7**, **Postgres.js 3.4.9**, and **Slonik 49.11.0** across **48 PostgreSQL option combinations**, plus pagination and binding checks. The fixtures cover empty tags, omitted keys, selected aliases, and a 50-row page with a 60-row total. These are correctness checks, not performance benchmarks. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
+
+</details>
+
+## Keeping SQL and TypeScript result types in sync
+
+**Type inference connects the query you change to the callers that use it.** The distinction is clearest when a selection changes after the original implementation.
+
+Rename the selected `name` to `label`. Without an additional SQL checker, a stale Postgres.js annotation still compiles:
+
+```ts
+const rows = await sql<{ id: string; name: string }[]>`
+  select id, name as label from asset order by id limit 1
+`
+
+rows[0]?.name // Typed as a string property; actually undefined.
+```
+
+Kysely infers the new field:
+
+```ts
+const rows = await db
+  .selectFrom('asset')
+  .select(['id', 'name as label'])
+  .orderBy('id')
+  .limit(1)
+  .execute()
+
+rows[0]?.label // string | undefined
+rows[0]?.name // TypeScript error
+```
+
+With Slonik, a result schema that still requires `name` compiles, then fails configured runtime validation. Kysely rejects the stale caller before execution.
+
+### Can raw SQL be type-safe?
+
+Yes. A handwritten annotation is one option, and does not check the SQL by itself. Runtime schemas can validate actual rows. SQL-aware tools can check statements against a database schema and help maintain their result types.
+
+[SafeQL](https://safeql.dev/) checks supported SQL calls against PostgreSQL. Its [Postgres.js support matrix](https://safeql.dev/compatibility/postgres.js.html#support-matrix) supports direct nested fragments but excludes conditional fragment selection, including the ternaries in the asset example. Check the supported forms against the queries you actually need to compose.
+
+Kysely checks its builder composition through TypeScript. That depends on accurate database declarations and the driver's runtime value mapping. It does not validate returned rows or convert values to match the declared types. [Generating database types](/docs/generating-types) helps keep declarations aligned with the schema; runtime validation can still be useful at application boundaries.
+
+Raw `sql<T>` expressions in Kysely also declare their result type explicitly. SafeQL's [Kysely integration](https://safeql.dev/compatibility/kysely.html) checks supported raw forms. These capabilities belong to particular tools: result inference is not a guarantee every query builder provides.
 
 ### Postgres.js: fragments plus a result annotation
 
@@ -229,41 +351,68 @@ function findAssetsWithSlonik(options: AssetOptions) {
 
 The schema is separately maintained. A required-field mismatch fails at runtime, rather than changing the expected type from the SQL.
 
-## How the endpoint changes
+### What changes with each requirement?
 
-| Change                        | Kysely                                               | Postgres.js                                           | Slonik with result validation                                |
-| ----------------------------- | ---------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
-| Add a conditional album join  | Builder checks the added table in the query context. | Compose join and filter fragments.                    | Compose join and filter fragments.                           |
-| Add optional nested tags      | Infer the nested row shape and optional property.    | Update the result annotation as well as the SQL.      | Update the result schema as well as the SQL.                 |
-| Rename a selected field       | Callers see the new inferred field.                  | A stale annotation can still compile.                 | A stale required-field schema fails when a row is validated. |
-| Reuse the filters for a count | Extend the shared builder with a count selection.    | Share SQL fragments and supply the count result type. | Share SQL fragments and supply the count result schema.      |
+| Change                              | Kysely                                            | Postgres.js                                           | Slonik with result validation                                |
+| ----------------------------------- | ------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| Add a conditional album join        | Check references in the extended query context.   | Compose join and filter fragments.                    | Compose join and filter fragments.                           |
+| Reuse filters for a count or export | Extend the shared builder; infer each result.     | Share fragments and supply each result annotation.    | Share fragments and supply each result schema.               |
+| Add optional nested tags            | Infer the nested row shape and optional property. | Update the result annotation as well as the SQL.      | Update the result schema as well as the SQL.                 |
+| Rename a selected field             | Callers see the new inferred field.               | Without SQL checking, a stale annotation can compile. | A stale required-field schema fails when a row is validated. |
 
-## What SafeQL can check
+**The builder keeps references, composition, and inferred results connected as the query changes.** SQL templates retain direct SQL syntax and can add checking through other tools. Slonik's runtime validation checks actual returned values, which Kysely's inference does not do.
 
-[SafeQL](https://safeql.dev/) can check supported SQL calls against PostgreSQL schema; annotations are not the only checking option.
+## SQL injection and parameter binding
 
-Its [Postgres.js support matrix](https://safeql.dev/compatibility/postgres.js.html#support-matrix) supports direct nested fragments but excludes conditional fragment selection, including the ternaries above.
+**Both approaches can bind values safely.** The examples pass owner IDs, album IDs, and prefixes as parameters. Postgres.js and Slonik bind interpolated values; Kysely binds values passed to operations such as `where`. Plain SQL clients such as [node-postgres also support parameterized queries](https://node-postgres.com/features/queries#parameterized-query).
 
-Kysely checks builder composition through TypeScript. Raw `sql<T>` still asserts its result; SafeQL's [Kysely integration](https://safeql.dev/compatibility/kysely.html) checks supported raw forms.
+Choosing a builder is not a substitute for using parameters correctly. Avoid concatenating untrusted input into SQL text. Parameters represent values, not SQL syntax: a user-selected sort column needs an allowed-column mapping or the client's identifier API. Kysely's checked column names help when the choices are known to TypeScript; an unchecked cast does not validate request input.
 
-## SQL coverage without leaving the builder
+## Generated SQL and performance
 
-Other builder APIs: [Immich's `filterWhere`](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L710-L722), [Langfuse's window-ranking catalog](https://github.com/langfuse/langfuse/blob/536c2d6905d4311cc7c2b177454a084907328c43/packages/shared/src/server/query-ast/catalog.ts#L230-L250), and [Docmost's recursive CTEs](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373).
+**Compare statements and execution plans to assess database performance.** A builder does not inherently make a query faster, and handwritten SQL does not inherently produce a better plan. The joins, predicates, indexes, row counts, and database behavior still matter.
 
-Embedded SQL supports those operations too. Kysely checks their structure and permits a [local SQL fragment](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) where needed; that fragment's grammar and result type remain unchecked.
+Kysely exposes its statement and parameters before execution:
 
-## Composition in production
+```ts
+const compiled = assetListing(options).compile()
+// compiled.sql: SQL text with placeholders
+// compiled.parameters: bound values
+```
 
-These production queries show composition beyond the asset illustration:
+Use [`.compile()`](/docs/recipes/splitting-query-building-and-execution) to inspect whether a request includes the album join or tags subquery. Compare plans and timings against representative data, and measure application overhead separately if it matters to your workload. The fixture checks above establish equivalent results, not a speed ranking.
 
-- [Immich](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L570-L624): optional relation selections and a lateral subquery for stacked assets.
-- [Open Collective](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L780-L826): conditional currency conversion through a correlated exchange-rate lookup.
+Both approaches let you rewrite a join as a subquery or adjust the ordering. With Kysely, that edit can stay in the shared builder and update the inferred result for its callers.
 
-## Agent experience
+## Using raw SQL inside a query builder
 
-Kysely's [installed-version examples](https://github.com/kysely-org/kysely/blob/v0.29.7/src/query-builder/select-query-builder.ts) give agents API guidance alongside compiler feedback. Postgres.js documents composition in its README; Slonik documents its helpers.
+A builder can cover most of a statement while SQL expresses one local operation. For example, add a lowercase name to the shared query:
 
-## Dependency footprint
+```ts
+import { sql as kyselySql } from 'kysely'
+
+const normalizedAssets = await matchingAssets(options)
+  .select(['asset.id', 'asset.name'])
+  .select((eb) =>
+    kyselySql<string>`lower(${eb.ref('asset.name')})`.as('normalized_name'),
+  )
+  .execute()
+// Inferred: { id: string; name: string; normalized_name: string }[]
+```
+
+The builder still checks the `asset.name` reference and composes the filters. The SQL fragment's `string` result is an explicit declaration; Kysely does not check the `lower(...)` grammar or verify that result type. See [raw expressions](/docs/recipes/raw-sql) and the [SQL template API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
+
+This lets you adopt a builder for the parts that benefit from composition and keep SQL where it reads best. Using an expression does not require turning the whole statement into a raw query.
+
+## Query composition in production
+
+The same approach extends beyond the asset illustration:
+
+- [Immich](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L570-L624) composes optional relation selections and a lateral subquery for stacked assets. Different requests extend the query with different data.
+- [Open Collective](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L780-L826) conditionally adds currency conversion through a correlated exchange-rate lookup. A request option changes the selected expression.
+- [Docmost](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L325-L373) composes recursive ancestors for page restrictions. Traversal, joins, and filtering use the same builder interface as simpler queries.
+
+Raw SQL can express these operations too. The builder's value is carrying checked references and results through the application code that composes them.
 
 <details>
 <summary>Measured package sizes and dependency trees</summary>
@@ -276,16 +425,20 @@ PostgreSQL dependency trees:
 | Slonik 49.11.0 + pg 8.23.1              | 14                            | 45                         |
 | Postgres.js 3.4.9, including its driver | 0                             | **1**                      |
 
-Postgres.js is smallest: **46.5 KiB** compressed. Slonik's own package is **163.8 KiB**, Kysely's **318.3 KiB**; Kysely's edge over Slonik is dependencies. Counts exclude added checkers such as SafeQL.
+The individual library tarballs are **46.5 KiB** compressed for Postgres.js, **163.8 KiB** for Slonik, and **318.3 KiB** for Kysely. Those sizes exclude dependencies and, for Kysely and Slonik, the driver. The table counts packages in the selected production trees; it does not compare their total bytes. Added checkers such as SafeQL are excluded.
 
-Measured **October 24, 2026**: [measurement details](https://github.com/kysely-org/kysely/blob/master/site/scripts/package-footprints.json), [script](https://github.com/kysely-org/kysely/blob/master/site/scripts/measure-package-footprints.mjs). Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks. CI caching reduces repeat downloads.
+Measured **October 24, 2026**: [measurement details](https://github.com/kysely-org/kysely/blob/master/site/scripts/package-footprints.json), [script](https://github.com/kysely-org/kysely/blob/master/site/scripts/measure-package-footprints.mjs). Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
 
 </details>
 
-## Choosing a workflow
+## When to choose raw SQL or Kysely
 
-Use embedded SQL when its fragment API and checking tools cover your queries. Slonik's runtime result validation can be independently useful.
+**Choose raw SQL when writing the statement directly is the clearest workflow for your team.** Self-contained queries, SQL tooling you already trust, and database-specific syntax can make that a good choice. SQL templates can handle conditional fragments; runtime schemas and SQL-aware checkers can add guarantees beyond handwritten annotations.
 
-Use Kysely for optional joins/selections and shared typed building blocks, with [raw expressions](/docs/recipes/raw-sql) where useful.
+**Choose Kysely when queries keep acquiring variations and you want their references and results checked as you compose them.** Shared filters, different list/export selections, optional joins, and nested results are recurring opportunities to reuse a builder. The benefit grows when a change in one query should produce compiler feedback in its callers.
 
-Start with an endpoint that repeats filters or maintains a result annotation separately from its SQL. Move that query, inspect `.compile()`, and compare rows, ordering, and optional fields before switching the caller. [Get started](/docs/getting-started).
+You still need SQL knowledge and must learn Kysely's API. A builder does not choose indexes, prove that a join preserves row counts, or validate actual returned values. In return, the statement's structure and its TypeScript result can evolve together, with local SQL expressions where useful.
+
+Start with one endpoint that repeats filters or maintains a result annotation separately from its SQL. Move that query, inspect `.compile()`, and compare rows, ordering, pagination, and optional fields before switching the caller. Other queries can continue using their existing clients.
+
+[Get started with Kysely](/docs/getting-started), explore [query examples](/docs/category/examples), or learn how to [generate database types](/docs/generating-types).
