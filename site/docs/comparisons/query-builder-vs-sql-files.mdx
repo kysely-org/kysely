@@ -1,0 +1,516 @@
+---
+sidebar_position: 3
+title: SQL query builder vs typed SQL files in TypeScript
+description: 'Compare Kysely with SQL code generators PgTyped, Prisma TypedSQL, and sqlc: typed SQL files, nullable parameters, shared rules, regeneration loops, and when each fits.'
+---
+
+# SQL query builder vs typed SQL files in TypeScript
+
+**A typed SQL file is checked whole because it never changes shape. Composition moves into SQL, into the database, or into another file.** SQL code generators such as [PgTyped](https://pgtyped.dev/docs/), [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql), and [sqlc](https://docs.sqlc.dev/) read a statement from a `.sql` file, derive its parameter and result types from the database or its schema, and generate a typed call for application code. The statement is verified as SQL, which is the strongest check raw SQL can get. The price is that the statement cannot be extended by the code that calls it.
+
+Kysely composes SQL through a TypeScript API, checks each operation against your database declarations, and infers the result. It never sees a whole statement until it compiles one, so it verifies less about any single statement and more about how application code assembles them. This page is the counterpart of [SQL query builder vs raw SQL in TypeScript](/docs/comparisons/query-builder-vs-raw-sql), which covers SQL templates and SafeQL.
+
+The examples follow the same asset list: an owner's assets with an optional album filter, an optional name prefix, a count that shares the filters, and optional nested tags. All three SQL-file tools were run against the same PostgreSQL fixtures as Kysely, and their generated types are quoted as generated.
+
+## A generator derives types the builder can only declare
+
+**For a fixed statement, a generator's types come from the database; Kysely's come from declarations you maintain.** The count query shows the difference. In Kysely, `count(*)` returns PostgreSQL's `bigint`, which node-postgres delivers as a string, so the query casts and declares the result:
+
+```ts
+function assetCount(options: AssetOptions) {
+  return matchingAssets(options).select((eb) =>
+    eb.cast<number>(eb.fn.countAll(), 'integer').as('count'),
+  )
+}
+```
+
+The `number` is a declaration. Kysely checks that `count` is the alias the caller uses; it does not check that the cast exists or that the driver returns a number. A SQL-file tool asks the database, or its own analysis of the schema, what the statement returns, and writes that down:
+
+```ts title="Generated result types for countAssets"
+// Prisma TypedSQL 7.10.1
+type Result = { count: number | null }
+
+// PgTyped 2.4.3
+interface ICountAssetsResult {
+  count: number | null
+}
+
+// sqlc-gen-typescript 0.1.3
+interface CountAssetsRow {
+  count: number
+}
+```
+
+Two of the three say the count may be null. `count(*)` never returns null, but PgTyped and TypedSQL derive nullability from the catalog, and an expression has no catalog entry, so they decline to promise. PgTyped documents an alias suffix, `as "count!"`, to override that per column. sqlc says `number` and instead wraps the whole row as `CountAssetsRow | null`, for a no-row case that `count(*)` never produces either. **Derived types are exact about what the database proves and pessimistic about what it cannot.** The `number` is right in all three, and the extra null is the cost of not declaring.
+
+The same holds for every function, cast, and expression in a statement. A misspelled column in a SQL file fails generation with the database's own message, and an expression's type is whatever the database reports. On the raw SQL page, [a ranked report with two window functions](/docs/comparisons/query-builder-vs-raw-sql#whole-statements-are-raw-sqls-home-ground) carries declared `number` types in Kysely; from a SQL file, those columns are typed from the database.
+
+There is a second advantage that has nothing to do with types. **A `.sql` file is reviewed as SQL.** A database specialist can own it, a reviewer who does not write TypeScript can read it, and the statement in the file is the statement the database runs, give or take the tool's parameter syntax. When a team's statements are written once and tuned in a SQL workflow, that is the right unit of work, and a builder's composition API is overhead.
+
+## Optional filters become nullable parameters
+
+Every tool here holds the statement fixed, so the list's optional album and prefix filters cannot add or remove clauses. They become nullable parameters guarded by `is null or`. Album membership uses `exists` rather than a join, because the join cannot be conditional either. With Prisma TypedSQL, parameters are typed by comments and the statement is otherwise plain SQL with `$1` placeholders:
+
+```sql title="findAssets.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select asset.id, asset.name
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+PgTyped names parameters with a colon and marks required ones with `!`:
+
+```sql title="pgtyped/findAssets.sql"
+/* @name findAssets */
+select asset.id, asset.name
+from asset
+where asset.owner_id = :ownerId!
+  and (:albumId::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = :albumId
+  ))
+  and (:namePrefix::text is null or asset.name like :namePrefix || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+sqlc names them with `sqlc.arg` and marks nullable ones with `sqlc.narg`; its three queries share one file, shown in full under [complete PgTyped and sqlc files](#complete-pgtyped-and-sqlc-files). Each tool then types the parameters its own way:
+
+```ts title="Generated parameter types for findAssets"
+// Prisma TypedSQL: positional arguments
+type Parameters = [
+  ownerId: string,
+  albumId: string | null,
+  namePrefix: string | null,
+]
+
+// PgTyped: an object; nullable parameters may be omitted
+interface IFindAssetsParams {
+  ownerId: string
+  albumId?: string | null | void
+  namePrefix?: string | null | void
+}
+
+// sqlc: an object; nullable parameters must be passed, as null
+interface FindAssetsArgs {
+  ownerId: string
+  albumId: string | null
+  namePrefix: string | null
+}
+```
+
+Passing an optional request field straight through works for PgTyped and is a type error for sqlc and TypedSQL until the application converts `undefined` to `null`. That is a small cost, and a real one: the request's shape and the statement's shape are different contracts, and the conversion is where they meet.
+
+[PgTyped's documentation](https://pgtyped.dev/docs/dynamic-queries) states the design directly: "pgTyped doesn't support query composition or concatenation", and "forces you to move the dynamic logic into the SQL layer". It adds that "highly dynamic SQL queries can lead to worse DB execution times". That warning is about the planner. A statement with `($2::text is null or ...)` is one statement for every combination of filters, and PostgreSQL plans it as one: after five executions of a prepared statement it [compares a generic plan with the custom plans](https://www.postgresql.org/docs/current/sql-prepare.html#SQL-PREPARE-NOTES) and may keep the generic one, which cannot assume the album filter is present. Separate statement variants avoid that, at the cost of another file per variant.
+
+With Kysely, the conditional lives in application code and each request compiles only the clauses it uses:
+
+```ts
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$if(options.albumId !== undefined, (qb) =>
+      qb
+        .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+        .where('album_asset.album_id', '=', options.albumId!),
+    )
+    .$if(options.namePrefix !== undefined, (qb) =>
+      qb.where('asset.name', 'like', options.namePrefix! + '%'),
+    )
+}
+```
+
+A request without an album sends no `album_asset` reference at all, and the join is checked against the added table inside its callback. Neither approach is free: the fixed statement asks the planner to handle every combination, and the composed one asks the application to own the combinations.
+
+<details>
+<summary>Database types and request options for the following examples</summary>
+
+```ts
+interface Database {
+  asset: { id: string; name: string; owner_id: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+```
+
+```ts
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+```
+
+Assume a `Kysely<Database>` instance named `db`, one row per album/asset pair, and PostgreSQL. The prefix filter uses SQL LIKE-pattern semantics: `%` and `_` in the input remain wildcards.
+
+</details>
+
+## Shared rules live in every file, or in the database
+
+The count needs the same matching rules with a different selection and no limit:
+
+```sql title="countAssets.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select count(*)::integer as count
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%');
+```
+
+**Checking both statements does not establish that their filtering rules agree.** Each file is verified on its own. A new visibility rule, such as excluding archived albums, must reach the list, the count, and every export, and nothing in the generation step notices a file that was missed. A test that compares the count with the list's length does, which is what the fixtures for this page do.
+
+A database view or function can centralize the rule instead. The list and count then select from `visible_asset`, and the rule lives once, in the database, with the schema's migration and deployment lifecycle. That is a sound design when the rule is part of the data model; it is a heavier change when the rule belongs to one endpoint. sqlc's [`sqlc.embed`](https://docs.sqlc.dev/en/stable/reference/macros.html) reuses model structs across queries, and other tools have preprocessing or include facilities; none of them compose a predicate from application code.
+
+With Kysely, the rule goes into `matchingAssets` once and the list and the count inherit it:
+
+```ts
+const total = await assetCount(options).executeTakeFirstOrThrow()
+// Inferred: { count: number }
+```
+
+## Optional output means another statement
+
+The list needs tags when requested. A fixed statement can return a tags column and use `CASE` to skip the expensive expression, but it cannot remove the column: the fixtures confirm that `case when $1 then ... else null end as tags` still returns a `tags` key, as `null`. Returning `null` differs from omitting `tags`, and either contract can be useful. To keep the absent-key contract, a second statement selects the tags and TypeScript chooses between the typed calls:
+
+```sql title="findAssetsWithTags.sql"
+-- @param {String} $1:ownerId
+-- @param {String} $2:albumId?
+-- @param {String} $3:namePrefix?
+select asset.id, asset.name,
+  coalesce((
+    select json_agg(tag_rows)
+    from (
+      select tag.id, tag.name
+      from asset_tag
+      inner join tag on tag.id = asset_tag.tag_id
+      where asset_tag.asset_id = asset.id
+      order by tag.name
+    ) as tag_rows
+  ), '[]'::json) as tags
+from asset
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+  and ($3::text is null or asset.name like $3 || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+Assume generated query functions and a configured Prisma Client named `prisma`:
+
+```ts
+function findAssetsFromFiles(options: AssetOptions) {
+  if (options.includeTags) {
+    return prisma.$queryRawTyped(
+      findAssetsWithTags(
+        options.ownerId,
+        options.albumId ?? null,
+        options.namePrefix ?? null,
+      ),
+    )
+  }
+  return prisma.$queryRawTyped(
+    findAssets(
+      options.ownerId,
+      options.albumId ?? null,
+      options.namePrefix ?? null,
+    ),
+  )
+}
+```
+
+**A JSON column's shape is where derived types stop.** The database describes `tags` as `json`, and that is all a generator can know about it:
+
+```ts title="Generated tags types for findAssetsWithTags"
+// Prisma TypedSQL 7.10.1
+tags: JsonValue | null
+
+// PgTyped 2.4.3
+tags: Json | null
+
+// sqlc-gen-typescript 0.1.3
+tags: string | null
+```
+
+The `coalesce` guarantees a value and none of the three see through it. sqlc's `string` is also wrong for the `pg` driver, which parses `json` columns before the row reaches application code; the fixtures receive an array of tag objects where the type promises a string. The nested `{ id: string; name: string }[]` is known only to the code that wrote the subquery. Kysely wrote the subquery, so it carries the shape into the result:
+
+```ts
+function assetListing(options: AssetOptions) {
+  return matchingAssets(options)
+    .select(['asset.id', 'asset.name'])
+    .$if(options.includeTags, (qb) =>
+      qb.select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_tag')
+            .innerJoin('tag', 'tag.id', 'asset_tag.tag_id')
+            .select(['tag.id', 'tag.name'])
+            .whereRef('asset_tag.asset_id', '=', 'asset.id')
+            .orderBy('tag.name'),
+        ).as('tags'),
+      ),
+    )
+    .orderBy('asset.name')
+    .orderBy('asset.id')
+    .limit(50)
+}
+```
+
+```ts
+const assets = await assetListing(options).execute()
+// Inferred: { id: string; name: string; tags?: { id: string; name: string }[] }[]
+```
+
+Requested tags arrive as `[]` when none exist; unrequested tags omit the key and the subquery. The inner references are checked, including the one to the outer `asset`, and the nested shape is inferred rather than declared. A runtime schema at the boundary is still the only thing that verifies what the database actually returned, for either approach.
+
+## A caller cannot extend a generated call
+
+An export needs each asset's album ID for album requests. With Kysely, the export tries to select from the shared query and fails to compile, because `album_asset` is in scope only inside the branch that joins it; [the raw SQL page walks through that error](/docs/comparisons/query-builder-vs-raw-sql#a-consumer-cannot-reference-a-table-the-shared-query-only-sometimes-joins). With SQL files, the mistake cannot be made. There is no shared query to extend, so the export is a new file with its own `exists` or join, checked whole.
+
+**A generated call cannot be extended by its caller, which prevents the conditional-join mistake and also prevents the extension.** Every new selection, join, or ordering is a new statement or a new parameter, and [TypedSQL documents its dynamic-column limit](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql#dynamic-sql-queries-with-dynamic-columns) as a hand-off to unsafe raw queries. A team that needs few variants gets the stronger check for free. A team whose list, count, export, and admin view keep diverging accumulates files that must be kept in agreement by hand.
+
+## Generation puts a database or schema in the edit loop
+
+**Kysely checks query edits through TypeScript, with no per-query generation and no live connection. A SQL-file tool regenerates.** What it needs for that differs by tool, and the fixtures exercised each loop:
+
+| Tool                                                                                      | Schema input for checking                                                                                                                                                                     | What happens after a query edit?                                                                                |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Kysely                                                                                    | Existing TypeScript database declarations.                                                                                                                                                    | TypeScript checks the builder and re-infers its result; no per-query generation or live connection is required. |
+| [PgTyped](https://pgtyped.dev/docs/)                                                      | A running PostgreSQL database. It prepares each statement over the wire and reads column constraints from the catalog.                                                                        | Run generation, manually or in watch mode, to refresh the `.queries.ts` files.                                  |
+| [Prisma TypedSQL](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql) | A database connection for generation.                                                                                                                                                         | Refresh query functions with `prisma generate --sql`, optionally in watch mode.                                 |
+| [sqlc](https://docs.sqlc.dev/en/stable/howto/generate.html)                               | Local schema and query files; the fixtures ran it with no database. [Database-backed analysis](https://docs.sqlc.dev/en/stable/howto/managed-databases.html) is opt-in, for PostgreSQL today. | Run `sqlc generate` to refresh application code, including the TypeScript plugin's output.                      |
+
+For a coding agent, the loop is the difference between a type check and a service dependency. An agent editing a Kysely query verifies the edit with the compiler and the repository. An agent editing a `.sql` file needs the generator, and for PgTyped and TypedSQL a database with the current schema, before anything can tell it whether the edit was valid. sqlc's default analyzer parses locally from the schema files, which keeps that loop offline; its documentation notes that the built-in engine "can't handle some complex queries and type-inference", which is what the database-backed analyzer is for.
+
+Kysely's checks have their own dependency: the database declarations must match the schema, and [generating them](/docs/generating-types) is a step with a database in the loop too. It runs when the schema changes, not when a query does.
+
+## Tool syntax stands between the file and the console
+
+A SQL file is closest to the console when it is plain SQL. TypedSQL comes closest: its parameters are ordinary `$1` placeholders and its metadata lives in comments. PgTyped and sqlc add syntax that needs translation before the database can run the file. sqlc's [parameter macros](https://docs.sqlc.dev/en/stable/reference/macros.html) name inputs and control their nullability, and generation rewrites them to placeholders, folding repeated references to one parameter:
+
+```sql title="sqlc input"
+where asset.owner_id = sqlc.arg(owner_id)
+  and (sqlc.narg(album_id)::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = sqlc.narg(album_id)
+  ))
+```
+
+```sql title="Generated statement"
+where asset.owner_id = $1
+  and ($2::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = $2
+  ))
+```
+
+[PgTyped's syntax](https://pgtyped.dev/docs/sql-file) is similar in kind: `:name` placeholders, `!` for required, `@param` expansions for arrays and objects, and `@name` comments that name each query. Kysely needs compilation before its output runs in a console as well. With any of them, inspect the database-facing statement, supply parameters, tune it, and carry the change back into the source. The abstraction you learn is the price of the checking and reuse it supplies.
+
+## What changed as the requirements grew?
+
+| Requirement                                  | Kysely                                                                  | Typed SQL files                                                                                 |
+| -------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Optional album and prefix filters            | `$if` adds the join and predicates; each request compiles what it uses. | Nullable parameters with `is null or`; one statement for every combination, or one per variant. |
+| A count that shares the filters              | One function returns an unfinished query; the count selects from it.    | A second file repeats the predicates, or a view centralizes them.                               |
+| A new shared visibility rule                 | One edit in `matchingAssets` reaches every consumer.                    | One edit per file, or a schema change to the view.                                              |
+| Optional nested tags                         | A conditional selection; the nested shape is inferred.                  | A second statement; the JSON column is typed as JSON, or as a string.                           |
+| A consumer selects a sometimes-joined column | A type error at the consumer.                                           | Not expressible; the consumer gets its own statement.                                           |
+| Change a selected field                      | The caller's result type re-infers.                                     | Regenerate the typed call, with the tool's schema source available.                             |
+
+**A generator supplies the statement's types; your team supplies the agreement between statements.**
+
+## Other practical considerations
+
+<details id="complete-pgtyped-and-sqlc-files">
+<summary>Complete PgTyped and sqlc files</summary>
+
+PgTyped keeps one query per file here, generated into `.queries.ts` modules that export a `PreparedQuery` per statement. The suite's `pg` pool is passed as the connection:
+
+```sql title="pgtyped/countAssets.sql"
+/* @name countAssets */
+select count(*)::integer as count
+from asset
+where asset.owner_id = :ownerId!
+  and (:albumId::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = :albumId
+  ))
+  and (:namePrefix::text is null or asset.name like :namePrefix || '%');
+```
+
+```sql title="pgtyped/findAssetsWithTags.sql"
+/* @name findAssetsWithTags */
+select asset.id, asset.name,
+  coalesce((
+    select json_agg(tag_rows)
+    from (
+      select tag.id, tag.name
+      from asset_tag
+      inner join tag on tag.id = asset_tag.tag_id
+      where asset_tag.asset_id = asset.id
+      order by tag.name
+    ) as tag_rows
+  ), '[]'::json) as tags
+from asset
+where asset.owner_id = :ownerId!
+  and (:albumId::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = :albumId
+  ))
+  and (:namePrefix::text is null or asset.name like :namePrefix || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+```ts
+function findAssetsWithPgTyped(options: AssetOptions) {
+  const params = {
+    ownerId: options.ownerId,
+    albumId: options.albumId,
+    namePrefix: options.namePrefix,
+  }
+  if (options.includeTags) {
+    return pgTyped.findAssetsWithTags.run(params, pgPool)
+  }
+  return pgTyped.findAssets.run(params, pgPool)
+}
+```
+
+sqlc reads a schema file and a queries file, and its TypeScript plugin generates one module with a function per query that takes the `pg` client and an arguments object:
+
+```sql title="sqlc/queries.sql"
+-- name: FindAssets :many
+select asset.id, asset.name
+from asset
+where asset.owner_id = sqlc.arg(owner_id)
+  and (sqlc.narg(album_id)::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = sqlc.narg(album_id)
+  ))
+  and (sqlc.narg(name_prefix)::text is null or asset.name like sqlc.narg(name_prefix) || '%')
+order by asset.name, asset.id
+limit 50;
+
+-- name: CountAssets :one
+select count(*)::integer as count
+from asset
+where asset.owner_id = sqlc.arg(owner_id)
+  and (sqlc.narg(album_id)::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = sqlc.narg(album_id)
+  ))
+  and (sqlc.narg(name_prefix)::text is null or asset.name like sqlc.narg(name_prefix) || '%');
+
+-- name: FindAssetsWithTags :many
+select asset.id, asset.name,
+  coalesce((
+    select json_agg(tag_rows)
+    from (
+      select tag.id, tag.name
+      from asset_tag
+      inner join tag on tag.id = asset_tag.tag_id
+      where asset_tag.asset_id = asset.id
+      order by tag.name
+    ) as tag_rows
+  ), '[]'::json) as tags
+from asset
+where asset.owner_id = sqlc.arg(owner_id)
+  and (sqlc.narg(album_id)::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = sqlc.narg(album_id)
+  ))
+  and (sqlc.narg(name_prefix)::text is null or asset.name like sqlc.narg(name_prefix) || '%')
+order by asset.name, asset.id
+limit 50;
+```
+
+```ts
+function findAssetsWithSqlc(options: AssetOptions) {
+  const args = {
+    ownerId: options.ownerId,
+    albumId: options.albumId ?? null,
+    namePrefix: options.namePrefix ?? null,
+  }
+  if (options.includeTags) {
+    return sqlc.findAssetsWithTags(pgPool, args)
+  }
+  return sqlc.findAssets(pgPool, args)
+}
+```
+
+</details>
+
+<details id="database-support-for-checking">
+<summary>Database support for checking: PostgreSQL, MySQL, SQLite, and SQL Server</summary>
+
+**Executing SQL and analyzing its result types are different capabilities.** A client's engine support does not establish its checker's support. Preparing or describing a statement can obtain metadata without executing the application query, but the available information differs by engine.
+
+| Database                                                                                                                                    | Metadata available without executing the application query                                                                      | Limits to account for                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [PostgreSQL](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY)                                            | The extended protocol's statement `Describe` returns parameter and result-column metadata before `Execute`.                     | That metadata alone does not describe every TypeScript-level property, such as a nested JSON object's shape or whether a column is nullable. |
+| [MySQL](https://dev.mysql.com/doc/c-api/8.4/en/mysql-stmt-result-metadata.html)                                                             | Prepared-statement result metadata is available after preparation and before execution.                                         | Pre-execution types are determined by the optimizer; the documented types after execution can differ.                                        |
+| [SQLite](https://www.sqlite.org/c3ref/column_decltype.html)                                                                                 | A statement can be prepared without stepping through its results; declared-type metadata is available for direct table columns. | The declared-type API returns no type for an expression or subquery. Dynamic value types and computed expressions need additional analysis.  |
+| [SQL Server](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-describe-first-result-set-transact-sql) | `sp_describe_first_result_set` statically analyzes a batch's first result set.                                                  | Some constructs cannot be described, including statements using temporary tables; control flow can also prevent a usable result description. |
+
+**Nullability is the gap that matters most for result types.** PostgreSQL's [`RowDescription`](https://www.postgresql.org/docs/current/protocol-message-formats.html) message reports each result column's name, type, and source table and attribute, and nothing about whether it can be null. A checker derives nullability from the catalog's not-null constraints and then has to reason on its own about outer joins, aggregates, and expressions, which is why two generators above mark `count(*)` as nullable. Kysely tracks a left join in the type, which is how an optionally joined column becomes `string | null` in its result.
+
+This summarizes database facilities, not what every checker uses. Tools can supplement metadata with catalog queries or their own SQL analysis, as sqlc does. For a particular tool, check its engine and driver support, parameter inference, nullability, expression types, and JSON handling, and whether checking prepares statements, analyzes them locally, or executes anything.
+
+</details>
+
+<details>
+<summary>Engines and drivers</summary>
+
+PgTyped reads its types from a running PostgreSQL database. Prisma TypedSQL supports PostgreSQL, MySQL, and SQLite, with argument types inferred on PostgreSQL and recent MySQL and declared manually on SQLite. sqlc supports PostgreSQL, MySQL, and SQLite; its TypeScript plugin targets `pg`, Postgres.js, `mysql2`, and `better-sqlite3`, and the plugin's README states that it is "still in early access". Kysely ships dialects for PostgreSQL, MySQL, SQLite, and Microsoft SQL Server, and the same builder operations compile to each engine's syntax. A SQL file is written in one engine's grammar, which is the right choice for an application that will only ever run one engine, and a cost for a library or product that must run several.
+
+</details>
+
+<details id="versions-and-verification">
+<summary>Versions and verification</summary>
+
+The SQL-file implementations were generated and executed with **Prisma TypedSQL 7.10.1**, **PgTyped 2.4.3** (`@pgtyped/cli`) with **@pgtyped/runtime 2.4.2**, and **sqlc 1.31.1** with **sqlc-gen-typescript 0.1.3**, against **PostgreSQL 18.4** through **pg 8.23.1**, alongside **Kysely 0.29.7** and the SQL-template implementations from the [raw SQL page](/docs/comparisons/query-builder-vs-raw-sql#versions-and-verification). All of them returned identical rows across **48 option combinations**, a 50-row page with a 60-row count, and SQL-like input bound as a value. The generated parameter and result types quoted above were asserted exactly with compile-time equality checks under strict TypeScript 7.0.2 and 6.0.3, including that PgTyped's and TypedSQL's `count` is `number | null`, sqlc's is `number` in a nullable row, PgTyped's and TypedSQL's `tags` is a JSON type, sqlc's `tags` is `string | null` while the driver delivers parsed objects, and sqlc rejects `undefined` for a nullable parameter. PgTyped and TypedSQL generated against the live fixture database; sqlc generated from the schema and query files with no database configured and needed network access only to fetch its plugin. The `CASE` output contract was observed through node-postgres. The claims about the planner and generic plans describe PostgreSQL's documentation and were not benchmarked; these are correctness checks, not performance measurements. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/fa14c49ac9240987a5df9811aacf50e31c1d0a5f/site/scripts/comparison-checks/postgres).
+
+</details>
+
+## Choosing typed SQL files or Kysely
+
+**Choose typed SQL files when your statements are fixed, reviewed as SQL, and worth the strongest check available for a single statement.** Each file is verified whole against the database or its schema, its result type is derived rather than declared, and a specialist can own it without touching TypeScript. Optional behavior goes into nullable parameters or separate files, and shared rules go into each file or into the database.
+
+The cost of Kysely is the API between you and the statement, declared types for anything it cannot infer, and a weaker check on any one statement than a generator gives. The cost of SQL files is every variant and every shared rule as another statement to keep in agreement, with a generation step and usually a database in the edit loop.
+
+Try one endpoint that has a list, a count, and an export sharing filters. Add a rule that must reach all three, add an optional selection, and rename a column. Count the files touched, the steps before the compiler can tell you the edit was valid, and the statements the database receives.
+
+**Choose Kysely when the statements keep acquiring variations and shared rules, and you want one checked query to carry them rather than a set of files to keep in agreement.**
+
+[Get started with Kysely](/docs/getting-started), explore [query examples](/docs/category/examples), or learn how to [generate database types](/docs/generating-types).
