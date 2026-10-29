@@ -1,2 +1,4 @@
 /generated/
 /node_modules
+/pgtyped/generated/
+/sqlc/generated/

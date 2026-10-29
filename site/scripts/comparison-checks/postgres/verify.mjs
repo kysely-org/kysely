@@ -12,10 +12,16 @@ assert(
   'Set COMPARISON_DATABASE_URL to a disposable PostgreSQL server; the test user needs CREATE DATABASE privileges.',
 )
 
+// Packages whose entry points are not resolvable from their bare names.
+// @pgtyped/cli only exports ESM subpaths, so it needs the import resolver.
+const entryPoints = {
+  prisma: () => require.resolve('prisma/config'),
+  '@pgtyped/cli': () =>
+    fileURLToPath(import.meta.resolve('@pgtyped/cli/lib/index.js')),
+}
+
 function installedPackage(name) {
-  let path = dirname(
-    require.resolve(name === 'prisma' ? 'prisma/config' : name),
-  )
+  let path = dirname((entryPoints[name] ?? (() => require.resolve(name)))())
   for (;;) {
     try {
       const pkg = JSON.parse(readFileSync(join(path, 'package.json'), 'utf8'))
@@ -30,9 +36,9 @@ function installedPackage(name) {
   }
 }
 
-function run(label, args) {
+function run(label, args, command = process.execPath) {
   console.log(`\n${label}`)
-  const result = spawnSync(process.execPath, args, {
+  const result = spawnSync(command, args, {
     cwd: root,
     stdio: 'inherit',
     env: {
@@ -54,12 +60,24 @@ for (const [name, version] of Object.entries({
   slonik: '49.11.0',
   '@slonik/pg-driver': '49.11.0',
   pg: '8.23.1',
+  '@pgtyped/cli': '2.4.3',
+  '@pgtyped/runtime': '2.4.2',
   typescript: '7.0.2',
   'typescript-6': '6.0.3',
 })) {
   assert.equal(installedPackage(name).version, version, `${name} version drift`)
   console.log(`${name}: ${version}`)
 }
+
+// sqlc is a Go binary (`brew install sqlc`); its TypeScript plugin is a wasm
+// module pinned by URL and sha256 in sqlc/sqlc.yaml and downloaded on first use.
+const sqlc = spawnSync('sqlc', ['version'], { encoding: 'utf8' })
+assert.equal(
+  sqlc.error ? undefined : sqlc.stdout.trim(),
+  'v1.31.1',
+  'sqlc version drift; install with `brew install sqlc`',
+)
+console.log(`sqlc: ${sqlc.stdout.trim()}`)
 
 run('Documented example parity', [join(root, 'check-docs.mjs')])
 
@@ -69,6 +87,13 @@ run('Generate the Prisma model client', [
   '--schema',
   'schema.prisma',
 ])
+
+// sqlc parses the schema and query files itself; no database is involved.
+run(
+  'Generate sqlc query functions',
+  ['generate', '-f', 'sqlc/sqlc.yaml'],
+  'sqlc',
+)
 
 run('Knex compilation and built-in alternatives', [
   '--import',
@@ -80,8 +105,8 @@ run('Prisma and Knex PostgreSQL scenarios', [
   require.resolve('tsx'),
   'scenarios.mts',
 ])
-// This program creates a disposable database, generates TypedSQL against its
-// tables, checks all four clients, then drops the database.
+// This program creates a disposable database, generates TypedSQL and PgTyped
+// output against its tables, checks all six clients, then drops the database.
 run('Raw SQL and generated SQL-file scenarios', [
   '--import',
   require.resolve('tsx'),
@@ -96,5 +121,5 @@ for (const compiler of ['typescript', 'typescript-6']) {
   ])
 }
 console.log(
-  '\nPASS: Prisma, Knex, Postgres.js, Slonik, and generated TypedSQL comparisons; both compiler versions.',
+  '\nPASS: Prisma, Knex, Postgres.js, Slonik, and generated TypedSQL, PgTyped, and sqlc comparisons; both compiler versions.',
 )

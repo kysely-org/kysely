@@ -20,6 +20,8 @@
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",
     "@types/node": "26.6.5",
-    "@types/pg": "8.23.1"
+    "@types/pg": "8.23.1",
+    "@pgtyped/cli": "2.4.3",
+    "@pgtyped/runtime": "2.4.2"
   }
 }

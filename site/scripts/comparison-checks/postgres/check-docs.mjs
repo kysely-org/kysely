@@ -25,9 +25,8 @@ const examples = {
     ],
   },
   'raw-scenarios.mts': {
-    'query-builder-vs-raw-sql-in-typescript.mdx': [
+    'query-builder-vs-raw-sql.mdx': [
       'postgres-assets',
-      'slonik-assets',
       'matching-assets',
       'kysely-listing',
     ],
@@ -36,6 +35,8 @@ const examples = {
       'kysely-listing',
       'kysely-count',
       'file-listing',
+      'pgtyped-listing',
+      'sqlc-listing',
     ],
   },
 }
@@ -59,13 +60,23 @@ for (const [fixture, pages] of Object.entries(examples)) {
     }
   }
 }
-for (const name of existsSync(join(docs, 'query-builder-vs-sql-files.mdx'))
-  ? ['findAssets', 'findAssetsWithTags', 'countAssets']
+// Prisma TypedSQL, PgTyped, and sqlc query files shown on the SQL-files page.
+const sqlFiles = [
+  'sql/findAssets.sql',
+  'sql/findAssetsWithTags.sql',
+  'sql/countAssets.sql',
+  'pgtyped/findAssets.sql',
+  'pgtyped/findAssetsWithTags.sql',
+  'pgtyped/countAssets.sql',
+  'sqlc/queries.sql',
+]
+for (const file of existsSync(join(docs, 'query-builder-vs-sql-files.mdx'))
+  ? sqlFiles
   : []) {
-  const sql = readFileSync(join(root, 'sql', `${name}.sql`), 'utf8')
+  const sql = readFileSync(join(root, file), 'utf8')
   assert(
     blocks('query-builder-vs-sql-files.mdx').includes(normalize(sql)),
-    `${name}.sql differs from the page`,
+    `${file} differs from the page`,
   )
   checked++
 }

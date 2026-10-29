@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { dirname } from 'node:path'
+import { rmSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Pool } from 'pg'
 import postgres from 'postgres'
@@ -10,6 +11,24 @@ import { z } from 'zod'
 import { PrismaPg } from '@prisma/adapter-pg'
 import type { Prisma } from './generated/client.ts'
 import type { findAssetsWithTags as TagsQuery } from './generated/sql/findAssetsWithTags.ts'
+// PgTyped and sqlc output is generated before the type checks run: PgTyped
+// inside this program once the fixture tables exist, sqlc by verify.mjs.
+import type {
+  IFindAssetsParams,
+  IFindAssetsResult,
+} from './pgtyped/generated/findAssets.queries.ts'
+import type { ICountAssetsResult } from './pgtyped/generated/countAssets.queries.ts'
+import type {
+  IFindAssetsWithTagsResult,
+  Json as PgTypedJson,
+} from './pgtyped/generated/findAssetsWithTags.queries.ts'
+import type {
+  CountAssetsRow,
+  FindAssetsArgs,
+  FindAssetsRow,
+  FindAssetsWithTagsRow,
+  countAssets as sqlcCountAssets,
+} from './sqlc/generated/queries_sql.ts'
 import { Kysely, PostgresDialect } from 'kysely'
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
 
@@ -208,6 +227,44 @@ type CheckedResult = Expect<
     AssetRow[]
   >
 >
+// PgTyped 2.4: `:ownerId!` is required, bare `:albumId` and `:namePrefix` are
+// optional and accept null or undefined. Columns that do not come straight from
+// a NOT NULL table column are nullable, so `count(*)::integer` and the
+// `coalesce(json_agg(...), '[]'::json)` expression both gain `| null`.
+type PgTypedParams = Expect<
+  Equal<
+    IFindAssetsParams,
+    {
+      albumId?: string | null | void
+      namePrefix?: string | null | void
+      ownerId: string
+    }
+  >
+>
+type PgTypedListing = Expect<
+  Equal<IFindAssetsResult, { id: string; name: string }>
+>
+type PgTypedCount = Expect<Equal<ICountAssetsResult, { count: number | null }>>
+type PgTypedTags = Expect<
+  Equal<IFindAssetsWithTagsResult['tags'], PgTypedJson | null>
+>
+// sqlc-gen-typescript 0.1.3: `sqlc.arg` is required, `sqlc.narg` is
+// `string | null` (never optional, never undefined). `count(*)::integer` is a
+// non-null `number`, but a `:one` query resolves to `Row | null`. The json
+// `tags` column is typed `string | null`; node-postgres parses json at runtime,
+// so the value is really an array of tag objects.
+type SqlcParams = Expect<
+  Equal<
+    FindAssetsArgs,
+    { ownerId: string; albumId: string | null; namePrefix: string | null }
+  >
+>
+type SqlcListing = Expect<Equal<FindAssetsRow, { id: string; name: string }>>
+type SqlcCount = Expect<Equal<CountAssetsRow, { count: number }>>
+type SqlcCountResult = Expect<
+  Equal<Awaited<ReturnType<typeof sqlcCountAssets>>, CountAssetsRow | null>
+>
+type SqlcTags = Expect<Equal<FindAssetsWithTagsRow['tags'], string | null>>
 
 let prismaForCleanup: import('./generated/client.ts').PrismaClient | undefined
 try {
@@ -265,6 +322,81 @@ try {
     )
   }
   // END:file-listing
+  // PgTyped connects to a live database to describe each statement, so it is
+  // generated here, against the fixture tables. The `--uri` flag overrides
+  // pgtyped.config.json, which carries no connection details. PgTyped skips
+  // files whose output is unchanged, so start from an empty output directory.
+  const here = dirname(fileURLToPath(import.meta.url))
+  rmSync(join(here, 'pgtyped', 'generated'), { recursive: true, force: true })
+  const pgTypedGenerated = spawnSync(
+    process.execPath,
+    [
+      'node_modules/@pgtyped/cli/lib/index.js',
+      '--config',
+      'pgtyped.config.json',
+      '--uri',
+      connectionString,
+    ],
+    { cwd: here, encoding: 'utf8' },
+  )
+  assert.equal(
+    pgTypedGenerated.status,
+    0,
+    pgTypedGenerated.stdout + '\n' + pgTypedGenerated.stderr,
+  )
+  assert.match(
+    pgTypedGenerated.stdout,
+    /Saved 1 query types from pgtyped\/findAssets\.sql/,
+  )
+  assert.match(
+    pgTypedGenerated.stdout,
+    /Saved 1 query types from pgtyped\/countAssets\.sql/,
+  )
+  assert.match(
+    pgTypedGenerated.stdout,
+    /Saved 1 query types from pgtyped\/findAssetsWithTags\.sql/,
+  )
+  console.log(pgTypedGenerated.stdout.trim())
+  const pgTyped = {
+    ...(await import('./pgtyped/generated/findAssets.queries.ts')),
+    ...(await import('./pgtyped/generated/countAssets.queries.ts')),
+    ...(await import('./pgtyped/generated/findAssetsWithTags.queries.ts')),
+  }
+  // sqlc parsed the SQL files locally (see verify.mjs); no connection was used.
+  const sqlc = await import('./sqlc/generated/queries_sql.ts')
+  // DOC:pgtyped-listing
+  function findAssetsWithPgTyped(options: AssetOptions) {
+    const params = {
+      ownerId: options.ownerId,
+      albumId: options.albumId,
+      namePrefix: options.namePrefix,
+    }
+    if (options.includeTags) {
+      return pgTyped.findAssetsWithTags.run(params, pgPool)
+    }
+    return pgTyped.findAssets.run(params, pgPool)
+  }
+  // END:pgtyped-listing
+  // DOC:sqlc-listing
+  function findAssetsWithSqlc(options: AssetOptions) {
+    const args = {
+      ownerId: options.ownerId,
+      albumId: options.albumId ?? null,
+      namePrefix: options.namePrefix ?? null,
+    }
+    if (options.includeTags) {
+      return sqlc.findAssetsWithTags(pgPool, args)
+    }
+    return sqlc.findAssets(pgPool, args)
+  }
+  // END:sqlc-listing
+  if (false) {
+    const absentAlbum = { ownerId: 'o1', albumId: undefined, namePrefix: null }
+    // @ts-expect-error sqlc.narg produces `string | null`; an absent option must be converted first.
+    sqlc.findAssets(pgPool, absentAlbum)
+    // @ts-expect-error sqlc.narg arguments are not optional either.
+    sqlc.findAssets(pgPool, { ownerId: 'o1' })
+  }
   let combinations = 0
   for (const ownerId of ['o1', 'o2'])
     for (const albumId of [undefined, 'album1', 'album2', 'empty'])
@@ -275,15 +407,30 @@ try {
           const postgresRows = await findAssetsWithPostgres(options)
           const slonikRows = await findAssetsWithSlonik(options)
           const fileRows = await findAssetsFromFiles(options)
+          const pgTypedRows = await findAssetsWithPgTyped(options)
+          const sqlcRows = await findAssetsWithSqlc(options)
           assert.deepEqual([...postgresRows], kyselyRows)
           assert.deepEqual([...slonikRows], kyselyRows)
           assert.deepEqual(fileRows, kyselyRows)
+          assert.deepEqual(pgTypedRows, kyselyRows)
+          assert.deepEqual(sqlcRows, kyselyRows)
           const count = await assetCount(options).executeTakeFirstOrThrow()
           const fileCount = await prisma.$queryRawTyped(
             queries.countAssets(ownerId, albumId ?? null, namePrefix ?? null),
           )
+          const pgTypedCount = await pgTyped.countAssets.run(
+            { ownerId, albumId, namePrefix },
+            pgPool,
+          )
+          const sqlcCount = await sqlc.countAssets(pgPool, {
+            ownerId,
+            albumId: albumId ?? null,
+            namePrefix: namePrefix ?? null,
+          })
           assert.equal(count.count, kyselyRows.length)
           assert.equal(fileCount[0]?.count, count.count)
+          assert.equal(pgTypedCount[0]?.count, count.count)
+          assert.equal(sqlcCount?.count, count.count)
           const compiled = assetListing(options).compile()
           assert.equal(
             compiled.sql.includes('"album_asset"'),
@@ -321,6 +468,8 @@ try {
     assert.deepEqual([...(await findAssetsWithPostgres(options))], rows)
     assert.deepEqual([...(await findAssetsWithSlonik(options))], rows)
     assert.deepEqual(await findAssetsFromFiles(options), rows)
+    assert.deepEqual(await findAssetsWithPgTyped(options), rows)
+    assert.deepEqual(await findAssetsWithSqlc(options), rows)
     assert.equal(
       (await assetCount(options).executeTakeFirstOrThrow()).count,
       60,
@@ -330,12 +479,33 @@ try {
         ?.count,
       60,
     )
+    assert.equal(
+      (
+        await pgTyped.countAssets.run(
+          { ownerId: 'o3', albumId: 'bulkAlbum', namePrefix: 'B' },
+          pgPool,
+        )
+      )[0]?.count,
+      60,
+    )
+    assert.equal(
+      (
+        await sqlc.countAssets(pgPool, {
+          ownerId: 'o3',
+          albumId: 'bulkAlbum',
+          namePrefix: 'B',
+        })
+      )?.count,
+      60,
+    )
   }
   const injectionOptions = { ownerId: "' OR true --", includeTags: true }
   assert.deepEqual(await assetListing(injectionOptions).execute(), [])
   assert.deepEqual([...(await findAssetsWithPostgres(injectionOptions))], [])
   assert.deepEqual([...(await findAssetsWithSlonik(injectionOptions))], [])
   assert.deepEqual(await findAssetsFromFiles(injectionOptions), [])
+  assert.deepEqual(await findAssetsWithPgTyped(injectionOptions), [])
+  assert.deepEqual(await findAssetsWithSqlc(injectionOptions), [])
   assert(
     !assetListing(injectionOptions)
       .compile()
@@ -371,6 +541,38 @@ try {
     // @ts-expect-error Prisma TypedSQL 7 describes this column as JsonValue, not a tag object array.
     typedTags[0]?.tags?.[0]?.name
   }
+  const pgTypedTags = await pgTyped.findAssetsWithTags.run(
+    { ownerId: 'o1' },
+    pgPool,
+  )
+  const sqlcTags = await sqlc.findAssetsWithTags(pgPool, {
+    ownerId: 'o1',
+    albumId: null,
+    namePrefix: null,
+  })
+  const pgTypedO1Count = await pgTyped.countAssets.run(
+    { ownerId: 'o1' },
+    pgPool,
+  )
+  assert.equal(pgTypedO1Count[0]?.count, 2)
+  if (false) {
+    // @ts-expect-error PgTyped 2.4 describes this column as `Json | null`, not a tag object array.
+    pgTypedTags[0]?.tags?.[0]?.name
+    // @ts-expect-error sqlc-gen-typescript 0.1.3 describes this json column as `string | null`.
+    sqlcTags[0]?.tags?.[0]?.name
+    // @ts-expect-error PgTyped keeps `count(*)::integer` nullable; it is not assignable to number.
+    const pgTypedCountValue: number = pgTypedO1Count[0]!.count
+  }
+  // At runtime both deliver parsed JSON, whatever the declared type says.
+  assert.deepEqual(pgTypedTags[0]?.tags, [
+    { id: 't2', name: 'Beach' },
+    { id: 't1', name: 'Travel' },
+  ])
+  assert.deepEqual(sqlcTags[0]?.tags as unknown, [
+    { id: 't2', name: 'Beach' },
+    { id: 't1', name: 'Travel' },
+  ])
+  assert.equal(typeof sqlcTags[0]?.tags, 'object')
   // A CASE can omit the expensive expression, but it cannot remove an output column.
   const caseRows = await pgPool.query(
     'select id, name, case when $1 then json_build_array() else null end as tags from asset order by id limit 1',
@@ -379,7 +581,7 @@ try {
   assert(Object.hasOwn(caseRows.rows[0], 'tags'))
   assert.equal(caseRows.rows[0].tags, null)
   console.log(
-    `PASS: ${combinations} combinations across Kysely, Postgres.js, Slonik, and generated Prisma TypedSQL; listing/count equivalence; empty tags and absent columns; alias drift; CASE output contract; 50-row pagination with a 60-row count; bound SQL-like input`,
+    `PASS: ${combinations} combinations across Kysely, Postgres.js, Slonik, generated Prisma TypedSQL, PgTyped, and sqlc; listing/count equivalence; empty tags and absent columns; alias drift; CASE output contract; 50-row pagination with a 60-row count; bound SQL-like input`,
   )
 } finally {
   await prismaForCleanup?.$disconnect()
