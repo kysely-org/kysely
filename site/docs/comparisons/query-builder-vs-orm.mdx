@@ -234,7 +234,7 @@ const flaggedPages = await pageQuery
 
 Rewriting this as the correlated `exists` query takes a few local edits: drop the join and grouping, and move the two join conditions into the subquery. The filters, callers, and one-row-per-page result shape stay as they are. The join-and-count version asks for matching children to be aggregated; `exists` asks whether any qualifying child exists. Compare the generated SQL and plans to establish whether the rewrite helps on your data.
 
-**The builder gives you a direct path from the SQL change to the application change.** Tuning changes the query through the same interface that built it. Raw SQL gives the same statement control; a builder also lets callers extend shared queries through functions and ordinary control flow.
+**The builder gives you a direct path from the SQL change to the application change.** Tuning changes the query through the same interface that built it. [Raw SQL gives the same statement control](/docs/comparisons/query-builder-vs-raw-sql); a builder also lets callers extend shared queries through functions and ordinary control flow.
 
 The SQL concepts you use with a database specialist or in a SQL console carry into application code.
 

@@ -28,7 +28,7 @@ export function SqlQueryWorkflows() {
           <h3>SQL in TypeScript</h3>
           <ul>
             <li>
-              <a href="https://github.com/porsager/postgres#building-queries">
+              <a href="https://github.com/porsager/postgres/blob/570be764d96c8c13e6a1a262103bf60974571b67/README.md#building-queries">
                 Postgres.js
               </a>
               <span>SQL templates and fragments</span>
