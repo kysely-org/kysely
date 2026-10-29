@@ -2,7 +2,7 @@ import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import Cursor from 'pg-cursor'
 import { Client, Pool, type PoolConfig } from 'pg'
-import { createConnection, createPool } from 'mysql2'
+import { createConnection, createPool } from 'mysql2/promise'
 import Database from 'better-sqlite3'
 import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
@@ -400,6 +400,7 @@ async function createDatabase(
     await createToyTableBase
       .addColumn('price', 'double precision', (col) => col.notNull())
       .execute()
+    await sql`COMMENT ON TABLE toy IS 'A toy owned by a pet';`.execute(db)
     await sql`COMMENT ON COLUMN toy.price IS 'Price in USD';`.execute(db)
   }
 
@@ -407,6 +408,9 @@ async function createDatabase(
     await createToyTableBase
       .addColumn('price', 'double precision', (col) => col.notNull())
       .execute()
+    await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'A toy owned by a pet', N'SCHEMA', N'dbo', N'TABLE', 'toy'`.execute(
+      db,
+    )
     await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'Price in USD', N'SCHEMA', N'dbo', N'TABLE', 'toy', N'COLUMN', N'price'`.execute(
       db,
     )
@@ -417,6 +421,7 @@ async function createDatabase(
       .addColumn('price', 'double precision', (col) =>
         col.notNull().modifyEnd(sql`comment ${sql.lit('Price in USD')}`),
       )
+      .modifyEnd(sql`comment ${sql.lit('A toy owned by a pet')}`)
       .execute()
   }
 

@@ -45,6 +45,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import type { QueryExecutor } from '../query-executor/query-executor.js'
 import type { AbortableQueryOptions } from '../util/abort.js'
+import type { Insertable, Selectable, Updateable } from '../util/column-type.js'
 import type { Compilable } from '../util/compilable.js'
 import type {
   Executable,
@@ -53,6 +54,7 @@ import type {
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type {
+  IsAny,
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
@@ -74,6 +76,17 @@ import { UpdateQueryBuilder } from './update-query-builder.js'
 export class MergeQueryBuilder<DB, TT extends keyof DB, O>
   implements MultiTableReturningInterface<DB, TT, O>, OutputInterface<DB, TT, O>
 {
+  // Keep the schema mapped for table-subset assignability on TypeScript 5.
+  declare protected readonly '~DB': IsAny<DB> extends true
+    ? any
+    : {
+        [T in keyof DB]: {
+          select: () => Selectable<DB[T]>
+          insert: (row: Insertable<DB[T]>) => void
+          update: (row: Updateable<DB[T]>) => void
+        }
+      }
+
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
