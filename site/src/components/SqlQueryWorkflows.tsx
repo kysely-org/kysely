@@ -28,6 +28,12 @@ export function SqlQueryWorkflows() {
           <h3>SQL in TypeScript</h3>
           <ul>
             <li>
+              <a href="https://node-postgres.com/features/queries#parameterized-query">
+                node-postgres
+              </a>
+              <span>SQL strings with $1 placeholders</span>
+            </li>
+            <li>
               <a href="https://github.com/porsager/postgres/blob/570be764d96c8c13e6a1a262103bf60974571b67/README.md#building-queries">
                 Postgres.js
               </a>
@@ -48,7 +54,11 @@ export function SqlQueryWorkflows() {
           </p>
         </div>
         <div className={styles.group}>
-          <h3>SQL in SQL files</h3>
+          <h3>
+            <a href="/docs/comparisons/query-builder-vs-sql-files">
+              SQL in SQL files
+            </a>
+          </h3>
           <ul>
             <li>
               <a href="https://pgtyped.dev/docs/">PgTyped</a>
