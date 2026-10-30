@@ -37,7 +37,12 @@ import { escapeLike, like } from './starts-with.mts'
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
 
 interface Database {
-  asset: { id: string; name: string; owner_id: string; folder_id: string | null }
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
   folder: { id: string; name: string }
   album_asset: { album_id: string; asset_id: string }
   asset_tag: { asset_id: string; tag_id: string }
@@ -193,14 +198,17 @@ function matchingAssets(options: AssetOptions) {
   return db
     .selectFrom('asset')
     .where('asset.owner_id', '=', options.ownerId)
-    .$if(options.albumId !== undefined, (qb) =>
-      qb
-        .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
-        .where('album_asset.album_id', '=', options.albumId!),
-    )
-    .$if(options.namePrefix !== undefined, (qb) =>
-      qb.where('asset.name', 'like', options.namePrefix! + '%'),
-    )
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
 }
 // END:matching-assets
 
@@ -344,7 +352,10 @@ type PgTypedExport = Expect<
   Equal<IExportAssetsResult, { folder_name: string; id: string; name: string }>
 >
 type SqlcExport = Expect<
-  Equal<ExportAssetsRow, { id: string; name: string; folderName: string | null }>
+  Equal<
+    ExportAssetsRow,
+    { id: string; name: string; folderName: string | null }
+  >
 >
 type PgTypedTags = Expect<
   Equal<IFindAssetsWithTagsResult['tags'], PgTypedJson | null>
@@ -559,12 +570,19 @@ try {
           const exported = await exportAssets(options)
           assert.deepEqual(
             await prisma.$queryRawTyped(
-              queries.exportAssets(ownerId, albumId ?? null, namePrefix ?? null),
+              queries.exportAssets(
+                ownerId,
+                albumId ?? null,
+                namePrefix ?? null,
+              ),
             ),
             exported,
           )
           assert.deepEqual(
-            await pgTyped.exportAssets.run({ ownerId, albumId, namePrefix }, pgPool),
+            await pgTyped.exportAssets.run(
+              { ownerId, albumId, namePrefix },
+              pgPool,
+            ),
             exported,
           )
           // sqlc-gen-typescript camel-cases column names.
@@ -598,7 +616,10 @@ try {
   const typedExport = await prisma.$queryRawTyped(
     queries.exportAssets('o1', null, null),
   )
-  const pgTypedExport = await pgTyped.exportAssets.run({ ownerId: 'o1' }, pgPool)
+  const pgTypedExport = await pgTyped.exportAssets.run(
+    { ownerId: 'o1' },
+    pgPool,
+  )
   // Declared `string`, delivered null: the method call compiles and throws.
   const typedUnfiled = typedExport.find((row) => row.id === 'a2')!
   const pgTypedUnfiled = pgTypedExport.find((row) => row.id === 'a2')!
