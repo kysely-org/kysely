@@ -347,29 +347,26 @@ A request without an album sends no `album_asset` reference, while the fixed `($
 
 ## Kysely's escape hatch is a typed expression inside the builder
 
-**Raw SQL has a place inside Kysely: as an expression inside a composed query, not a statement beside it.** Kysely does not cover all of SQL; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest. A `sql` template inside a builder query is an expression like any other: references passed through `eb.ref` are checked against the tables in scope, values bind as parameters, and the declared result type flows into the query. Wrapped in a function that takes `Expression` inputs, it is a [reusable typed helper](/docs/recipes/reusable-helpers). The prefix filter above passes `%` and `_` through as wildcards; escaping them takes `LIKE ... ESCAPE`, a clause the builder's `like` operator does not have:
+**Raw SQL has a place inside Kysely: as an expression inside a composed query, not a statement beside it.** Kysely does not cover all of SQL; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest. A `sql` template inside a query is an expression like any other: a reference passed through `eb.ref` is checked against the tables in scope, values bind as parameters, and the declared result type flows into the query. The builder's `like` operator has no `ESCAPE` clause; a [reusable helper](/docs/recipes/reusable-helpers) supplies it:
 
 ```ts
 import { Expression, sql } from 'kysely'
 
-function startsWith(column: Expression<string>, prefix: string) {
-  const pattern = prefix.replace(/[\\%_]/g, '\\$&') + '%'
-  return sql<boolean>`${column} like ${pattern} escape '\\'`
+function like(column: Expression<string>, pattern: string, escape = '\\') {
+  return sql<boolean>`${column} like ${pattern} escape ${escape}`
 }
 ```
 
-In the shared query, the helper takes a checked reference and returns a boolean expression:
-
 ```ts
 const matches = await matchingAssets(options)
-  .where((eb) => startsWith(eb.ref('asset.name'), prefix))
+  .where((eb) => like(eb.ref('asset.name'), pattern))
   .select(['asset.id', 'asset.name'])
   .limit(50)
   .execute()
 // Inferred: { id: string; name: string }[]
 ```
 
-A prefix of `%` now matches nothing instead of everything, and the helper is the only place that knows how. Functions and operators rarely need the template: `fn` calls any function with checked references, and `@@`, `<->`, `~*`, and the JSON operators are already in the builder. A whole statement through the `sql` tag gives up every check on this page; keep that form for migrations and scripts, and `sql.raw` for trusted syntax such as an identifier. Adoption runs one helper at a time: Kysely's PostgreSQL dialect takes an existing node-postgres `Pool`, so a shared helper moves to the builder while the remaining `pool.query` calls keep running. See [raw expressions](/docs/recipes/raw-sql) and the [SQL template API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
+A whole statement through the `sql` tag gives up every check on this page; keep that form for migrations and scripts, and `sql.raw` for trusted syntax such as an identifier. Kysely's PostgreSQL dialect takes an existing node-postgres `Pool`, so adoption runs one helper at a time while the remaining `pool.query` calls keep running. See [raw expressions](/docs/recipes/raw-sql) and the [SQL template API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
 
 ## Production code draws the same line
 
