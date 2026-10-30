@@ -26,11 +26,29 @@
   background: var(--ifm-background-surface-color);
 }
 
-.group:first-child {
+.group.highlight {
   border-color: var(--ifm-color-primary);
 }
 
-.group h3 {
+.spanning {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  column-gap: 1rem;
+  border-style: dashed;
+  border-color: var(--ifm-color-emphasis-400);
+}
+
+.spanning .title {
+  grid-column: 1 / -1;
+}
+
+.spanning ul {
+  margin-bottom: 0;
+}
+
+.group .title {
+  font-weight: 700;
   margin: 0 0 0.75rem;
   font-size: 0.95rem;
   line-height: 1.4;
@@ -55,7 +73,7 @@
   font-size: 0.8rem;
 }
 
-.group p,
+.group p:not(.title),
 .caption {
   color: var(--ifm-color-emphasis-700);
   font-size: 0.8rem;
@@ -77,5 +95,14 @@
 
   .axis {
     display: none;
+  }
+
+  .spanning {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .spanning ul {
+    margin-bottom: 0.75rem;
   }
 }
