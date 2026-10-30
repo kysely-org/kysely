@@ -10,7 +10,7 @@ import { SqlQueryWorkflows } from '@site/src/components/SqlQueryWorkflows'
 
 **Raw SQL in TypeScript is a whole statement written as SQL text: a template beside application code, or a `.sql` file compiled to a typed call.** A SQL query builder composes the statement through an API; Kysely also checks each operation against the database types and infers the result.
 
-**A statement that never changes is raw SQL's best case; every statement that does change is the builder's.** A team that composes raw SQL is already maintaining a query builder. A team that writes typed SQL files has done without composition until the first dynamic query. This page starts with the fixed statement, then follows one asset query through optional filters, a shared count, an export, and nested tags, and tries to break it.
+A statement that never changes is raw SQL's best case; every statement that does change is the builder's. **A team that composes raw SQL is already maintaining a query builder; a team that writes typed SQL files has done without one until the first dynamic query.** This page starts with the fixed statement, then follows one asset query through optional filters, a shared count, an export, and nested tags, and tries to break it.
 
 ## Raw SQL is a whole statement; a query builder composes one
 
@@ -70,7 +70,7 @@ const topAssets = await db
   .execute()
 ```
 
-Every reference is checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The builder version is longer and reads as an API rather than as SQL, but it is not a second language: `with`, `selectFrom`, `select`, `over`, `partitionBy`, `where`, and `orderBy` are SQL's clauses under SQL's names, in SQL's order, with the same column references. **Raw SQL's best case is a fixed statement, and the builder still checks it.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
+Every reference is checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The builder version is longer and reads as an API rather than as SQL, but it is not a second language: `with`, `selectFrom`, `select`, `over`, `partitionBy`, `where`, and `orderBy` are SQL's clauses under SQL's names, in SQL's order, with the same column references. The length buys the half of the statement that the string leaves unchecked: the outer `select`, `where`, and `orderBy` are checked against what `ranked` selected, so a column dropped from the CTE fails in the clause that reads it, and the caller annotates nothing. **Raw SQL's best case is a fixed statement, and the builder still checks it.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
 
 ## Every variation is a fragment, a file, or a checked operation
 
@@ -109,21 +109,24 @@ Assume a `Kysely<Database>` instance named `db`, a configured Postgres.js client
 
 ### Add the optional join and filters
 
-Put the shared query in a function. Kysely's `$if` applies each addition when its condition is true; the join lives in a callback because it changes the builder's type, and references inside that branch are checked against the joined table. The condition does not narrow `options` inside the callback, hence the assertions:
+Put the shared query in a function. Kysely's `$call` hands the builder to a function and returns its result, so each addition is a plain `if`; the join is applied inside the branch that needs it, and the references in that branch are checked against the joined table:
 
 ```ts
 function matchingAssets(options: AssetOptions) {
   return db
     .selectFrom('asset')
     .where('asset.owner_id', '=', options.ownerId)
-    .$if(options.albumId !== undefined, (qb) =>
-      qb
-        .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
-        .where('album_asset.album_id', '=', options.albumId!),
-    )
-    .$if(options.namePrefix !== undefined, (qb) =>
-      qb.where('asset.name', 'like', options.namePrefix! + '%'),
-    )
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
 }
 ```
 
@@ -159,7 +162,7 @@ const assets = await sql<{ id: string; name: string }[]>`
 `
 ```
 
-The album join and its predicate are one callback in Kysely and two fragments that must agree here. **The first conditional in a shared helper takes every statement that uses it out of the checker's coverage.** [SafeQL's Postgres.js integration](https://safeql.dev/compatibility/postgres.js.html#support-matrix) lists conditional fragment selection as unsupported; linting this helper, it reports the interpolation as a type it cannot map and checks nothing around it. Its maintainer [explains the limit as combinatorial](https://github.com/ts-safeql/safeql/issues/100#issuecomment-1311048387): each condition doubles the forms to check. Kysely checks the album branch once, inside its callback.
+The album join and its predicate are one branch in Kysely and two fragments that must agree here. Three helpers that each decide when their text applies, and a function that places them in order, are a query builder: one the team maintains through tests, since no type records which fragment is present. **The first conditional in a shared helper takes every statement that uses it out of the checker's coverage.** [SafeQL's Postgres.js integration](https://safeql.dev/compatibility/postgres.js.html#support-matrix) lists conditional fragment selection as unsupported; linting this helper, it reports the interpolation as a type it cannot map and checks nothing around it. Its maintainer [explains the limit as combinatorial](https://github.com/ts-safeql/safeql/issues/100#issuecomment-1311048387): each condition doubles the forms to check. Kysely checks the album branch once, inside its `if`.
 
 A typed SQL file cannot add or remove clauses, so each optional filter becomes a nullable parameter guarded by `is null or`, and album membership becomes `exists`. With Prisma TypedSQL, parameters are typed by comments and the rest is plain SQL:
 
@@ -253,12 +256,12 @@ Requested tags use `[]` when none exist; unrequested tags omit the key and the s
 
 ### What changed as the requirements grew?
 
-| Requirement                              | Kysely                                                 | SQL templates                                              | Typed SQL files                                                 |
-| ---------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | --------------------------------------------------------------- |
-| Add a conditional join and predicate     | Extend the builder; references checked in the branch.  | Compose fragments; the statements leave SafeQL's coverage. | Nullable parameters and `exists`; one statement, checked whole. |
-| Share filters across list, count, export | One unfinished query; each caller selects its fields.  | Share fragments; each caller declares its own annotation. | A statement per shape; repeat the predicates, or use a view.    |
+| Requirement                              | Kysely                                                 | SQL templates                                              | Typed SQL files                                                                  |
+| ---------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Add a conditional join and predicate     | Extend the builder; references checked in the branch.  | Compose fragments; the statements leave SafeQL's coverage. | Nullable parameters and `exists`; one statement, checked whole.                  |
+| Share filters across list, count, export | One unfinished query; each caller selects its fields.  | Share fragments; each caller declares its own annotation.  | A statement per shape; repeat the predicates, or use a view.                     |
 | Left join an optional folder name        | The column arrives as `string \| null`.                | The annotation says whatever the caller wrote.             | A new statement; `string` from TypedSQL and PgTyped, `string \| null` from sqlc. |
-| Optional nested tags                     | A conditional selection; the nested shape is inferred. | A conditional fragment; the annotation declares the shape. | A second statement; the column is JSON, or a string.            |
+| Optional nested tags                     | A conditional selection; the nested shape is inferred. | A conditional fragment; the annotation declares the shape. | A second statement; the column is JSON, or a string.                             |
 
 **An established query builder supplies the composition rules and types; a helper layer supplies them through tests and maintenance; a set of SQL files supplies them one statement at a time.**
 
@@ -285,7 +288,7 @@ const albumExport = await matchingAssets(options)
   .execute()
 ```
 
-`album_asset` is in scope only inside the callback that joins it, so the shared query's type does not offer it. The error names the decision: require the album and join it unconditionally, or select the column inside the branch that has it. **A fragment carries SQL text and bound values; a Kysely builder also carries the tables in scope and the result selected so far.** Whether a join applies the right rule or preserves row counts still needs review and tests.
+`album_asset` is in scope only inside the `if` that joins it; the shared query's type is the builder before the join, so it does not offer the table. The error names the decision: require the album and join it unconditionally, or select the column inside the branch that has it. **A fragment carries SQL text and bound values; a Kysely builder also carries the tables in scope and the result selected so far.** Whether a join applies the right rule or preserves row counts still needs review and tests.
 
 With SQL files the export is a new statement with its own `exists`. **A generated call cannot be extended by its caller, which prevents the mistake and also prevents the extension.** [TypedSQL documents its dynamic-column limit](https://www.prisma.io/docs/orm/v7/prisma-client/using-raw-sql/typedsql#dynamic-sql-queries-with-dynamic-columns) as a hand-off to unsafe raw queries.
 
@@ -295,17 +298,28 @@ Suppose a migration renames `asset.name` to `asset.label`, and an agent must upd
 
 ```ts
 interface Database {
-  asset: { id: string; label: string; owner_id: string; folder_id: string | null }
+  asset: {
+    id: string
+    label: string
+    owner_id: string
+    folder_id: string | null
+  }
   // ...
 }
 
 function matchingAssets(options: AssetOptions) {
-  return db
-    .selectFrom('asset')
-    // ...
-    .$if(options.namePrefix !== undefined, (qb) =>
-      qb.where('asset.name', 'like', options.namePrefix! + '%'), // TypeScript error
-    )
+  return (
+    db
+      .selectFrom('asset')
+      // ...
+      .$call((qb) => {
+        // ...
+        if (options.namePrefix !== undefined) {
+          qb = qb.where('asset.name', 'like', options.namePrefix + '%') // TypeScript error
+        }
+        return qb
+      })
+  )
 }
 
 const assets = await matchingAssets(options)
@@ -343,7 +357,7 @@ order by "asset"."name", "asset"."id"
 limit $2
 ```
 
-A request without an album sends no `album_asset` reference, while the fixed `($2::text is null or ...)` statement serves every combination with one plan: after five executions of a prepared statement PostgreSQL [may keep a generic plan](https://www.postgresql.org/docs/current/sql-prepare.html#SQL-PREPARE-NOTES), and PgTyped's documentation warns that "highly dynamic SQL queries can lead to worse DB execution times". **The fixed statement asks the planner to handle every combination; the composed one asks the application to own them.**
+A request without an album sends no `album_asset` reference, so each shape the application composes is planned as the statement it is, with that statement's indexes. The fixed `($2::text is null or ...)` statement serves every combination with one text: after five executions of a prepared statement PostgreSQL [may keep a generic plan](https://www.postgresql.org/docs/current/sql-prepare.html#SQL-PREPARE-NOTES), chosen without the parameter values, and PgTyped's documentation warns that "highly dynamic SQL queries can lead to worse DB execution times". **The fixed statement asks the planner to serve every combination from one plan; the composed one asks the application to own the combinations and gives each its own plan.**
 
 ## Kysely's escape hatch is a typed expression inside the builder
 
@@ -395,16 +409,16 @@ Most applications never change engines, so portability is a weak reason on its o
 
 ### When does raw SQL belong in a TypeScript application?
 
-**Where there is no composition to check: migrations and DDL, bootstrap, one-off scripts, and the expression a builder cannot express.** Typed SQL files give each such statement the strongest check available and a derived type. Raw SQL also costs nothing at the type level: Kysely's checks are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. Generated declarations keep that cost tied to schema size, not query count, and `$if` branches and helpers typed with `Expression` keep individual queries shallow.
+**Where there is no composition to check: migrations and DDL, bootstrap, one-off scripts, and the expression a builder cannot express.** Typed SQL files give each such statement the strongest check available and a derived type. Raw SQL also costs nothing at the type level: Kysely's checks are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. Generated declarations keep that cost tied to schema size, not query count, and conditional branches and helpers typed with `Expression` keep individual queries shallow.
 
 What each side maintains itself, for the asset list above:
 
-| Responsibility                             | Raw SQL in TypeScript                                                          | Kysely                                                                   |
-| ------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| Which tables a shared helper puts in scope | Convention, review, and tests.                                                 | The builder's type; a consumer cannot reference a table it may not have. |
-| Each caller's result type                  | A declared annotation, a runtime schema, or a generated type per statement.    | Inferred from the selection, including outer-join nullability.           |
-| A new shared rule                          | One edit per helper or statement, checked by tests.                            | One edit in the shared function, inherited by every consumer.            |
-| A schema rename                            | Search, or regeneration where a checker is in the loop.                        | Regenerate declarations; the compiler lists every stale reference.       |
+| Responsibility                             | Raw SQL in TypeScript                                                       | Kysely                                                                   |
+| ------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Which tables a shared helper puts in scope | Convention, review, and tests.                                              | The builder's type; a consumer cannot reference a table it may not have. |
+| Each caller's result type                  | A declared annotation, a runtime schema, or a generated type per statement. | Inferred from the selection, including outer-join nullability.           |
+| A new shared rule                          | One edit per helper or statement, checked by tests.                         | One edit in the shared function, inherited by every consumer.            |
+| A schema rename                            | Search, or regeneration where a checker is in the loop.                     | Regenerate declarations; the compiler lists every stale reference.       |
 
 Try one endpoint whose filters are repeated across a list and count. Add a shared rule, change a selected alias, and let a consumer reference a conditional join. Compare the edits, the steps before anything can tell you the edit was valid, and the statements the database receives.
 

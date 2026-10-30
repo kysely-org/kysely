@@ -87,7 +87,7 @@ export function SqlQueryWorkflows() {
           <ul>
             <li>
               <a href="https://safeql.dev/">SafeQL</a>
-              <span>ESLint plugin for SQL templates and Kysely</span>
+              <span>ESLint plugin for SQL</span>
             </li>
           </ul>
           <p>Check whole statements against the database.</p>
