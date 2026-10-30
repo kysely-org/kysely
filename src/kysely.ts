@@ -9,6 +9,10 @@ import { DefaultQueryExecutor } from './query-executor/default-query-executor.js
 import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
+import {
+  isAbortedTransactionError,
+  type AbortedTransactionError,
+} from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
   type Driver,
@@ -920,7 +924,9 @@ export class TransactionBuilder<DB> {
 
         return result
       } catch (error) {
-        if (transactionBegun) {
+        if (isAbortedTransactionError(error)) {
+          state.isRolledBack = true
+        } else if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
           state.isRolledBack = true
         }
@@ -1020,6 +1026,9 @@ export class ControlledTransaction<
   /**
    * Commits the transaction.
    *
+   * If the database rolls back instead of committing, marks the transaction
+   * as rolled back, releases the connection and throws {@link AbortedTransactionError}.
+   *
    * Waits for ongoing queries to finish. Streams must be exhausted or closed
    * before awaiting this command. When consuming a stream with `for await`,
    * exit the loop before committing.
@@ -1039,7 +1048,9 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
@@ -1048,7 +1059,16 @@ export class ControlledTransaction<
   commit(): Command<void> {
     return new Command(async (): Promise<void> => {
       await this.#props.executor.provideConnection(async (connection) => {
-        await this.#props.driver.commitTransaction(connection)
+        try {
+          await this.#props.driver.commitTransaction(connection)
+        } catch (error) {
+          if (isAbortedTransactionError(error)) {
+            this.#props.state.isRolledBack = true
+            this.#props.connection.release()
+          }
+
+          throw error
+        }
         this.#props.state.isCommitted = true
         this.#props.connection.release()
       })
@@ -1080,7 +1100,9 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
