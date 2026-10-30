@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@ark/attest": "0.57.0",
+    "@ark/attest": "0.58.0",
     "typescript": "6.0.3"
   }
 }
