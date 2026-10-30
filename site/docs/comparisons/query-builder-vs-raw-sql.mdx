@@ -150,7 +150,9 @@ function matchingAssetSql(options: AssetOptions) {
       ${albumFilter(options)} ${nameFilter(options)}
   `
 }
+```
 
+```ts
 const assets = await sql<{ id: string; name: string }[]>`
   select asset.id, asset.name ${matchingAssetSql(options)}
   order by asset.name, asset.id limit 50
@@ -413,68 +415,4 @@ Try one endpoint whose filters are repeated across a list and count. Add a share
 
 [Get started with Kysely](/docs/getting-started), explore [query examples](/docs/category/examples), or learn how to [generate database types](/docs/generating-types).
 
-<details>
-<summary>Complete Postgres.js implementation</summary>
-
-The full asset listing with Postgres.js; its `AssetRow` annotation is maintained separately from the query:
-
-```ts
-type AssetRow = {
-  id: string
-  name: string
-  tags?: { id: string; name: string }[]
-}
-
-function findAssetsWithPostgres(options: AssetOptions) {
-  const albumJoin =
-    options.albumId !== undefined
-      ? sql`inner join album_asset on album_asset.asset_id = asset.id`
-      : sql``
-  const albumFilter =
-    options.albumId !== undefined
-      ? sql`and album_asset.album_id = ${options.albumId}`
-      : sql``
-  const nameFilter =
-    options.namePrefix !== undefined
-      ? sql`and asset.name like ${options.namePrefix + '%'}`
-      : sql``
-  const tagsSelection = options.includeTags
-    ? sql`, coalesce((
-        select json_agg(tag_rows)
-        from (
-          select tag.id, tag.name
-          from asset_tag
-          inner join tag on tag.id = asset_tag.tag_id
-          where asset_tag.asset_id = asset.id
-          order by tag.name
-        ) as tag_rows
-      ), '[]'::json) as tags`
-    : sql``
-
-  return sql<AssetRow[]>`
-    select asset.id, asset.name ${tagsSelection}
-    from asset ${albumJoin}
-    where asset.owner_id = ${options.ownerId}
-      ${albumFilter} ${nameFilter}
-    order by asset.name, asset.id
-    limit 50
-  `
-}
-```
-
-Slonik composes the same fragments and takes its result type from a `sql.type` schema, validated at runtime by a parser interceptor. The [comparison fixtures](https://github.com/kysely-org/kysely/tree/fa14c49ac9240987a5df9811aacf50e31c1d0a5f/site/scripts/comparison-checks/postgres) hold the PgTyped and sqlc files and the generated code.
-
-</details>
-
-<details>
-<summary>Versions and verification</summary>
-
-- **Libraries:** Kysely 0.29.7, Postgres.js 3.4.9, Slonik 49.11.0, Prisma TypedSQL 7.10.1, PgTyped 2.4.3 with `@pgtyped/runtime` 2.4.2, sqlc 1.31.1 with sqlc-gen-typescript 0.1.3, pg 8.23.1, PostgreSQL 18.4, TypeScript 7.0.2 and 6.0.3.
-- **Fixtures:** the Kysely, Postgres.js, Slonik, TypedSQL, PgTyped, and sqlc asset listings returned identical rows across 48 option combinations, as did the folder export from Kysely, TypedSQL, PgTyped, and sqlc; also a 50-row page with a 60-row count, empty and omitted tags, selected aliases, SQL-like input bound as a value, and the escaped prefix helper against a name containing `%`. These are correctness checks, not benchmarks.
-- **Generated types:** the quoted TypedSQL, PgTyped, and sqlc types were asserted with compile-time equality checks, including `folder_name: string` from TypedSQL and PgTyped for the left-joined column and `string | null` from sqlc. PgTyped and TypedSQL generated against the live database; sqlc generated from the schema and query files with no database configured.
-- **SafeQL:** `@ts-safeql/eslint-plugin` 5.4.2 with `@ts-safeql/plugin-postgres-js` 4.3.0 caught a wrong annotation and a misspelled column in fixed statements and unconditional nested fragments, and reported statements inlining the conditional helper or a ternary fragment only as unmappable interpolations. SafeQL's [Postgres.js demo](https://github.com/ts-safeql/safeql/blob/7cee2fdbb9e12e5aae7033deeb1ca1ff575233a2/demos/postgresjs-demo/src/unsupported.ts) documents the same patterns as unsupported; a [report from a large Slonik codebase](https://github.com/ts-safeql/safeql/issues/286) describes the resulting errors and workarounds.
-- **Diagnostics:** a statement with three mistakes produced three successive PostgreSQL errors against PostgreSQL 18.4; TypeScript 6 and 7 reported all three at once.
-- **Not in the fixture suite:** the ranked report, the compiled list, and the schema rename were type-checked and compiled against Kysely 0.29.7, as were the ambiguous column, missing `GROUP BY`, and `lower()` argument queries that compile and PostgreSQL rejects. The planner claims describe PostgreSQL's documentation and were not benchmarked.
-- [Reproduce the checks](https://github.com/kysely-org/kysely/tree/fa14c49ac9240987a5df9811aacf50e31c1d0a5f/site/scripts/comparison-checks/postgres).
-
-</details>
+The examples ran against PostgreSQL 18.4 with Kysely 0.29.7, Postgres.js 3.4.9, Slonik 49.11.0, Prisma TypedSQL 7.10.1, PgTyped 2.4.3, sqlc 1.31.1 with sqlc-gen-typescript 0.1.3, and TypeScript 7.0.2 and 6.0.3; the [comparison fixtures](https://github.com/kysely-org/kysely/tree/3698df09/site/scripts/comparison-checks/postgres) reproduce them.
