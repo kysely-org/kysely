@@ -33,7 +33,7 @@ import type {
   countAssets as sqlcCountAssets,
 } from './sqlc/generated/queries_sql.ts'
 import { Kysely, PostgresDialect } from 'kysely'
-import { startsWith } from './starts-with.mts'
+import { escapeLike, like } from './starts-with.mts'
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
 
 interface Database {
@@ -272,9 +272,10 @@ async function exportAssets(options: AssetOptions) {
 }
 
 async function assetsStartingWith(options: AssetOptions, prefix: string) {
+  const pattern = escapeLike(prefix) + '%'
   // DOC:starts-with-usage
   const matches = await matchingAssets(options)
-    .where((eb) => startsWith(eb.ref('asset.name'), prefix))
+    .where((eb) => like(eb.ref('asset.name'), pattern))
     .select(['asset.id', 'asset.name'])
     .limit(50)
     .execute()
@@ -633,11 +634,11 @@ try {
   })
   assert.equal(unescapedRows.length, 3)
   const prefixCompiled = matchingAssets({ ownerId: 'o1', includeTags: false })
-    .where((eb) => startsWith(eb.ref('asset.name'), 'a_b'))
+    .where((eb) => like(eb.ref('asset.name'), escapeLike('a_b') + '%'))
     .select('asset.id')
     .compile()
-  assert.match(prefixCompiled.sql, /"asset"\."name" like \$2 escape '\\'/)
-  assert.deepEqual(prefixCompiled.parameters, ['o1', 'a\\_b%'])
+  assert.match(prefixCompiled.sql, /"asset"\."name" like \$2 escape \$3/)
+  assert.deepEqual(prefixCompiled.parameters, ['o1', 'a\\_b%', '\\'])
   await pgPool.query(`
     insert into asset select 'bulk'||lpad(g::text,3,'0'), 'Bulk', 'o3', null from generate_series(1,60) g;
     insert into album_asset select 'bulkAlbum',id from asset where owner_id='o3';
