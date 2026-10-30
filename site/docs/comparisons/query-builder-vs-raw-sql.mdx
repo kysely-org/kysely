@@ -70,7 +70,7 @@ const topAssets = await db
   .execute()
 ```
 
-Every reference is checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The builder version is longer and reads as an API rather than as SQL. **Raw SQL's best case is a fixed statement, and the builder still checks it.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
+Every reference is checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The builder version is longer and reads as an API rather than as SQL, but it is not a second language: `with`, `selectFrom`, `select`, `over`, `partitionBy`, `where`, and `orderBy` are SQL's clauses under SQL's names, in SQL's order, with the same column references. **Raw SQL's best case is a fixed statement, and the builder still checks it.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
 
 ## Every variation is a fragment, a file, or a checked operation
 
