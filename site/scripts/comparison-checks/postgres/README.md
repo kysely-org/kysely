@@ -45,12 +45,14 @@ error fails the check.
   a 50-row page with a 60-row total, and bound SQL-like input.
 
 The SQL-file execution checks cover Prisma TypedSQL, PgTyped, and sqlc with
-`sqlc-gen-typescript`: the same three statements (`findAssets`,
-`countAssets`, `findAssetsWithTags`) are written in each tool's parameter
-syntax, generated, executed through the shared `pg` pool, and compared with
-the Kysely results. Compile-time assertions record each tool's generated
-parameter and result types as emitted, including nullable `count` and json
-columns and how optional parameters are typed. References to SafeQL and Reylo
+`sqlc-gen-typescript`: the same four statements (`findAssets`,
+`countAssets`, `findAssetsWithTags`, `exportAssets`) are written in each
+tool's parameter syntax, generated, executed through the shared `pg` pool, and
+compared with the Kysely results. Compile-time assertions record each tool's
+generated parameter and result types as emitted, including nullable `count`
+and json columns, the left-joined `folder_name` column, and how optional
+parameters are typed. A `like ... escape` helper covers Kysely's raw
+expression escape hatch with wildcard input. References to SafeQL and Reylo
 describe their documented capabilities; those two tools are not executed by
 this suite.
 

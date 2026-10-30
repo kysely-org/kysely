@@ -29,15 +29,12 @@ const examples = {
       'postgres-assets',
       'matching-assets',
       'kysely-listing',
+      'kysely-export',
+      'starts-with-usage',
     ],
-    'query-builder-vs-sql-files.mdx': [
-      'matching-assets',
-      'kysely-listing',
-      'kysely-count',
-      'file-listing',
-      'pgtyped-listing',
-      'sqlc-listing',
-    ],
+  },
+  'starts-with.mts': {
+    'query-builder-vs-raw-sql.mdx': ['starts-with'],
   },
 }
 
@@ -60,22 +57,15 @@ for (const [fixture, pages] of Object.entries(examples)) {
     }
   }
 }
-// Prisma TypedSQL, PgTyped, and sqlc query files shown on the SQL-files page.
-const sqlFiles = [
-  'sql/findAssets.sql',
-  'sql/findAssetsWithTags.sql',
-  'sql/countAssets.sql',
-  'pgtyped/findAssets.sql',
-  'pgtyped/findAssetsWithTags.sql',
-  'pgtyped/countAssets.sql',
-  'sqlc/queries.sql',
-]
-for (const file of existsSync(join(docs, 'query-builder-vs-sql-files.mdx'))
+// The Prisma TypedSQL query file shown on the raw SQL page; the PgTyped and
+// sqlc versions are described there and kept only in this directory.
+const sqlFiles = ['sql/findAssets.sql']
+for (const file of existsSync(join(docs, 'query-builder-vs-raw-sql.mdx'))
   ? sqlFiles
   : []) {
   const sql = readFileSync(join(root, file), 'utf8')
   assert(
-    blocks('query-builder-vs-sql-files.mdx').includes(normalize(sql)),
+    blocks('query-builder-vs-raw-sql.mdx').includes(normalize(sql)),
     `${file} differs from the page`,
   )
   checked++

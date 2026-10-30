@@ -44,3 +44,16 @@ where asset.owner_id = sqlc.arg(owner_id)
   and (sqlc.narg(name_prefix)::text is null or asset.name like sqlc.narg(name_prefix) || '%')
 order by asset.name, asset.id
 limit 50;
+
+-- name: ExportAssets :many
+select asset.id, asset.name, folder.name as folder_name
+from asset
+left join folder on folder.id = asset.folder_id
+where asset.owner_id = sqlc.arg(owner_id)
+  and (sqlc.narg(album_id)::text is null or exists (
+    select 1 from album_asset
+    where album_asset.asset_id = asset.id
+      and album_asset.album_id = sqlc.narg(album_id)
+  ))
+  and (sqlc.narg(name_prefix)::text is null or asset.name like sqlc.narg(name_prefix) || '%')
+order by asset.name, asset.id;
