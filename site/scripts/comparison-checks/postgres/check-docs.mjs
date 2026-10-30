@@ -27,6 +27,7 @@ const examples = {
   'raw-scenarios.mts': {
     'query-builder-vs-raw-sql.mdx': [
       'postgres-assets',
+      'postgres-listing',
       'matching-assets',
       'kysely-listing',
       'kysely-export',

@@ -85,6 +85,38 @@ type AssetOptions = {
 // END:options
 
 // DOC:postgres-assets
+const albumJoin = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`inner join album_asset on album_asset.asset_id = asset.id`
+    : sql``
+const albumFilter = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`and album_asset.album_id = ${options.albumId}`
+    : sql``
+const nameFilter = (options: AssetOptions) =>
+  options.namePrefix !== undefined
+    ? sql`and asset.name like ${options.namePrefix + '%'}`
+    : sql``
+
+function matchingAssetSql(options: AssetOptions) {
+  return sql`
+    from asset ${albumJoin(options)}
+    where asset.owner_id = ${options.ownerId}
+      ${albumFilter(options)} ${nameFilter(options)}
+  `
+}
+// END:postgres-assets
+
+async function listAssetsWithPostgres(options: AssetOptions) {
+  // DOC:postgres-listing
+  const assets = await sql<{ id: string; name: string }[]>`
+    select asset.id, asset.name ${matchingAssetSql(options)}
+    order by asset.name, asset.id limit 50
+  `
+  // END:postgres-listing
+  return assets
+}
+
 type AssetRow = {
   id: string
   name: string
@@ -92,18 +124,6 @@ type AssetRow = {
 }
 
 function findAssetsWithPostgres(options: AssetOptions) {
-  const albumJoin =
-    options.albumId !== undefined
-      ? sql`inner join album_asset on album_asset.asset_id = asset.id`
-      : sql``
-  const albumFilter =
-    options.albumId !== undefined
-      ? sql`and album_asset.album_id = ${options.albumId}`
-      : sql``
-  const nameFilter =
-    options.namePrefix !== undefined
-      ? sql`and asset.name like ${options.namePrefix + '%'}`
-      : sql``
   const tagsSelection = options.includeTags
     ? sql`, coalesce((
         select json_agg(tag_rows)
@@ -118,15 +138,11 @@ function findAssetsWithPostgres(options: AssetOptions) {
     : sql``
 
   return sql<AssetRow[]>`
-    select asset.id, asset.name ${tagsSelection}
-    from asset ${albumJoin}
-    where asset.owner_id = ${options.ownerId}
-      ${albumFilter} ${nameFilter}
+    select asset.id, asset.name ${tagsSelection} ${matchingAssetSql(options)}
     order by asset.name, asset.id
     limit 50
   `
 }
-// END:postgres-assets
 
 // DOC:slonik-assets
 const assetRowSchema = z.object({
@@ -501,6 +517,11 @@ try {
           const pgTypedRows = await findAssetsWithPgTyped(options)
           const sqlcRows = await findAssetsWithSqlc(options)
           assert.deepEqual([...postgresRows], kyselyRows)
+          if (!includeTags)
+            assert.deepEqual(
+              [...(await listAssetsWithPostgres(options))],
+              kyselyRows,
+            )
           assert.deepEqual([...slonikRows], kyselyRows)
           assert.deepEqual(fileRows, kyselyRows)
           assert.deepEqual(pgTypedRows, kyselyRows)
