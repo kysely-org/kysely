@@ -4,7 +4,7 @@ export function SqlQueryWorkflows() {
   return (
     <figure
       className={styles.figure}
-      aria-label="SQL files with tool syntax, SQL strings and templates, and SQL query builders"
+      aria-label="SQL code generators, SQL clients, SQL query builders, and SQL checkers"
     >
       <div className={styles.axis} aria-hidden="true">
         <span>Whole statement</span>
@@ -12,7 +12,7 @@ export function SqlQueryWorkflows() {
       </div>
       <div className={styles.groups}>
         <div className={styles.group}>
-          <p className={styles.title}>SQL files with tool syntax</p>
+          <p className={styles.title}>SQL code generators</p>
           <ul>
             <li>
               <a href="https://pgtyped.dev/docs/">PgTyped</a>
@@ -30,12 +30,11 @@ export function SqlQueryWorkflows() {
             </li>
           </ul>
           <p>
-            Write whole statements in SQL files, in the tool's syntax, and
-            generate typed application calls.
+            Compile whole statements in SQL files to typed application calls.
           </p>
         </div>
         <div className={styles.group}>
-          <p className={styles.title}>SQL strings and templates</p>
+          <p className={styles.title}>SQL clients</p>
           <ul>
             <li>
               <a href="https://node-postgres.com/features/queries#parameterized-query">
