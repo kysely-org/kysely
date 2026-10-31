@@ -17,9 +17,5 @@ export class AbortedTransactionError extends Error {
 export function isAbortedTransactionError(
   error: unknown,
 ): error is AbortedTransactionError {
-  return (
-    isObject(error) &&
-    ABORTED_TRANSACTION_ERROR in error &&
-    error[ABORTED_TRANSACTION_ERROR] === true
-  )
+  return isObject(error) && ABORTED_TRANSACTION_ERROR in error
 }

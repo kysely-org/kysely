@@ -134,9 +134,7 @@ for (const dialect of DIALECTS) {
           await expect(savedCommit.execute()).to.be.rejectedWith(
             'Transaction is already rolled back',
           )
-          await expect(trx.rollback().execute()).to.be.rejectedWith(
-            'Transaction is already rolled back',
-          )
+          await trx.rollback().execute()
         } finally {
           if (!trx.isCommitted && !trx.isRolledBack) {
             await trx.rollback().execute()
@@ -1018,6 +1016,7 @@ describe('controlled transaction', () => {
     it(`should block queued queries and release once when commit reports a rollback${otherCopy ? ' from another package copy' : ''}`, async () => {
       const trx = await db.startTransaction().execute()
       const derivedTrx = trx.withSchema('public')
+      const savedRollback = derivedTrx.rollback()
       const finished = new Deferred<void>()
       const rollbackError = otherCopy
         ? await createRollbackErrorFromOtherCopy()
@@ -1036,6 +1035,10 @@ describe('controlled transaction', () => {
       finished.reject(rollbackError)
       await completion
       await query
+
+      await savedRollback.execute()
+      await trx.rollback().execute()
+      await derivedTrx.rollback().execute()
 
       expect(trx.isCommitted).to.be.false
       expect(trx.isRolledBack).to.be.true

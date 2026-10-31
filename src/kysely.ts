@@ -901,13 +901,15 @@ export class TransactionBuilder<DB> {
     validateTransactionSettings(settings)
 
     return this.#props.executor.provideConnection(async (connection) => {
-      const state = { isCommitted: false, isRolledBack: false }
+      const transactionState: ControlledTransactionState = {
+        status: 'active',
+      }
 
       const executor = new NotCommittedOrRolledBackAssertingExecutor(
         this.#props.executor.withConnectionProvider(
           new SingleConnectionProvider(connection),
         ),
-        state,
+        transactionState,
       )
 
       const transaction = new Transaction<DB>({ ...kyselyProps, executor })
@@ -920,15 +922,15 @@ export class TransactionBuilder<DB> {
         const result = await callback(transaction)
 
         await this.#props.driver.commitTransaction(connection)
-        state.isCommitted = true
+        transactionState.status = 'committed'
 
         return result
       } catch (error) {
         if (isAbortedTransactionError(error)) {
-          state.isRolledBack = true
+          transactionState.status = 'aborted'
         } else if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
-          state.isRolledBack = true
+          transactionState.status = 'rolled back'
         }
 
         throw error
@@ -983,7 +985,7 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
-      state: { isCommitted: false, isRolledBack: false },
+      transactionState: { status: 'active' },
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection.connection),
       ),
@@ -1003,10 +1005,10 @@ export class ControlledTransaction<
       ...props,
       executor: new NotCommittedOrRolledBackAssertingExecutor(
         props.executor,
-        props.state,
+        props.transactionState,
       ),
     }
-    const { connection, state, ...transactionProps } = props
+    const { connection, transactionState, ...transactionProps } = props
     super(transactionProps)
 
     this.#props = freeze(props)
@@ -1016,11 +1018,14 @@ export class ControlledTransaction<
   }
 
   get isCommitted(): boolean {
-    return this.#props.state.isCommitted
+    return this.#props.transactionState.status === 'committed'
   }
 
   get isRolledBack(): boolean {
-    return this.#props.state.isRolledBack
+    return (
+      this.#props.transactionState.status === 'rolled back' ||
+      this.#props.transactionState.status === 'aborted'
+    )
   }
 
   /**
@@ -1048,9 +1053,7 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   if (!trx.isRolledBack) {
-   *     await trx.rollback().execute()
-   *   }
+   *   await trx.rollback().execute()
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
@@ -1063,13 +1066,13 @@ export class ControlledTransaction<
           await this.#props.driver.commitTransaction(connection)
         } catch (error) {
           if (isAbortedTransactionError(error)) {
-            this.#props.state.isRolledBack = true
+            this.#props.transactionState.status = 'aborted'
             this.#props.connection.release()
           }
 
           throw error
         }
-        this.#props.state.isCommitted = true
+        this.#props.transactionState.status = 'committed'
         this.#props.connection.release()
       })
     })
@@ -1077,6 +1080,9 @@ export class ControlledTransaction<
 
   /**
    * Rolls back the transaction.
+   *
+   * If a commit already reported that the database rolled back the transaction,
+   * succeeds without sending another rollback command.
    *
    * The connection is released even if the rollback fails, so the transaction
    * cannot be used afterwards in either case.
@@ -1100,9 +1106,7 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   if (!trx.isRolledBack) {
-   *     await trx.rollback().execute()
-   *   }
+   *   await trx.rollback().execute()
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
@@ -1110,12 +1114,16 @@ export class ControlledTransaction<
    */
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
+      if (this.#props.transactionState.status === 'aborted') {
+        return
+      }
+
       await this.#props.executor.provideConnection(async (connection) => {
         // A failed rollback can't be meaningfully retried (e.g. dead connection).
         try {
           await this.#props.driver.rollbackTransaction(connection)
         } finally {
-          this.#props.state.isRolledBack = true
+          this.#props.transactionState.status = 'rolled back'
           this.#props.connection.release()
         }
       })
@@ -1338,14 +1346,13 @@ export class ControlledTransaction<
   }
 }
 
-interface ControlledTransctionState {
-  isCommitted: boolean
-  isRolledBack: boolean
+interface ControlledTransactionState {
+  status: 'active' | 'committed' | 'rolled back' | 'aborted'
 }
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: ControlledConnection
-  readonly state: ControlledTransctionState
+  readonly transactionState: ControlledTransactionState
 }
 
 export class Command<T> {
@@ -1364,13 +1371,13 @@ export class Command<T> {
 }
 
 function assertNotCommittedOrRolledBack(
-  state: ControlledTransctionState,
+  transactionState: ControlledTransactionState,
 ): void {
-  if (state.isCommitted) {
+  if (transactionState.status === 'committed') {
     throw new Error('Transaction is already committed')
   }
 
-  if (state.isRolledBack) {
+  if (transactionState.status !== 'active') {
     throw new Error('Transaction is already rolled back')
   }
 }
@@ -1383,14 +1390,17 @@ function assertNotCommittedOrRolledBack(
  */
 class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   readonly #executor: QueryExecutor
-  readonly #state: ControlledTransctionState
+  readonly #transactionState: ControlledTransactionState
 
-  constructor(executor: QueryExecutor, state: ControlledTransctionState) {
+  constructor(
+    executor: QueryExecutor,
+    transactionState: ControlledTransactionState,
+  ) {
     this.#executor =
       executor instanceof NotCommittedOrRolledBackAssertingExecutor
         ? executor.#executor
         : executor
-    this.#state = state
+    this.#transactionState = transactionState
   }
 
   get adapter() {
@@ -1416,10 +1426,10 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     consumer: (connection: DatabaseConnection) => Promise<T>,
     options?: AbortableOperationOptions,
   ): Promise<T> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#transactionState)
 
     return this.#executor.provideConnection(async (connection) => {
-      assertNotCommittedOrRolledBack(this.#state)
+      assertNotCommittedOrRolledBack(this.#transactionState)
       return await consumer(connection)
     }, options)
   }
@@ -1428,7 +1438,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     compiledQuery: CompiledQuery<R>,
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#transactionState)
     return this.#executor
       .withConnectionProvider(this)
       .executeQuery(compiledQuery, options)
@@ -1439,7 +1449,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     chunkSize: number,
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
-    assertNotCommittedOrRolledBack(this.#state)
+    assertNotCommittedOrRolledBack(this.#transactionState)
     return this.#executor
       .withConnectionProvider(this)
       .stream(compiledQuery, chunkSize, options)
@@ -1450,35 +1460,35 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   ): QueryExecutor {
     return new NotCommittedOrRolledBackAssertingExecutor(
       this.#executor.withConnectionProvider(connectionProvider),
-      this.#state,
+      this.#transactionState,
     )
   }
 
   withPlugin(plugin: KyselyPlugin): QueryExecutor {
     return new NotCommittedOrRolledBackAssertingExecutor(
       this.#executor.withPlugin(plugin),
-      this.#state,
+      this.#transactionState,
     )
   }
 
   withPlugins(plugins: ReadonlyArray<KyselyPlugin>): QueryExecutor {
     return new NotCommittedOrRolledBackAssertingExecutor(
       this.#executor.withPlugins(plugins),
-      this.#state,
+      this.#transactionState,
     )
   }
 
   withPluginAtFront(plugin: KyselyPlugin): QueryExecutor {
     return new NotCommittedOrRolledBackAssertingExecutor(
       this.#executor.withPluginAtFront(plugin),
-      this.#state,
+      this.#transactionState,
     )
   }
 
   withoutPlugins(): QueryExecutor {
     return new NotCommittedOrRolledBackAssertingExecutor(
       this.#executor.withoutPlugins(),
-      this.#state,
+      this.#transactionState,
     )
   }
 }
