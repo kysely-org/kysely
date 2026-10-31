@@ -10,7 +10,7 @@ import { SqlQueryWorkflows } from '@site/src/components/SqlQueryWorkflows'
 
 **Raw SQL in TypeScript is a whole statement written as SQL text: a template beside application code, or a `.sql` file compiled to a typed call.** A SQL query builder composes the statement through an API; Kysely also checks each operation against the database types and infers the result.
 
-A statement that never changes is raw SQL's best case; every statement that does change is the builder's. **A team that composes raw SQL is already maintaining a query builder; a team that writes typed SQL files has done without one until the first dynamic query.** This page starts with the fixed statement, then follows one asset query through optional filters, a shared count, an export, and nested tags, and tries to break it.
+A statement that never changes is raw SQL's best case, and the builder still checks it; every statement that does change is the builder's. **A team that composes raw SQL is already maintaining a query builder, a bespoke and untyped one; a team that writes typed SQL files has done without one until the first dynamic query.** This page starts with the fixed statement, then follows one asset query through optional filters, a shared count, an export, and nested tags, and tries to break it.
 
 ## Raw SQL is a whole statement; a query builder composes one
 
@@ -20,57 +20,46 @@ This page covers two kinds of raw SQL. **SQL templates** such as [Postgres.js](h
 
 ## A whole statement still gains checked references in the builder
 
-**Raw SQL is at its strongest in one complete statement, and that is the statement to test the builder against.** A report that keeps each owner's first three assets by name is one statement with two window functions:
+**Raw SQL is at its strongest in one complete statement, and that is the statement to test the builder against.** A report of each owner's unfiled favorites is one statement with a CTE and two joins:
 
 ```sql
-with ranked as (
-  select
-    asset.id,
-    asset.name,
-    asset.owner_id,
-    row_number() over (partition by asset.owner_id order by asset.name, asset.id) as position,
-    count(*) over (partition by asset.owner_id) as owner_total
-  from asset
+with favorites as (
+  select asset_tag.asset_id
+  from asset_tag
+  inner join tag on tag.id = asset_tag.tag_id
+  where tag.name = 'favorite'
 )
-select id, name, owner_id, position, owner_total
-from ranked
-where position <= 3
-order by owner_id, position;
+select asset.id, asset.name, asset.owner_id
+from asset
+inner join favorites on favorites.asset_id = asset.id
+where asset.folder_id is null
+order by asset.owner_id, asset.name;
 ```
 
 It runs unchanged in a SQL console, under `EXPLAIN ANALYZE`, and in a review by someone who does not write TypeScript. In application code it is a string: nothing checks `asset.owner_id` against the schema, the result type is whatever the caller annotates, and a renamed column is found by search. The same report in Kysely:
 
 ```ts
-const topAssets = await db
-  .with('ranked', (qb) =>
-    qb.selectFrom('asset').select((eb) => [
-      'asset.id',
-      'asset.name',
-      'asset.owner_id',
-      eb.fn
-        .agg('row_number')
-        .over((ob) =>
-          ob
-            .partitionBy('asset.owner_id')
-            .orderBy('asset.name')
-            .orderBy('asset.id'),
-        )
-        .as('position'),
-      eb.fn
-        .countAll()
-        .over((ob) => ob.partitionBy('asset.owner_id'))
-        .as('owner_total'),
-    ]),
+const unfiledFavorites = await db
+  .with('favorites', (qb) =>
+    qb
+      .selectFrom('asset_tag')
+      .innerJoin('tag', 'tag.id', 'asset_tag.tag_id')
+      .select('asset_tag.asset_id')
+      .where('tag.name', '=', 'favorite'),
   )
-  .selectFrom('ranked')
-  .select(['id', 'name', 'owner_id', 'position', 'owner_total'])
-  .where('position', '<=', 3)
-  .orderBy('owner_id')
-  .orderBy('position')
+  .selectFrom('asset')
+  .innerJoin('favorites', 'favorites.asset_id', 'asset.id')
+  .select(['asset.id', 'asset.name', 'asset.owner_id'])
+  .where('asset.folder_id', 'is', null)
+  .orderBy('asset.owner_id')
+  .orderBy('asset.name')
   .execute()
+// Inferred: { id: string; name: string; owner_id: string }[]
 ```
 
-Every reference is checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The builder version is longer and reads as an API rather than as SQL, but it is not a second language: `with`, `selectFrom`, `select`, `over`, `partitionBy`, `where`, and `orderBy` are SQL's clauses under SQL's names, in SQL's order, with the same column references. The length buys the half of the statement that the string leaves unchecked: the outer `select`, `where`, and `orderBy` are checked against what `ranked` selected, so a column dropped from the CTE fails in the clause that reads it, and the caller annotates nothing. **Raw SQL's best case is a fixed statement, and the builder still checks it.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
+**Raw SQL's best case is a fixed statement, and the builder still checks it.** Every reference is completed by the editor as it is typed and checked against the database declarations, the result type is inferred from the selection, and renaming `asset.name` turns the report into a compile error. The join on `favorites.asset_id` is checked against what the CTE selected, so a column dropped from the CTE fails in the clause that reads it, and the caller annotates nothing.
+
+The builder version reads as an API rather than as SQL, but it is not a second language: `with`, `selectFrom`, `innerJoin`, `select`, `where`, and `orderBy` are SQL's clauses under SQL's names, with the same column references. The API stops looking like SQL at its helpers, `fn` for functions and the JSON helpers below, and [`.compile()`](/docs/recipes/splitting-query-building-and-execution) shows the SQL any of them produces while it is being written. A console and a reviewer get the same statement with its parameters, and [`.explain()`](https://kysely-org.github.io/kysely-apidoc/interfaces/Explainable.html) runs it under `EXPLAIN`, `ANALYZE` included. A typed SQL file checks this statement too, with the database, and derives its type, though not the nullability a left join adds, as the export below shows. **The builder checks the fixed statement in the same API the next section composes with, so a fixed query and a dynamic one share one toolchain, one type source, and no generation step.** Whole raw statements keep their place in migrations, bootstrap, and one-off scripts, where there is no composition to check.
 
 ## Every variation is a fragment, a file, or a checked operation
 
@@ -162,7 +151,7 @@ const assets = await sql<{ id: string; name: string }[]>`
 `
 ```
 
-The album join and its predicate are one branch in Kysely and two fragments that must agree here. Three helpers that each decide when their text applies, and a function that places them in order, are a query builder: one the team maintains through tests, since no type records which fragment is present. **The first conditional in a shared helper takes every statement that uses it out of the checker's coverage.** [SafeQL's Postgres.js integration](https://safeql.dev/compatibility/postgres.js.html#support-matrix) lists conditional fragment selection as unsupported; linting this helper, it reports the interpolation as a type it cannot map and checks nothing around it. Its maintainer [explains the limit as combinatorial](https://github.com/ts-safeql/safeql/issues/100#issuecomment-1311048387): each condition doubles the forms to check. Kysely checks the album branch once, inside its `if`.
+The album join and its predicate are one branch in Kysely and two fragments that must agree here, because the join lands before `where` and the predicate after it, and one fragment cannot carry both. Three helpers that each decide when their text applies, and a function that places them in order, are a query builder: one the team maintains through tests, since no type records which fragment is present. **The first conditional in a shared helper takes every statement that uses it out of the checker's coverage.** [SafeQL's Postgres.js integration](https://safeql.dev/compatibility/postgres.js.html#support-matrix) lists conditional fragment selection as unsupported, so every statement assembled from these helpers is outside what it checks. Its maintainer [explains the limit as combinatorial](https://github.com/ts-safeql/safeql/issues/100#issuecomment-1311048387): each condition doubles the forms to check. Kysely checks the album branch once, inside its `if`. `$call` here, and `$if` below, are the control flow in these queries that is not SQL's; they are the typed form of the ternary and the empty template above, which is the part of the raw version that was never SQL either.
 
 A typed SQL file cannot add or remove clauses, so each optional filter becomes a nullable parameter guarded by `is null or`, and album membership becomes `exists`. With Prisma TypedSQL, parameters are typed by comments and the rest is plain SQL:
 
@@ -201,14 +190,12 @@ const assets = await matchingAssets(options)
 // Inferred: { id: string; name: string }[]
 
 const total = await matchingAssets(options)
-  .select((eb) => eb.fn.countAll().as('count'))
+  .select((eb) => eb.cast<number>(eb.fn.countAll(), 'integer').as('count'))
   .executeTakeFirstOrThrow()
-// Inferred: { count: string | number | bigint }
+// Inferred: { count: number }
 ```
 
-The count's union is the driver's truth: PostgreSQL returns `count(*)` as `bigint`, which `pg` delivers as a string unless a type parser is registered, and `countAll<number>()` declares the parsed type once one is.
-
-**Each consumer keeps its own selections and pagination; each inherits the shared query's scope and result type.** Kysely's builders are immutable, so extending one does not change another, and a new shared rule goes into `matchingAssets` once. Fragments give Postgres.js the same reuse, with an annotation per caller. A generated call returns one fixed shape, so the count is a second statement that repeats the predicates. **Checking both statements does not establish that their filtering rules agree.**
+**Each consumer keeps its own selections and pagination; each inherits the shared query's scope and result type.** Kysely's builders are immutable, so extending one does not change another, and a new shared rule goes into `matchingAssets` once. Fragments give Postgres.js the same reuse; the count is a second template whose result type the caller declares and nothing checks. A generated call returns one fixed shape, so the count is a second statement that repeats the predicates. **Checking both statements does not establish that their filtering rules agree.**
 
 ### Add a folder name through a left join
 
@@ -224,7 +211,7 @@ const exportedAssets = await matchingAssets(options)
 // Inferred: { id: string; name: string; folder_name: string | null }[]
 ```
 
-`folder_name` is nullable because the left join made it nullable. The Postgres.js caller annotates the result itself, and nothing objects to `folder_name: string`. A generator has to infer nullability, because PostgreSQL's [`RowDescription`](https://www.postgresql.org/docs/current/protocol-message-formats.html) reports a column's type and source table and nothing about whether it can be null. Put this export in a `.sql` file and Prisma TypedSQL and PgTyped generate `folder_name: string`: the source column is `NOT NULL`, the left join is not consulted, and `folder_name.toUpperCase()` compiles and throws on the first unfiled asset. sqlc tracks the join and emits `string | null`. The same tools lean the other way on `count(*)::integer`, which TypedSQL and PgTyped type `number | null` for a column that is never null. **Nullability is where generated types are weakest, and it is what Kysely tracks through the join.**
+`folder_name` is nullable because the left join made it nullable. The Postgres.js caller annotates the result itself, and nothing objects to `folder_name: string`. A generator has to infer nullability, because PostgreSQL's [`RowDescription`](https://www.postgresql.org/docs/current/protocol-message-formats.html) reports a column's type and source table and nothing about whether it can be null. Put this export in a `.sql` file and Prisma TypedSQL and PgTyped generate `folder_name: string`: the source column is `NOT NULL`, the left join is not consulted, and `folder_name.toUpperCase()` compiles and throws on the first unfiled asset. sqlc tracks the join and emits `string | null`. **Nullability is where two of the three generators type the column wrong, and it is what Kysely tracks through the join.**
 
 ### Add optional nested tags
 
@@ -258,12 +245,12 @@ Requested tags use `[]` when none exist; unrequested tags omit the key and the s
 
 | Requirement                              | Kysely                                                 | SQL templates                                              | Typed SQL files                                                                  |
 | ---------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Add a conditional join and predicate     | Extend the builder; references checked in the branch.  | Compose fragments; the statements leave SafeQL's coverage. | Nullable parameters and `exists`; one statement, checked whole.                  |
+| Add a conditional join and predicate     | Extend the builder; references checked in the branch.  | Compose fragments; the statements leave SafeQL's coverage. | Nullable parameters and `exists`; one statement serves every combination.        |
 | Share filters across list, count, export | One unfinished query; each caller selects its fields.  | Share fragments; each caller declares its own annotation.  | A statement per shape; repeat the predicates, or use a view.                     |
 | Left join an optional folder name        | The column arrives as `string \| null`.                | The annotation says whatever the caller wrote.             | A new statement; `string` from TypedSQL and PgTyped, `string \| null` from sqlc. |
 | Optional nested tags                     | A conditional selection; the nested shape is inferred. | A conditional fragment; the annotation declares the shape. | A second statement; the column is JSON, or a string.                             |
 
-**An established query builder supplies the composition rules and types; a helper layer supplies them through tests and maintenance; a set of SQL files supplies them one statement at a time.**
+**Each requirement cost the builder one checked operation; it cost the fragments a helper and an annotation, and the SQL files a statement.**
 
 ## Try to break the shared query
 
@@ -327,23 +314,19 @@ const assets = await matchingAssets(options)
   .orderBy('asset.id')
 ```
 
-The compiler lists every stale reference: the shared filter and each consumer's selection, in the list, the count, the export, and the tags listing. The same edit in the raw SQL forms is a text search. A SQL template's declared annotation keeps claiming `name` exists until a runtime value is undefined. A generated type catches the drift at the next generation run, against a live database for PgTyped and TypedSQL, and only in the statements it generated. **A type check is a verification step an agent can run on every edit, with nothing but the repository.** The database enters Kysely's loop when the schema changes, not when a query does; a query edit, such as selecting `asset.name as label`, changes the consumer's inferred type and its callers' errors with no generation step.
+The compiler lists every stale reference: the shared filter and each consumer's selection, in the list, the count, the export, and the tags listing, and the editor completes `asset.label` where `asset.name` used to be. The same edit in the raw SQL forms is a text search. A SQL template's declared annotation keeps claiming `name` exists until a runtime value is undefined. A generated type catches the drift at the next generation run, against a live database for PgTyped and TypedSQL, and only in the statements it generated. That run is a step the repository cannot take alone: a database at the new schema, the generator, and a review of the regenerated output, before the compiler has anything to compare. **A type check is a verification step an agent can run on every edit, with nothing but the repository.** The database enters Kysely's loop when the schema changes, not when a query does; a query edit, such as selecting `asset.name as label`, changes the consumer's inferred type and its callers' errors with no generation step.
 
 ## SQL checkers verify a statement; Kysely verifies a composition
 
 **A SQL checker verifies a statement it can see whole; Kysely verifies each operation that application code adds to a query.** SafeQL and the generators ask PostgreSQL to describe a statement, so its grammar, functions, and result columns are checked against the database, and the coverage ends at statements they can see whole. Kysely's grammar is library output, tested per dialect across its API, so a misplaced clause is not a mistake application code can make; a reference, a result shape, or a composition is, and those are what its types check.
 
-Kysely's coverage ends where the statement's meaning depends on the database rather than the declarations. An unqualified `id` after a join of two tables that both have one compiles and PostgreSQL rejects it as ambiguous; a selected column missing from `GROUP BY` compiles; `fn('lower', ['asset.id'])` compiles whatever the column's type; a `sql` expression and the type declared on it are taken on trust. A checker with the database catches each of those in a fixed statement. Tests against a database still have their place with the builder; what they no longer cover is the composition. The checker and the builder are not exclusive: SafeQL's [Kysely plugin](https://safeql.dev/compatibility/kysely.html), experimental, inlines the `sql` expressions in a Kysely query and checks them against the database, so the one input the builder takes on trust can have a checker too.
+Kysely's coverage ends where the statement's meaning depends on the database rather than the declarations. An unqualified `id` after a join of two tables that both have one compiles and PostgreSQL rejects it as ambiguous; a selected column missing from `GROUP BY` compiles; `fn('lower', ['asset.id'])` compiles whatever the column's type; a `sql` expression and the type declared on it are taken on trust. A checker with the database catches each of those in a fixed statement. Tests against a database still have their place with the builder; what they no longer have to carry is the composition. The checker and the builder are not exclusive: SafeQL's [Kysely plugin](https://safeql.dev/compatibility/kysely.html), experimental, inlines the `sql` expressions in a Kysely query and checks them against the database, so the one input the builder takes on trust can have a checker too.
 
-**Every mistake a builder prevents is one raw SQL finds at runtime, one round trip at a time.** A misspelled column, a parameter numbered wrong, a comparison against the wrong type: each is found by running the statement and reading the database's message, and PostgreSQL reports [one error per attempt](https://www.postgresql.org/docs/current/protocol-error-fields.html). With Kysely those are compile errors, reported together, before a connection is opened. For a developer that is minutes per statement; for a coding agent it is an execution loop per mistake, against a database it may not have.
+**Every mistake a builder prevents is one that unchecked SQL finds at runtime, one round trip at a time.** Outside a checker's coverage, which ends at the first conditional, a misspelled column, a parameter numbered wrong, or a comparison against the wrong type is found by running the statement and reading the database's message, and PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY): one per attempt. With Kysely those are compile errors, reported together, before a connection is opened. For a coding agent that is an execution loop per mistake, against a database it may not have.
 
 ### Can raw SQL be type-safe?
 
 **Yes, one statement at a time.** A declared result type checks callers against the annotation and says nothing about the SQL. A runtime schema, such as Slonik's with a [parser interceptor](https://github.com/gajus/slonik/blob/5130ed4320686ab8876cb2296d35f9a1b2cccc93/README.md#result-parser-interceptor), rejects an incompatible row when the query runs. SafeQL checks supported statements during linting; generators derive the type from the statement. None of them establish conditional composition. Kysely does not validate returned rows, so runtime validation can still be useful at boundaries.
-
-### Does a query builder prevent SQL injection?
-
-**Not on its own, and raw SQL does not invite it on its own.** Every client here binds values as parameters; injection enters through request text placed in SQL syntax, which [Postgres.js `sql.unsafe`](https://github.com/porsager/postgres/blob/570be764d96c8c13e6a1a262103bf60974571b67/README.md#unsafe-raw-string-queries) and Kysely's `sql.raw` both send as SQL. Column names and sort directions are syntax, so every workflow allow-lists them; pass an allow-listed column to `orderBy` and a misspelled entry is a type error, while Kysely's [dynamic references](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html) leave the allow-list to you. **Safe parameterization is not the reason to adopt a builder; raw SQL has it. The checked composition API is.**
 
 ## Performance belongs to the statement, not the authoring tool
 
@@ -380,17 +363,38 @@ const matches = await matchingAssets(options)
 // Inferred: { id: string; name: string }[]
 ```
 
-A whole statement through the `sql` tag gives up every check on this page; keep that form for migrations and scripts, and `sql.raw` for trusted syntax such as an identifier. Kysely's PostgreSQL dialect takes an existing node-postgres `Pool`, so adoption runs one helper at a time while the remaining `pool.query` calls keep running. See [raw expressions](/docs/recipes/raw-sql) and the [SQL template API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
+A whole statement through the `sql` tag gives up every check on this page; keep that form for migrations and scripts, and `sql.raw` for trusted syntax such as an identifier. See [raw expressions](/docs/recipes/raw-sql) and the [SQL template API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html).
 
 ## Production code draws the same line
 
-OpenClaw's [contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71), written for coding agents, requires Kysely for ordinary SQLite access and limits raw SQL to schema, migrations, bootstrap, and justified primitives. **Statements that stay fixed are written as SQL; queries that application code composes go through the builder.** The same composition appears in larger codebases:
+OpenClaw's [contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71), written for coding agents, requires Kysely for ordinary SQLite access and limits raw SQL to schema, migrations, bootstrap, and justified primitives. **Schema, migrations, and bootstrap are written as SQL; the queries application code runs go through the builder.** The same composition appears in larger codebases:
 
 - [Immich](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L572-L624) composes optional relation selections and a lateral subquery for stacked assets.
 - [Open Collective](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L780-L826) conditionally adds currency conversion through a correlated exchange-rate lookup.
 - [Docmost](https://github.com/docmost/docmost/blob/7bef7b1a00d31991f009865ec14c8d06540eb1f0/apps/server/src/database/repos/page/page-permission.repo.ts#L326-L366) composes recursive ancestors for page restrictions with the same builder interface as its simpler queries.
 
 ## Other practical considerations
+
+<details>
+<summary>SQL injection</summary>
+
+**A query builder does not prevent SQL injection on its own, and raw SQL does not invite it on its own.** Every client here binds values as parameters; injection enters through request text placed in SQL syntax, which [Postgres.js `sql.unsafe`](https://github.com/porsager/postgres/blob/570be764d96c8c13e6a1a262103bf60974571b67/README.md#unsafe-raw-string-queries) and Kysely's `sql.raw` both send as SQL. Column names and sort directions are syntax, so every workflow allow-lists them; pass an allow-listed column to `orderBy` and a misspelled entry is a type error, while Kysely's [dynamic references](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html) leave the allow-list to you. **Safe parameterization is not the reason to adopt a builder; raw SQL has it. The checked composition API is.**
+
+</details>
+
+<details>
+<summary>Type-checking cost</summary>
+
+Raw SQL costs nothing at the type level. Kysely's checks are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. Generated declarations keep that cost tied to schema size, not query count, and conditional branches and helpers typed with `Expression` keep individual queries shallow.
+
+</details>
+
+<details>
+<summary>Incremental adoption</summary>
+
+Kysely's PostgreSQL dialect takes an existing node-postgres `Pool`, so adoption runs one helper at a time while the remaining `pool.query` calls keep running.
+
+</details>
 
 <details>
 <summary>Engines, drivers, and portability</summary>
@@ -405,20 +409,11 @@ Most applications never change engines, so portability is a weak reason on its o
 
 ### Why use a query builder instead of raw SQL?
 
-**Because application queries change, and a query builder checks each change: the reference it adds, the result it selects, and the tables a shared query puts in scope.** Raw SQL binds the same parameters and sends the same statement; what it leaves to review, tests, and search, Kysely's types report before a connection is opened.
+**Because application queries change, and a query builder is the only form here that checks the change itself, not only the statement it produces.** Raw SQL binds the same parameters and sends the same statement; what it leaves to review, tests, and search, Kysely's types report before a connection is opened.
 
 ### When does raw SQL belong in a TypeScript application?
 
-**Where there is no composition to check: migrations and DDL, bootstrap, one-off scripts, and the expression a builder cannot express.** Typed SQL files give each such statement the strongest check available and a derived type. Raw SQL also costs nothing at the type level: Kysely's checks are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. Generated declarations keep that cost tied to schema size, not query count, and conditional branches and helpers typed with `Expression` keep individual queries shallow.
-
-What each side maintains itself, for the asset list above:
-
-| Responsibility                             | Raw SQL in TypeScript                                                       | Kysely                                                                   |
-| ------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Which tables a shared helper puts in scope | Convention, review, and tests.                                              | The builder's type; a consumer cannot reference a table it may not have. |
-| Each caller's result type                  | A declared annotation, a runtime schema, or a generated type per statement. | Inferred from the selection, including outer-join nullability.           |
-| A new shared rule                          | One edit per helper or statement, checked by tests.                         | One edit in the shared function, inherited by every consumer.            |
-| A schema rename                            | Search, or regeneration where a checker is in the loop.                     | Regenerate declarations; the compiler lists every stale reference.       |
+**Where there is no composition to check: migrations and DDL, bootstrap, one-off scripts, and the expression a builder cannot express.**
 
 Try one endpoint whose filters are repeated across a list and count. Add a shared rule, change a selected alias, and let a consumer reference a conditional join. Compare the edits, the steps before anything can tell you the edit was valid, and the statements the database receives.
 
