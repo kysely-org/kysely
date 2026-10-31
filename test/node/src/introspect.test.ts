@@ -1,4 +1,4 @@
-import { sql } from '../../../dist/index.js'
+import { sql, type SqlBool } from '../../../dist/index.js'
 import {
   clearDatabase,
   destroyTest,
@@ -25,6 +25,10 @@ for (const dialect of DIALECTS) {
       }
 
       await createView()
+
+      if (sqlSpec === 'postgres') {
+        await createMaterializedView()
+      }
     })
 
     beforeEach(async () => {
@@ -36,6 +40,10 @@ for (const dialect of DIALECTS) {
     })
 
     after(async () => {
+      if (sqlSpec === 'postgres') {
+        await dropMaterializedView()
+      }
+
       await dropView()
 
       if (sqlSpec === 'postgres') {
@@ -77,6 +85,21 @@ for (const dialect of DIALECTS) {
           expect(schemas).to.eql([])
         }
       })
+
+      it('should apply a where expression to the metadata query', async () => {
+        const schemaName =
+          sqlSpec === 'postgres' || sqlSpec === 'mssql'
+            ? 'some_schema'
+            : sqlSpec === 'mysql'
+              ? 'kysely_test'
+              : undefined
+        const schemas = await ctx.db.introspection.getSchemas({
+          where: ({ schema }) =>
+            sql<SqlBool>`${schema} = ${schemaName ?? 'some_schema'}`,
+        })
+
+        expect(schemas).to.eql(schemaName ? [{ name: schemaName }] : [])
+      })
     })
 
     describe('getTables', () => {
@@ -86,6 +109,7 @@ for (const dialect of DIALECTS) {
         if (sqlSpec === 'postgres') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -158,6 +182,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isView: false,
               isForeign: false,
@@ -202,6 +227,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               name: 'toy',
               isView: false,
               isForeign: false,
@@ -246,6 +272,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A view of toy names',
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -263,6 +290,25 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
+              name: 'toy_names_materialized',
+              isForeign: false,
+              isView: true,
+              schema: 'public',
+              columns: [
+                {
+                  name: 'name',
+                  dataType: 'varchar',
+                  dataTypeSchema: 'pg_catalog',
+                  isNullable: true,
+                  isAutoIncrementing: false,
+                  hasDefaultValue: false,
+                  comment: undefined,
+                },
+              ],
+            },
+            {
+              comment: undefined,
               name: 'MixedCaseTable',
               isForeign: false,
               isView: false,
@@ -280,6 +326,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -306,6 +353,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet_partition',
               isForeign: false,
               isView: false,
@@ -326,6 +374,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'mysql') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -391,6 +440,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -431,6 +481,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               name: 'toy',
               isForeign: false,
               isView: false,
@@ -471,6 +522,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -490,6 +542,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'mssql') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'person',
@@ -561,6 +614,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'pet',
@@ -605,6 +659,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A toy owned by a pet',
               isForeign: false,
               isView: false,
               name: 'toy',
@@ -649,6 +704,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: 'A view of toy names',
               isForeign: false,
               isView: true,
               name: 'toy_names',
@@ -661,11 +717,12 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
-                  comment: undefined,
+                  comment: 'A toy name',
                 },
               ],
             },
             {
+              comment: undefined,
               isForeign: false,
               isView: false,
               name: 'pet',
@@ -695,6 +752,7 @@ for (const dialect of DIALECTS) {
         } else if (sqlSpec === 'sqlite') {
           expect(meta).to.eql([
             {
+              comment: undefined,
               name: 'person',
               isForeign: false,
               isView: false,
@@ -759,6 +817,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'pet',
               isForeign: false,
               isView: false,
@@ -798,6 +857,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy',
               isForeign: false,
               isView: false,
@@ -837,6 +897,7 @@ for (const dialect of DIALECTS) {
               ],
             },
             {
+              comment: undefined,
               name: 'toy_names',
               isForeign: false,
               isView: true,
@@ -877,6 +938,7 @@ for (const dialect of DIALECTS) {
             )
 
             expect(testTable).to.eql({
+              comment: undefined,
               name: testTableName,
               isForeign: false,
               isView: false,
@@ -894,20 +956,166 @@ for (const dialect of DIALECTS) {
           })
         })
       }
+
+      it('should apply a where expression to the metadata query', async () => {
+        const meta = await ctx.db.introspection.getTables({
+          withInternalKyselyTables: false,
+          where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+        })
+
+        expect(meta.map((table) => table.name)).to.eql(['person'])
+      })
+
+      it('should apply a where expression using the table and schema', async () => {
+        const schemaName =
+          sqlSpec === 'postgres' || sqlSpec === 'mssql'
+            ? 'some_schema'
+            : sqlSpec === 'mysql'
+              ? 'kysely_test'
+              : undefined
+        const meta = await ctx.db.introspection.getTables({
+          withInternalKyselyTables: false,
+          where: ({ schema, table }) => {
+            if (schemaName) {
+              if (!schema) {
+                throw new Error('expected the introspector to provide a schema')
+              }
+
+              return sql<SqlBool>`${schema} = ${schemaName} and ${table} = ${'pet'}`
+            }
+
+            expect(schema).to.be.undefined
+
+            return sql<SqlBool>`${table} = ${'pet'}`
+          },
+        })
+
+        expect(meta).to.have.length(1)
+        expect(meta[0].name).to.equal('pet')
+        expect(meta[0].schema).to.equal(schemaName)
+      })
+
+      it('should apply the where expression together with the internal table option', async () => {
+        const internalTableName = 'kysely_migration'
+
+        await ctx.db.schema
+          .createTable(internalTableName)
+          .addColumn('name', 'varchar(255)', (col) => col.notNull())
+          .execute()
+
+        try {
+          const excluded = await ctx.db.introspection.getTables({
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
+            withInternalKyselyTables: false,
+          })
+          const included = await ctx.db.introspection.getTables({
+            where: ({ table }) => sql<SqlBool>`${table} = ${internalTableName}`,
+            withInternalKyselyTables: true,
+          })
+
+          expect(excluded).to.eql([])
+          expect(included.map((table) => table.name)).to.eql([
+            internalTableName,
+          ])
+        } finally {
+          await ctx.db.schema.dropTable(internalTableName).execute()
+        }
+      })
+
+      if (sqlSpec === 'mysql') {
+        it('should optionally introspect tables outside the default database', async () => {
+          const otherDatabase = 'kysely_test_other'
+
+          await ctx.db.schema.createSchema(otherDatabase).execute()
+
+          try {
+            await ctx.db.schema
+              .withSchema(otherDatabase)
+              .createTable('person')
+              .addColumn('other_id', 'integer', (col) => col.notNull())
+              .execute()
+
+            const defaultDatabaseMeta = await ctx.db.introspection.getTables({
+              where: ({ table }) => sql<SqlBool>`${table} = ${'person'}`,
+              withInternalKyselyTables: false,
+            })
+            const meta = await ctx.db.introspection.getTables({
+              where: ({ schema, table }) => {
+                if (!schema) {
+                  throw new Error(
+                    'expected the introspector to provide a schema',
+                  )
+                }
+
+                return sql<SqlBool>`${schema} in (${'kysely_test'}, ${otherDatabase}) and ${table} = ${'person'}`
+              },
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases: true,
+            })
+
+            expect(defaultDatabaseMeta.map((table) => table.schema)).to.eql([
+              'kysely_test',
+            ])
+            expect(meta).to.have.length(2)
+            expect(meta.map((table) => table.schema)).to.eql([
+              'kysely_test',
+              otherDatabase,
+            ])
+            expect(meta[1].columns.map((column) => column.name)).to.eql([
+              'other_id',
+            ])
+          } finally {
+            await ctx.db.schema.dropSchema(otherDatabase).execute()
+          }
+        })
+
+        it('should exclude tables in system databases', async () => {
+          const systemDatabases = [
+            'information_schema',
+            'mysql',
+            'performance_schema',
+            'sys',
+          ]
+
+          for (const withNonDefaultDatabases of [false, true]) {
+            const meta = await ctx.db.introspection.getTables({
+              where: ({ schema }) =>
+                sql<SqlBool>`${schema} in (${sql.join(systemDatabases)})`,
+              withInternalKyselyTables: false,
+              withNonDefaultDatabases,
+            })
+
+            expect(meta).to.eql([])
+          }
+        })
+      }
     })
 
-    async function createView() {
-      ctx.db.schema
+    async function createView(): Promise<void> {
+      await ctx.db.schema
         .createView('toy_names')
         .as(ctx.db.selectFrom('toy').select('name'))
         .execute()
+
+      if (sqlSpec === 'postgres') {
+        await sql`COMMENT ON VIEW toy_names IS 'A view of toy names';`.execute(
+          ctx.db,
+        )
+      } else if (sqlSpec === 'mssql') {
+        await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'A view of toy names', N'SCHEMA', N'dbo', N'VIEW', 'toy_names'`.execute(
+          ctx.db,
+        )
+        await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'A toy name', N'SCHEMA', N'dbo', N'VIEW', 'toy_names', N'COLUMN', N'name'`.execute(
+          ctx.db,
+        )
+      }
     }
 
-    async function dropView() {
+    async function dropView(): Promise<void> {
       ctx.db.schema.dropView('toy_names').ifExists().execute()
     }
 
-    async function createSchema() {
+    async function createSchema(): Promise<void> {
       await ctx.db.schema.createSchema('some_schema').execute()
 
       if (sqlSpec === 'postgres') {
@@ -950,7 +1158,7 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    async function dropSchema() {
+    async function dropSchema(): Promise<void> {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
       await ctx.db.schema
         .dropTable('some_schema.MixedCaseTable')
@@ -969,6 +1177,22 @@ for (const dialect of DIALECTS) {
           .execute()
         await ctx.db.schema.dropSchema('dtype_schema').ifExists().execute()
       }
+    }
+
+    async function createMaterializedView(): Promise<void> {
+      await ctx.db.schema
+        .createView('toy_names_materialized')
+        .materialized()
+        .as(ctx.db.selectFrom('toy').select('name'))
+        .execute()
+    }
+
+    async function dropMaterializedView(): Promise<void> {
+      await ctx.db.schema
+        .dropView('toy_names_materialized')
+        .materialized()
+        .ifExists()
+        .execute()
     }
   })
 }

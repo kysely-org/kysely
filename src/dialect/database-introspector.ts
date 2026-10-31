@@ -1,3 +1,6 @@
+import type { Expression } from '../expression/expression.js'
+import type { SqlBool } from '../util/type-utils.js'
+
 /**
  * An interface for getting the database metadata (names of the tables and columns etc.)
  */
@@ -5,7 +8,7 @@ export interface DatabaseIntrospector {
   /**
    * Get schema metadata.
    */
-  getSchemas(): Promise<SchemaMetadata[]>
+  getSchemas(options?: DatabaseSchemaMetadataOptions): Promise<SchemaMetadata[]>
 
   /**
    * Get tables and views metadata.
@@ -13,12 +16,50 @@ export interface DatabaseIntrospector {
   getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
 }
 
+export interface DatabaseSchemaMetadataOptions {
+  /**
+   * An optional SQL `where` expression for filtering the schemas returned by
+   * the introspector.
+   *
+   * The refs argument contains an SQL reference to the schema name column
+   * within the catalog query this expression will be used in.
+   */
+  where?: (
+    refs: Readonly<{
+      schema: Expression<string>
+    }>,
+  ) => Expression<SqlBool>
+}
+
 export interface DatabaseMetadataOptions {
+  /**
+   * An optional SQL `where` expression for filtering the tables returned by
+   * the introspector.
+   *
+   * The refs argument contains SQL references to the table name and optional
+   * schema name columns within the catalog query this expression will be used
+   * in.
+   */
+  where?: (
+    refs: Readonly<{
+      table: Expression<string>
+      schema?: Expression<string>
+    }>,
+  ) => Expression<SqlBool>
+
   /**
    * If this is true, the metadata contains the internal kysely tables
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+
+  /**
+   * If this is true, tables from non-default databases are also returned.
+   *
+   * This option only affects MySQL and defaults to false. System databases are
+   * excluded regardless of this option.
+   */
+  withNonDefaultDatabases?: boolean
 }
 
 export interface SchemaMetadata {
@@ -26,10 +67,11 @@ export interface SchemaMetadata {
 }
 
 export interface TableMetadata {
-  readonly name: string
-  readonly isView: boolean
-  readonly isForeign: boolean
   readonly columns: ColumnMetadata[]
+  readonly comment?: string
+  readonly isForeign: boolean
+  readonly isView: boolean
+  readonly name: string
   readonly schema?: string
 }
 

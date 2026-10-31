@@ -12,10 +12,13 @@ import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
+  MysqlConnection as MysqlRawConnection,
   MysqlDialectConfig,
   MysqlOkPacket,
   MysqlPool,
   MysqlPoolConnection,
+  MysqlPromiseConnection,
+  MysqlPromisePool,
   MysqlQueryResult,
 } from './mysql-dialect-config.js'
 
@@ -31,9 +34,13 @@ export class MysqlDriver implements Driver {
   }
 
   async init(options?: AbortableOperationOptions): Promise<void> {
-    this.#pool = isFunction(this.#config.pool)
+    const pool = isFunction(this.#config.pool)
       ? await this.#config.pool(options)
       : this.#config.pool
+
+    // A `mysql2/promise` pool's `getConnection` ignores the callback we pass
+    // it, hanging any query forever. Unwrap the callback pool it decorates.
+    this.#pool = isPromisePool(pool) ? pool.pool : pool
   }
 
   async acquireConnection(
@@ -163,6 +170,20 @@ export class MysqlDriver implements Driver {
       })
     })
   }
+}
+
+function isPromisePool(
+  pool: MysqlPool | MysqlPromisePool,
+): pool is MysqlPromisePool {
+  return (
+    'pool' in pool && isObject(pool.pool) && isFunction(pool.pool.getConnection)
+  )
+}
+
+function isPromiseConnection(
+  connection: MysqlRawConnection | Promise<MysqlPromiseConnection>,
+): connection is Promise<MysqlPromiseConnection> {
+  return isFunction((connection as { then?: unknown }).then)
 }
 
 function isOkPacket(obj: unknown): obj is MysqlOkPacket {
@@ -347,7 +368,27 @@ class MysqlConnection implements DatabaseConnection {
       ...cfg
     } = config as Record<string, unknown>
 
-    const controlConnection = this.#controlConnection(cfg)
+    const controlConnectionOrPromise = this.#controlConnection(cfg)
+
+    // `mysql2/promise`'s `createConnection` returns a promise of a connection
+    // that's already connected, with a promise-based API. Use it directly.
+    if (isPromiseConnection(controlConnectionOrPromise)) {
+      const controlConnection = await controlConnectionOrPromise
+
+      try {
+        // by the time we get the connection, another query might have been executed.
+        // we need to ensure we're not canceling the wrong query.
+        if (queryIdToCancel.queryId === this.#queryId?.queryId) {
+          await controlConnection.query(query, [])
+        }
+      } finally {
+        controlConnection.destroy()
+      }
+
+      return
+    }
+
+    const controlConnection = controlConnectionOrPromise
 
     try {
       await new Promise<void>((resolve, reject) => {
