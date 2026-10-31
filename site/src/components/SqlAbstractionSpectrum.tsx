@@ -11,8 +11,8 @@ export function SqlAbstractionSpectrum() {
         <span>Work with models</span>
       </div>
       <div className={styles.groups}>
-        <div className={styles.group}>
-          <h3>SQL query builders &amp; toolkits</h3>
+        <div className={`${styles.group} ${styles.highlight}`}>
+          <p className={styles.title}>SQL query builders &amp; toolkits</p>
           <ul>
             <li>
               <a href="/docs/getting-started">Kysely</a>
@@ -27,7 +27,7 @@ export function SqlAbstractionSpectrum() {
           <p>Compose queries against tables and columns.</p>
         </div>
         <div className={styles.group}>
-          <h3>ORMs with query builders</h3>
+          <p className={styles.title}>ORMs with query builders</p>
           <ul>
             <li>
               <a href="https://orm.drizzle.team/docs/select">Drizzle</a>
@@ -57,7 +57,7 @@ export function SqlAbstractionSpectrum() {
           <p>Combine SQL composition with model and relationship operations.</p>
         </div>
         <div className={styles.group}>
-          <h3>ORM model APIs</h3>
+          <p className={styles.title}>ORM model APIs</p>
           <ul>
             <li>
               <a href="https://sequelize.org/docs/v6/core-concepts/model-querying-basics/">
