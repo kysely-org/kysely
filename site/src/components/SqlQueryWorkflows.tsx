@@ -12,11 +12,7 @@ export function SqlQueryWorkflows() {
       </div>
       <div className={styles.groups}>
         <div className={styles.group}>
-          <p className={styles.title}>
-            <a href="/docs/comparisons/query-builder-vs-raw-sql#add-the-optional-join-and-filters">
-              SQL files with tool syntax
-            </a>
-          </p>
+          <p className={styles.title}>SQL files with tool syntax</p>
           <ul>
             <li>
               <a href="https://pgtyped.dev/docs/">PgTyped</a>
