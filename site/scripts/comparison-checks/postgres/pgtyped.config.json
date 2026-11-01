@@ -1,0 +1,11 @@
+{
+  "srcDir": "./pgtyped",
+  "failOnError": true,
+  "transforms": [
+    {
+      "mode": "sql",
+      "include": "*.sql",
+      "emitTemplate": "{{dir}}/generated/{{name}}.queries.ts"
+    }
+  ]
+}
