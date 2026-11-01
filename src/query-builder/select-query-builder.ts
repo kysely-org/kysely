@@ -2128,6 +2128,32 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     options?: AbortableQueryOptions,
   ): Promise<SimplifySingleResult<O>>
 
+  /**
+   * @remarks
+   *
+   * ### Examples
+   *
+   * Provide a timeout and a custom error for an empty result:
+   *
+   * ```ts
+   * const person = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where('id', '=', 123)
+   *   .executeTakeFirstOrThrow({
+   *     signal: AbortSignal.timeout(1000),
+   *     errorConstructor: () => new Error('Person not found'),
+   *   })
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "id" = $1
+   * ```
+   */
   executeTakeFirstOrThrow(
     options?:
       | ExecuteTakeFirstOrThrowOptions
