@@ -17,8 +17,16 @@ auditConfig:
   # Don't show in `pnpm audit`.
   # https://pnpm.io/cli/audit#auditconfigignoreghsas
   ignoreGhsas:
+    # @azure/msal-node@5.x.x
+    - GHSA-xcx6-jx8p-x3h5
     # braces@3.x.x
     - GHSA-vfj7-8cjw-p6xm
+    # deepmerge@4.x.x
+    - GHSA-gcqx-w48m-w2h4
+    # glob@13.x.x
+    - GHSA-3g3m-2fjr-6pw4
+    # minimatch@3.x.x || 10.x.x
+    - GHSA-g3hv-75wg-m249
     # postcss-selector-parser@6.x.x
     - GHSA-rj75-hqrm-r3gf
     # prototype-pollution-vulnerable-lodash.merge-dont-upgrade
@@ -26,6 +34,7 @@ auditConfig:
     # serialize-javascript@6.x.x
     - GHSA-5c6j-r48x-rmvq
     - GHSA-qj8w-gfj5-8c6v
+    - GHSA-m5mm-p8h7-m29v
     # tinypool@1.x.x
     - GHSA-5gmw-xhrv-c9v3
     - GHSA-85c8-ppgw-ccpr
@@ -59,6 +68,8 @@ minimumReleaseAgeExclude:
   - afdocs@0.22.2
 
 overrides:
+  # https://github.com/advisories/GHSA-27r3-jxmh-p828
+  body-parser@>=1.0.0 <1.20.9: 1.20.9
   # https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
   # https://github.com/advisories/GHSA-qhr7-859c-m2p7
   # https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
@@ -68,25 +79,38 @@ overrides:
   compression@>=1.0.0 <1.8.2: 1.8.2
   # https://github.com/advisories/GHSA-p98j-92pf-mc4p
   # https://github.com/advisories/GHSA-6688-9rhm-gjv2
-  dompurify@>=3.0.0 <3.4.16: 3.4.16
+  # https://github.com/advisories/GHSA-cg2g-xh64-v4q7
+  # https://github.com/advisories/GHSA-mrv2-3pqr-j5jr
+  dompurify@>=3.0.0 <3.4.17: 3.4.17
   # https://github.com/advisories/GHSA-qw65-cvwx-89v3
   # https://github.com/advisories/GHSA-hrr3-gc8f-f4qj
-  fast-uri@>=3.0.0 <3.1.8: 3.1.8
+  # https://github.com/advisories/GHSA-w74x-v6f9-j3xg
+  # https://github.com/advisories/GHSA-wjr9-j795-jxcr
+  fast-uri@>=3.0.0 <3.1.9: 3.1.9
+  # https://github.com/advisories/GHSA-q3jh-wrc6-jgq8
+  # https://github.com/advisories/GHSA-8r9p-f939-6h3c
+  # https://github.com/advisories/GHSA-mrwp-f3q8-3g9p
+  follow-redirects@>=1.0.0 <1.16.2: 1.16.2
   # https://github.com/advisories/GHSA-ch52-4w7c-c8xp
   http-cache-semantics@>=4.0.0 <4.3.0: 4.3.0
   # https://github.com/advisories/GHSA-6h2x-m376-mqjq
   # https://github.com/advisories/GHSA-wr44-6hxh-3jwq
-  joi@>=17.0.0 <17.13.8: 17.13.8
+  # https://github.com/advisories/GHSA-4528-x5fx-h6hg
+  joi@>=17.0.0 <17.13.9: 17.13.9
+  # https://github.com/advisories/GHSA-587h-7wmj-h5pm
+  launch-editor@>=2.0.0 <2.14.2: 2.14.2
   # https://github.com/advisories/GHSA-rj75-hqrm-r3gf
   postcss-selector-parser@>=7.0.0 <7.1.6: 7.1.6
   # https://github.com/advisories/GHSA-jqcg-44mw-7w3h
   proxy-addr@>=2.0.0 <2.0.8: 2.0.8
   # https://github.com/advisories/GHSA-x5fp-wj9c-mxmx
-  qs@>=6.0.0 <6.16.0: 6.16.0
+  # https://github.com/advisories/GHSA-6pq8-jhm2-2vcw
+  qs@>=6.0.0 <6.16.1: 6.16.1
   # https://github.com/advisories/GHSA-5c6j-r48x-rmvq
   # https://github.com/advisories/GHSA-qj8w-gfj5-8c6v
   # https://github.com/advisories/GHSA-gfhx-hw2g-v5hg
-  serialize-javascript@>=7.0.0 <7.1.2: 7.1.2
+  # https://github.com/advisories/GHSA-m5mm-p8h7-m29v
+  serialize-javascript@>=7.0.0 <7.1.3: 7.1.3
   # https://github.com/advisories/GHSA-pqg4-j6r4-53mv
   shell-quote@>=1.0.0 <1.11.0: 1.11.0
   # https://github.com/advisories/GHSA-68fv-2mgg-jv7q
