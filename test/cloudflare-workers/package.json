@@ -9,6 +9,6 @@
     "hono": "catalog:http"
   },
   "devDependencies": {
-    "wrangler": "4.151.0"
+    "wrangler": "4.156.0"
   }
 }
