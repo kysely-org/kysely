@@ -1,10 +1,32 @@
 ---
-description: 'Use the Kysely llms.txt and llms-full.txt documentation to give AI assistants and coding agents context for building SQL queries.'
+description: 'Give coding agents version-matched Kysely API docs, type-checked examples, and query feedback, plus llms.txt and llms-full.txt for documentation discovery.'
 ---
 
 # LLMs
 
 Kysely provides LLM-friendly documentation to help AI tools like **Cursor**, **Windsurf**, **GitHub Copilot**, **ChatGPT**, **Claude**, and **Claude Code** understand and work with it.
+
+## Documentation for the installed version
+
+Kysely's API documentation and examples ship inside the package's TypeScript declarations. An agent with access to your dependencies or language server can read the documentation attached to the method it is calling, including query examples, SQL output, related methods, and deprecations.
+
+Those docs travel with the installed release. Reading them avoids a common source of agent mistakes: combining an older dependency with examples from a newer website or a model's memory. The build also [copies interface documentation onto implementing methods](https://github.com/kysely-org/kysely/blob/v0.29.7/scripts/copy-interface-documentation.cjs), so following a method definition exposes its documentation.
+
+The inline TypeScript examples are [type-checked in CI](https://github.com/kysely-org/kysely/blob/v0.29.7/.github/workflows/test.yml) using the repository's [`test:jsdocs` command](https://github.com/kysely-org/kysely/blob/v0.29.7/package.json). They are checked against the API being released, rather than maintained as a separate collection of unchecked snippets. The published package keeps those examples alongside that version's types.
+
+The website's playground examples are [generated from annotated JSDoc](https://github.com/kysely-org/kysely/blob/v0.29.7/scripts/generate-site-examples.mts) as well. API documentation and website examples share their source, rather than relying on separately maintained copies.
+
+For agent experience (AX), this gives the agent a direct loop:
+
+1. Resolve the installed `kysely` package and read the relevant method's documentation and examples.
+2. Build or extend the query using the project's database types.
+3. Run the project's TypeScript check and use errors about references, aliases, values, or result fields to correct the query.
+
+For example, an agent adding an optional relation can inspect the local `$if`, join, and selection documentation, then let TypeScript check how the new branch affects the result. It can obtain API guidance for the installed version without a browser, documentation server, or extra agent integration.
+
+Use the website's recipes and documentation index for broader discovery, and the installed package for version-specific API details.
+
+## Website documentation
 
 `llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
 
