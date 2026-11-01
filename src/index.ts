@@ -69,6 +69,7 @@ export * from './dynamic/dynamic-reference-builder.js'
 export * from './dynamic/dynamic-table-builder.js'
 
 export * from './driver/driver.js'
+export * from './driver/aborted-transaction-error.js'
 export * from './driver/database-connection.js'
 export * from './driver/connection-provider.js'
 export * from './driver/default-connection-provider.js'

@@ -8,6 +8,7 @@ import {
   SqliteDriver,
   Transaction,
   TRANSACTION_ACCESS_MODES,
+  AbortedTransactionError,
 } from '../../../dist/cjs/index.js'
 
 import {
@@ -178,6 +179,45 @@ for (const dialect of DIALECTS) {
           )
         })
       }
+    }
+
+    if (dialect === 'postgres') {
+      it('should reject a commit when a caught statement error aborted the transaction', async () => {
+        let escapedTrx: Transaction<Database> | undefined
+
+        await expect(
+          ctx.db.transaction().execute(async (trx) => {
+            escapedTrx = trx
+            const person = {
+              id: 1000000,
+              first_name: 'Foo',
+              gender: 'male',
+            } as const
+
+            await trx.insertInto('person').values(person).execute()
+            await expect(
+              trx.insertInto('person').values(person).execute(),
+            ).to.be.rejectedWith(PostgresError, 'duplicate key')
+
+            return 'success'
+          }),
+        ).to.be.rejectedWith(AbortedTransactionError)
+
+        await expect(
+          escapedTrx!.selectFrom('person').selectAll().execute(),
+        ).to.be.rejectedWith('Transaction is already rolled back')
+        expect(executedQueries.map((query) => query.sql)).to.not.include(
+          'rollback',
+        )
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', 1000000)
+            .execute(),
+        ).to.eql([])
+      })
     }
 
     if (dialect === 'postgres') {

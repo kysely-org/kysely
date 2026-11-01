@@ -84,7 +84,14 @@ export type PostgresCursorConstructor = new <T>(
 ) => PostgresCursor<T>
 
 export interface PostgresQueryResult<R> {
-  command: 'UPDATE' | 'DELETE' | 'INSERT' | 'SELECT' | 'MERGE'
+  command:
+    | 'UPDATE'
+    | 'DELETE'
+    | 'INSERT'
+    | 'SELECT'
+    | 'MERGE'
+    | 'COMMIT'
+    | 'ROLLBACK'
   rowCount: number
   rows: R[]
 }

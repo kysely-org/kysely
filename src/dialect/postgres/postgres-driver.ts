@@ -3,6 +3,7 @@ import type {
   QueryResult,
 } from '../../driver/database-connection.js'
 import type { Driver, TransactionSettings } from '../../driver/driver.js'
+import { AbortedTransactionError } from '../../driver/aborted-transaction-error.js'
 import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
@@ -88,7 +89,15 @@ export class PostgresDriver implements Driver {
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+    const { rows } = await connection.executeQuery<{ command: string }>(
+      CompiledQuery.raw('commit'),
+    )
+
+    // PostgreSQL completes COMMIT with a ROLLBACK tag if an earlier
+    // statement error left the transaction aborted.
+    if (rows[0]?.command === 'ROLLBACK') {
+      throw new AbortedTransactionError()
+    }
   }
 
   async rollbackTransaction(connection: PostgresConnection): Promise<void> {
@@ -174,6 +183,10 @@ class PostgresConnection implements DatabaseConnection {
         compiledQuery.sql,
         [...compiledQuery.parameters],
       )
+
+      if (command === 'ROLLBACK' || command === 'COMMIT') {
+        return { rows: [{ command } as O] }
+      }
 
       return {
         numAffectedRows:
