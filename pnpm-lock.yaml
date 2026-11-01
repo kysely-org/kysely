@@ -281,8 +281,8 @@ importers:
         specifier: 3.1.2
         version: 3.1.2
       tedious:
-        specifier: 20.3.7
-        version: 20.3.7(supports-color@8.1.1)
+        specifier: 20.3.8
+        version: 20.3.8(supports-color@8.1.1)
       tsd:
         specifier: 0.33.0
         version: 0.33.0
@@ -6900,8 +6900,8 @@ packages:
     resolution: {integrity: sha512-3RTvqKZcK/17jnJ8rMKFXbyNogywTs1z0gVPPwFsJGX46rkmUHOdIaSQ/aVO1rS7nH+soiXiWk7rvUXxndm8Dg==}
     engines: {node: '>=8.0.0'}
 
-  tedious@20.3.7:
-    resolution: {integrity: sha512-s+43djAcQGFiFHZPWtZPaDSZE/ukJnultjeJHXvKbM//OcZSSusSzXuqAIyOKpraNTWgtobhuWOvxrZK+a1yvA==}
+  tedious@20.3.8:
+    resolution: {integrity: sha512-ZrJiwyGn340Sa0V0g37Xqj5bvmJ1riYwvEtg7zdm/lpw70f2ZNIQ2fvHmntU5fEOorWDa48Jo1oKYAuUP+rh7Q==}
     engines: {node: '>=22'}
 
   terser-webpack-plugin@5.6.0:
@@ -15853,7 +15853,7 @@ snapshots:
 
   tarn@3.1.2: {}
 
-  tedious@20.3.7(supports-color@8.1.1):
+  tedious@20.3.8(supports-color@8.1.1):
     dependencies:
       '@azure/core-auth': 1.10.1(supports-color@8.1.1)
       '@azure/identity': 4.13.1(supports-color@8.1.1)
