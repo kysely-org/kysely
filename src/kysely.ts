@@ -880,6 +880,17 @@ export class TransactionBuilder<DB> {
     this.#props = freeze(props)
   }
 
+  /**
+   * Sets the transaction access mode.
+   *
+   * `read only` asks the database to disallow writes in the transaction.
+   * `read write` allows writes subject to database permissions. Supported by
+   * PostgreSQL and MySQL. Other built-in dialects don't apply this setting.
+   * If omitted, the database's default access mode is used.
+   *
+   * This doesn't change the transaction's TypeScript type. See
+   * {@link ReadonlyKysely} from `kysely/readonly` for a type-level restriction.
+   */
   setAccessMode(accessMode: AccessMode): TransactionBuilder<DB> {
     return new TransactionBuilder({
       ...this.#props,
@@ -951,6 +962,17 @@ export class ControlledTransactionBuilder<DB> {
     this.#props = freeze(props)
   }
 
+  /**
+   * Sets the transaction access mode.
+   *
+   * `read only` asks the database to disallow writes in the transaction.
+   * `read write` allows writes subject to database permissions. Supported by
+   * PostgreSQL and MySQL. Other built-in dialects don't apply this setting.
+   * If omitted, the database's default access mode is used.
+   *
+   * This doesn't change the transaction's TypeScript type. See
+   * {@link ReadonlyKysely} from `kysely/readonly` for a type-level restriction.
+   */
   setAccessMode(accessMode: AccessMode): ControlledTransactionBuilder<DB> {
     return new ControlledTransactionBuilder({
       ...this.#props,
