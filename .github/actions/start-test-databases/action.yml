@@ -17,7 +17,7 @@ runs:
       run: sudo install -D -m 0644 "$ACTION_PATH/hosts.toml" /etc/docker/certs.d/docker.io/hosts.toml
 
     - name: set up Docker
-      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
+      uses: docker/setup-docker-action@7ec28a010822b4626af4874f9448a4b05ac6f3e5 # v5.6.0
       with:
         # The containerd image store reads hosts.toml, including ECR's API path.
         # Mirrors are tried in file order, followed by the Docker Hub server.
