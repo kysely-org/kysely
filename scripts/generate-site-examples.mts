@@ -10,7 +10,7 @@ import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { createInterface } from 'node:readline/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'pathe'
-import { toCamelCase, toKebabCase, toTitleCase } from 'remeda'
+import { toKebabCase, toTitleCase } from 'remeda'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -106,8 +106,7 @@ const moreExamplesByCategory = {
 
 interface State {
   annotation:
-    | [string, category: string, name: string, priority: `${number}`]
-    | null
+    [string, category: string, name: string, priority: `${number}`] | null
   codeLines: string[]
   commentLines: string[]
   filePath: string
@@ -224,16 +223,9 @@ async function writeSiteExample(state: State): Promise<void> {
     .normalize('NFD')
     .replace(FILENAME_SANITIZER_REGEX, '')
 
-  const codeVariable = toCamelCase(sanitizedName, {
-    preserveConsecutiveUppercase: false,
-  })
   const fileName = `${priority.padStart(4, '0')}-${toKebabCase(sanitizedName)}`
   const folderPath = join(SITE_EXAMPLE_PATH, category)
   const filePath = join(folderPath, fileName)
-
-  const codeFile = `export const ${codeVariable} = \`${deindent(code)
-    .replaceAll('`', '\\`')
-    .replaceAll('${', '\\${')}\``
 
   const parts = [
     deindent(`
@@ -249,19 +241,7 @@ async function writeSiteExample(state: State): Promise<void> {
     parts.push(comment, '')
   }
 
-  parts.push(
-    deindent(`
-      import { Playground } from '../../../src/components/Playground'
-
-      import {
-        ${codeVariable}
-      } from './${fileName}'
-
-      <div style={{ marginBottom: '1em' }}>
-        <Playground code={${codeVariable}} />
-      </div>
-    `),
-  )
+  parts.push('```ts twoslash playground\n' + deindent(code) + '\n```\n')
 
   const moreExamples = buildMoreExamplesMarkdown(category)
 
@@ -286,7 +266,6 @@ async function writeSiteExample(state: State): Promise<void> {
   }
 }`,
       ),
-    writeFile(filePath + '.js', codeFile),
     writeFile(filePath + '.mdx', exampleFile),
   ])
 }

@@ -7,6 +7,7 @@
     "start": "docusaurus start",
     "build": "pnpm run snippets && docusaurus build && pagefind",
     "snippets": "node scripts/highlight-snippets.mjs",
+    "test:shiki": "node --test plugins/remark-shiki.test.mjs",
     "proof-links": "node scripts/verify-proof-links.mjs",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
@@ -25,7 +26,6 @@
     "@mdx-js/react": "3.1.1",
     "@radix-ui/colors": "3.0.0",
     "clsx": "2.1.1",
-    "prism-react-renderer": "2.4.1",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
@@ -35,15 +35,20 @@
     "@docusaurus/types": "3.10.2",
     "@docusaurus/utils": "3.10.2",
     "@hono/node-server": "2.1.5",
+    "@shikijs/transformers": "4.5.0",
+    "@shikijs/twoslash": "4.5.0",
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
     "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "afdocs": "0.22.2",
     "hono": "catalog:http",
     "mermaid": "12.2.0",
     "pagefind": "1.5.2",
     "pathe": "catalog:node",
     "shiki": "4.5.0",
-    "typescript": "7.0.2"
+    "twoslash": "0.3.9",
+    "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3"
   },
   "browserslist": {
     "production": [
