@@ -431,6 +431,14 @@ export class Kysely<DB>
   /**
    * Provides a kysely instance bound to a single database connection.
    *
+   * The connection is reserved for the callback and released when the callback
+   * finishes. Await all queries inside the callback and don't use the provided
+   * instance after the callback returns.
+   *
+   * Use this for connection-local state such as temporary tables and session
+   * settings. This method doesn't start a transaction. See {@link transaction}
+   * if the queries should be committed or rolled back together.
+   *
    * ### Examples
    *
    * ```ts
@@ -496,22 +504,39 @@ export class Kysely<DB>
    * The following example adds and uses a temporary table:
    *
    * ```ts
-   * await db.schema
-   *   .createTable('temp_table')
-   *   .temporary()
-   *   .addColumn('some_column', 'integer')
-   *   .execute()
+   * await db.connection().execute(async (connection) => {
+   *   await connection.schema
+   *     .createTable('temp_table')
+   *     .temporary()
+   *     .addColumn('some_column', 'integer')
+   *     .execute()
    *
-   * const tempDb = db.$extendTables<{
-   *   temp_table: {
-   *     some_column: number
+   *   const tempDb = connection.$extendTables<{
+   *     temp_table: {
+   *       some_column: number
+   *     }
+   *   }>()
+   *
+   *   try {
+   *     await tempDb
+   *       .insertInto('temp_table')
+   *       .values({ some_column: 100 })
+   *       .execute()
+   *   } finally {
+   *     await connection.schema.dropTable('temp_table').execute()
    *   }
-   * }>()
+   * })
+   * ```
    *
-   * await tempDb
-   *   .insertInto('temp_table')
-   *   .values({ some_column: 100 })
-   *   .execute()
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create temporary table "temp_table" ("some_column" integer);
+   *
+   * insert into "temp_table" ("some_column")
+   * values ($1);
+   *
+   * drop table "temp_table";
    * ```
    */
   $extendTables<T extends Record<string, Record<string, any>>>(): Kysely<
@@ -852,6 +877,18 @@ export class ConnectionBuilder<DB> {
     this.#props = freeze(props)
   }
 
+  /**
+   * Reserves a connection, calls the callback with a Kysely instance bound to
+   * that connection, and releases the connection when the callback finishes.
+   * Returns the callback's result. If the callback throws, the connection is
+   * released and the error is rethrown.
+   *
+   * The optional `signal` cancels waiting for a connection. To cancel queries
+   * inside the callback, pass a signal to their execution methods as well.
+   *
+   * See {@link Kysely.connection} for an example and
+   * {@link Kysely.$extendTables} for a temporary table example.
+   */
   async execute<T>(
     callback: (db: Kysely<DB>) => Promise<T>,
     options?: AbortableOperationOptions,
