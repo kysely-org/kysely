@@ -1,3 +1,4 @@
+import { AbortedTransactionError } from '../../driver/aborted-transaction-error.js'
 import type {
   DatabaseConnection,
   QueryResult,
@@ -11,7 +12,7 @@ import {
   type AbortableOperationOptions,
 } from '../../util/abort.js'
 import { Deferred } from '../../util/deferred.js'
-import { freeze, isFunction } from '../../util/object-utils.js'
+import { freeze, isFunction, isObject } from '../../util/object-utils.js'
 import { createQueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
@@ -178,11 +179,22 @@ class PGliteConnection implements DatabaseConnection {
 
   async [PRIVATE_COMMIT_TRANSACTION_METHOD](): Promise<void> {
     this.#commitTransaction?.()
-    await this.#transactionClosedPromise
-    this.#commitTransaction = undefined
-    this.#rollbackTransaction = undefined
-    this.#transaction = undefined
-    this.#transactionClosedPromise = undefined
+
+    try {
+      await this.#transactionClosedPromise
+    } catch (error) {
+      // https://github.com/electric-sql/pglite/blob/bac163ecc92e968adda68864b74b7e3d65a68e97/packages/pglite/src/errors.ts#L11-L17
+      if (isObject(error) && 'code' in error && error.code === '25P02') {
+        throw new AbortedTransactionError({ cause: error })
+      }
+
+      throw error
+    } finally {
+      this.#commitTransaction = undefined
+      this.#rollbackTransaction = undefined
+      this.#transaction = undefined
+      this.#transactionClosedPromise = undefined
+    }
   }
 
   async [PRIVATE_ROLLBACK_TRANSACTION_METHOD](): Promise<void> {
