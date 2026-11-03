@@ -24,6 +24,7 @@ import {
 } from './test-setup.js'
 import { DatabaseError as PostgresError } from 'pg'
 import { SqliteError } from 'better-sqlite3'
+import { messages as pgliteMessages } from '@electric-sql/pglite'
 
 for (const dialect of DIALECTS) {
   const { sqlSpec, variant } = dialect
@@ -191,7 +192,7 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    if (variant === 'postgres') {
+    if (sqlSpec === 'postgres') {
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
         let escapedTrx: Transaction<Database> | undefined
 
@@ -207,7 +208,12 @@ for (const dialect of DIALECTS) {
             await trx.insertInto('person').values(person).execute()
             await expect(
               trx.insertInto('person').values(person).execute(),
-            ).to.be.rejectedWith(PostgresError, 'duplicate key')
+            ).to.be.rejectedWith(
+              variant === 'pglite'
+                ? pgliteMessages.DatabaseError
+                : PostgresError,
+              'duplicate key',
+            )
 
             return 'success'
           }),

@@ -9,8 +9,8 @@ export class AbortedTransactionError extends Error {
   override name = 'AbortedTransactionError'
   readonly [ABORTED_TRANSACTION_ERROR] = true
 
-  constructor() {
-    super('Transaction was rolled back instead of committed')
+  constructor(options?: ErrorOptions) {
+    super('Transaction was rolled back instead of committed', options)
   }
 }
 

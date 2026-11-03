@@ -31,7 +31,7 @@ import {
   insertDefaultDataSet,
   limit,
 } from './test-setup.js'
-import { PGlite } from '@electric-sql/pglite'
+import { PGlite, messages as pgliteMessages } from '@electric-sql/pglite'
 import { Deferred } from '../../../dist/util/deferred.js'
 
 for (const dialect of DIALECTS) {
@@ -103,7 +103,10 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (variant === 'postgres') {
+    if (sqlSpec === 'postgres') {
+      const statementErrorType =
+        variant === 'pglite' ? pgliteMessages.DatabaseError : PostgresError
+
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
         const trx = await ctx.db.startTransaction().execute()
         const derivedTrx = trx.withSchema('public')
@@ -119,7 +122,7 @@ for (const dialect of DIALECTS) {
           await trx.insertInto('person').values(person).execute()
           await expect(
             trx.insertInto('person').values(person).execute(),
-          ).to.be.rejectedWith(PostgresError, 'duplicate key')
+          ).to.be.rejectedWith(statementErrorType, 'duplicate key')
 
           await expect(trx.commit().execute()).to.be.rejectedWith(
             AbortedTransactionError,
@@ -163,7 +166,7 @@ for (const dialect of DIALECTS) {
           const savedTrx = await trx.savepoint('before_error').execute()
           await expect(
             savedTrx.insertInto('person').values(person).execute(),
-          ).to.be.rejectedWith(PostgresError, 'duplicate key')
+          ).to.be.rejectedWith(statementErrorType, 'duplicate key')
           await savedTrx.rollbackToSavepoint('before_error').execute()
           await trx.commit().execute()
           expect(trx.isCommitted).to.be.true
