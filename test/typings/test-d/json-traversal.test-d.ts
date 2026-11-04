@@ -219,6 +219,46 @@ async function testJSONReference(db: Kysely<Database>) {
       .select((eb) => eb.ref('nicknames', '->>$').at('last ').as('alias'))
       .execute(),
   )
+
+  // an optional key is `null` at runtime, never `undefined` #2202
+  const [r13] = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      eb.ref('profile', '->').key('auth').key('last_login').as('last_login'),
+    )
+    .execute()
+
+  expectType<{ last_login: { device: string } | null }>(r13)
+
+  // `$notNull()` must also remove the implicit `null` of an optional key
+  const [r14] = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      eb
+        .ref('profile', '->')
+        .key('auth')
+        .key('last_login')
+        .$notNull()
+        .as('last_login'),
+    )
+    .execute()
+
+  expectType<{ last_login: { device: string } }>(r14)
+
+  const [r15] = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      eb
+        .ref('profile', '->')
+        .key('auth')
+        .key('last_login')
+        .$notNull()
+        .key('device')
+        .as('device'),
+    )
+    .execute()
+
+  expectType<{ device: string }>(r15)
 }
 
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {

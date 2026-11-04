@@ -173,7 +173,11 @@ export class JSONPathBuilder<S, O = S> {
         : // when the object has non-specific keys, e.g. Record<string, T>, should infer `T | null`!
           string extends keyof NonNullable<O>
           ? null | NonNullable<NonNullable<O>[K]>
-          : NonNullable<O>[K],
+          : // if the property is optional, the database returns `null` for a
+            // missing key, never `undefined`.
+            undefined extends NonNullable<O>[K]
+            ? null | NonNullable<NonNullable<O>[K]>
+            : NonNullable<O>[K],
   >(key: K): TraversedJSONPathBuilder<S, O2> {
     return this.#createBuilderWithPathLeg('Member', key)
   }
@@ -265,7 +269,7 @@ export class TraversedJSONPathBuilder<S, O>
     return new TraversedJSONPathBuilder(this.#node)
   }
 
-  $notNull(): TraversedJSONPathBuilder<S, Exclude<O, null>> {
+  $notNull(): TraversedJSONPathBuilder<S, NonNullable<O>> {
     return new TraversedJSONPathBuilder(this.#node)
   }
 
