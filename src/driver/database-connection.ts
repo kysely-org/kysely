@@ -25,6 +25,14 @@ export interface DatabaseConnection {
   ): Promise<QueryResult<R>>
 
   /**
+   * Returns whether the database connection has an active transaction, or
+   * `undefined` if the state cannot be determined. Must not execute a query.
+   *
+   * Used to detect transactions that the database rolls back automatically.
+   */
+  isTransactionActive?(): boolean | undefined
+
+  /**
    * Used by executors to kill the session on the database side.
    */
   killSession?(

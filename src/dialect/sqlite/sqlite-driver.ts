@@ -108,6 +108,10 @@ class SqliteConnection implements DatabaseConnection {
     this.#db = db
   }
 
+  isTransactionActive(): boolean | undefined {
+    return this.#db.inTransaction
+  }
+
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)

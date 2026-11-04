@@ -10,8 +10,8 @@ import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import {
+  AbortedTransactionError,
   isAbortedTransactionError,
-  type AbortedTransactionError,
 } from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -255,6 +255,11 @@ export class Kysely<DB>
    * of type {@link Transaction} which inherits {@link Kysely}. Any query
    * started through the transaction object is executed inside the transaction.
    *
+   * Finish ongoing queries and exhaust or close streams before returning from
+   * the callback. If the driver detects an automatic rollback, further queries
+   * are rejected. If the callback then returns normally, `execute` still rejects
+   * instead of committing.
+   *
    * To run a controlled transaction, allowing you to commit and rollback manually,
    * use {@link startTransaction} instead.
    *
@@ -326,6 +331,10 @@ export class Kysely<DB>
    * or rolled back, it can't be used anymore - all queries will throw an error.
    * This is to prevent accidentally running queries outside the transaction - where
    * atomicity is not guaranteed anymore.
+   *
+   * If the driver detects an automatic rollback, {@link ControlledTransaction.isRolledBack}
+   * becomes `true`, further queries are rejected, and {@link ControlledTransaction.rollback}
+   * succeeds without sending another rollback command.
    *
    * ### Examples
    *
@@ -921,16 +930,32 @@ export class TransactionBuilder<DB> {
 
         const result = await callback(transaction)
 
-        await this.#props.driver.commitTransaction(connection)
-        transactionState.status = 'committed'
+        if (transactionState.status === 'aborted') {
+          throw new AbortedTransactionError()
+        }
+
+        await executor.provideConnection(async (connection) => {
+          await this.#props.driver.commitTransaction(connection)
+          transactionState.status = 'committed'
+        })
 
         return result
       } catch (error) {
         if (isAbortedTransactionError(error)) {
           transactionState.status = 'aborted'
         } else if (transactionBegun) {
-          await this.#props.driver.rollbackTransaction(connection)
-          transactionState.status = 'rolled back'
+          try {
+            await executor.provideConnection(async (connection) => {
+              await this.#props.driver.rollbackTransaction(connection)
+              transactionState.status = 'rolled back'
+            })
+          } catch (rollbackError) {
+            // An ongoing query may have confirmed an automatic rollback
+            // before cleanup acquired the connection.
+            if (transactionState.status !== 'aborted') {
+              throw rollbackError
+            }
+          }
         }
 
         throw error
@@ -985,7 +1010,7 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
-      transactionState: { status: 'active' },
+      transactionState: { status: 'active', onAborted: connection.release },
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection.connection),
       ),
@@ -1081,8 +1106,8 @@ export class ControlledTransaction<
   /**
    * Rolls back the transaction.
    *
-   * If a commit already reported that the database rolled back the transaction,
-   * succeeds without sending another rollback command.
+   * If the database has already been confirmed to have rolled back the
+   * transaction, succeeds without sending another rollback command.
    *
    * The connection is released even if the rollback fails, so the transaction
    * cannot be used afterwards in either case.
@@ -1114,19 +1139,23 @@ export class ControlledTransaction<
    */
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
-      if (this.#props.transactionState.status === 'aborted') {
-        return
-      }
-
-      await this.#props.executor.provideConnection(async (connection) => {
-        // A failed rollback can't be meaningfully retried (e.g. dead connection).
-        try {
-          await this.#props.driver.rollbackTransaction(connection)
-        } finally {
-          this.#props.transactionState.status = 'rolled back'
-          this.#props.connection.release()
+      try {
+        await this.#props.executor.provideConnection(async (connection) => {
+          // A failed rollback can't be meaningfully retried (e.g. dead connection).
+          try {
+            await this.#props.driver.rollbackTransaction(connection)
+          } finally {
+            this.#props.transactionState.status = 'rolled back'
+            this.#props.connection.release()
+          }
+        })
+      } catch (error) {
+        // An ongoing query may have confirmed an automatic rollback while
+        // this command was waiting for the connection.
+        if (this.#props.transactionState.status !== 'aborted') {
+          throw error
         }
-      })
+      }
     })
   }
 
@@ -1348,6 +1377,7 @@ export class ControlledTransaction<
 
 interface ControlledTransactionState {
   status: 'active' | 'committed' | 'rolled back' | 'aborted'
+  readonly onAborted?: () => void
 }
 
 interface ControlledTransactionProps extends KyselyProps {
@@ -1429,9 +1459,27 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     assertNotCommittedOrRolledBack(this.#transactionState)
 
     return this.#executor.provideConnection(async (connection) => {
+      this.#checkTransactionState(connection)
       assertNotCommittedOrRolledBack(this.#transactionState)
-      return await consumer(connection)
+
+      try {
+        return await consumer(connection)
+      } finally {
+        // Finalize the transaction before releasing the serialized connection,
+        // so queued queries cannot run outside the transaction.
+        this.#checkTransactionState(connection)
+      }
     }, options)
+  }
+
+  #checkTransactionState(connection: DatabaseConnection): void {
+    if (
+      this.#transactionState.status === 'active' &&
+      connection.isTransactionActive?.() === false
+    ) {
+      this.#transactionState.status = 'aborted'
+      this.#transactionState.onAborted?.()
+    }
   }
 
   executeQuery<R>(

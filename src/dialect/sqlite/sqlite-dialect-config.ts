@@ -46,6 +46,12 @@ export interface SqliteDialectConfig {
  * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
  */
 export interface SqliteDatabase {
+  /**
+   * Whether the database has an active transaction. If omitted, automatic
+   * transaction rollbacks cannot be detected.
+   */
+  readonly inTransaction?: boolean
+
   close(): void
   prepare(sql: string): SqliteStatement
 }
