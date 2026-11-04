@@ -315,6 +315,12 @@
     "provenAt": "2026-09-18"
   },
   {
+    "name": "Omnea",
+    "href": "https://www.omnea.co/blog/migrating-omnea-from-hasura-to-kysely",
+    "group": "production",
+    "provenAt": "2026-06-10"
+  },
+  {
     "name": "Open Mercato",
     "repo": "open-mercato/open-mercato",
     "path": "packages/core/src/modules/query_index/lib/engine.ts",

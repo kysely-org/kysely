@@ -218,6 +218,12 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 1024 1024',
     id: 'notesnook',
   },
+  // Official header lockup from omnea.co; its solid fills inherit currentColor.
+  Omnea: {
+    label: 'Omnea',
+    viewBox: '0 0 120 22',
+    id: 'omnea',
+  },
   'Open Collective': {
     label: 'Open Collective',
     viewBox: '0 0 137 23',
