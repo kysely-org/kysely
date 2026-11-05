@@ -39,7 +39,7 @@
     "@types/react": "19.3.0",
     "afdocs": "0.22.2",
     "hono": "catalog:http",
-    "mermaid": "12.2.0",
+    "mermaid": "12.3.0",
     "pagefind": "1.5.2",
     "pathe": "catalog:node",
     "shiki": "4.5.0",
