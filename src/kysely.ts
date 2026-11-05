@@ -10,8 +10,8 @@ import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import {
+  AbortedTransactionError,
   isAbortedTransactionError,
-  type AbortedTransactionError,
 } from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -1072,6 +1072,7 @@ export class ControlledTransaction<
 
           throw error
         }
+
         this.#props.transactionState.status = 'committed'
         this.#props.connection.release()
       })
@@ -1115,7 +1116,7 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
       if (this.#props.transactionState.status === 'aborted') {
-        return
+        return this.#props.connection.release()
       }
 
       await this.#props.executor.provideConnection(async (connection) => {
@@ -1434,14 +1435,23 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     }, options)
   }
 
-  executeQuery<R>(
+  async executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#transactionState)
-    return this.#executor
-      .withConnectionProvider(this)
-      .executeQuery(compiledQuery, options)
+
+    try {
+      return await this.#executor
+        .withConnectionProvider(this)
+        .executeQuery(compiledQuery, options)
+    } catch (error) {
+      if (isAbortedTransactionError(error)) {
+        this.#transactionState.status = 'aborted'
+      }
+
+      throw error
+    }
   }
 
   stream<R>(
@@ -1450,6 +1460,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#transactionState)
+
     return this.#executor
       .withConnectionProvider(this)
       .stream(compiledQuery, chunkSize, options)

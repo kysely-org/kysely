@@ -1,4 +1,5 @@
 import { DatabaseError as PostgresError } from 'pg'
+import { SqliteError } from 'better-sqlite3'
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
 import { Pool } from 'pg'
@@ -102,6 +103,135 @@ for (const dialect of DIALECTS) {
     after(async () => {
       await destroyTest(ctx)
     })
+
+    if (variant === 'sqlite') {
+      it('should recognize an automatic rollback when attempting to commit', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          const statementError = await trx
+            .insertInto('person')
+            .orRollback()
+            .values(person)
+            .execute()
+            .catch((error: unknown) => error)
+          expect(statementError).to.be.instanceOf(AbortedTransactionError)
+          expect((statementError as AbortedTransactionError).cause)
+            .to.be.instanceOf(SqliteError)
+            .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
+
+          expect(trx.isCommitted).to.be.false
+          expect(trx.isRolledBack).to.be.true
+
+          await expect(trx.commit().execute()).to.be.rejectedWith(
+            'Transaction is already rolled back',
+          )
+
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith('Transaction is already rolled back')
+          await trx.rollback().execute()
+        } finally {
+          // An aborted transaction still needs cleanup to release its connection.
+          await trx
+            .rollback()
+            .execute()
+            .catch(() => {})
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should recognize an automatic rollback when attempting to rollback', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          const statementError = await trx
+            .insertInto('person')
+            .orRollback()
+            .values(person)
+            .execute()
+            .catch((error: unknown) => error)
+          expect(statementError).to.be.instanceOf(AbortedTransactionError)
+          expect((statementError as AbortedTransactionError).cause)
+            .to.be.instanceOf(SqliteError)
+            .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
+
+          expect(trx.isCommitted).to.be.false
+          expect(trx.isRolledBack).to.be.true
+
+          await trx.rollback().execute()
+
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith('Transaction is already rolled back')
+          await trx.rollback().execute()
+        } finally {
+          // An aborted transaction still needs cleanup to release its connection.
+          await trx
+            .rollback()
+            .execute()
+            .catch(() => {})
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should commit after a caught constraint violation that only rolls back the statement', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').values(person).execute(),
+          ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+          expect(trx.isRolledBack).to.be.false
+          await trx.commit().execute()
+          expect(trx.isCommitted).to.be.true
+        } finally {
+          if (!trx.isCommitted && !trx.isRolledBack) {
+            await trx.rollback().execute()
+          }
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+    }
 
     if (sqlSpec === 'postgres') {
       const statementErrorType =
