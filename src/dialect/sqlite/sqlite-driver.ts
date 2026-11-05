@@ -16,13 +16,11 @@ import type {
   SqliteDialectConfig,
 } from './sqlite-dialect-config.js'
 
-const PRIVATE_BEGIN_TRANSACTION_METHOD: unique symbol = Symbol()
-const PRIVATE_COMMIT_TRANSACTION_METHOD: unique symbol = Symbol()
-const PRIVATE_ROLLBACK_TRANSACTION_METHOD: unique symbol = Symbol()
-
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
+
   #db?: SqliteDatabase
+  #connection?: DatabaseConnection
 
   constructor(config: SqliteDialectConfig) {
     this.#config = freeze({ ...config })
@@ -33,28 +31,27 @@ export class SqliteDriver implements Driver {
       ? await this.#config.database(options)
       : this.#config.database
 
+    this.#connection = new SqliteConnection(this.#db)
+
     if (this.#config.onCreateConnection) {
-      await this.#config.onCreateConnection(
-        new SqliteConnection(this.#db),
-        options,
-      )
+      await this.#config.onCreateConnection(this.#connection, options)
     }
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    return new SqliteConnection(this.#db!)
+    return this.#connection!
   }
 
-  async beginTransaction(connection: SqliteConnection): Promise<void> {
-    await connection[PRIVATE_BEGIN_TRANSACTION_METHOD]()
+  async beginTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('begin'))
   }
 
-  async commitTransaction(connection: SqliteConnection): Promise<void> {
-    await connection[PRIVATE_COMMIT_TRANSACTION_METHOD]()
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
-  async rollbackTransaction(connection: SqliteConnection): Promise<void> {
-    await connection[PRIVATE_ROLLBACK_TRANSACTION_METHOD]()
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
   async savepoint(
@@ -107,21 +104,17 @@ export class SqliteDriver implements Driver {
 
 class SqliteConnection implements DatabaseConnection {
   readonly #db: SqliteDatabase
-  #inTransaction: boolean
 
   constructor(db: SqliteDatabase) {
     this.#db = db
-    this.#inTransaction = false
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    if (this.#inTransaction && this.#db.inTransaction === false) {
-      throw new AbortedTransactionError()
-    }
-
     const { sql, parameters } = compiledQuery
 
     const statement = this.#db.prepare(sql)
+
+    const inTransactionBefore = this.#db.inTransaction
 
     try {
       if (statement.reader) {
@@ -138,7 +131,7 @@ class SqliteConnection implements DatabaseConnection {
         rows: [],
       }
     } catch (error) {
-      if (this.#inTransaction && this.#db.inTransaction === false) {
+      if (inTransactionBefore && this.#db.inTransaction === false) {
         throw new AbortedTransactionError({ cause: error })
       }
 
@@ -165,28 +158,5 @@ class SqliteConnection implements DatabaseConnection {
         rows: [row as R],
       }
     }
-  }
-
-  async [PRIVATE_BEGIN_TRANSACTION_METHOD](): Promise<void> {
-    await this.executeQuery(CompiledQuery.raw('begin'))
-
-    this.#inTransaction = true
-  }
-
-  async [PRIVATE_COMMIT_TRANSACTION_METHOD](): Promise<void> {
-    await this.executeQuery(CompiledQuery.raw('commit'))
-
-    this.#inTransaction = false
-  }
-
-  async [PRIVATE_ROLLBACK_TRANSACTION_METHOD](): Promise<void> {
-    if (this.#db.inTransaction === false) {
-      this.#inTransaction = false
-      return
-    }
-
-    await this.executeQuery(CompiledQuery.raw('rollback'))
-
-    this.#inTransaction = false
   }
 }

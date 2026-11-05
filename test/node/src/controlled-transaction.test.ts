@@ -215,6 +215,13 @@ for (const dialect of DIALECTS) {
             trx.insertInto('person').values(person).execute(),
           ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
           expect(trx.isRolledBack).to.be.false
+          expect(
+            await trx
+              .selectFrom('person')
+              .select('first_name')
+              .where('id', '=', person.id)
+              .executeTakeFirstOrThrow(),
+          ).to.eql({ first_name: 'Foo' })
           await trx.commit().execute()
           expect(trx.isCommitted).to.be.true
         } finally {
