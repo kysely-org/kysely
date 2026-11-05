@@ -930,12 +930,9 @@ export class TransactionBuilder<DB> {
 
         return result
       } catch (error) {
-        if (
-          isAbortedTransactionError(error) ||
-          transactionState.status === 'aborted'
-        ) {
+        if (isAbortedTransactionError(error)) {
           transactionState.status = 'aborted'
-        } else if (transactionBegun) {
+        } else if (transactionBegun && transactionState.status !== 'aborted') {
           await this.#props.driver.rollbackTransaction(connection)
           transactionState.status = 'rolled back'
         }
