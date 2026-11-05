@@ -47,7 +47,8 @@ export interface SqliteDialectConfig {
  */
 export interface SqliteDatabase {
   close(): void
-  inTransaction: boolean
+  // TODO: make required in 0.30!
+  inTransaction?: boolean
   prepare(sql: string): SqliteStatement
 }
 
