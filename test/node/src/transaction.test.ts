@@ -195,6 +195,14 @@ for (const dialect of DIALECTS) {
     if (variant === 'sqlite') {
       for (const catchError of [false, true]) {
         it(`should handle an automatic rollback with ${catchError ? 'a caught' : 'an uncaught'} statement error`, async () => {
+          const commitSpy = sandbox.spy(
+            SqliteDriver.prototype,
+            'commitTransaction',
+          )
+          const rollbackSpy = sandbox.spy(
+            SqliteDriver.prototype,
+            'rollbackTransaction',
+          )
           let statementError: unknown
           const person = {
             id: -1000000,
@@ -230,6 +238,8 @@ for (const dialect of DIALECTS) {
           } else {
             expect(error).to.equal(statementError)
           }
+          expect(commitSpy.notCalled).to.be.true
+          expect(rollbackSpy.notCalled).to.be.true
           expect(
             await ctx.db
               .selectFrom('person')
@@ -239,6 +249,37 @@ for (const dialect of DIALECTS) {
           ).to.eql([])
         })
       }
+
+      it('should preserve a callback error thrown after an automatic rollback', async () => {
+        const rollbackSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'rollbackTransaction',
+        )
+        const callbackError = new Error('callback failed')
+        let escapedTrx: Transaction<Database> | undefined
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await expect(
+          ctx.db.transaction().execute(async (trx) => {
+            escapedTrx = trx
+            await trx.insertInto('person').values(person).execute()
+            await expect(
+              trx.insertInto('person').orRollback().values(person).execute(),
+            ).to.be.rejectedWith(AbortedTransactionError)
+
+            throw callbackError
+          }),
+        ).to.be.rejectedWith(callbackError)
+
+        expect(rollbackSpy.notCalled).to.be.true
+        await expect(
+          escapedTrx!.selectFrom('person').selectAll().execute(),
+        ).to.be.rejectedWith('Transaction is already rolled back')
+      })
 
       it('should commit after a caught constraint violation that only rolls back the statement', async () => {
         const person = {
@@ -252,6 +293,13 @@ for (const dialect of DIALECTS) {
           await expect(
             trx.insertInto('person').values(person).execute(),
           ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+          expect(
+            await trx
+              .selectFrom('person')
+              .select('first_name')
+              .where('id', '=', person.id)
+              .executeTakeFirstOrThrow(),
+          ).to.eql({ first_name: 'Foo' })
         })
 
         expect(

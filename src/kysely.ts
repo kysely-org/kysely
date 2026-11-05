@@ -10,7 +10,7 @@ import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import {
-  type AbortedTransactionError,
+  AbortedTransactionError,
   isAbortedTransactionError,
 } from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
@@ -921,12 +921,19 @@ export class TransactionBuilder<DB> {
 
         const result = await callback(transaction)
 
+        if (transactionState.status === 'aborted') {
+          throw new AbortedTransactionError()
+        }
+
         await this.#props.driver.commitTransaction(connection)
         transactionState.status = 'committed'
 
         return result
       } catch (error) {
-        if (isAbortedTransactionError(error)) {
+        if (
+          isAbortedTransactionError(error) ||
+          transactionState.status === 'aborted'
+        ) {
           transactionState.status = 'aborted'
         } else if (transactionBegun) {
           await this.#props.driver.rollbackTransaction(connection)
