@@ -192,6 +192,78 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    if (variant === 'sqlite') {
+      for (const catchError of [false, true]) {
+        it(`should handle an automatic rollback with ${catchError ? 'a caught' : 'an uncaught'} statement error`, async () => {
+          let statementError: unknown
+          const person = {
+            id: -1000000,
+            first_name: 'Foo',
+            gender: 'male',
+          } as const
+
+          const error = await ctx.db
+            .transaction()
+            .execute(async (trx) => {
+              await trx.insertInto('person').values(person).execute()
+              try {
+                await trx
+                  .insertInto('person')
+                  .orRollback()
+                  .values(person)
+                  .execute()
+              } catch (error) {
+                statementError = error
+                if (!catchError) {
+                  throw error
+                }
+              }
+            })
+            .catch((error: unknown) => error)
+
+          expect(statementError).to.be.instanceOf(AbortedTransactionError)
+          expect((statementError as AbortedTransactionError).cause)
+            .to.be.instanceOf(SqliteError)
+            .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
+          if (catchError) {
+            expect(error).to.be.instanceOf(AbortedTransactionError)
+          } else {
+            expect(error).to.equal(statementError)
+          }
+          expect(
+            await ctx.db
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+        })
+      }
+
+      it('should commit after a caught constraint violation that only rolls back the statement', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.transaction().execute(async (trx) => {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').values(person).execute(),
+          ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+    }
+
     if (sqlSpec === 'postgres') {
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
         let escapedTrx: Transaction<Database> | undefined
