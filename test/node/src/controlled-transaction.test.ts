@@ -136,13 +136,8 @@ for (const dialect of DIALECTS) {
           await expect(
             trx.selectFrom('person').selectAll().execute(),
           ).to.be.rejectedWith('Transaction is already rolled back')
-          await trx.rollback().execute()
         } finally {
-          // An aborted transaction still needs cleanup to release its connection.
-          await trx
-            .rollback()
-            .execute()
-            .catch(() => {})
+          await trx.rollback().execute()
         }
 
         expect(
@@ -178,18 +173,11 @@ for (const dialect of DIALECTS) {
           expect(trx.isCommitted).to.be.false
           expect(trx.isRolledBack).to.be.true
 
-          await trx.rollback().execute()
-
           await expect(
             trx.selectFrom('person').selectAll().execute(),
           ).to.be.rejectedWith('Transaction is already rolled back')
-          await trx.rollback().execute()
         } finally {
-          // An aborted transaction still needs cleanup to release its connection.
-          await trx
-            .rollback()
-            .execute()
-            .catch(() => {})
+          await trx.rollback().execute()
         }
 
         expect(
