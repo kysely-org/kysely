@@ -159,8 +159,6 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       : this.transformNodeList(node[argsKey], queryId)
   }
 
-  // Keeps the table's `SchemableIdentifierNode` so transforming the same node
-  // again (e.g. a subquery built from the same `withSchema` instance) is a no-op.
   #transformTableWithoutSchema(node: TableNode, queryId: QueryId): TableNode {
     return {
       ...node,
