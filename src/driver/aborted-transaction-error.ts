@@ -1,22 +1,39 @@
-import { isObject } from '../util/object-utils.js'
+import { isObject, isString } from '../util/object-utils.js'
 
-const ABORTED_TRANSACTION_ERROR = Symbol.for('kysely.AbortedTransactionError')
+// Drivers and executors may belong to different copies of Kysely.
+const ABORTED_TRANSACTION_ERRORS = Symbol.for('kysely.abortedTransactionErrors')
+const registry = globalThis as typeof globalThis & {
+  [ABORTED_TRANSACTION_ERRORS]?: WeakSet<object>
+}
+const abortedTransactionErrors = (registry[ABORTED_TRANSACTION_ERRORS] ??=
+  new WeakSet<object>())
 
 /**
- * Thrown when the database rolls back a transaction automatically without an explicit
- * rollback statement.
+ * Thrown when attempting to use a transaction that the database has aborted,
+ * or when committing rolls back without a database error.
  */
 export class AbortedTransactionError extends Error {
   override name = 'AbortedTransactionError'
-  readonly [ABORTED_TRANSACTION_ERROR] = true
 
   constructor(options?: ErrorOptions) {
-    super('Transaction was aborted', options)
+    const cause = options?.cause
+    super(
+      isObject(cause) && isString(cause.message)
+        ? `Transaction was aborted: ${cause.message}`
+        : 'Transaction was aborted',
+      options,
+    )
+    abortedTransactionErrors.add(this)
   }
 }
 
-export function isAbortedTransactionError(
-  error: unknown,
-): error is AbortedTransactionError {
-  return isObject(error) && ABORTED_TRANSACTION_ERROR in error
+export function isAbortedTransactionError(error: unknown): boolean {
+  return isObject(error) && abortedTransactionErrors.has(error)
+}
+
+/** @internal */
+export function markAsAbortedTransactionError(error: unknown): void {
+  if (isObject(error)) {
+    abortedTransactionErrors.add(error)
+  }
 }
