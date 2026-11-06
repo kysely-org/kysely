@@ -1,4 +1,4 @@
-import { AbortedTransactionError } from '../../driver/aborted-transaction-error.js'
+import { markAsAbortedTransactionError } from '../../driver/aborted-transaction-error.js'
 import type {
   DatabaseConnection,
   QueryResult,
@@ -185,7 +185,7 @@ class PGliteConnection implements DatabaseConnection {
     } catch (error) {
       // https://github.com/electric-sql/pglite/blob/bac163ecc92e968adda68864b74b7e3d65a68e97/packages/pglite/src/errors.ts#L11-L17
       if (isObject(error) && 'code' in error && error.code === '25P02') {
-        throw new AbortedTransactionError({ cause: error })
+        markAsAbortedTransactionError(error)
       }
 
       throw error

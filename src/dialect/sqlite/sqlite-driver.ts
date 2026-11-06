@@ -1,4 +1,4 @@
-import { AbortedTransactionError } from '../../driver/aborted-transaction-error.js'
+import { markAsAbortedTransactionError } from '../../driver/aborted-transaction-error.js'
 import type {
   DatabaseConnection,
   QueryResult,
@@ -132,7 +132,7 @@ class SqliteConnection implements DatabaseConnection {
       }
     } catch (error) {
       if (inTransactionBefore && this.#db.inTransaction === false) {
-        throw new AbortedTransactionError({ cause: error })
+        markAsAbortedTransactionError(error)
       }
 
       throw error

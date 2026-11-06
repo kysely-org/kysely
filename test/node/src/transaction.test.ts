@@ -216,10 +216,13 @@ for (const dialect of DIALECTS) {
           })
           .catch((error: unknown) => error)
 
-        expect(error).to.be.instanceOf(AbortedTransactionError)
-        expect((error as AbortedTransactionError).cause)
+        expect(error)
           .to.be.instanceOf(SqliteError)
           .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
+        expect(error).to.have.property(
+          'message',
+          'UNIQUE constraint failed: person.id',
+        )
         expect(commitSpy.notCalled).to.be.true
         expect(rollbackSpy.notCalled).to.be.true
         expect(
@@ -260,10 +263,13 @@ for (const dialect of DIALECTS) {
           })
           .catch((error: unknown) => error)
 
-        expect(statementError).to.be.instanceOf(AbortedTransactionError)
-        expect((statementError as AbortedTransactionError).cause)
+        expect(statementError)
           .to.be.instanceOf(SqliteError)
           .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
+        expect(statementError).to.have.property(
+          'message',
+          'UNIQUE constraint failed: person.id',
+        )
         expect(error).to.be.instanceOf(AbortedTransactionError)
         expect(commitSpy.notCalled).to.be.true
         expect(rollbackSpy.notCalled).to.be.true
@@ -295,7 +301,7 @@ for (const dialect of DIALECTS) {
             await trx.insertInto('person').values(person).execute()
             await expect(
               trx.insertInto('person').orRollback().values(person).execute(),
-            ).to.be.rejectedWith(AbortedTransactionError)
+            ).to.be.rejectedWith(SqliteError)
 
             throw callbackError
           }),
@@ -304,7 +310,7 @@ for (const dialect of DIALECTS) {
         expect(rollbackSpy.notCalled).to.be.true
         await expect(
           escapedTrx!.selectFrom('person').selectAll().execute(),
-        ).to.be.rejectedWith('Transaction is already rolled back')
+        ).to.be.rejectedWith(AbortedTransactionError)
       })
 
       it('should commit after a caught constraint violation that only rolls back the statement', async () => {
@@ -363,11 +369,15 @@ for (const dialect of DIALECTS) {
 
             return 'success'
           }),
-        ).to.be.rejectedWith(AbortedTransactionError)
+        ).to.be.rejectedWith(
+          variant === 'pglite'
+            ? pgliteMessages.DatabaseError
+            : AbortedTransactionError,
+        )
 
         await expect(
           escapedTrx!.selectFrom('person').selectAll().execute(),
-        ).to.be.rejectedWith('Transaction is already rolled back')
+        ).to.be.rejectedWith(AbortedTransactionError)
         expect(executedQueries.map((query) => query.sql)).to.not.include(
           'rollback',
         )
