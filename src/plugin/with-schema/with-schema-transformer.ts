@@ -138,10 +138,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       ...super.transformSelectModifier({ ...node, of: undefined }, queryId),
       of: node.of?.map((item) =>
         TableNode.is(item) && !item.table.schema
-          ? {
-              ...item,
-              table: this.transformIdentifier(item.table.identifier, queryId),
-            }
+          ? this.#transformTableWithoutSchema(item, queryId)
           : this.transformNode(item, queryId),
       ),
     }
@@ -157,12 +154,21 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       ? node[argsKey].map((arg) =>
           !TableNode.is(arg) || arg.table.schema
             ? this.transformNode(arg, queryId)
-            : {
-                ...arg,
-                table: this.transformIdentifier(arg.table.identifier, queryId),
-              },
+            : this.#transformTableWithoutSchema(arg, queryId),
         )
       : this.transformNodeList(node[argsKey], queryId)
+  }
+
+  // Keeps the table's `SchemableIdentifierNode` so transforming the same node
+  // again (e.g. a subquery built from the same `withSchema` instance) is a no-op.
+  #transformTableWithoutSchema(node: TableNode, queryId: QueryId): TableNode {
+    return {
+      ...node,
+      table: {
+        ...node.table,
+        identifier: this.transformIdentifier(node.table.identifier, queryId),
+      },
+    }
   }
 
   #collectSchemableIds(node: RootOperationNode): Set<string> {
