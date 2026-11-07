@@ -84,6 +84,12 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "Capacities",
+    "href": "https://capacities.io/blog/migration-to-postgres",
+    "group": "production",
+    "provenAt": "2026-01-12"
+  },
+  {
     "name": "Carbon",
     "repo": "crbnos/carbon",
     "path": "packages/database/supabase/functions/issue/index.ts",
@@ -166,6 +172,12 @@
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1693345768",
     "group": "production",
     "provenAt": "2025-05-16"
+  },
+  {
+    "name": "Disney",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3281189902",
+    "group": "production",
+    "provenAt": "2025-09-11"
   },
   {
     "name": "Docmost",
@@ -462,6 +474,12 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "Talentir",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3215694365",
+    "group": "production",
+    "provenAt": "2025-08-22"
+  },
+  {
     "name": "Teable",
     "repo": "teableio/teable",
     "path": "packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
@@ -469,6 +487,12 @@
     "href": "https://github.com/teableio/teable/blob/5ef2238883cad7c3980084de9a9031135fb9734f/packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
     "group": "production",
     "provenAt": "2026-09-01"
+  },
+  {
+    "name": "Teamspective",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-6308699805",
+    "group": "production",
+    "provenAt": "2026-10-21"
   },
   {
     "name": "tldraw",

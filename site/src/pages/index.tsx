@@ -390,6 +390,7 @@ function proofTitle(entry: ProofEntry): string {
 // wordmark + "Studio").
 const LOGO_WITH_NAME = new Set([
   'AirTrail',
+  'Capacities',
   'Conar',
   'Craig',
   'Domain Locker',

@@ -24,9 +24,9 @@ import styles from './BrandLogo.module.css'
  * 'lite' (Prisma Studio pattern). Canton Network is the docs.canton.network
  * lockup rendered through a luminance mask: all 210 paths in original
  * stacking order, diamond fills as ink and outline rings as knockouts, so
- * the layered-C tunnel detail survives single-tone intact. Docmost and Sink have no public vector mark and
- * stay text; Reflect (raster-only orb) is text pending a sourced mark;
- * AWS stays text by policy.
+ * the layered-C tunnel detail survives single-tone intact. Docmost and Sink
+ * have no public vector mark and stay text; Reflect (raster-only orb) is text
+ * pending a sourced mark; AWS stays text by policy.
  */
 export type BrandLogo = { label: string; viewBox: string; id: string }
 
@@ -60,6 +60,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 101 22',
     id: 'cal-com',
   },
+  // Official header mark from capacities.io: a disc inside an arc, already
+  // currentColor.
+  Capacities: {
+    label: 'Capacities',
+    viewBox: '0 0 78 78',
+    id: 'capacities',
+  },
   // Monochrome trace of CraigChat/craig apps/dashboard/src/assets/craig.png.
   // Dark facial outlines and microphone inherit currentColor; other areas are cutouts.
   Craig: {
@@ -86,6 +93,12 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Deno',
     viewBox: '0 0 1025 331',
     id: 'deno',
+  },
+  // Wikimedia Commons Disney_wordmark.svg (public domain), a single path.
+  Disney: {
+    label: 'Disney',
+    viewBox: '0 0 700 294.42258',
+    id: 'disney',
   },
   Depot: {
     label: 'Depot',
@@ -290,10 +303,23 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 82 31',
     id: 'tailor',
   },
+  // Official header wordmark from talentir.com, already currentColor.
+  Talentir: {
+    label: 'Talentir',
+    viewBox: '0 0 88 24',
+    id: 'talentir',
+  },
   Teable: {
     label: 'Teable',
     viewBox: '0 0 24 24',
     id: 'teable',
+  },
+  // Official wordmark: teamspective.com/_astro/logo-text.svg; its white fills
+  // inherit currentColor.
+  Teamspective: {
+    label: 'Teamspective',
+    viewBox: '0 0 578 93',
+    id: 'teamspective',
   },
   // Official lockup: liketrek/TREK client/public/logo-light.svg; its white
   // fills inherit currentColor and the icon's clip+rect flattens to a
