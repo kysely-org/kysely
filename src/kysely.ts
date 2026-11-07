@@ -27,6 +27,9 @@ import type {
   QueryResult,
 } from './driver/database-connection.js'
 import type { CompiledQuery } from './query-compiler/compiled-query.js'
+import type { DeleteResult } from './query-builder/delete-result.js'
+import type { InsertResult } from './query-builder/insert-result.js'
+import type { UpdateResult } from './query-builder/update-result.js'
 import { createQueryId, type QueryId } from './util/query-id.js'
 import { type Compilable, isCompilable } from './util/compilable.js'
 import { CaseBuilder } from './query-builder/case-builder.js'
