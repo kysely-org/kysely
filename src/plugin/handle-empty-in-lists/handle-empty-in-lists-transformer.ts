@@ -16,7 +16,7 @@ export class HandleEmptyInListsTransformer extends OperationNodeTransformer {
     this.#strategy = strategy
   }
 
-  protected transformBinaryOperation(
+  protected override transformBinaryOperation(
     node: BinaryOperationNode,
   ): BinaryOperationNode {
     if (this.#isEmptyInListNode(node)) {

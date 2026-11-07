@@ -370,8 +370,14 @@ jobs:
       - name: build
         run: pnpm run build
 
+      - name: test interface documentation copying
+        run: pnpm run test:interface-docs
+
       - name: type-check jsdocs code blocks
         run: pnpm run test:jsdocs
+
+      - name: type-check composed source jsdocs code blocks
+        run: pnpm run test:jsdocs:source
 
   typescript-composite:
     concurrency:
@@ -482,7 +488,9 @@ jobs:
         run: pnpm i
 
       - name: prepare for publish
-        run: pnpm run script:remove-global-augmentations
+        run: |
+          pnpm run script:remove-global-augmentations
+          pnpm run script:copy-source-interface-doc --in-place
 
       - name: dry-run jsr publish
         run: pnpm exec jsr publish --allow-dirty --dry-run
