@@ -171,11 +171,6 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 153 30',
     id: 'colanode',
   },
-  Conar: {
-    label: 'Conar',
-    viewBox: '0 0 452 452',
-    id: 'conar',
-  },
   EmbedPDF: {
     label: 'EmbedPDF',
     viewBox: '58 58 134 134',
@@ -313,6 +308,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Teable',
     viewBox: '0 0 24 24',
     id: 'teable',
+  },
+  // wannabespace/tamery packages/ui/src/components/brand/app-logo.tsx; its
+  // currentColor fills carry over.
+  Tamery: {
+    label: 'Tamery',
+    viewBox: '0 0 475 475',
+    id: 'tamery',
   },
   // Official wordmark: teamspective.com/_astro/logo-text.svg; its white fills
   // inherit currentColor.
