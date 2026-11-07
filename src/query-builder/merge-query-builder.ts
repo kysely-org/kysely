@@ -372,7 +372,7 @@ export class WheneableMergeQueryBuilder<
   }
 
   /**
-   * See {@link MergeQueryBuilder.top}.
+   * See {@link MergeQueryBuilder.prototype.top}.
    */
   top(
     expression: number | bigint,
