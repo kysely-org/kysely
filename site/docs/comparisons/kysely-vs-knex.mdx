@@ -1,0 +1,407 @@
+---
+sidebar_position: 4
+title: Kysely vs Knex
+description: 'Compare Kysely and Knex SQL query builders: TypeScript inference through joins, aliases, and nested results, immutable query reuse, explicit execution, dialect-specific SQL, plugins, and a gradual migration plan.'
+---
+
+# Kysely vs Knex
+
+Kysely comes from the Knex community. Its author, [Sami Koskimäki](https://github.com/koskimas), contributed to Knex [from 2013](https://github.com/knex/knex/issues/39): his [tarn.js](https://github.com/Vincit/tarn.js) became [Knex's connection pool](https://github.com/knex/knex/pull/2450) and still ships with it. He also built [Objection.js](https://github.com/Vincit/objection.js), an ORM [built on Knex](https://github.com/Vincit/objection.js/blob/7297ea886fa41703268c6b766b15cc58fc02497f/README.md#L10). **Kysely was [inspired by Knex](https://github.com/kysely-org/kysely/blob/fe483ef5d7dce62cb99aea17bec20567c986ca16/README.md#L29).**
+
+**Both compose SQL through method chains; Knex's types describe your tables, and Kysely's describe your query.** Kysely checks joined references, infers aliased and nested results, lets callers extend a shared query without changing it, and executes only when asked.
+
+Knex grew up before TypeScript could type a query builder; Kysely was designed once it could. Knex began in December 2012, three months after [TypeScript's announcement](https://learn.microsoft.com/en-us/archive/blogs/somasegar/typescript-javascript-development-at-application-scale), and took shape in JavaScript. Its [own declarations](https://github.com/knex/knex/issues/2845) arrived in November 2018, eight months after [conditional types and `infer`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#conditional-types) let one type be computed from another, and have improved since, including [registered table types](https://github.com/knex/knex/pull/4071) in 2020, within an API that already existed. Kysely's first commit came in February 2021, three months after [template literal types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html#template-literal-types) let the compiler read strings like `'pet.name as pet_name'`, and already used them to parse aliases.
+
+## Both start from typed tables
+
+Assume configured Kysely and Knex clients with matching table types:
+
+<details>
+<summary>Database interface and Knex table registration</summary>
+
+Use these table shapes for Kysely's `Kysely<Database>` instance:
+
+```ts
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+```
+
+Register the same shapes with Knex's [table declarations](https://knexjs.org/guide/#typescript):
+
+```ts
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+```
+
+`knex('person').select('id', 'first_name')` infers the selected fields correctly with these registered types.
+
+</details>
+
+## Kysely's result types follow joins and aliases
+
+Select adults and return each person's name alongside their pet's name.
+
+With Knex:
+
+```ts
+const rows = await knex('person')
+  .innerJoin('pet', 'pet.owner_id', 'person.id')
+  .select('person.first_name', 'pet.name as pet_name')
+  .where('person.age', '>=', 18)
+  .orderBy('person.first_name')
+```
+
+With Kysely:
+
+```ts
+const rows = await db
+  .selectFrom('person')
+  .innerJoin('pet', 'pet.owner_id', 'person.id')
+  .select(['person.first_name', 'pet.name as pet_name'])
+  .where('person.age', '>=', 18)
+  .orderBy('person.first_name')
+  .execute()
+```
+
+The rows match; the inferred types differ:
+
+| Result                                                  | Kysely                                       | Knex 3.3.0 with the registered table types |
+| ------------------------------------------------------- | -------------------------------------------- | ------------------------------------------ |
+| The qualified, aliased join above                       | `{ first_name: string; pet_name: string }[]` | `any[]`                                    |
+| A simple unqualified selection of `id` and `first_name` | `{ id: number; first_name: string }[]`       | `{ id: number; first_name: string }[]`     |
+
+Knex documents [qualified-column and alias limitations](https://knexjs.org/guide/query-builder.html#select) and offers `knex.ref` for some cases. Kysely parses those strings in its types, so the join's tables and the alias reach the result. **Knex infers the simple selection; Kysely infers the query it grows into.**
+
+## Invalid references fail in TypeScript, not in PostgreSQL
+
+With the registered table types, Knex accepts a filter on a table the query never joined:
+
+```ts
+knex('person').select('id').where('pet.name', '=', 'Catto')
+```
+
+PostgreSQL rejects it when it runs. Kysely rejects it as you type:
+
+```ts
+db.selectFrom('person').select('id').where('pet.name', '=', 'Catto')
+// TypeScript error: pet is not available in this query.
+```
+
+Other checked failures:
+
+| Invalid reference                                         | Kysely            | Knex 3.3.0                                       |
+| --------------------------------------------------------- | ----------------- | ------------------------------------------------ |
+| Filter on `pet.name` without joining `pet`                | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query. |
+| Filter on the misspelled `first_nam`                      | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query. |
+| Alias `person` as `p`, then filter on `person.first_name` | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query. |
+
+**Every row in that table is a round trip with Knex and a compile error with Kysely.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
+
+## Nested results keep their shape
+
+Return each person with an array of their pets' names. With Kysely's `jsonArrayFrom` helper, from `kysely/helpers/postgres`, the subquery's selection becomes the nested type:
+
+```ts
+const rows = await db
+  .selectFrom('person')
+  .select((eb) => [
+    'person.first_name',
+    jsonArrayFrom(
+      eb
+        .selectFrom('pet')
+        .select('pet.name')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .orderBy('pet.name'),
+    ).as('pets'),
+  ])
+  .execute()
+// { first_name: string; pets: { name: string }[] }[]
+```
+
+Knex has no JSON aggregation helper, so the aggregate is raw SQL, and the row type is declared by hand:
+
+```ts
+type PersonWithPets = { first_name: string; pets: { name: string }[] }
+
+const rows = await knex('person').select<PersonWithPets[]>(
+  'first_name',
+  knex.raw(
+    "(select coalesce(json_agg(json_build_object('name', pet.name) order by pet.name), '[]') from pet where pet.owner_id = person.id) as pets",
+  ),
+)
+```
+
+The declaration compiles, and so does `pets: number`: nothing compares it with the SQL. Written as a subquery instead, the aggregate is missing from the inferred row either way: a `function () { this.select(...) }` callback drops `pets`, and a `knex('pet')` builder drops it and adds the builder's members to the row. **A declared row type is a claim about the query; Kysely's inferred type is derived from it.** See [nested relations](/docs/recipes/relations).
+
+## Shared queries branch without mutation
+
+Knex mutates the shared base:
+
+```ts
+const base = knex('person').where('age', '>=', 18)
+const named = base.where('first_name', '=', 'Jennifer')
+const everyone = base.select('id', 'first_name')
+// everyone now includes the Jennifer filter too.
+```
+
+Branch with `.clone()`:
+
+```ts
+const base = knex('person').where('age', '>=', 18)
+const named = base.clone().where('first_name', '=', 'Jennifer')
+const everyone = base.clone().select('id', 'first_name')
+```
+
+Kysely branches independently:
+
+```ts
+const base = db.selectFrom('person').where('age', '>=', 18)
+const named = base.where('first_name', '=', 'Jennifer')
+const everyone = base.select(['id', 'first_name'])
+```
+
+**In Knex, sharing a builder means remembering to clone it; in Kysely, every builder is a value you can share.** Keep each returned Kysely builder, and use [`$if`](/docs/recipes/conditional-selects) when conditional selections change the result type.
+
+## Building a query never executes it
+
+Knex builders are [thenable](https://knexjs.org/guide/interfaces.html#promises): resolving one as a promise executes the query. An `async` helper can therefore execute a query it intended to return for further composition:
+
+```ts
+async function adultQuery() {
+  return knex('person').select('id').where('age', '>=', 18)
+}
+
+const rows = await adultQuery()
+// Already executed. These are rows, not a builder to extend.
+```
+
+Keep the helper synchronous, or return an object containing the builder to avoid promise assimilation. With Kysely, even an async helper returns a composable builder:
+
+```ts
+async function adultQuery() {
+  return db.selectFrom('person').select('id').where('age', '>=', 18)
+}
+
+const query = await adultQuery()
+const rows = await query.where('first_name', '=', 'Jennifer').execute()
+```
+
+**A Knex builder runs when it is awaited; a Kysely builder runs when you call `.execute()`.** `.execute()` returns rows, `.executeTakeFirst()` returns a row or `undefined`, and `.executeTakeFirstOrThrow()` requires a row. Check write-result objects separately when no rows are returned.
+
+## Kysely exposes each database's SQL instead of choosing it for you
+
+Kysely's API follows [what you see is what you get](/docs/examples/insert/insert-subquery): each method writes the SQL its name says, dialects differ in spelling such as quotes and parameter markers rather than in the operation chosen, and the docs flag the rare exception. **Kysely's abstraction is the SQL itself, so there is nothing underneath it to leak.** Knex is a portability layer in places, not a one-to-one SQL API: its upsert and JSON helpers choose different SQL operations for different databases behind one method name.
+
+### One upsert method, two conflict semantics
+
+```ts
+knex('person')
+  .insert({ id: 1, first_name: 'Jennifer' })
+  .onConflict('id')
+  .merge(['first_name'])
+```
+
+Knex 3.3.0 compiles that same chain to:
+
+| Database   | Upsert clause                                                           |
+| ---------- | ----------------------------------------------------------------------- |
+| PostgreSQL | `ON CONFLICT ("id") DO UPDATE SET "first_name" = excluded."first_name"` |
+| MySQL      | `ON DUPLICATE KEY UPDATE first_name = values(first_name)`               |
+
+MySQL has no conflict target, for any library: a duplicate on any unique key triggers the update. Knex [documents this](https://knexjs.org/guide/query-builder.html#onconflict), but the code still reads `.onConflict('id')`. Kysely exposes the two operations separately:
+
+```ts
+// PostgreSQL / SQLite: explicitly target the id constraint.
+const pgUpsert = pgDb
+  .insertInto('person')
+  .values({ id: 1, first_name: 'Jennifer' })
+  .onConflict((oc) =>
+    oc
+      .column('id')
+      .doUpdateSet((eb) => ({ first_name: eb.ref('excluded.first_name') })),
+  )
+
+// MySQL: explicitly use its duplicate-key operation.
+const mysqlUpsert = mysqlDb
+  .insertInto('person')
+  .values({ id: 1, first_name: 'Jennifer' })
+  .onDuplicateKeyUpdate((eb) => ({
+    first_name: eb.fn<string>('values', [eb.ref('first_name')]),
+  }))
+```
+
+### One JSON method, three database functions
+
+Knex's [`jsonExtract`](https://knexjs.org/guide/query-builder.html#jsonextract) also hides different operations behind one method:
+
+```ts
+knex('person').jsonExtract('profile', '$.name', 'name')
+```
+
+For a JSON `profile` column, Knex 3.3.0 emits these expressions:
+
+| Database   | Generated expression (path bound as a parameter) |
+| ---------- | ------------------------------------------------ |
+| PostgreSQL | `jsonb_path_query("profile", ?)`                 |
+| MySQL      | `json_unquote(json_extract(profile, ?))`         |
+| SQLite     | `json_extract(profile, ?)`                       |
+
+PostgreSQL's `jsonb_path_query` is set-returning; this is more than changing identifier quotes or parameter markers. With `profile` typed `{ name: string }`, Kysely writes the operator you choose and types the result:
+
+```ts
+// PostgreSQL: "profile"->>'name'
+const pgName = pgDb
+  .selectFrom('person')
+  .select((eb) => eb.ref('profile', '->>').key('name').as('name'))
+
+// MySQL / SQLite: ->>'$."name"'
+const mysqlName = mysqlDb
+  .selectFrom('person')
+  .select((eb) => eb.ref('profile', '->>$').key('name').as('name'))
+```
+
+**Knex picks the SQL for each database behind one method name; Kysely puts the choice in your code, where review can see it.** For an application that targets one database, that is the SQL you meant. For one codebase shipped on several databases, Knex's helpers are the feature, and their dialect differences are the cost to test.
+
+## Kysely's escape hatch keeps references checked
+
+Both cover [CTEs, set operations, ranking, and locks](https://knexjs.org/guide/query-builder.html). For filtered aggregate counts, which [Immich](https://immich.app/) builds with Kysely, Kysely provides `fn.countAll().filterWhere(...)`, and aggregate builders also support `.over(...)`. Knex needs `raw` for `FILTER`, alongside dedicated ranking APIs. Kysely does not cover all of SQL either; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest.
+
+Knex's raw fragments use MySQL-style `?` value placeholders and `??` [identifier bindings](https://knexjs.org/guide/raw.html#raw-parameter-binding), even when targeting PostgreSQL:
+
+```ts
+knex.raw('?? = ?', ['person.first_name', 'Jennifer'])
+// PostgreSQL: "person"."first_name" = $1
+// Bindings: ['Jennifer']
+```
+
+The bindings live in a separate array from the placeholders they fill, and literal question marks need escaping. Kysely puts references and values where they belong in the expression:
+
+```ts
+import { sql, type SqlBool } from 'kysely'
+
+db.selectFrom('person')
+  .select('id')
+  .where((eb) => sql<SqlBool>`${eb.ref('person.first_name')} = ${'Jennifer'}`)
+```
+
+`eb.ref` is checked against the tables in scope, the value binds as a parameter, and the declared type flows into the query. **Knex's raw fragment carries SQL text and bindings; Kysely's `sql` template also carries checked references and a result type.** Wrap repeated fragments in [reusable helpers](/docs/recipes/reusable-helpers) that take `Expression<T>`; see the [`sql` API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) for more.
+
+## Kysely's plugins transform the query, not its strings
+
+Knex's extension points are hooks on each instance. [`wrapIdentifier`](https://knexjs.org/guide/#wrapidentifier) receives each identifier as a string, and [`postProcessResponse`](https://knexjs.org/guide/#postprocessresponse) receives each raw result. Together they cover the common case, camelCase properties over snake_case columns, with conversion functions you supply:
+
+```ts
+const knex = knexFactory({
+  client: 'pg',
+  connection,
+  wrapIdentifier: (value, origImpl) => origImpl(toSnakeCase(value)),
+  postProcessResponse: (result) => toCamelCaseKeys(result),
+})
+```
+
+Kysely ships that conversion as [`CamelCasePlugin`](https://kysely-org.github.io/kysely-apidoc/classes/CamelCasePlugin.html), with the database interface written in camelCase:
+
+```ts
+const camelDb = new Kysely<CamelCaseDatabase>({
+  dialect,
+  plugins: [new CamelCasePlugin()],
+})
+```
+
+A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives the query as a tree of operation nodes before it compiles, and the result after it runs, so it can rewrite tables, joins, and expressions, not only identifier text. The [built-in plugins](/docs/plugins) also qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes a plugin to one query or a derived instance and leaves the original unchanged:
+
+```ts
+const tenantDb = db.withPlugin(new WithSchemaPlugin('tenant_1'))
+```
+
+Knex's hooks are fixed per instance, with [`queryContext`](https://knexjs.org/guide/query-builder.html#querycontext) to pass per-query data into them. **Knex's hooks see strings and rows; Kysely's plugins see the query.**
+
+Custom methods differ the same way. Knex's [`QueryBuilder.extend`](https://knexjs.org/guide/query-builder.html#extending-query-builder), documented as experimental, adds a method to every query builder in the process, typed through module augmentation. Kysely adds behavior through functions that take and return builders, applied with `$call` or as [reusable helpers](/docs/recipes/reusable-helpers), with nothing registered globally.
+
+## Kysely's dialects are a public interface
+
+A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) is four exported factories: a driver, a query compiler, an adapter, and an introspector. A new database implements that interface, often extending the exported `DefaultQueryCompiler` or a built-in dialect's compiler and overriding what its SQL spells differently. The [21 community dialects](/docs/dialects) are built that way, with no internals to reach into.
+
+Knex accepts a custom client class through its `client` option, but its query compilers, schema compilers, and formatter are not part of its public API or its type declarations. Third-party dialects build on them anyway. [knex-firebird-dialect](https://www.npmjs.com/package/knex-firebird-dialect) imports `knex/lib/client`, `knex/lib/formatter`, and `knex/lib/schema/tablecompiler`, then assigns its overrides onto their prototypes; [Beekeeper Studio](https://www.beekeeperstudio.io/)'s DuckDB client extends `knex/lib/client` and builds its query compiler on Knex's internal SQLite one. **Kysely's dialects plug into its public interface; Knex's patch its internals.**
+
+## Kysely has zero dependencies and runs wherever JavaScript does
+
+**Kysely has no runtime dependencies; Knex 3.3.0 has 14.** Knex's count includes its bundled migration CLI and connection pool; Kysely's CLI is a separate package, and its pool comes from the driver. Kysely's core requires no Node.js-specific APIs, so the same package runs on [Node.js, Deno, Bun, Cloudflare Workers, and in browsers](https://github.com/kysely-org/kysely/blob/fe483ef5d7dce62cb99aea17bec20567c986ca16/README.md#L29-L31) wherever a dialect can reach the database. Knex describes itself as a query builder [for Node.js](https://github.com/knex/knex/blob/e25d54bcb707714a17f5a5744eba5c4246bb4d1d/README.md#L12-L13), and its library loads Node.js modules such as `fs` and `path`.
+
+## Migrate one query at a time
+
+Start with a query whose joined aliases lose inference, or a base query that several callers extend. [kysely-knex](https://github.com/kysely-org/kysely-knex) reuses a Knex instance, translates table types, and integrates migrations, so both builders can share one pool during the move.
+
+1. Start with `Kysely<any>` or [generated](/docs/generating-types)/handwritten types matching driver values and nullability.
+2. Reuse Knex through the bridge, or configure a [native dialect](/docs/dialects). A second pool needs connection capacity.
+3. Translate one read, add `.execute()`, inspect `.compile()`, and compare rows, ordering, and empty results.
+4. Replace `wrapIdentifier` and `postProcessResponse` with `CamelCasePlugin` or a custom plugin, and `QueryBuilder.extend` methods with helper functions.
+5. Check write results, conflict handling, and dialect differences. Keep each transaction on one client/connection.
+6. Once Knex queries and tooling are retired, switch the bridge to a native dialect and close the unused pool.
+
+### Start with Kysely&lt;any&gt;
+
+Schema types can come later, as queries migrate:
+
+```ts
+import { Kysely } from 'kysely'
+
+const untypedDb = new Kysely<any>({ dialect })
+
+const rows = await untypedDb
+  .selectFrom('person')
+  .select(['id', 'first_name'])
+  .where('age', '>=', 18)
+  .execute()
+```
+
+`Kysely<any>` keeps composition, immutability, binding, and explicit execution. It gives up schema checks, schema-aware completion, and inferred column types until the types arrive. JavaScript works too; the compile-time checks require TypeScript.
+
+### Keep migration history intact
+
+Existing Knex migrations can stay where they are. kysely-knex's [`KyselyFsMigrationSource`](https://github.com/kysely-org/kysely-knex/blob/32cfe182cf2ed660df765e8416d5605739fded56/README.md#L85-L90) is a Knex [custom migration source](https://knexjs.org/guide/migrations.html#custom-migration-sources) that passes a Kysely instance to each migration, so new migrations can use Kysely's [schema builder](/docs/migrations) while `knex migrate:latest` and the `knex_migrations` history keep working.
+
+To leave the Knex CLI later, kysely-ctl's `migrate` and `seed` commands [mirror Knex's](https://github.com/kysely-org/kysely-ctl/blob/1fa8c6fae8ada0e6b67bdbf49bc5174a68aeba0f/README.md#L23), and its `getKnexTimestampPrefix` keeps Knex's file naming. Kysely's migrator records history in its own `kysely_migration` table and does not translate Knex migration files, so the switch is a one-time cutover, not a configuration change.
+
+## Other practical considerations
+
+<details>
+<summary>Dialects and bundled tooling</summary>
+
+Knex ships [PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite, and Oracle](https://github.com/knex/knex/blob/e25d54bcb707714a17f5a5744eba5c4246bb4d1d/README.md#L12-L13) in one package, with a migration and seed CLI. Kysely's core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite; others, including Oracle, are [community dialects](/docs/dialects). Its CLI, kysely-ctl, is a separate package.
+
+</details>
+
+<details>
+<summary>Measured package sizes and dependency trees</summary>
+
+PostgreSQL production trees, including transitive dependencies:
+
+| PostgreSQL setup          | Unique production packages |
+| ------------------------- | -------------------------- |
+| Kysely 0.29.7 + pg 8.23.1 | **14**                     |
+| Knex 3.3.0 + pg 8.23.1    | 36                         |
+
+Knex's own download is smaller: **215.3 KiB vs 318.3 KiB**. Kysely's edge is fewer dependencies. The [kysely-knex bridge](https://github.com/kysely-org/kysely-knex) retains Knex's tree.
+
+Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
+
+</details>
+
+## Choosing Knex or Kysely
+
+**Choose Kysely when your queries change and you want TypeScript to check each change: types that follow the query through joins, aliases, nested results, and references; builders that behave like values, shared without cloning and executed only when asked; and an open, dependency-free core for plugins, dialects, and runtimes.** Its method docs and examples are version-matched in the package, so editors and coding agents read the API you installed.
+
+**Keep Knex when one codebase must run unchanged on several databases and its portability helpers do that work, or when its queries already work and rarely change.** Its migrations can stay either way.
+
+Kysely is also the more downloaded of the two: npm counted [28.8 million Kysely downloads](https://api.npmjs.org/downloads/point/2026-10-31:2026-11-06/kysely) and [6.8 million Knex downloads](https://api.npmjs.org/downloads/point/2026-10-31:2026-11-06/knex) in the week of October 31, 2026. Both counts include installs pulled in by other packages.
+
+**Kysely is Knex's idea, SQL composed through method chains, with TypeScript checking every link.**
+
+[Get started with Kysely](/docs/getting-started), find equivalents in the [query examples](/docs/category/examples), or compare [query builders with raw SQL](/docs/comparisons/query-builder-vs-raw-sql).
