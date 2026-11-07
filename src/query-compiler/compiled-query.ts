@@ -3,6 +3,7 @@ import {
   isRootOperationNode,
   type RootOperationNode,
 } from '../operation-node/root-operation-node.js'
+import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import type { Compilable } from '../util/compilable.js'
 import { freeze, isObject, isString } from '../util/object-utils.js'
 import { createQueryId, type QueryId } from '../util/query-id.js'
