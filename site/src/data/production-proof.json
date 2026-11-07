@@ -138,12 +138,6 @@
     "provenAt": "2026-10-25"
   },
   {
-    "name": "Cyna",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-5792955667",
-    "group": "production",
-    "provenAt": "2026-09-23"
-  },
-  {
     "name": "Cypress",
     "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.4.0/dist/database/queries.js",
     "group": "production",
@@ -435,12 +429,6 @@
     "provenAt": "2026-09-25"
   },
   {
-    "name": "Sabi Vendor",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-4313018896",
-    "group": "production",
-    "provenAt": "2026-04-24"
-  },
-  {
     "name": "Sesame Care",
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1993016822",
     "group": "production",
@@ -454,12 +442,6 @@
     "href": "https://github.com/miantiao-me/Sink/blob/bafa4e1f7e3ec034929e11e5542c4c3e116d69da/server/utils/analytics-sql.ts",
     "group": "built-into",
     "provenAt": "2026-09-27"
-  },
-  {
-    "name": "Spaces",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3359682995",
-    "group": "production",
-    "provenAt": "2025-10-02"
   },
   {
     "name": "StudioCMS",
@@ -501,12 +483,6 @@
     "provenAt": "2026-09-01"
   },
   {
-    "name": "Teamspective",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-6308699805",
-    "group": "production",
-    "provenAt": "2026-10-21"
-  },
-  {
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/src/adminRoutes.ts",
@@ -541,12 +517,6 @@
     "href": "https://github.com/chrisbenincasa/tunarr/blob/754786b59eddeba1d79943f65920873c5226ada3/server/src/tasks/fixers/BackfillMediaSourceIdFixer.ts",
     "group": "built-into",
     "provenAt": "2026-09-28"
-  },
-  {
-    "name": "Unicon Soft",
-    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-5366321758",
-    "group": "production",
-    "provenAt": "2026-08-21"
   },
   {
     "name": "wevm curl.md",

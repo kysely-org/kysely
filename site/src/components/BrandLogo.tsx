@@ -24,10 +24,9 @@ import styles from './BrandLogo.module.css'
  * 'lite' (Prisma Studio pattern). Canton Network is the docs.canton.network
  * lockup rendered through a luminance mask: all 210 paths in original
  * stacking order, diamond fills as ink and outline rings as knockouts, so
- * the layered-C tunnel detail survives single-tone intact. Docmost, Sink,
- * Sabi Vendor, Spaces, Talentir and Unicon Soft have no public vector mark
- * and stay text; Reflect (raster-only orb) is text pending a sourced mark;
- * AWS stays text by policy.
+ * the layered-C tunnel detail survives single-tone intact. Docmost, Sink and
+ * Talentir have no public vector mark and stay text; Reflect (raster-only
+ * orb) is text pending a sourced mark; AWS stays text by policy.
  */
 export type BrandLogo = { label: string; viewBox: string; id: string }
 
@@ -67,13 +66,6 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Craig',
     viewBox: '0 0 723 723',
     id: 'craig',
-  },
-  // Official header lockup: cyna.security/images/branding/cyna-logo-v2-header.svg;
-  // the gradient mark and wordmark flatten to currentColor.
-  Cyna: {
-    label: 'Cyna',
-    viewBox: '0 0 924.2 251.5',
-    id: 'cyna',
   },
   Cypress: {
     label: 'Cypress',
@@ -308,13 +300,6 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Teable',
     viewBox: '0 0 24 24',
     id: 'teable',
-  },
-  // Official wordmark: teamspective.com/_astro/logo-text.svg; its white fills
-  // inherit currentColor.
-  Teamspective: {
-    label: 'Teamspective',
-    viewBox: '0 0 578 93',
-    id: 'teamspective',
   },
   // Official lockup: liketrek/TREK client/public/logo-light.svg; its white
   // fills inherit currentColor and the icon's clip+rect flattens to a
