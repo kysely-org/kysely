@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output = "./generated"
+  moduleFormat = "esm"
+  previewFeatures = ["typedSql"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Author {
+  id Int @id
+  name String
+  organizationId Int @map("organization_id")
+  active Boolean
+  articleTarget Int @map("article_target")
+  articles Article[]
+  @@map("author")
+}
+
+model Article {
+  id Int @id
+  authorId Int @map("author_id")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+  author Author @relation(fields: [authorId], references: [id])
+  @@map("article")
+}
+
+model Page {
+  id Int @id
+  title String
+  parentId Int? @map("parent_id")
+  parent Page? @relation("PageTree", fields: [parentId], references: [id])
+  children Page[] @relation("PageTree")
+  access PageAccess[]
+  @@map("page")
+}
+
+model PageAccess {
+  pageId Int @map("page_id")
+  userId Int @map("user_id")
+  level String
+  page Page @relation(fields: [pageId], references: [id])
+  @@id([pageId, userId])
+  @@map("page_access")
+}
