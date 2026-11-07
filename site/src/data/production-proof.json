@@ -84,6 +84,12 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "Capacities",
+    "href": "https://capacities.io/blog/migration-to-postgres",
+    "group": "production",
+    "provenAt": "2026-01-12"
+  },
+  {
     "name": "Carbon",
     "repo": "crbnos/carbon",
     "path": "packages/database/supabase/functions/issue/index.ts",

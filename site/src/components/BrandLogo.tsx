@@ -60,6 +60,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 101 22',
     id: 'cal-com',
   },
+  // Official header mark from capacities.io: a disc inside an arc, already
+  // currentColor.
+  Capacities: {
+    label: 'Capacities',
+    viewBox: '0 0 78 78',
+    id: 'capacities',
+  },
   // Monochrome trace of CraigChat/craig apps/dashboard/src/assets/craig.png.
   // Dark facial outlines and microphone inherit currentColor; other areas are cutouts.
   Craig: {
