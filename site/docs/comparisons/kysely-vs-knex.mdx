@@ -6,6 +6,8 @@ description: 'Compare Kysely and Knex SQL query builders: TypeScript inference, 
 
 # Kysely vs Knex
 
+Kysely comes from the Knex community. Its author, [Sami Koskimäki](https://github.com/koskimas), has contributed to Knex [since 2013](https://github.com/knex/knex/issues/39): his [tarn.js](https://github.com/Vincit/tarn.js) became [Knex's connection pool](https://github.com/knex/knex/pull/2450) and still ships with it. He also built [Objection.js](https://github.com/Vincit/objection.js), an ORM [built on Knex](https://github.com/Vincit/objection.js#readme). **Kysely was [inspired by Knex](https://github.com/kysely-org/kysely#readme).**
+
 Kysely checks joined references, infers aliased results, and lets callers extend a shared query without changing it. Execution stays explicit through `.execute()`.
 
 Checked with **Knex 3.3.0** and **Kysely 0.29.7** against the same PostgreSQL fixtures. Both bind values. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
