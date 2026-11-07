@@ -1,3 +1,4 @@
+import type { Kysely } from '../kysely.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
   isRootOperationNode,
