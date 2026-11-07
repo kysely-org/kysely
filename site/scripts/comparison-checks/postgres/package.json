@@ -16,6 +16,7 @@
     "slonik": "49.11.0",
     "zod": "4.6.7",
     "kysely": "0.29.7",
+    "kysely-knex": "0.2.0",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",

@@ -35,7 +35,9 @@ error fails the check.
   inference, invalid references, nested JSON results (Kysely's `jsonArrayFrom`;
   Knex's declared, callback, and builder subqueries), camelCase through Knex
   hooks and `CamelCasePlugin`, `withPlugin` scoping, mutation, `.clone()`,
-  async execution, and first-row behavior.
+  async execution, first-row behavior, and a Kysely-authored migration run by
+  Knex's migrator through kysely-knex's `KyselyFsMigrationSource`
+  (`knex-migrations/`).
 - `knex-semantics.mts`: PostgreSQL/MySQL upsert compilation, JSON function
   compilation across PostgreSQL/MySQL/SQLite, raw bindings, built-in ranking,
   `knex.ref()` inference, process-wide `QueryBuilder.extend`, and Kysely's explicit upserts and JSON traversal. MySQL

@@ -52,6 +52,7 @@ function run(label, args, command = process.execPath) {
 
 for (const [name, version] of Object.entries({
   kysely: '0.29.7',
+  'kysely-knex': '0.2.0',
   knex: '3.3.0',
   '@prisma/client': '7.10.1',
   '@prisma/adapter-pg': '7.10.1',

@@ -10,6 +10,7 @@ import {
   WithSchemaPlugin,
 } from 'kysely'
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
+import { KyselyFsMigrationSource, PGColdDialect } from 'kysely-knex'
 import type { InferResult } from 'kysely'
 
 // DOC:database
@@ -619,11 +620,28 @@ try {
       .execute(),
     [{ id: 1, first_name: 'Jennifer' }],
   )
+  // kysely-knex 0.2.0 extends Knex's untyped FsMigrations, so its declarations
+  // lose the inherited MigrationSource methods that Knex calls at runtime.
+  const migrationSource = new KyselyFsMigrationSource({
+    kyselySubDialect: new PGColdDialect(),
+    migrationDirectories: 'knex-migrations',
+  }) as unknown as Knex.MigrationSource<unknown>
+  const [completedBefore] = await knex.migrate.list({ migrationSource })
+  assert.deepEqual(completedBefore, [])
+  await knex.migrate.latest({ migrationSource })
+  assert.deepEqual(
+    (await knex('knex_migrations' as string).select('name')).map(
+      (row: { name: string }) => row.name,
+    ),
+    ['20240101000000_add_nickname.ts'],
+  )
+  const columns = await knex('person').columnInfo()
+  assert('nickname' in columns, 'The Kysely-authored migration ran under Knex')
   console.log(
     'PASS: Prisma filtered relation counts work; aggregate relation filters/filtered ordering are rejected by types; Prisma.sql reproduces per-author results; Knex async helpers execute; Kysely async helpers remain composable; explicit first-row/limit behavior verified',
   )
   console.log(
-    'PASS: Prisma 7.10.1 and Kysely leaderboard equivalence; per-author target change; recursive permission lookup at multiple depths and missing rules; typed Knex 3.3.0 inference/scope gaps; nested JSON results typed by Kysely and declared, dropped, or mistyped by Knex; camelCase through Knex hooks and CamelCasePlugin; withPlugin scoping; immutable base query',
+    'PASS: Prisma 7.10.1 and Kysely leaderboard equivalence; per-author target change; recursive permission lookup at multiple depths and missing rules; typed Knex 3.3.0 inference/scope gaps; nested JSON results typed by Kysely and declared, dropped, or mistyped by Knex; camelCase through Knex hooks and CamelCasePlugin; withPlugin scoping; immutable base query; Kysely-authored migrations run by the Knex migrator through kysely-knex',
   )
 } finally {
   await prisma.$disconnect()
