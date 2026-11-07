@@ -10,8 +10,8 @@ import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import {
+  AbortedTransactionError,
   isAbortedTransactionError,
-  type AbortedTransactionError,
 } from './driver/aborted-transaction-error.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -921,14 +921,18 @@ export class TransactionBuilder<DB> {
 
         const result = await callback(transaction)
 
+        if (transactionState.status === 'aborted') {
+          throw new AbortedTransactionError()
+        }
+
         await this.#props.driver.commitTransaction(connection)
         transactionState.status = 'committed'
 
         return result
       } catch (error) {
         if (isAbortedTransactionError(error)) {
-          transactionState.status = 'aborted'
-        } else if (transactionBegun) {
+          abortTransaction(transactionState)
+        } else if (transactionBegun && transactionState.status !== 'aborted') {
           await this.#props.driver.rollbackTransaction(connection)
           transactionState.status = 'rolled back'
         }
@@ -985,7 +989,7 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
-      transactionState: { status: 'active' },
+      transactionState: { status: 'active', onAbort: connection.release },
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection.connection),
       ),
@@ -1022,17 +1026,15 @@ export class ControlledTransaction<
   }
 
   get isRolledBack(): boolean {
-    return (
-      this.#props.transactionState.status === 'rolled back' ||
-      this.#props.transactionState.status === 'aborted'
-    )
+    return this.#props.transactionState.status === 'rolled back'
   }
 
   /**
    * Commits the transaction.
    *
    * If the database rolls back instead of committing, marks the transaction
-   * as rolled back, releases the connection and throws {@link AbortedTransactionError}.
+   * as aborted, releases the connection and throws the database error, or
+   * {@link AbortedTransactionError} if the database did not report an error.
    *
    * Waits for ongoing queries to finish. Streams must be exhausted or closed
    * before awaiting this command. When consuming a stream with `for await`,
@@ -1062,16 +1064,8 @@ export class ControlledTransaction<
   commit(): Command<void> {
     return new Command(async (): Promise<void> => {
       await this.#props.executor.provideConnection(async (connection) => {
-        try {
-          await this.#props.driver.commitTransaction(connection)
-        } catch (error) {
-          if (isAbortedTransactionError(error)) {
-            this.#props.transactionState.status = 'aborted'
-            this.#props.connection.release()
-          }
+        await this.#props.driver.commitTransaction(connection)
 
-          throw error
-        }
         this.#props.transactionState.status = 'committed'
         this.#props.connection.release()
       })
@@ -1081,7 +1075,7 @@ export class ControlledTransaction<
   /**
    * Rolls back the transaction.
    *
-   * If a commit already reported that the database rolled back the transaction,
+   * If a query or commit already reported that the database rolled back the transaction,
    * succeeds without sending another rollback command.
    *
    * The connection is released even if the rollback fails, so the transaction
@@ -1115,6 +1109,7 @@ export class ControlledTransaction<
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
       if (this.#props.transactionState.status === 'aborted') {
+        this.#props.transactionState.status = 'rolled back'
         return
       }
 
@@ -1348,6 +1343,7 @@ export class ControlledTransaction<
 
 interface ControlledTransactionState {
   status: 'active' | 'committed' | 'rolled back' | 'aborted'
+  readonly onAbort?: () => void
 }
 
 interface ControlledTransactionProps extends KyselyProps {
@@ -1367,18 +1363,6 @@ export class Command<T> {
    */
   async execute(): Promise<T> {
     return await this.#cb()
-  }
-}
-
-function assertNotCommittedOrRolledBack(
-  transactionState: ControlledTransactionState,
-): void {
-  if (transactionState.status === 'committed') {
-    throw new Error('Transaction is already committed')
-  }
-
-  if (transactionState.status !== 'active') {
-    throw new Error('Transaction is already rolled back')
   }
 }
 
@@ -1430,18 +1414,35 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
 
     return this.#executor.provideConnection(async (connection) => {
       assertNotCommittedOrRolledBack(this.#transactionState)
-      return await consumer(connection)
+      try {
+        return await consumer(connection)
+      } catch (error) {
+        if (isAbortedTransactionError(error)) {
+          abortTransaction(this.#transactionState)
+        }
+
+        throw error
+      }
     }, options)
   }
 
-  executeQuery<R>(
+  async executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
     options?: AbortableQueryOptions,
   ): Promise<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#transactionState)
-    return this.#executor
-      .withConnectionProvider(this)
-      .executeQuery(compiledQuery, options)
+
+    try {
+      return await this.#executor
+        .withConnectionProvider(this)
+        .executeQuery(compiledQuery, options)
+    } catch (error) {
+      if (isAbortedTransactionError(error)) {
+        abortTransaction(this.#transactionState)
+      }
+
+      throw error
+    }
   }
 
   stream<R>(
@@ -1450,6 +1451,7 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
     options?: AbortableOperationOptions,
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#transactionState)
+
     return this.#executor
       .withConnectionProvider(this)
       .stream(compiledQuery, chunkSize, options)
@@ -1491,4 +1493,29 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
       this.#transactionState,
     )
   }
+}
+
+function assertNotCommittedOrRolledBack(
+  transactionState: ControlledTransactionState,
+): void {
+  if (transactionState.status === 'aborted') {
+    throw new AbortedTransactionError()
+  }
+
+  if (transactionState.status === 'committed') {
+    throw new Error('Transaction is already committed')
+  }
+
+  if (transactionState.status !== 'active') {
+    throw new Error('Transaction is already rolled back')
+  }
+}
+
+function abortTransaction(transactionState: ControlledTransactionState): void {
+  if (transactionState.status !== 'active') {
+    return
+  }
+
+  transactionState.status = 'aborted'
+  transactionState.onAbort?.()
 }
