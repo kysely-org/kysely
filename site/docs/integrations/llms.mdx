@@ -1,12 +1,36 @@
 ---
-description: 'Use the Kysely llms.txt and llms-full.txt documentation to give AI assistants and coding agents context for building SQL queries.'
+description: 'Give coding agents version-matched Kysely API docs, type-checked examples, and query feedback, plus llms.txt and llms-full.txt for documentation discovery.'
 ---
 
 # LLMs
 
 Kysely provides LLM-friendly documentation to help AI tools like **Cursor**, **Windsurf**, **GitHub Copilot**, **ChatGPT**, **Claude**, and **Claude Code** understand and work with it.
 
+## Documentation for the installed version
+
+Kysely's API documentation and examples ship inside the package's TypeScript declarations. An agent with access to your dependencies or language server can read the documentation attached to the method it is calling, including query examples, SQL output, related methods, and deprecations.
+
+Those docs travel with the installed release. Reading them avoids a common source of agent mistakes: combining an older dependency with examples from a newer website or a model's memory. Interface documentation is also copied onto implementing methods, so following a method definition exposes its documentation.
+
+The inline TypeScript examples are type-checked in CI against the API being released, rather than maintained as a separate collection of unchecked snippets. The published package keeps those examples alongside that version's types.
+
+For agent experience (AX), this gives the agent a direct loop:
+
+1. Resolve the installed `kysely` package and read the relevant method's documentation and examples.
+2. Build or extend the query using the project's database types.
+3. Run the project's TypeScript check and use errors about references, aliases, values, or result fields to correct the query.
+
+For example, an agent adding an optional relation can inspect the local `$if`, join, and selection documentation, then let TypeScript check how the new branch affects the result. It can obtain API guidance for the installed version without a browser, documentation server, or extra agent integration.
+
+## Website documentation
+
+Use the website's recipes and documentation index for broader discovery, and the installed package for version-specific API details.
+
+The website's playground examples are generated from the same annotated JSDoc. API documentation and website examples share their source, rather than relying on separately maintained copies.
+
 `llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
+
+We audit the website's agent experience with [AFDocs](https://afdocs.dev), the tool behind Mintlify's Agent Score.
 
 ## Documentation Structure
 
