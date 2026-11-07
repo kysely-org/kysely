@@ -154,12 +154,13 @@ to run all migrations that have not yet been run. See the Migrator class's docum
 You will probably want to add a simple migration script to your projects like this:
 
 ```ts
-import * as path from 'path'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Pool } from 'pg'
-import { promises as fs } from 'fs'
+import { promises as fs } from 'node:fs'
 import { Kysely, PostgresDialect } from 'kysely'
 import { FileMigrationProvider, Migrator } from 'kysely/migration'
-import { Database } from './types'
+import type { Database } from './types.js'
 
 async function migrateToLatest() {
   const db = new Kysely<Database>({
@@ -177,30 +178,32 @@ async function migrateToLatest() {
       fs,
       path,
       // This needs to be an absolute path.
-      migrationFolder: path.join(__dirname, 'some/path/to/migrations'),
+      migrationFolder: fileURLToPath(new URL('./migrations/', import.meta.url)),
     }),
   })
 
-  const { error, results } = await migrator.migrateToLatest()
+  try {
+    const { error, results } = await migrator.migrateToLatest()
 
-  results?.forEach((it) => {
-    if (it.status === 'Success') {
-      console.log(`migration "${it.migrationName}" was executed successfully`)
-    } else if (it.status === 'Error') {
-      console.error(`failed to execute migration "${it.migrationName}"`)
+    results?.forEach((it) => {
+      if (it.status === 'Success') {
+        console.log(`migration "${it.migrationName}" was executed successfully`)
+      } else if (it.status === 'Error') {
+        console.error(`failed to execute migration "${it.migrationName}"`)
+      }
+    })
+
+    if (error) {
+      console.error('failed to migrate')
+      console.error(error)
+      process.exitCode = 1
     }
-  })
-
-  if (error) {
-    console.error('failed to migrate')
-    console.error(error)
-    process.exit(1)
+  } finally {
+    await db.destroy()
   }
-
-  await db.destroy()
 }
 
-migrateToLatest()
+await migrateToLatest()
 ```
 
 The migration methods use a lock on the database level and parallel calls are executed serially. This means that you can safely call migrateToLatest and other migration methods from multiple server instances simultaneously and the migrations are guaranteed to only be executed once. The locks are also automatically released if the migration process crashes or the connection to the database fails.
