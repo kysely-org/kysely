@@ -45,6 +45,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 959.7 998',
     id: 'domain-locker',
   },
+  // Wikimedia Commons Best_Western_Hotels_&_Resorts_logo.svg (public domain);
+  // its single fill inherits currentColor.
+  'Best Western': {
+    label: 'Best Western',
+    viewBox: '0 0 300 59.636',
+    id: 'best-western',
+  },
   Bluesky: {
     label: 'Bluesky',
     viewBox: '0 0 2000 530',
