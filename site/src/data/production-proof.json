@@ -483,6 +483,12 @@
     "provenAt": "2026-09-01"
   },
   {
+    "name": "Teamspective",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-6308699805",
+    "group": "production",
+    "provenAt": "2026-10-21"
+  },
+  {
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/src/adminRoutes.ts",
