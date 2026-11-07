@@ -5,6 +5,7 @@ import {
   jsonObjectFrom,
   sql,
   type ExpressionBuilder,
+  type JSONColumnType,
   type NumericString,
 } from '../index.js'
 import type { Database } from '../shared.js'
@@ -228,6 +229,7 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
       id: number
       acquisitionId: number
       status: string
+      metadata: JSONColumnType<{ source: string; tags: string[] }>
     }
   }>()
 
@@ -243,6 +245,8 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
               jsonBuildObject({
                 id: ref('transaction.id').$notNull(),
                 status: ref('transaction.status'),
+                source: ref('transaction.metadata', '->>').key('source'),
+                first_tag: ref('transaction.metadata', '->>').key('tags').at(0),
               }),
             )
             .filterWhere('transaction.id', 'is not', null),
@@ -258,6 +262,8 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
     transactions: {
       id: number
       status: string | null
+      source: string | null
+      first_tag: string | null
     }[]
   }>(r4)
 
@@ -323,20 +329,4 @@ function withDoggo(eb: ExpressionBuilder<Database, 'person'>) {
       .orderBy('name')
       .limit(1),
   ).as('doggo')
-}
-
-async function testPostgresJsonBuildObjectInlineJsonPaths(
-  db: Kysely<Database>,
-) {
-  const r1 = await db
-    .selectFrom('person_metadata')
-    .select((eb) =>
-      jsonBuildObject({
-        url: eb.ref('website', '->>').key('url'),
-        first_nickname: eb.ref('nicknames', '->>').at(0),
-      }).as('obj'),
-    )
-    .executeTakeFirstOrThrow()
-
-  expectType<{ obj: { url: string; first_nickname: string | null } }>(r1)
 }
