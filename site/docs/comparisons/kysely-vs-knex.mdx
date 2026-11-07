@@ -12,8 +12,6 @@ Kysely comes from the Knex community. Its author, [Sami Koskimäki](https://gith
 
 Knex grew up before TypeScript could type a query builder; Kysely was designed once it could. Knex began in December 2012, three months after [TypeScript's announcement](https://learn.microsoft.com/en-us/archive/blogs/somasegar/typescript-javascript-development-at-application-scale), and took shape in JavaScript. Its [own declarations](https://github.com/knex/knex/issues/2845) arrived in November 2018, eight months after [conditional types and `infer`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#conditional-types) let one type be computed from another, and have improved since, including [registered table types](https://github.com/knex/knex/pull/4071) in 2020, within an API that already existed. Kysely's [first commit](https://github.com/kysely-org/kysely/commit/8af0017741a355281cbe0d9d3352bffea51eb64c) came in February 2021, three months after [template literal types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html#template-literal-types) let the compiler read strings like `'pet.name as pet_name'`, and already used them to parse aliases.
 
-Checked with **Knex 3.3.0** and **Kysely 0.29.7** against the same PostgreSQL fixtures. [Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/postgres).
-
 ## Both start from typed tables
 
 Assume configured Kysely and Knex clients with matching table types:
@@ -380,7 +378,7 @@ Knex ships [PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite, and Oracle](
 
 Knex's own download is smaller: **215.3 KiB vs 318.3 KiB**. Kysely's edge is fewer dependencies. The [kysely-knex bridge](https://github.com/kysely-org/kysely-knex) retains Knex's tree.
 
-Measured **October 24, 2026**: [measurement details](https://github.com/kysely-org/kysely/blob/master/site/scripts/package-footprints.json), [script](https://github.com/kysely-org/kysely/blob/master/site/scripts/measure-package-footprints.mjs). Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
+Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
 
 </details>
 
