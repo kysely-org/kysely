@@ -18,6 +18,13 @@ import type {
  * may not parse the nested JSON into arrays. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
+ * The result uses JSON value types, which can differ from a direct selection.
+ * For example, `Date` becomes `string`, and `bigint` and numeric strings become
+ * `number`. These are type-level transformations; Kysely doesn't perform runtime
+ * conversions. The database and driver determine the actual JSON values.
+ *
+ * See {@link ShallowDehydrateObject} and {@link NonDehydrateable} for details.
+ *
  * ### Examples
  *
  * ```ts
@@ -69,7 +76,11 @@ export function jsonArrayFrom<O>(
 /**
  * A MySQL helper for turning a subquery into a JSON object.
  *
- * The subquery must only return one row.
+ * The subquery must only return one row. If it returns no rows, the result is `null`.
+ *
+ * The result uses JSON value types. For example, a selected `Date` becomes a
+ * `string`. See {@link jsonArrayFrom} for an example and
+ * {@link ShallowDehydrateObject} for the type-level transformations.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
  * While the produced SQL is compatible with all MySQL databases, some third-party dialects
