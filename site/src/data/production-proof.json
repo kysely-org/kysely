@@ -138,6 +138,12 @@
     "provenAt": "2026-10-25"
   },
   {
+    "name": "Cyna",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-5792955667",
+    "group": "production",
+    "provenAt": "2026-09-23"
+  },
+  {
     "name": "Cypress",
     "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.4.0/dist/database/queries.js",
     "group": "production",
@@ -166,6 +172,12 @@
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1693345768",
     "group": "production",
     "provenAt": "2025-05-16"
+  },
+  {
+    "name": "Disney",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3281189902",
+    "group": "production",
+    "provenAt": "2025-09-11"
   },
   {
     "name": "Docmost",
@@ -423,6 +435,12 @@
     "provenAt": "2026-09-25"
   },
   {
+    "name": "Sabi Vendor",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-4313018896",
+    "group": "production",
+    "provenAt": "2026-04-24"
+  },
+  {
     "name": "Sesame Care",
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1993016822",
     "group": "production",
@@ -436,6 +454,12 @@
     "href": "https://github.com/miantiao-me/Sink/blob/bafa4e1f7e3ec034929e11e5542c4c3e116d69da/server/utils/analytics-sql.ts",
     "group": "built-into",
     "provenAt": "2026-09-27"
+  },
+  {
+    "name": "Spaces",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3359682995",
+    "group": "production",
+    "provenAt": "2025-10-02"
   },
   {
     "name": "StudioCMS",
@@ -462,6 +486,12 @@
     "provenAt": "2026-09-28"
   },
   {
+    "name": "Talentir",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3215694365",
+    "group": "production",
+    "provenAt": "2025-08-22"
+  },
+  {
     "name": "Teable",
     "repo": "teableio/teable",
     "path": "packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
@@ -469,6 +499,12 @@
     "href": "https://github.com/teableio/teable/blob/5ef2238883cad7c3980084de9a9031135fb9734f/packages/v2/adapter-table-repository-postgres/src/record/computed/outbox/ComputedUpdateOutbox.ts",
     "group": "production",
     "provenAt": "2026-09-01"
+  },
+  {
+    "name": "Teamspective",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-6308699805",
+    "group": "production",
+    "provenAt": "2026-10-21"
   },
   {
     "name": "tldraw",
@@ -505,6 +541,12 @@
     "href": "https://github.com/chrisbenincasa/tunarr/blob/754786b59eddeba1d79943f65920873c5226ada3/server/src/tasks/fixers/BackfillMediaSourceIdFixer.ts",
     "group": "built-into",
     "provenAt": "2026-09-28"
+  },
+  {
+    "name": "Unicon Soft",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-5366321758",
+    "group": "production",
+    "provenAt": "2026-08-21"
   },
   {
     "name": "wevm curl.md",
