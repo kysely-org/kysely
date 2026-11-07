@@ -37,7 +37,7 @@
     "@hono/node-server": "2.1.5",
     "@signalwire/docusaurus-plugin-llms-txt": "1.2.2",
     "@types/react": "19.3.0",
-    "afdocs": "0.22.2",
+    "afdocs": "0.23.0",
     "hono": "catalog:http",
     "mermaid": "12.2.0",
     "pagefind": "1.5.2",

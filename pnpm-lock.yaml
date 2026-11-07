@@ -357,8 +357,8 @@ importers:
         specifier: 19.3.0
         version: 19.3.0
       afdocs:
-        specifier: 0.22.2
-        version: 0.22.2(supports-color@10.2.2)
+        specifier: 0.23.0
+        version: 0.23.0(supports-color@10.2.2)
       hono:
         specifier: catalog:http
         version: 4.13.14
@@ -2969,8 +2969,8 @@ packages:
     resolution: {integrity: sha512-XNAb/a6TCqou+TufU8/u11HCu9x1gYvOoxLwtlXgIqmkrYQADVv6ljyW2zwiPhHz9R1gItAWpuDrdJMmrOBFEA==}
     engines: {node: '>= 16.0.0'}
 
-  afdocs@0.22.2:
-    resolution: {integrity: sha512-00JZYWOjSJmRFdesDxW5zuGHHdGTE6/rHmEZK+W32guZQ5XOUbLqL5rEAOHHctgGgqDo2x6pwqc35yteWqtkJg==}
+  afdocs@0.23.0:
+    resolution: {integrity: sha512-APITK42YTgBaZcpMRmoQ3uPr3UILP6HCbR1c3HacwlWaDUjtOOwatxg1KjxXr9i+gyQM4eTyfSeHZIonFpxXdA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -11130,7 +11130,7 @@ snapshots:
 
   address@2.0.3: {}
 
-  afdocs@0.22.2(supports-color@10.2.2):
+  afdocs@0.23.0(supports-color@10.2.2):
     dependencies:
       chalk: 5.6.2
       commander: 13.1.0
