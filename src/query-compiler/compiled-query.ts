@@ -13,7 +13,7 @@ import { createQueryId, type QueryId } from '../util/query-id.js'
  * The output type `O` describes a result row. It doesn't validate or convert
  * values returned by the database driver.
  *
- * Query builders create compiled queries with {@link SelectQueryBuilder.compile | compile()},
+ * Query builders create compiled queries with {@link Compilable.compile | compile()},
  * and {@link RawBuilder}s with `compile(db)`. Compiling doesn't execute the query.
  *
  * See {@link Kysely.executeQuery} for execution and {@link CompiledQuery.raw}
