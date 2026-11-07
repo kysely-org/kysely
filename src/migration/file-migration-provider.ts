@@ -4,11 +4,21 @@ import type { Migration, MigrationProvider } from './migrator.js'
 /**
  * Reads all migrations from a folder.
  *
+ * Loads `.js`, `.ts`, `.mjs`, `.mts`, `.cjs` and `.cts` files, excluding
+ * TypeScript declaration files. Loading TypeScript requires a runtime or
+ * loader that supports it. Subdirectories are not scanned.
+ *
+ * A module must export an `up` function, either as a named export or as part
+ * of a default export object. The filename without its extension is used as
+ * the migration name. See {@link FileMigrationProviderProps.onFileIgnored}
+ * to report files that aren't loaded.
+ *
  * ### Examples
  *
  * ```ts
  * import { promises as fs } from 'node:fs'
  * import path from 'node:path'
+ * import { FileMigrationProvider } from 'kysely/migration'
  *
  * new FileMigrationProvider({
  *   fs,
@@ -83,9 +93,69 @@ export interface FileMigrationProviderPath {
 }
 
 export interface FileMigrationProviderProps {
+  /**
+   * Provides the directory listing. For Node.js, use `promises` from `node:fs`.
+   */
   fs: FileMigrationProviderFS
+
+  /**
+   * Overrides how migration modules are imported. Receives the joined file path
+   * and returns the module exports. Defaults to a dynamic `import`.
+   *
+   * ### Examples
+   *
+   * Use a file URL when importing absolute paths in Node.js:
+   *
+   * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { pathToFileURL } from 'node:url'
+   * import { FileMigrationProvider } from 'kysely/migration'
+   *
+   * const provider = new FileMigrationProvider({
+   *   fs,
+   *   path,
+   *   migrationFolder: path.resolve('migrations'),
+   *   import: (filePath) => import(pathToFileURL(filePath).href),
+   * })
+   * ```
+   */
   import?(module: string): Promise<any>
+
+  /**
+   * The path to the migration directory. Use an absolute path to avoid
+   * depending on the current working directory.
+   */
   migrationFolder: string
+
+  /**
+   * Called when a directory entry is ignored.
+   *
+   * `Extension` means the filename doesn't have a supported extension.
+   * `NotMigration` means the imported module has no supported `up` export.
+   * Import errors are thrown instead of being reported through this callback.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { promises as fs } from 'node:fs'
+   * import path from 'node:path'
+   * import { FileMigrationProvider } from 'kysely/migration'
+   *
+   * const provider = new FileMigrationProvider({
+   *   fs,
+   *   path,
+   *   migrationFolder: path.resolve('migrations'),
+   *   onFileIgnored(fileName, reason) {
+   *     console.log(`Ignored ${fileName}: ${reason}`)
+   *   },
+   * })
+   * ```
+   */
   onFileIgnored?(fileName: string, reason: 'Extension' | 'NotMigration'): void
+
+  /**
+   * Provides path joining. For Node.js, use `node:path`.
+   */
   path: FileMigrationProviderPath
 }
