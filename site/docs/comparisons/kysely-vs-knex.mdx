@@ -6,11 +6,11 @@ description: 'Compare Kysely and Knex SQL query builders: TypeScript inference t
 
 # Kysely vs Knex
 
-Kysely comes from the Knex community. Its author, [Sami Koskimäki](https://github.com/koskimas), contributed to Knex [from 2013](https://github.com/knex/knex/issues/39): his [tarn.js](https://github.com/Vincit/tarn.js) became [Knex's connection pool](https://github.com/knex/knex/pull/2450) and still ships with it. He also built [Objection.js](https://github.com/Vincit/objection.js), an ORM [built on Knex](https://github.com/Vincit/objection.js#readme). **Kysely was [inspired by Knex](https://github.com/kysely-org/kysely#readme).**
+Kysely comes from the Knex community. Its author, [Sami Koskimäki](https://github.com/koskimas), contributed to Knex [from 2013](https://github.com/knex/knex/issues/39): his [tarn.js](https://github.com/Vincit/tarn.js) became [Knex's connection pool](https://github.com/knex/knex/pull/2450) and still ships with it. He also built [Objection.js](https://github.com/Vincit/objection.js), an ORM [built on Knex](https://github.com/Vincit/objection.js/blob/7297ea886fa41703268c6b766b15cc58fc02497f/README.md#L10). **Kysely was [inspired by Knex](https://github.com/kysely-org/kysely/blob/fe483ef5d7dce62cb99aea17bec20567c986ca16/README.md#L29).**
 
 **Both compose SQL through method chains; Knex's types describe your tables, and Kysely's describe your query.** Kysely checks joined references, infers aliased and nested results, lets callers extend a shared query without changing it, and executes only when asked.
 
-Knex grew up before TypeScript could type a query builder; Kysely was designed once it could. Knex began in December 2012, three months after [TypeScript's announcement](https://learn.microsoft.com/en-us/archive/blogs/somasegar/typescript-javascript-development-at-application-scale), and took shape in JavaScript. Its [own declarations](https://github.com/knex/knex/issues/2845) arrived in November 2018, eight months after [conditional types and `infer`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#conditional-types) let one type be computed from another, and have improved since, including [registered table types](https://github.com/knex/knex/pull/4071) in 2020, within an API that already existed. Kysely's [first commit](https://github.com/kysely-org/kysely/commit/8af0017741a355281cbe0d9d3352bffea51eb64c) came in February 2021, three months after [template literal types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html#template-literal-types) let the compiler read strings like `'pet.name as pet_name'`, and already used them to parse aliases.
+Knex grew up before TypeScript could type a query builder; Kysely was designed once it could. Knex began in December 2012, three months after [TypeScript's announcement](https://learn.microsoft.com/en-us/archive/blogs/somasegar/typescript-javascript-development-at-application-scale), and took shape in JavaScript. Its [own declarations](https://github.com/knex/knex/issues/2845) arrived in November 2018, eight months after [conditional types and `infer`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#conditional-types) let one type be computed from another, and have improved since, including [registered table types](https://github.com/knex/knex/pull/4071) in 2020, within an API that already existed. Kysely's first commit came in February 2021, three months after [template literal types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html#template-literal-types) let the compiler read strings like `'pet.name as pet_name'`, and already used them to parse aliases.
 
 ## Both start from typed tables
 
@@ -270,7 +270,7 @@ const mysqlName = mysqlDb
 
 ## Kysely's escape hatch keeps references checked
 
-Both cover [CTEs, set operations, ranking, and locks](https://knexjs.org/guide/query-builder.html). For [filtered aggregate counts like Immich's](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L710-L722), Kysely provides `fn.countAll().filterWhere(...)`, and aggregate builders also support `.over(...)`. Knex needs `raw` for `FILTER`, alongside dedicated ranking APIs. Kysely does not cover all of SQL either; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest.
+Both cover [CTEs, set operations, ranking, and locks](https://knexjs.org/guide/query-builder.html). For filtered aggregate counts like Immich's, Kysely provides `fn.countAll().filterWhere(...)`, and aggregate builders also support `.over(...)`. Knex needs `raw` for `FILTER`, alongside dedicated ranking APIs. Kysely does not cover all of SQL either; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest.
 
 Knex's raw fragments use MySQL-style `?` value placeholders and `??` [identifier bindings](https://knexjs.org/guide/raw.html#raw-parameter-binding), even when targeting PostgreSQL:
 
@@ -328,11 +328,11 @@ Custom methods differ the same way. Knex's [`QueryBuilder.extend`](https://knexj
 
 A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) is four exported factories: a driver, a query compiler, an adapter, and an introspector. A new database implements that interface, often extending the exported `DefaultQueryCompiler` or a built-in dialect's compiler and overriding what its SQL spells differently. The [21 community dialects](/docs/dialects) are built that way, with no internals to reach into.
 
-Knex accepts a custom client class through its `client` option, but its query compilers, schema compilers, and formatter are not part of its public API or its type declarations. Third-party dialects build on them anyway. [knex-firebird-dialect](https://github.com/Tomas2D/knex-firebird-dialect/blob/332205b5b44963e1f3215c53fa91433d665c772f/src/index.js#L3) imports `knex/lib/client`, `knex/lib/formatter`, and `knex/lib/schema/tablecompiler`, then [assigns its overrides onto their prototypes](https://github.com/Tomas2D/knex-firebird-dialect/blob/332205b5b44963e1f3215c53fa91433d665c772f/src/index.js#L370); Beekeeper Studio's DuckDB client [extends `knex/lib/client`](https://github.com/beekeeper-studio/beekeeper-studio/blob/6b50e86046d412dba484758d26a35e125197fe3b/apps/studio/src/shared/lib/knex-duckdb/index.js#L10) and [builds its query compiler on Knex's internal SQLite one](https://github.com/beekeeper-studio/beekeeper-studio/blob/6b50e86046d412dba484758d26a35e125197fe3b/apps/studio/src/shared/lib/knex-duckdb/query/duckdb-querycompiler.js#L2). **Kysely's dialects plug into its public interface; Knex's patch its internals.**
+Knex accepts a custom client class through its `client` option, but its query compilers, schema compilers, and formatter are not part of its public API or its type declarations. Third-party dialects build on them anyway. knex-firebird-dialect imports `knex/lib/client`, `knex/lib/formatter`, and `knex/lib/schema/tablecompiler`, then assigns its overrides onto their prototypes; Beekeeper Studio's DuckDB client extends `knex/lib/client` and builds its query compiler on Knex's internal SQLite one. **Kysely's dialects plug into its public interface; Knex's patch its internals.**
 
 ## Kysely has zero dependencies and runs wherever JavaScript does
 
-**Kysely 0.29.7 has no runtime dependencies; Knex 3.3.0 has 14.** Knex's count includes its bundled migration CLI and connection pool; Kysely's CLI is a separate package, and its pool comes from the driver. Kysely's core requires no Node.js-specific APIs, so the same package runs on [Node.js, Deno, Bun, Cloudflare Workers, and in browsers](https://github.com/kysely-org/kysely#readme) wherever a dialect can reach the database. Knex describes itself as a query builder [for Node.js](https://github.com/knex/knex#readme), and its library loads Node.js modules such as `fs` and `path`.
+**Kysely 0.29.7 has no runtime dependencies; Knex 3.3.0 has 14.** Knex's count includes its bundled migration CLI and connection pool; Kysely's CLI is a separate package, and its pool comes from the driver. Kysely's core requires no Node.js-specific APIs, so the same package runs on [Node.js, Deno, Bun, Cloudflare Workers, and in browsers](https://github.com/kysely-org/kysely/blob/fe483ef5d7dce62cb99aea17bec20567c986ca16/README.md#L29-L31) wherever a dialect can reach the database. Knex describes itself as a query builder [for Node.js](https://github.com/knex/knex/blob/e25d54bcb707714a17f5a5744eba5c4246bb4d1d/README.md#L12-L13), and its library loads Node.js modules such as `fs` and `path`.
 
 ## Migrate one query at a time
 
@@ -365,16 +365,16 @@ const rows = await untypedDb
 
 ### Keep migration history intact
 
-Existing Knex migrations can stay where they are. kysely-knex's [`KyselyFsMigrationSource`](https://github.com/kysely-org/kysely-knex#migrations) is a Knex [custom migration source](https://knexjs.org/guide/migrations.html#custom-migration-sources) that passes a Kysely instance to each migration, so new migrations can use Kysely's [schema builder](/docs/migrations) while `knex migrate:latest` and the `knex_migrations` history keep working.
+Existing Knex migrations can stay where they are. kysely-knex's [`KyselyFsMigrationSource`](https://github.com/kysely-org/kysely-knex/blob/32cfe182cf2ed660df765e8416d5605739fded56/README.md#L85-L90) is a Knex [custom migration source](https://knexjs.org/guide/migrations.html#custom-migration-sources) that passes a Kysely instance to each migration, so new migrations can use Kysely's [schema builder](/docs/migrations) while `knex migrate:latest` and the `knex_migrations` history keep working.
 
-To leave the Knex CLI later, [kysely-ctl](https://github.com/kysely-org/kysely-ctl)'s `migrate` and `seed` commands mirror Knex's, and its `getKnexTimestampPrefix` keeps Knex's file naming. Kysely's migrator records history in its own `kysely_migration` table and does not translate Knex migration files, so the switch is a one-time cutover, not a configuration change.
+To leave the Knex CLI later, kysely-ctl's `migrate` and `seed` commands [mirror Knex's](https://github.com/kysely-org/kysely-ctl/blob/1fa8c6fae8ada0e6b67bdbf49bc5174a68aeba0f/README.md#L23), and its `getKnexTimestampPrefix` keeps Knex's file naming. Kysely's migrator records history in its own `kysely_migration` table and does not translate Knex migration files, so the switch is a one-time cutover, not a configuration change.
 
 ## Other practical considerations
 
 <details>
 <summary>Dialects and bundled tooling</summary>
 
-Knex ships [PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite, and Oracle](https://github.com/knex/knex#readme) in one package, with a migration and seed CLI. Kysely's core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite; others, including Oracle, are [community dialects](/docs/dialects). Its CLI, kysely-ctl, is a separate package.
+Knex ships [PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite, and Oracle](https://github.com/knex/knex/blob/e25d54bcb707714a17f5a5744eba5c4246bb4d1d/README.md#L12-L13) in one package, with a migration and seed CLI. Kysely's core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite; others, including Oracle, are [community dialects](/docs/dialects). Its CLI, kysely-ctl, is a separate package.
 
 </details>
 
@@ -396,7 +396,7 @@ Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude
 
 ## Choosing Knex or Kysely
 
-**Choose Kysely when your queries change and you want TypeScript to check each change: types that follow the query through joins, aliases, nested results, and references; builders that behave like values, shared without cloning and executed only when asked; and an open, dependency-free core for plugins, dialects, and runtimes.** Its method docs and examples are [version-matched in the package](https://github.com/kysely-org/kysely/blob/v0.29.7/src/query-builder/select-query-builder.ts), so editors and coding agents read the API you installed.
+**Choose Kysely when your queries change and you want TypeScript to check each change: types that follow the query through joins, aliases, nested results, and references; builders that behave like values, shared without cloning and executed only when asked; and an open, dependency-free core for plugins, dialects, and runtimes.** Its method docs and examples are version-matched in the package, so editors and coding agents read the API you installed.
 
 **Keep Knex when one codebase must run unchanged on several databases and its portability helpers do that work, or when its queries already work and rarely change.** Its migrations can stay either way.
 
