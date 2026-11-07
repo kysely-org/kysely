@@ -14,8 +14,6 @@ Those docs travel with the installed release. Reading them avoids a common sourc
 
 The inline TypeScript examples are type-checked in CI against the API being released, rather than maintained as a separate collection of unchecked snippets. The published package keeps those examples alongside that version's types.
 
-The website's playground examples are generated from annotated JSDoc as well. API documentation and website examples share their source, rather than relying on separately maintained copies.
-
 For agent experience (AX), this gives the agent a direct loop:
 
 1. Resolve the installed `kysely` package and read the relevant method's documentation and examples.
@@ -24,9 +22,11 @@ For agent experience (AX), this gives the agent a direct loop:
 
 For example, an agent adding an optional relation can inspect the local `$if`, join, and selection documentation, then let TypeScript check how the new branch affects the result. It can obtain API guidance for the installed version without a browser, documentation server, or extra agent integration.
 
+## Website documentation
+
 Use the website's recipes and documentation index for broader discovery, and the installed package for version-specific API details.
 
-## Website documentation
+The website's playground examples are generated from the same annotated JSDoc. API documentation and website examples share their source, rather than relying on separately maintained copies.
 
 `llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
 
