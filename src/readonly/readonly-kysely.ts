@@ -29,10 +29,19 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * A helper type that allows you to expose a type-level read-only {@link Kysely} version
  * to your service's consumers.
  *
+ * This is a type-level restriction. It doesn't change the Kysely instance or
+ * enforce database permissions. Select queries can still call functions that
+ * modify data. Use database permissions to enforce read-only access at runtime.
+ *
+ * A Kysely instance requires a type assertion because the disallowed methods
+ * have different types in this interface. The assertion doesn't create a new
+ * instance. The caller still shares the original instance's connections and
+ * lifecycle, including its `destroy` method.
+ *
  * ### Examples
  *
  * ```ts
- * import * as Sqlite from 'better-sqlite3'
+ * import Sqlite from 'better-sqlite3'
  * import { type Generated, Kysely, SqliteDialect } from 'kysely'
  * import type { ReadonlyKysely } from 'kysely/readonly'
  *
@@ -45,17 +54,51 @@ import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
  * }
  *
  * function getDB(): ReadonlyKysely<Database> {
- *   return new Kysely({
+ *   return new Kysely<Database>({
  *     dialect: new SqliteDialect({
  *       database: new Sqlite(':memory:'),
  *     })
- *   }) as never
+ *   }) as unknown as ReadonlyKysely<Database>
  * }
  *
  * const db = getDB()
  *
- * db.selectFrom('person') // works!
- * db.deleteFrom('person') // typescript compiler error!
+ * db.selectFrom('person').selectAll() // works!
+ * // Attempting to use a write query produces a type error:
+ * // db.deleteFrom('person').execute()
+ * ```
+ *
+ * The generated SQL (SQLite):
+ *
+ * ```sql
+ * select *
+ * from "person"
+ * ```
+ *
+ * On PostgreSQL, request a database-enforced read-only transaction explicitly.
+ * The readonly helper doesn't set this access mode automatically:
+ *
+ * ```ts
+ * import type { ReadonlyKysely } from 'kysely/readonly'
+ * import type { Database } from 'type-editor'
+ *
+ * const readonlyDb = db as unknown as ReadonlyKysely<Database>
+ *
+ * const people = await readonlyDb
+ *   .transaction()
+ *   .setAccessMode('read only')
+ *   .execute((trx) => trx.selectFrom('person').selectAll().execute())
+ * ```
+ *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * start transaction read only;
+ *
+ * select *
+ * from "person";
+ *
+ * commit;
  * ```
  */
 export interface ReadonlyKysely<DB>
