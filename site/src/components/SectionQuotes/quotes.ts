@@ -290,19 +290,19 @@ export const quotes: QuoteProps[] = [
     text: "I've been saying it many times already, but it's probably one of the best additions to my tech stack. I enjoy writing SQL since I know Kysely 😆",
   },
   {
-    authorName: 'Orta Therox',
-    authorTitle: 'Ex-TypeScript team',
-    avatar: 'orta',
-    date: 'Nov 2022',
-    link: 'https://discord.com/channels/890118421587578920/890118421587578925/1037692748825903114',
-    text: "👋 been using Kysely for a few days in Deno and Node, just wanted to say it's been going really well and it feels like a nice abstraction - kudos!",
-  },
-  {
     authorName: 'Jiří "Capaj" Špác',
     authorTitle: 'Langtail SWE',
     avatar: 'capaj',
     date: 'Aug 2024',
     link: 'https://x.com/capajj/status/1824003221397885343',
     text: 'Kysely is awesome',
+  },
+  {
+    authorName: 'Orta Therox',
+    authorTitle: 'Ex-TypeScript team',
+    avatar: 'orta',
+    date: 'Nov 2022',
+    link: 'https://discord.com/channels/890118421587578920/890118421587578925/1037692748825903114',
+    text: "👋 been using Kysely for a few days in Deno and Node, just wanted to say it's been going really well and it feels like a nice abstraction - kudos!",
   },
 ]
