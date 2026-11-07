@@ -5,6 +5,7 @@ import {
   type RootOperationNode,
 } from '../operation-node/root-operation-node.js'
 import type { RawBuilder } from '../raw-builder/raw-builder.js'
+import type { sql } from '../raw-builder/sql.js'
 import type { Compilable } from '../util/compilable.js'
 import { freeze, isObject, isString } from '../util/object-utils.js'
 import { createQueryId, type QueryId } from '../util/query-id.js'
@@ -52,7 +53,7 @@ export interface CompiledQuery<O = unknown> {
   readonly sql: string
 
   /**
-   * The parameter values in the order expected by the placeholders in {@link sql}.
+   * The parameter values in the order expected by the placeholders in {@link CompiledQuery.sql | sql}.
    */
   readonly parameters: ReadonlyArray<unknown>
 }
