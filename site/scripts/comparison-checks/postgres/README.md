@@ -32,11 +32,14 @@ error fails the check.
 - `scenarios.mts`: equivalent leaderboards, related-author aggregate thresholds,
   filtering before pagination, Prisma's filtered relation counts and SQL escape
   hatch, recursive permission lookups, registered Knex table types, join/alias
-  inference, invalid references, mutation, `.clone()`, async execution, and
-  first-row behavior.
+  inference, invalid references, nested JSON results (Kysely's `jsonArrayFrom`;
+  Knex's declared, callback, and builder subqueries), camelCase through Knex
+  hooks and `CamelCasePlugin`, `withPlugin` scoping, mutation, `.clone()`,
+  async execution, and first-row behavior.
 - `knex-semantics.mts`: PostgreSQL/MySQL upsert compilation, JSON function
   compilation across PostgreSQL/MySQL/SQLite, raw bindings, built-in ranking,
-  and `knex.ref()` inference. MySQL and SQLite statements are compiled only.
+  `knex.ref()` inference, process-wide `QueryBuilder.extend`, and Kysely's explicit upserts and JSON traversal. MySQL
+  and SQLite statements are compiled only.
 - `raw-scenarios.mts`: 48 option combinations through Kysely, Postgres.js,
   Slonik with result validation, newly generated Prisma TypedSQL, PgTyped
   (`pgtyped/*.sql`, generated against the fixture database), and sqlc

@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict'
 import { Pool } from 'pg'
-import knexFactory from 'knex'
+import knexFactory, { type Knex } from 'knex'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient, Prisma } from './generated/client.ts'
-import { Kysely, PostgresDialect } from 'kysely'
+import {
+  CamelCasePlugin,
+  Kysely,
+  PostgresDialect,
+  WithSchemaPlugin,
+} from 'kysely'
+import { jsonArrayFrom } from 'kysely/helpers/postgres'
 import type { InferResult } from 'kysely'
 
 // DOC:database
@@ -234,6 +240,37 @@ type KnexRegisteredTableWorks = Expect<
   Equal<Awaited<typeof knexBasic>[number], { id: number; first_name: string }>
 >
 
+const knexBuilderNested = knex('person').select(
+  'first_name',
+  knex('pet')
+    .select(knex.raw('json_agg(pet.name)'))
+    .whereRaw('pet.owner_id = person.id')
+    .as('pets'),
+)
+type KnexBuilderNestedRow = Awaited<typeof knexBuilderNested>[number]
+type KnexBuilderNestedAddsBuilderMembers = Expect<
+  Equal<'then' extends keyof KnexBuilderNestedRow ? true : false, true>
+>
+type KnexBuilderNestedDropsPets = Expect<
+  Equal<'pets' extends keyof KnexBuilderNestedRow ? true : false, false>
+>
+const knexCallbackNested = knex('person').select(
+  'first_name',
+  function (this: Knex.QueryBuilder) {
+    this.select(knex.raw('json_agg(pet.name)'))
+      .from('pet')
+      .whereRaw('pet.owner_id = person.id')
+      .as('pets')
+  },
+)
+type KnexCallbackNestedDropsPets = Expect<
+  Equal<Awaited<typeof knexCallbackNested>[number], { first_name: string }>
+>
+// A hand-declared row type is not compared with the SQL.
+const knexWrongDeclaration = knex('person').select<
+  { first_name: string; pets: number }[]
+>('first_name', knex.raw('(select 1) as pets'))
+
 const missingJoin = knex('person').select('id').where('pet.name', '=', 'Catto')
 const misspelledColumn = knex('person')
   .select('id')
@@ -396,6 +433,132 @@ try {
     async () => await wrongAlias,
     /invalid reference to FROM-clause entry/,
   )
+  {
+    // DOC:kysely-nested-pets
+    const rows = await db
+      .selectFrom('person')
+      .select((eb) => [
+        'person.first_name',
+        jsonArrayFrom(
+          eb
+            .selectFrom('pet')
+            .select('pet.name')
+            .whereRef('pet.owner_id', '=', 'person.id')
+            .orderBy('pet.name'),
+        ).as('pets'),
+      ])
+      .execute()
+    // { first_name: string; pets: { name: string }[] }[]
+    // END:kysely-nested-pets
+    type KyselyNested = Expect<
+      Equal<typeof rows, { first_name: string; pets: { name: string }[] }[]>
+    >
+    assert.deepEqual(
+      rows.toSorted((a, b) => a.first_name.localeCompare(b.first_name)),
+      [
+        { first_name: 'Arnold', pets: [{ name: 'Doggo' }] },
+        { first_name: 'Jennifer', pets: [{ name: 'Catto' }] },
+        { first_name: 'Sylvester', pets: [] },
+      ],
+    )
+  }
+  {
+    // DOC:knex-nested-pets
+    type PersonWithPets = { first_name: string; pets: { name: string }[] }
+
+    const rows = await knex('person').select<PersonWithPets[]>(
+      'first_name',
+      knex.raw(
+        "(select coalesce(json_agg(json_build_object('name', pet.name) order by pet.name), '[]') from pet where pet.owner_id = person.id) as pets",
+      ),
+    )
+    // END:knex-nested-pets
+    assert.deepEqual(
+      rows.toSorted((a, b) => a.first_name.localeCompare(b.first_name)),
+      [
+        { first_name: 'Arnold', pets: [{ name: 'Doggo' }] },
+        { first_name: 'Jennifer', pets: [{ name: 'Catto' }] },
+        { first_name: 'Sylvester', pets: [] },
+      ],
+    )
+    assert.match(
+      knexCallbackNested.toSQL().sql,
+      /\(select json_agg\(pet\.name\) from "pet" where pet\.owner_id = person\.id\) as "pets"/,
+    )
+    assert.equal((await knexWrongDeclaration)[0].pets, 1)
+  }
+  {
+    const connection = {
+      connectionString,
+      options: `-c search_path=${schema}`,
+    }
+    const toSnakeCase = (value: string) =>
+      value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+    const toCamelCaseKeys = (result: unknown) =>
+      Array.isArray(result)
+        ? result.map((row: object) =>
+            Object.fromEntries(
+              Object.entries(row).map(([key, value]) => [
+                key.replace(/_([a-z])/g, (_, letter: string) =>
+                  letter.toUpperCase(),
+                ),
+                value,
+              ]),
+            ),
+          )
+        : result
+    // DOC:knex-camel-case
+    const knex = knexFactory({
+      client: 'pg',
+      connection,
+      wrapIdentifier: (value, origImpl) => origImpl(toSnakeCase(value)),
+      postProcessResponse: (result) => toCamelCaseKeys(result),
+    })
+    // END:knex-camel-case
+    try {
+      assert.deepEqual(
+        await knex
+          .select('firstName')
+          .from('person' as string)
+          .where('id', 1),
+        [{ firstName: 'Jennifer' }],
+      )
+    } finally {
+      await knex.destroy()
+    }
+  }
+  {
+    interface CamelCaseDatabase {
+      person: { id: number; firstName: string; age: number | null }
+    }
+    const dialect = new PostgresDialect({ pool })
+    // DOC:kysely-camel-case
+    const camelDb = new Kysely<CamelCaseDatabase>({
+      dialect,
+      plugins: [new CamelCasePlugin()],
+    })
+    // END:kysely-camel-case
+    assert.deepEqual(
+      await camelDb
+        .selectFrom('person')
+        .select('firstName')
+        .where('id', '=', 1)
+        .execute(),
+      [{ firstName: 'Jennifer' }],
+    )
+  }
+  {
+    // DOC:with-schema-plugin
+    const tenantDb = db.withPlugin(new WithSchemaPlugin('tenant_1'))
+    // END:with-schema-plugin
+    assert.match(
+      tenantDb.selectFrom('person').selectAll().compile().sql,
+      /from "tenant_1"\."person"/,
+    )
+    assert(
+      !db.selectFrom('person').selectAll().compile().sql.includes('tenant_1'),
+    )
+  }
   const knexBase = knex('person').where('age', '>=', 18)
   const knexJennifer = knexBase.where('first_name', '=', 'Jennifer')
   assert(knexBase.toSQL().sql.includes('first_name'))
@@ -460,7 +623,7 @@ try {
     'PASS: Prisma filtered relation counts work; aggregate relation filters/filtered ordering are rejected by types; Prisma.sql reproduces per-author results; Knex async helpers execute; Kysely async helpers remain composable; explicit first-row/limit behavior verified',
   )
   console.log(
-    'PASS: Prisma 7.10.1 and Kysely leaderboard equivalence; per-author target change; recursive permission lookup at multiple depths and missing rules; typed Knex 3.3.0 inference/scope gaps; immutable base query',
+    'PASS: Prisma 7.10.1 and Kysely leaderboard equivalence; per-author target change; recursive permission lookup at multiple depths and missing rules; typed Knex 3.3.0 inference/scope gaps; nested JSON results typed by Kysely and declared, dropped, or mistyped by Knex; camelCase through Knex hooks and CamelCasePlugin; withPlugin scoping; immutable base query',
   )
 } finally {
   await prisma.$disconnect()

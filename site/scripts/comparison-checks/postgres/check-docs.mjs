@@ -23,6 +23,16 @@ const examples = {
       'kysely-global-threshold',
       'kysely-per-author-threshold',
     ],
+    'kysely-vs-knex.mdx': [
+      'kysely-nested-pets',
+      'knex-nested-pets',
+      'knex-camel-case',
+      'kysely-camel-case',
+      'with-schema-plugin',
+    ],
+  },
+  'knex-semantics.mts': {
+    'kysely-vs-knex.mdx': ['kysely-upserts', 'kysely-json-traversal'],
   },
   'raw-scenarios.mts': {
     'query-builder-vs-raw-sql.mdx': [
