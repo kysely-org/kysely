@@ -92,12 +92,9 @@ export class JSONPathBuilder<S, O = S> {
    * select "nicknames"->>'$[#-1]' as `last_nickname` from `person`
    * ```
    */
-  at<
-    I extends (any[] extends O ? number | 'last' | `#-${number}` : never),
-    O2 = null | NonNullable<NonNullable<O>[keyof NonNullable<O> & number]>,
-  >(
+  at<I extends (any[] extends O ? number | 'last' | `#-${number}` : never)>(
     index: `${I}` extends `${any}.${any}` | `#--${any}` ? never : I,
-  ): TraversedJSONPathBuilder<S, O2> {
+  ): TraversedJSONPathBuilder<S, JSONArrayElementType<O>> {
     if (
       (typeof index !== 'number' && typeof index !== 'string') ||
       (typeof index === 'number' && !Number.isInteger(index)) ||
@@ -166,15 +163,7 @@ export class JSONPathBuilder<S, O = S> {
       : O extends object
         ? keyof NonNullable<O> & string
         : never),
-    O2 = undefined extends O
-      ? null | NonNullable<NonNullable<O>[K]>
-      : null extends O
-        ? null | NonNullable<NonNullable<O>[K]>
-        : // when the object has non-specific keys, e.g. Record<string, T>, should infer `T | null`!
-          string extends keyof NonNullable<O>
-          ? null | NonNullable<NonNullable<O>[K]>
-          : NonNullable<O>[K],
-  >(key: K): TraversedJSONPathBuilder<S, O2> {
+  >(key: K): TraversedJSONPathBuilder<S, JSONObjectValueType<O, K>> {
     return this.#createBuilderWithPathLeg('Member', key)
   }
 
@@ -308,3 +297,19 @@ export class AliasedJSONPathBuilder<
     )
   }
 }
+
+type JSONArrayElementType<O> = null | NonNullable<
+  NonNullable<O>[keyof NonNullable<O> & number]
+>
+
+type JSONObjectValueType<
+  O,
+  K extends keyof NonNullable<O>,
+> = undefined extends O
+  ? null | NonNullable<NonNullable<O>[K]>
+  : null extends O
+    ? null | NonNullable<NonNullable<O>[K]>
+    : // when the object has non-specific keys, e.g. Record<string, T>, should infer `T | null`!
+      string extends keyof NonNullable<O>
+      ? null | NonNullable<NonNullable<O>[K]>
+      : NonNullable<O>[K]

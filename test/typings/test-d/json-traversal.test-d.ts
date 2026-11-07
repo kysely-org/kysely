@@ -4,6 +4,7 @@ import type {
   JSONPathBuilder,
   Kysely,
   KyselyTypeError,
+  Selectable,
 } from '../index.js'
 import type { Database, PersonMetadata } from '../shared.js'
 
@@ -222,11 +223,11 @@ async function testJSONReference(db: Kysely<Database>) {
 }
 
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
-  expectType<JSONPathBuilder<PersonMetadata['experience']>>(
+  expectType<JSONPathBuilder<Selectable<PersonMetadata>['experience']>>(
     eb.jsonPath<'experience'>(),
   )
 
-  expectType<JSONPathBuilder<PersonMetadata['experience']>>(
+  expectType<JSONPathBuilder<Selectable<PersonMetadata>['experience']>>(
     eb.jsonPath<'person_metadata.experience'>(),
   )
 
