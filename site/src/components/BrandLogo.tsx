@@ -45,6 +45,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 959.7 998',
     id: 'domain-locker',
   },
+  // Wikimedia Commons Best_Western_Hotels_&_Resorts_logo.svg (public domain);
+  // its single fill inherits currentColor.
+  'Best Western': {
+    label: 'Best Western',
+    viewBox: '0 0 300 59.636',
+    id: 'best-western',
+  },
   Bluesky: {
     label: 'Bluesky',
     viewBox: '0 0 2000 530',
@@ -170,11 +177,6 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Colanode',
     viewBox: '0 0 153 30',
     id: 'colanode',
-  },
-  Conar: {
-    label: 'Conar',
-    viewBox: '0 0 452 452',
-    id: 'conar',
   },
   EmbedPDF: {
     label: 'EmbedPDF',
@@ -313,6 +315,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     label: 'Teable',
     viewBox: '0 0 24 24',
     id: 'teable',
+  },
+  // wannabespace/tamery packages/ui/src/components/brand/app-logo.tsx; its
+  // currentColor fills carry over.
+  Tamery: {
+    label: 'Tamery',
+    viewBox: '0 0 475 475',
+    id: 'tamery',
   },
   // Official wordmark: teamspective.com/_astro/logo-text.svg; its white fills
   // inherit currentColor.
