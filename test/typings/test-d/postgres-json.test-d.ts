@@ -324,3 +324,19 @@ function withDoggo(eb: ExpressionBuilder<Database, 'person'>) {
       .limit(1),
   ).as('doggo')
 }
+
+async function testPostgresJsonBuildObjectInlineJsonPaths(
+  db: Kysely<Database>,
+) {
+  const r1 = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      jsonBuildObject({
+        url: eb.ref('website', '->>').key('url'),
+        first_nickname: eb.ref('nicknames', '->>').at(0),
+      }).as('obj'),
+    )
+    .executeTakeFirstOrThrow()
+
+  expectType<{ obj: { url: string; first_nickname: string | null } }>(r1)
+}
