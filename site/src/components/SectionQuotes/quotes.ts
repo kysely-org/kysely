@@ -74,6 +74,14 @@ export const quotes: QuoteProps[] = [
     text: "I don't think they have similar goals from what I see. Drizzle is more dedicated into marketing and having every user possible like prisma but kysely kinda just don't care about that for most part. And in my experience prisma + kysely is better than drizzle.",
   },
   {
+    authorName: 'Yiming Cao',
+    authorTitle: 'ZenStack creator',
+    avatar: 'yiming',
+    date: 'May 2026',
+    link: 'https://news.ycombinator.com/item?id=48265460',
+    text: 'As the creator of ZenStack, rewriting our ORM engine for v3 with Kysely was honestly one of the best technical decisions we’ve made. The composability, type safety, and overall architecture fit our use case surprisingly well.',
+  },
+  {
     authorName: 'Dax "thdxr" Raad',
     authorTitle: 'SST & opencode core team',
     avatar: 'daxraad',

@@ -19,12 +19,13 @@ const domainNameToIcon: Record<string, ReactElement> = {
   github: <GithubIcon />,
   reddit: <RedditIcon />,
   x: <XIcon />,
+  ycombinator: <HackerNewsIcon />,
 }
 
 export function Quote(props: QuoteProps) {
   const { authorName, authorTitle, avatar, date, link, text } = props
 
-  const [domainName] = new URL(link).hostname.split('.')
+  const [domainName] = new URL(link).hostname.replace(/^news\./, '').split('.')
 
   // Construct paths from avatar filename
   const webpSrc = `/img/avatars/${avatar}.webp`
@@ -70,6 +71,23 @@ function XIcon() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d={socialIconPaths.x.d} />
+    </svg>
+  )
+}
+
+function HackerNewsIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={styles.icon}
+      viewBox="4 4 188 188"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="m4 4h188v188h-188z" fill="#f60" />
+      <path
+        d="m73.2521756 45.01 22.7478244 47.39130083 22.7478244-47.39130083h19.56569631l-34.32352071 64.48661468v41.49338532h-15.98v-41.49338532l-34.32352071-64.48661468z"
+        fill="#fff"
+      />
     </svg>
   )
 }
