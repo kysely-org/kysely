@@ -196,7 +196,7 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 ## Kysely exposes each database's SQL instead of choosing it for you
 
-Knex is a portability layer in places, not a one-to-one SQL API. Its upsert and JSON helpers choose different SQL operations for different databases behind one method name.
+Kysely's API follows [what you see is what you get](/docs/examples/insert/insert-subquery): each method writes the SQL its name says, dialects differ in spelling such as quotes and parameter markers rather than in the operation chosen, and the docs flag the rare exception. **Kysely's abstraction is the SQL itself, so there is nothing underneath it to leak.** Knex is a portability layer in places, not a one-to-one SQL API: its upsert and JSON helpers choose different SQL operations for different databases behind one method name.
 
 ### One upsert method, two conflict semantics
 
@@ -355,7 +355,9 @@ const rows = await untypedDb
 
 ### Keep migration history intact
 
-Keep existing Knex migrations while migrating queries. Kysely does not translate Knex migration files or adopt their history automatically; switching migration tools is a separate decision. Kysely's [migration APIs](/docs/migrations) and [kysely-ctl](https://github.com/kysely-org/kysely-ctl) cover authoring, running, and seeding when you make it.
+Existing Knex migrations can stay where they are. kysely-knex's [`KyselyFsMigrationSource`](https://github.com/kysely-org/kysely-knex#migrations) is a Knex [custom migration source](https://knexjs.org/guide/migrations.html#custom-migration-sources) that passes a Kysely instance to each migration, so new migrations can use Kysely's [schema builder](/docs/migrations) while `knex migrate:latest` and the `knex_migrations` history keep working.
+
+To leave the Knex CLI later, [kysely-ctl](https://github.com/kysely-org/kysely-ctl)'s `migrate` and `seed` commands mirror Knex's, and its `getKnexTimestampPrefix` keeps Knex's file naming. Kysely's migrator records history in its own `kysely_migration` table and does not translate Knex migration files, so the switch is a one-time cutover, not a configuration change.
 
 ## Other practical considerations
 
