@@ -10,11 +10,11 @@ Kysely provides LLM-friendly documentation to help AI tools like **Cursor**, **W
 
 Kysely's API documentation and examples ship inside the package's TypeScript declarations. An agent with access to your dependencies or language server can read the documentation attached to the method it is calling, including query examples, SQL output, related methods, and deprecations.
 
-Those docs travel with the installed release. Reading them avoids a common source of agent mistakes: combining an older dependency with examples from a newer website or a model's memory. The build also [copies interface documentation onto implementing methods](https://github.com/kysely-org/kysely/blob/v0.29.7/scripts/copy-interface-documentation.cjs), so following a method definition exposes its documentation.
+Those docs travel with the installed release. Reading them avoids a common source of agent mistakes: combining an older dependency with examples from a newer website or a model's memory. Interface documentation is also copied onto implementing methods, so following a method definition exposes its documentation.
 
-The inline TypeScript examples are [type-checked in CI](https://github.com/kysely-org/kysely/blob/v0.29.7/.github/workflows/test.yml) using the repository's [`test:jsdocs` command](https://github.com/kysely-org/kysely/blob/v0.29.7/package.json). They are checked against the API being released, rather than maintained as a separate collection of unchecked snippets. The published package keeps those examples alongside that version's types.
+The inline TypeScript examples are type-checked in CI against the API being released, rather than maintained as a separate collection of unchecked snippets. The published package keeps those examples alongside that version's types.
 
-The website's playground examples are [generated from annotated JSDoc](https://github.com/kysely-org/kysely/blob/v0.29.7/scripts/generate-site-examples.mts) as well. API documentation and website examples share their source, rather than relying on separately maintained copies.
+The website's playground examples are generated from annotated JSDoc as well. API documentation and website examples share their source, rather than relying on separately maintained copies.
 
 For agent experience (AX), this gives the agent a direct loop:
 
