@@ -15,6 +15,8 @@ const APIDOC_PAGEFIND_URL =
 // with no build yet, the load fails and the stand-in button stays.
 const SITE_PAGEFIND_URL = '/pagefind/'
 
+const EXCERPT_ELLIPSIS = '…'
+
 declare global {
   interface Window {
     PagefindComponents?: {
@@ -376,15 +378,14 @@ export default function SearchBar(): React.JSX.Element {
           )
         }
 
-        // Must run before any component connects: a connected component
-        // creates the instance with defaults and this call would be
-        // ignored.
         window.PagefindComponents?.configureInstance('default', {
           bundlePath: SITE_PAGEFIND_URL,
+          excerptEllipsis: EXCERPT_ELLIPSIS,
           mergeIndex: includeApidocIndex
             ? [
                 {
                   bundlePath: APIDOC_PAGEFIND_URL,
+                  excerptEllipsis: EXCERPT_ELLIPSIS,
                   // Typedoc pages score ~16-20x higher raw than guide pages
                   // for shared terms (exact term in title + dense short
                   // pages), so this needs to be tiny for guides to rank
@@ -435,8 +436,5 @@ export default function SearchBar(): React.JSX.Element {
     )
   }
 
-  // Custom-element props must stay off the JSX: React 19 assigns known
-  // properties directly, and these elements expose getter-only reflections
-  // (setting `placeholder` throws). Defaults are right anyway.
   return <pagefind-modal-trigger ref={trigger} />
 }

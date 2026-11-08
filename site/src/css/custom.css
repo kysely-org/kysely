@@ -408,6 +408,12 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
   }
 }
 
+@media (hover: none) {
+  .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-shortcut {
+    display: none;
+  }
+}
+
 @media (max-width: 996px) {
   .navbar:is(*, #\#):is(*, #\#):is(*, #\#) .pf-trigger-btn {
     align-items: center;
