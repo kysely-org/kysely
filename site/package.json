@@ -40,7 +40,7 @@
     "afdocs": "0.23.0",
     "hono": "catalog:http",
     "mermaid": "12.3.0",
-    "pagefind": "1.5.2",
+    "pagefind": "1.6.0",
     "pathe": "catalog:node",
     "shiki": "4.5.0",
     "typescript": "7.0.2"
