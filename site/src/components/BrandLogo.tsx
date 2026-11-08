@@ -260,6 +260,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 120 120',
     id: 'openclaw',
   },
+  // Official lockup: assets.openwork.jp/images/common/logo_with_icon.svg.
+  // The gradient icon facets keep their depth as tonal opacity.
+  OpenWork: {
+    label: 'OpenWork',
+    viewBox: '0 0 300.2 47',
+    id: 'openwork',
+  },
   OpenSanctions: {
     label: 'OpenSanctions',
     viewBox: '0 0 505 78',

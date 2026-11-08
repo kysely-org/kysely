@@ -342,6 +342,12 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "OpenWork",
+    "href": "https://techblog.openwork.co.jp/entry/tech-selection-megasearch",
+    "group": "production",
+    "provenAt": "2026-11-06"
+  },
+  {
     "name": "Open Collective",
     "repo": "opencollective/opencollective-api",
     "path": "server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
