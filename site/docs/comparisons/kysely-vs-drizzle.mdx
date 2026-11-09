@@ -583,7 +583,9 @@ Its types come from the database itself, so it fits a schema that another tool, 
 
 ### When is Drizzle the better choice?
 
-**Keep Drizzle when one TypeScript declaration should drive types, migrations, validation schemas, and relational reads, and its queries are mostly written whole, in one place.** A schema change is one edit there: [`drizzle-kit push`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/drizzle-kit-push.mdx#L14) applies it to the database without a migration file, and the types, validators, and relational queries follow with no generation step. Drizzle Kit can stay either way, and Kysely can run beside it for the queries that are composed.
+**Keep Drizzle when a person writes the schema and the queries, one TypeScript declaration should drive types, migrations, validation schemas, and relational reads, and the queries are mostly written whole, in one place.** A schema change is one edit there: [`drizzle-kit push`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/drizzle-kit-push.mdx#L14) applies it to the database without a migration file, and the types, validators, and relational queries follow with no generation step.
+
+That value is priced for a person writing the code. When an agent writes most of it, it writes a migration as SQL as readily as a query, inspects the database through `psql` or a script instead of a studio, and already knows SQL, where a model API's options are a second vocabulary per library. [OpenClaw's contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71), written for agents, draws that line: schema and migrations as SQL, queries in Kysely. Drizzle Kit can stay either way, and Kysely can run beside it for the queries that are composed.
 
 **Both put SQL first; Drizzle types the columns a query uses, and Kysely types the query.**
 
