@@ -290,7 +290,7 @@ The asymmetry holds here: adding the computed flag, export, or permission lookup
 
 SQL-first composition does not require result type inference. Query builders differ in whether they check references and expressions or infer result types, and an ORM's typed models do not guarantee those capabilities in its SQL API either. To assess a library's type safety, try removing a join, renaming an alias, or adding a nullable selection: does the caller's type follow the query?
 
-The examples above run that test. The [left-joined parent title](#reusing-filters-for-an-export-and-parent-titles) arrives as `string | null`, and renaming its alias changes the caller's result type. Removing the `page_access` join from the [permission lookup](#the-same-query-builder-interface-for-recursive-queries) turns its remaining references into type errors.
+The examples above run that test. The [left-joined parent title](#reusing-filters-for-an-export-and-parent-titles) arrives as `string | null`, and renaming its alias changes the caller's result type. Removing the `page_access` join from the [permission lookup](#the-same-query-builder-interface-for-recursive-queries) turns its remaining references into type errors. [Kysely vs Drizzle](/docs/comparisons/kysely-vs-drizzle) runs the same test between two SQL-first libraries.
 
 Inferred types depend on accurate database declarations and the driver's runtime value mapping. Kysely does not validate returned rows against those types or convert values to match a TypeScript annotation.
 
