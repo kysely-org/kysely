@@ -38,6 +38,7 @@ generation from errors in PostgreSQL.
 | `statement-scope.mts` | Another table's column in ORDER BY, GROUP BY, HAVING, SET, and a delete's WHERE, a CTE that was never attached, and `returning()` resolving another table's column against the target table. |
 | `kysely-gaps.mts` | Kysely compiling `= null` and a union with reordered columns, where Drizzle rejects the first via types and throws on the second; and the references Kysely takes on trust: `sql.ref`, template text, a dynamic reference, and an expression from a standalone `expressionBuilder`. |
 | `inline-examples.mts` | Every JSDoc example labeled `ts` in the published declarations parsed as TypeScript: all of Kysely's parse, Drizzle 0.45.4 has one `...` placeholder, and 1.0.0-rc.5's MSSQL `delete` and `insert` examples do not parse. That nothing in Drizzle's repository checks its examples is a reading of its scripts and CI workflows, not something this suite can pin. |
+| `statement-flow.mts` | A table alias, a derived table, and a CTE written inside one Kysely chain and declared as variables first in Drizzle, with matching rows, including the page's self-join; an inline Drizzle alias that its join condition cannot name; a select alias in WHERE or HAVING rejected by Kysely's types and by PostgreSQL, and compiled by Drizzle, which repeats the expression through the `where()` callback and otherwise sends the bare alias or an aggregate in WHERE. |
 
 ## Bundle size
 
