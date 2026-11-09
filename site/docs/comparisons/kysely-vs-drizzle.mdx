@@ -14,7 +14,7 @@ Drizzle's builder is SQL-like in clause order and JavaScript in the rest: column
 
 The differences that cost most are the quiet ones. A JSON or CASE expression that Drizzle writes as an annotated template can return a wrong value under a type that still compiles, and in Drizzle's dynamic mode [a second `where()` replaces the first](#shared-queries-branch-without-mutation) with no error, even when the first was a tenant filter.
 
-Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/overview.mdx#L8); in this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models, which Drizzle calls tables, migrations generated from them, a relational query API, and a SQL-style query builder. This page compares that builder with Kysely.
+Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/overview.mdx#L8); in this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models, which Drizzle calls tables, migrations generated from them, a model API, which Drizzle calls a relational query builder, and a SQL-style query builder. This page compares that builder with Kysely.
 
 Drizzle here means 0.45.4 and 1.0.0-rc.5, its stable release and its release candidate in November 2026. Its behavior below is the same in both unless stated.
 
