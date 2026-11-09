@@ -1,14 +1,28 @@
 import assert from 'node:assert/strict'
 import { PGlite } from '@electric-sql/pglite'
 import { Kysely, PGliteDialect } from 'kysely'
-import { count, eq, gt, gte, sql } from 'drizzle-stable'
+import {
+  and,
+  count,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNull,
+  ne,
+  sql,
+} from 'drizzle-stable'
 import { alias, integer, pgTable, text } from 'drizzle-stable/pg-core'
 import { drizzle } from 'drizzle-stable/pglite'
 import {
+  and as rcAnd,
   count as rcCount,
   eq as rcEq,
   gt as rcGt,
   gte as rcGte,
+  inArray as rcInArray,
+  isNull as rcIsNull,
+  ne as rcNe,
   sql as rcSql,
 } from 'drizzle-rc'
 import {
@@ -257,6 +271,27 @@ const rcLaterClauses = () =>
     .having((selection) => rcGt(selection.total, 0))
     .orderBy((selection) => selection.name)
 
+// ---- SQL's operators under Drizzle's names, and under their own in Kysely.
+
+const renamed = () =>
+  drizzleDb
+    .select({ id: person.id })
+    .from(person)
+    .where(and(inArray(person.id, [1, 2]), ne(person.id, 2)))
+    .orderBy(isNull(person.age))
+const rcRenamed = () =>
+  rcDb
+    .select({ id: rcPerson.id })
+    .from(rcPerson)
+    .where(rcAnd(rcInArray(rcPerson.id, [1, 2]), rcNe(rcPerson.id, 2)))
+    .orderBy(rcIsNull(rcPerson.age))
+const kyselyOperators = db
+  .selectFrom('person')
+  .select('id')
+  .where('id', 'in', [1, 2])
+  .where('id', '<>', 2)
+  .orderBy((eb) => eb('age', 'is', null))
+
 function compileChecks() {
   // @ts-expect-error a select alias is not in scope for where.
   kyselyAliases.where('name', '=', 'jennifer')
@@ -366,8 +401,21 @@ try {
     assert.equal((await build()).length, 3)
   }
 
+  for (const build of [renamed, rcRenamed]) {
+    const text = build().toSQL().sql
+    assert.match(text, /"person"\."id" in \(\$1, \$2\)/)
+    assert.match(text, /"person"\."id" <> \$3/)
+    assert.match(text, /order by \(?"person"\."age" is null\)?$/)
+    assert.deepEqual(await build(), [{ id: 1 }])
+  }
+  assert.match(
+    kyselyOperators.compile().sql,
+    /where "id" in \(\$1, \$2\) and "id" <> \$3 order by "age" is null$/,
+  )
+  assert.deepEqual(await kyselyOperators.execute(), [{ id: 1 }])
+
   console.log(
-    'PASS: Kysely writes a table alias, a derived table, and a CTE inside one chain; Drizzle stable/RC declare each as a variable first, return the same rows, and cannot name an inline alias in its join condition. A select alias in WHERE or HAVING is a Kysely type error, as PostgreSQL rejects it; Drizzle compiles it, repeats the expression through the where() callback, and sends the bare alias or an aggregate in WHERE otherwise, which PostgreSQL rejects',
+    'PASS: Kysely writes a table alias, a derived table, and a CTE inside one chain; Drizzle stable/RC declare each as a variable first, return the same rows, and cannot name an inline alias in its join condition. A select alias in WHERE or HAVING is a Kysely type error, as PostgreSQL rejects it; Drizzle compiles it, repeats the expression through the where() callback, and sends the bare alias or an aggregate in WHERE otherwise, which PostgreSQL rejects. The inArray, ne, and isNull functions of Drizzle stable/RC emit IN, <>, and IS NULL, the operators Kysely takes as written',
   )
 } finally {
   await db.destroy()
