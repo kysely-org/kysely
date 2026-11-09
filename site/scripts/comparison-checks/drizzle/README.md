@@ -39,6 +39,22 @@ generation from errors in PostgreSQL.
 | `kysely-gaps.mts` | Kysely compiling `= null` and a union with reordered columns, where Drizzle rejects the first via types and throws on the second; and the references Kysely takes on trust: `sql.ref`, template text, a dynamic reference, and an expression from a standalone `expressionBuilder`. |
 | `inline-examples.mts` | Every JSDoc example labeled `ts` in the published declarations parsed as TypeScript: all of Kysely's parse, Drizzle 0.45.4 has one `...` placeholder, and 1.0.0-rc.5's MSSQL `delete` and `insert` examples do not parse. That nothing in Drizzle's repository checks its examples is a reading of its scripts and CI workflows, not something this suite can pin. |
 
+## Bundle size
+
+`bundle-size/` is a separate package, so Vite and `pg` stay out of the type
+checks above. It bundles one PostgreSQL `select * from person` per library with
+Vite 8.3.6 as a minified server build, leaving `pg` external, and asserts the
+sizes quoted on the page:
+
+```sh
+cd bundle-size
+npm install --ignore-scripts --legacy-peer-deps --no-audit --no-fund
+npm test
+```
+
+With `COMPARISON_DATABASE_URL` set to a disposable PostgreSQL database, it also
+runs the three bundles and checks that they return the same rows.
+
 PGlite tests PostgreSQL execution semantics without a server. These fixtures do
 not test node-postgres transport or its default bigint parser; comparisons of
 aggregate values normalize the driver representation. They do not measure

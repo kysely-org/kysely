@@ -1,0 +1,20 @@
+{
+  "name": "kysely-drizzle-bundle-size",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node measure.mjs"
+  },
+  "devDependencies": {
+    "kysely": "0.29.7",
+    "drizzle-stable": "npm:drizzle-orm@0.45.4",
+    "drizzle-rc": "npm:drizzle-orm@1.0.0-rc.5",
+    "@types/pg": "8.23.1",
+    "pg": "8.23.1",
+    "rolldown": "1.2.16",
+    "vite": "8.3.6"
+  },
+  "overrides": {
+    "rolldown": "1.2.16"
+  }
+}
