@@ -468,7 +468,7 @@ Both libraries compute their types in the compiler, so both add to type-checking
 </details>
 
 <details>
-<summary>Measured package sizes and dependency trees</summary>
+<summary>Measured package sizes, bundle sizes, and dependency trees</summary>
 
 | Published package  | Compressed download | Unpacked size | Direct dependencies |
 | ------------------ | ------------------- | ------------- | ------------------- |
@@ -478,7 +478,17 @@ Both libraries compute their types in the compiler, so both add to type-checking
 
 With `pg` 8.23.1, all three resolve to 14 production packages. Drizzle's package includes every driver adapter and database family; Kysely's includes its five core dialects.
 
-Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
+A bundler keeps only what an application imports. One PostgreSQL `select * from person`, over the table at the top of this page, bundled and minified with Vite 8.3.6 and leaving `pg` out:
+
+| Bundled query      | Minified  | Gzip     |
+| ------------------ | --------- | -------- |
+| Kysely 0.29.7      | 155.5 KiB | 29.9 KiB |
+| Drizzle 0.45.4     | 79.6 KiB  | 20.1 KiB |
+| Drizzle 1.0.0-rc.5 | 137.0 KiB | 36.4 KiB |
+
+Drizzle 0.45.4 makes the smallest bundle. Kysely's includes its query tree, query compiler, and schema builder.
+
+Packages measured **October 24, 2026**, bundles **November 9, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. The bundle is one query, not an application, and none of these are install benchmarks.
 
 </details>
 
