@@ -389,11 +389,38 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 **A Drizzle builder runs when it is awaited; a Kysely builder runs when you call `.execute()`.**
 
-## Kysely's plugins see the query
+## Kysely is built to be extended
 
-A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives the query as a tree of operation nodes before it compiles, and the result after it runs, so it can rewrite tables, joins, and expressions. The [built-in plugins](/docs/plugins) convert camelCase, qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes one to a query or a derived instance and leaves the original unchanged.
+Before it is SQL, every Kysely query is an immutable tree of [operation nodes](https://kysely-org.github.io/kysely-apidoc/interfaces/OperationNode.html): a select node that holds its joins, its `where`, and its limit as nodes of their own. The tree is public. `toOperationNode()` returns it from any builder, the node types and [`OperationNodeTransformer`](https://kysely-org.github.io/kysely-apidoc/classes/OperationNodeTransformer.html) are exported, and plugins, custom expressions, and dialects are interfaces built on it.
 
-Drizzle's extension points are per concern: a logger, a [cache](https://orm.drizzle.team/docs/cache), [casing](https://orm.drizzle.team/docs/sql-schema-declaration#camel-and-snake-casing) in the schema declaration, and [custom column types](https://orm.drizzle.team/docs/custom-types) that convert values. Neither version has an interface that receives the query. Schema-per-tenant shows the difference. A Drizzle table is bound to its schema when it is declared, and the issue titled "working with dynamic schemas is practically impossible" has been [open since April 2023](https://github.com/drizzle-team/drizzle-orm/issues/423). The [workaround a maintainer gave there](https://github.com/drizzle-team/drizzle-orm/issues/423#issuecomment-1501232679) is a factory that declares each table again for a schema name, `pgSchema(name).table(...)`, with every query built from the tables it returns. In Kysely the schema is chosen per query, by a plugin:
+### Plugins see the query
+
+A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives that tree before it compiles, and the result after it runs. A plugin is a class with two methods. This one refuses to send a delete or an update that has no WHERE clause:
+
+```ts
+class RequireWherePlugin implements KyselyPlugin {
+  transformQuery({ node }: PluginTransformQueryArgs) {
+    if ((DeleteQueryNode.is(node) || UpdateQueryNode.is(node)) && !node.where) {
+      throw new Error('Refusing to change every row: add a where clause.')
+    }
+    return node
+  }
+
+  async transformResult({ result }: PluginTransformResultArgs) {
+    return result
+  }
+}
+
+const guarded = db.withPlugin(new RequireWherePlugin())
+```
+
+The plugin reads the finished statement, so a filter added by a helper or in a later statement counts, and a statement that reaches execution without one throws before anything is sent. It is a runtime check, not a type error, and a delete written whole as a `sql` template reaches it as a raw node, not a delete.
+
+The [built-in plugins](/docs/plugins) are written against the same interface: they convert camelCase, qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes one to a query or a derived instance and leaves the original unchanged.
+
+Drizzle's extension points are per concern: a [logger](https://orm.drizzle.team/docs/goodies#logging) that receives the SQL text and its parameters, a [cache](https://orm.drizzle.team/docs/cache), [casing](https://orm.drizzle.team/docs/sql-schema-declaration#camel-and-snake-casing) in the schema declaration, and [custom column types](https://orm.drizzle.team/docs/custom-types) that convert values. A Drizzle builder keeps its clauses in a protected field, and its dialect writes them out as chunks of text, names, columns, and parameters. Neither version has an interface that receives the query in between.
+
+Schema-per-tenant shows the difference. A Drizzle table is bound to its schema when it is declared, and the issue titled "working with dynamic schemas is practically impossible" has been [open since April 2023](https://github.com/drizzle-team/drizzle-orm/issues/423). The [workaround a maintainer gave there](https://github.com/drizzle-team/drizzle-orm/issues/423#issuecomment-1501232679) is a factory that declares each table again for a schema name, `pgSchema(name).table(...)`, with every query built from the tables it returns. In Kysely the schema is chosen per query, by a plugin:
 
 ```ts
 const tenantDb = db.withSchema('tenant_1')
@@ -402,7 +429,11 @@ const tenantDb = db.withSchema('tenant_1')
 
 **Drizzle's options cover the cases it names; Kysely's plugins see the query.**
 
-## Kysely's dialects are a public interface
+### Expressions are an interface too
+
+Anything that implements [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expression.html) is accepted wherever Kysely takes an expression, which is how [your own helpers](/docs/recipes/extending-kysely) add what the builder lacks. Drizzle extends the same way at this level, with helpers that return `sql<T>`. The two differ at the level of the query, where only Kysely has an interface that receives one.
+
+### Dialects are a public interface
 
 A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) is four exported factories: a driver, a query compiler, an adapter, and an introspector. A new database implements that interface, and the [community dialects](/docs/dialects) for BigQuery, ClickHouse, Oracle, and Firebird are built that way. The `Database` interface and the query API are the same types on every dialect, and do not know which one they target: `returning()` compiles on a MySQL instance, and MySQL rejects the statement.
 
@@ -495,7 +526,7 @@ Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude
 
 ### Why use Kysely instead of Drizzle?
 
-**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change: references checked against the query in every clause; JSON and CASE expressions whose types are inferred instead of declared, and filtered aggregates and windows built instead of templated; builders that behave like values, shared without rebuilding and executed only when asked; and public interfaces for plugins and dialects.** Its types come from the database itself, so it fits a schema that another tool, service, or team migrates.
+**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change: references checked against the query in every clause; JSON and CASE expressions whose types are inferred instead of declared, and filtered aggregates and windows built instead of templated; builders that behave like values, shared without rebuilding and executed only when asked; and a public query tree that plugins and dialects build on.** Its types come from the database itself, so it fits a schema that another tool, service, or team migrates.
 
 ### When is Drizzle the better choice?
 
