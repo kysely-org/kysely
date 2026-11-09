@@ -31,6 +31,8 @@ generation from errors in PostgreSQL.
 | `built-in-alternatives.mts` | Drizzle relational queries with ordered/limited nested pets, both built-in single-count alternatives, and simultaneous FILTER aggregates. |
 | `extensibility.mts` | Join deduplication and Drizzle's published PostgreSQL proxy dialect factory. |
 | `shared-queries.mts` | Matching left-join rows and inferred types (also through 0.45's `Kyselify`), the 1.0 relational query beside `jsonArrayFrom`, a second `where()` rejected outside dynamic mode and replacing the first inside it, awaited async helpers, `withSchema`, and Kysely's ambiguous unqualified reference. |
+| `join-shapes.mts` | Drizzle's left-joined nested object typed and returned as `null` as a whole; Kysely's joined columns nullable one by one. |
+| `dialect-types.mts` | `returning()` compiling on a Kysely MySQL instance, and absent from Drizzle's MySQL insert builder in types and at runtime. |
 
 PGlite tests PostgreSQL execution semantics without a server. These fixtures do
 not test node-postgres transport or its default bigint parser; comparisons of
