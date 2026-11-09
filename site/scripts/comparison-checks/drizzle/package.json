@@ -6,7 +6,7 @@
     "test": "node verify.mjs"
   },
   "devDependencies": {
-    "kysely": "0.29.7",
+    "kysely": "0.29.8",
     "drizzle-stable": "npm:drizzle-orm@0.45.4",
     "drizzle-rc": "npm:drizzle-orm@1.0.0-rc.5",
     "@electric-sql/pglite": "0.5.10",

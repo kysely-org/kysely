@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict'
 import { PGlite } from '@electric-sql/pglite'
 import {
-  DeleteQueryNode,
   Kysely,
   OperationNodeTransformer,
   PGliteDialect,
-  UpdateQueryNode,
+  SelectQueryNode,
   sql,
   type IdentifierNode,
   type KyselyPlugin,
@@ -28,16 +27,32 @@ interface Database {
   pet: { id: number; name: string; owner_id: number }
 }
 
-class RequireWherePlugin implements KyselyPlugin {
+class ReadOnlyPlugin implements KyselyPlugin {
   transformQuery({ node }: PluginTransformQueryArgs) {
-    if ((DeleteQueryNode.is(node) || UpdateQueryNode.is(node)) && !node.where) {
-      throw new Error('Refusing to change every row: add a where clause.')
+    if (!SelectQueryNode.is(node)) {
+      throw new Error('This instance is read-only.')
     }
     return node
   }
 
   async transformResult({ result }: PluginTransformResultArgs) {
     return result
+  }
+}
+
+// The exported transformer visits every node, so it finds a write below the root.
+class RefuseWrites extends OperationNodeTransformer {
+  protected override transformInsertQuery(): never {
+    throw new Error('This instance is read-only.')
+  }
+  protected override transformUpdateQuery(): never {
+    throw new Error('This instance is read-only.')
+  }
+  protected override transformDeleteQuery(): never {
+    throw new Error('This instance is read-only.')
+  }
+  protected override transformMergeQuery(): never {
+    throw new Error('This instance is read-only.')
   }
 }
 
@@ -49,12 +64,10 @@ class UppercaseIdentifiers extends OperationNodeTransformer {
 
 const pglite = new PGlite()
 const db = new Kysely<Database>({ dialect: new PGliteDialect({ pglite }) })
-const guarded = db.withPlugin(new RequireWherePlugin())
+const reports = db.withPlugin(new ReadOnlyPlugin())
 
-function deletePets(options: { ownerId?: number }) {
-  let query = guarded.deleteFrom('pet')
-  if (options.ownerId) query = query.where('owner_id', '=', options.ownerId)
-  return query
+function renamePet(handle: Kysely<Database>, id: number, name: string) {
+  return handle.updateTable('pet').set({ name }).where('id', '=', id)
 }
 
 const stablePet = pgTable('pet', {
@@ -109,44 +122,67 @@ try {
   assert.match(JSON.stringify(upper), /"name":"PERSON"/)
   assert.doesNotMatch(JSON.stringify(tree), /"name":"PERSON"/)
 
-  // A custom plugin sees the final statement, however it was composed.
-  assert.equal(
-    deletePets({ ownerId: 1 }).compile().sql,
-    'delete from "pet" where "owner_id" = $1',
+  // A custom plugin sees the root node of every statement the instance builds.
+  assert.deepEqual(
+    await reports.selectFrom('pet').select('id').orderBy('id').execute(),
+    [{ id: 1 }, { id: 2 }],
   )
-  assert.throws(() => deletePets({}).compile(), /add a where clause/)
-  await assert.rejects(deletePets({}).execute(), /add a where clause/)
-  assert.throws(
-    () => guarded.updateTable('pet').set({ name: 'x' }).compile(),
-    /add a where clause/,
-  )
-  const scoped = <T extends { where: (...args: any[]) => T }>(query: T) =>
-    query.where('owner_id', '=', 2)
-  assert.equal(
-    scoped(guarded.deleteFrom('pet')).compile().sql,
-    'delete from "pet" where "owner_id" = $1',
-  )
-  assert.equal(
-    (await db.selectFrom('pet').select('id').execute()).length,
-    2,
-    'nothing was deleted by a refused statement',
+  const writes = [
+    reports.insertInto('pet').values({ id: 3, name: 'Hammo', owner_id: 1 }),
+    reports.updateTable('pet').set({ name: 'x' }).where('id', '=', 1),
+    reports.deleteFrom('pet').where('id', '=', 1),
+    reports
+      .mergeInto('pet')
+      .using('person', 'person.id', 'pet.owner_id')
+      .whenMatched()
+      .thenDelete(),
+    // A write built by a helper that only receives the instance.
+    renamePet(reports, 1, 'x'),
+  ]
+  for (const write of writes) {
+    assert.throws(() => write.compile(), /read-only/)
+    await assert.rejects(write.execute(), /read-only/)
+  }
+  // A statement written whole as a template is a raw node, so it is refused
+  // too, whatever it says.
+  await assert.rejects(sql`delete from pet`.execute(reports), /read-only/)
+  await assert.rejects(sql`select 1`.execute(reports), /read-only/)
+  assert.deepEqual(
+    await db.selectFrom('pet').select(['id', 'name']).orderBy('id').execute(),
+    [
+      { id: 1, name: 'Catto' },
+      { id: 2, name: 'Doggo' },
+    ],
+    'nothing was changed by a refused statement',
   )
   // withPlugin derives an instance; the original is unchanged.
-  assert.equal(db.deleteFrom('pet').compile().sql, 'delete from "pet"')
+  assert.equal(
+    renamePet(db, 1, 'x').compile().sql,
+    'update "pet" set "name" = $1 where "id" = $2',
+  )
 
-  // What the guard does not see: a statement written whole as a template,
-  // and a where clause that is always true.
-  assert.equal(
-    sql`delete from pet where false`.compile(guarded).sql,
-    'delete from pet where false',
+  // What the guard does not see: it reads the root node, and a select with a
+  // data-modifying CTE is a select.
+  const nested = reports
+    .with('gone', (qb) =>
+      qb.deleteFrom('pet').where('id', '=', 2).returning('id'),
+    )
+    .selectFrom('gone')
+    .select('id')
+  assert.equal(nested.toOperationNode().kind, 'SelectQueryNode')
+  assert.throws(
+    () => new RefuseWrites().transformNode(nested.toOperationNode()),
+    /read-only/,
   )
+  const plainSelect = reports.selectFrom('pet').select('id').toOperationNode()
   assert.equal(
-    guarded
-      .deleteFrom('pet')
-      .where((eb) => eb.and([]))
-      .compile().sql,
-    'delete from "pet" where 1 = 1',
+    JSON.stringify(new RefuseWrites().transformNode(plainSelect)),
+    JSON.stringify(plainSelect),
   )
+  assert.deepEqual(await nested.execute(), [{ id: 2 }])
+  assert.deepEqual(await db.selectFrom('pet').select('id').execute(), [
+    { id: 1 },
+  ])
 
   // Drizzle: the statement is chunks of text, names, columns, and parameters.
   for (const [label, drizzleDb, pet, eq, and] of [
@@ -183,7 +219,7 @@ try {
   }
 
   console.log(
-    'PASS: Kysely exposes the query as operation nodes, an exported transformer rewrites it, and a custom plugin refuses an unfiltered delete or update however the query was composed, but not a template statement or an always-true filter; a Drizzle builder keeps its clauses in a protected config and yields text, name, column, and parameter chunks',
+    'PASS: Kysely exposes the query as operation nodes, an exported transformer rewrites it, and a custom plugin makes a derived instance read-only, refusing every insert, update, delete, merge, and template statement however it was composed, but not a data-modifying CTE inside a select, which the exported transformer finds; a Drizzle builder keeps its clauses in a protected config and yields text, name, column, and parameter chunks',
   )
 } finally {
   await db.destroy()

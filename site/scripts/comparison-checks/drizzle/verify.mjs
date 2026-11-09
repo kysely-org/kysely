@@ -34,7 +34,7 @@ function run(label, args) {
 }
 
 for (const [name, version] of Object.entries({
-  kysely: '0.29.7',
+  kysely: '0.29.8',
   'drizzle-stable': '0.45.4',
   'drizzle-rc': '1.0.0-rc.5',
   typescript: '7.0.2',

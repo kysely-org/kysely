@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import { PGlite } from '@electric-sql/pglite'
-import { Kysely, PGliteDialect, sql as ksql } from 'kysely'
-import { eq, and, not, sql } from 'drizzle-stable'
+import { Kysely, PGliteDialect, sql as ksql, type SqlBool } from 'kysely'
+import { eq, and, like, not, sql } from 'drizzle-stable'
 import { pgTable, integer, text, QueryBuilder } from 'drizzle-stable/pg-core'
 import {
   eq as rcEq,
   and as rcAnd,
+  like as rcLike,
   not as rcNot,
   sql as rcSql,
 } from 'drizzle-rc'
@@ -49,6 +50,16 @@ const fragment = stable
 const rcFragment = rc
   .select({ name: rcSql<string>`lower(${rcPet.name})`.as('name') })
   .from(rcPerson)
+// LIKE ... ESCAPE, which neither library's like operator takes.
+const pattern = '100!%'
+const escapeFragment = stable
+  .select({ id: person.id })
+  .from(person)
+  .where(sql<boolean>`${pet.name} like ${pattern} escape '!'`)
+const rcEscapeFragment = rc
+  .select({ id: rcPerson.id })
+  .from(rcPerson)
+  .where(rcSql<boolean>`${rcPet.name} like ${pattern} escape '!'`)
 const pglite = new PGlite()
 const db = new Kysely<{
   person: { id: number; first_name: string }
@@ -77,6 +88,17 @@ function compileChecks() {
     // @ts-expect-error pet has not been joined, including inside a fragment.
     ksql<string>`lower(${eb.ref('pet.name')})`.as('name'),
   )
+  db.selectFrom('person').where(
+    (eb) =>
+      // @ts-expect-error pet has not been joined, including in a condition fragment.
+      ksql<SqlBool>`${eb.ref('pet.name')} like ${pattern} escape '!'`,
+  )
+  // @ts-expect-error Drizzle's like takes no escape argument.
+  like(person.first_name, pattern, '!')
+  // @ts-expect-error Nor does the release candidate's.
+  rcLike(rcPerson.first_name, pattern, '!')
+  // @ts-expect-error Kysely's like operator takes no escape argument either.
+  db.selectFrom('person').where('first_name', 'like', pattern, '!')
 }
 void compileChecks
 async function execute(q: { toSQL(): { sql: string; params: any[] } }) {
@@ -104,8 +126,19 @@ try {
     .select((eb) => ksql<string>`lower(${eb.ref('first_name')})`.as('name'))
     .execute()
   assert.deepEqual(valid, [{ name: 'jennifer' }])
+  for (const query of [escapeFragment, rcEscapeFragment])
+    await assert.rejects(execute(query), /does not exist|missing FROM-clause/)
+  await pglite.exec("insert into person values(2,'100%'),(3,'1000')")
+  const escaped = await db
+    .selectFrom('person')
+    .select('id')
+    .where(
+      (eb) => ksql<SqlBool>`${eb.ref('first_name')} like ${pattern} escape '!'`,
+    )
+    .execute()
+  assert.deepEqual(escaped, [{ id: 2 }])
   console.log(
-    'PASS: both Drizzle versions accept invalid expression operands and boolean inputs; PostgreSQL rejects them. Kysely rejects all via types, including unavailable fragment references; valid checked fragment executes.',
+    'PASS: both Drizzle versions accept invalid expression operands and boolean inputs; PostgreSQL rejects them. Kysely rejects all via types, including unavailable fragment references; valid checked fragments execute, among them LIKE with an ESCAPE clause, which the like operator takes in neither library.',
   )
 } finally {
   await db.destroy()

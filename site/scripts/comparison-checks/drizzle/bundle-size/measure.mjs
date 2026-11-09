@@ -14,7 +14,7 @@ function installedVersion(name) {
 }
 
 for (const [name, version] of Object.entries({
-  kysely: '0.29.7',
+  kysely: '0.29.8',
   'drizzle-stable': '0.45.4',
   'drizzle-rc': '1.0.0-rc.5',
   pg: '8.23.1',
@@ -26,7 +26,7 @@ for (const [name, version] of Object.entries({
 }
 
 const expected = {
-  kysely: { label: 'Kysely 0.29.7', minified: 159_224, gzip: 30_636 },
+  kysely: { label: 'Kysely 0.29.8', minified: 160_040, gzip: 30_903 },
   'drizzle-stable': { label: 'Drizzle 0.45.4', minified: 81_463, gzip: 20_548 },
   'drizzle-rc': {
     label: 'Drizzle 1.0.0-rc.5',
