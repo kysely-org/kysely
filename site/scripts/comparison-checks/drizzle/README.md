@@ -30,6 +30,7 @@ generation from errors in PostgreSQL.
 | `coverage-comparison.mts` | Aggregate FILTER, window ranks with ties, and invalid partition references. |
 | `built-in-alternatives.mts` | Drizzle relational queries with ordered/limited nested pets, both built-in single-count alternatives, and simultaneous FILTER aggregates. |
 | `extensibility.mts` | Join deduplication and Drizzle's published PostgreSQL proxy dialect factory. |
+| `query-tree.mts` | A Kysely query read as operation nodes and rewritten by the exported transformer; a custom plugin refusing an unfiltered delete or update however the query was composed, while a template statement and an always-true filter pass it; a Drizzle builder's clause config being protected, its statement yielding only text, name, column, and parameter chunks, and `and()` with no filters compiling to a delete with no WHERE. |
 | `shared-queries.mts` | Matching left-join rows and inferred types (also through 0.45's `Kyselify`), the 1.0 relational query beside `jsonArrayFrom`, a second `where()` rejected outside dynamic mode and replacing the first inside it, awaited async helpers, `withSchema`, and Kysely's ambiguous unqualified reference. |
 | `join-shapes.mts` | Drizzle's left-joined nested object typed and returned as `null` as a whole; Kysely's joined columns nullable one by one. |
 | `dialect-types.mts` | `returning()` compiling on a Kysely MySQL instance, and absent from Drizzle's MySQL insert builder in types and at runtime. |
