@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
 import { PGlite } from '@electric-sql/pglite'
 import { Kysely, PGliteDialect, sql as ksql } from 'kysely'
-import { eq, and, not, sql } from 'drizzle-stable'
+import { eq, and, not, like, sql } from 'drizzle-stable'
 import { pgTable, integer, text, QueryBuilder } from 'drizzle-stable/pg-core'
 import {
   eq as rcEq,
   and as rcAnd,
   not as rcNot,
+  like as rcLike,
   sql as rcSql,
 } from 'drizzle-rc'
 import {
@@ -35,11 +36,13 @@ const inputs = [
   eq(person.first_name, person.id),
   and(person.id),
   not(person.id),
+  like(person.id, '1%'),
 ]
 const rcInputs = [
   rcEq(rcPerson.first_name, rcPerson.id),
   rcAnd(rcPerson.id),
   rcNot(rcPerson.id),
+  rcLike(rcPerson.id, '1%'),
 ]
 eq(sql<string>`${person.first_name}`, 42)
 rcEq(rcSql<string>`${rcPerson.first_name}`, 42)
@@ -69,6 +72,8 @@ function compileChecks() {
   )
   // @ts-expect-error A non-boolean negation is not a valid WHERE condition.
   db.selectFrom('person').where((eb) => eb.not(eb.ref('id')))
+  // @ts-expect-error A pattern is not a valid operand for an integer column.
+  db.selectFrom('person').where('id', 'like', '1%')
   db.selectFrom('person').where((eb) =>
     // @ts-expect-error SQL expression is typed string, not number.
     eb(ksql<string>`${eb.ref('first_name')}`, '=', 42),
