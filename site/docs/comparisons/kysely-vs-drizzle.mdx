@@ -480,9 +480,13 @@ Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude
 
 **The database cannot tell them apart: both send one parameterized statement, and [performance belongs to the statement](/docs/comparisons/query-builder-vs-raw-sql#performance-belongs-to-the-statement-not-the-authoring-tool).** Drizzle describes itself as "a thin TypeScript layer on top of SQL with almost 0 overhead", and its [prepared statements](https://orm.drizzle.team/docs/perf-queries) build the SQL once, with `sql.placeholder()` for the values that change, and reuse it on every call. Kysely has no placeholder API: it builds the statement on each call, and [`.compile()`](/docs/recipes/splitting-query-building-and-execution) splits building from execution only for a query whose values are fixed. Neither library is benchmarked here.
 
+### Which is easier for a coding agent to use?
+
+**Both ship examples where an agent reads them; Kysely also checks what the agent writes.** Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with. And the checks on this page are an agent's feedback loop: a wrong reference is a compile error it can read and fix without a database.
+
 ### Why use Kysely instead of Drizzle?
 
-**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change: references checked against the query in every clause; JSON and CASE expressions whose types are inferred instead of declared, and filtered aggregates and windows built instead of templated; builders that behave like values, shared without rebuilding and executed only when asked; and public interfaces for plugins and dialects.** Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Its method docs and examples are version-matched in the package, so editors and coding agents read the API you installed.
+**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change: references checked against the query in every clause; JSON and CASE expressions whose types are inferred instead of declared, and filtered aggregates and windows built instead of templated; builders that behave like values, shared without rebuilding and executed only when asked; and public interfaces for plugins and dialects.** Its types come from the database itself, so it fits a schema that another tool, service, or team migrates.
 
 ### When is Drizzle the better choice?
 
