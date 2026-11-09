@@ -389,9 +389,9 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 **A Drizzle builder runs when it is awaited; a Kysely builder runs when you call `.execute()`.**
 
-## Kysely is built to be extended
+## Kysely is extended through its query tree, not its builders
 
-Before it is SQL, every Kysely query is an immutable tree of [operation nodes](https://kysely-org.github.io/kysely-apidoc/interfaces/OperationNode.html): a select node that holds its joins, its `where`, and its limit as nodes of their own. The tree is public. `toOperationNode()` returns it from any builder, the node types and [`OperationNodeTransformer`](https://kysely-org.github.io/kysely-apidoc/classes/OperationNodeTransformer.html) are exported, and plugins, custom expressions, and dialects are interfaces built on it.
+Neither library has a public API for adding methods to its builders. Kysely composes them with functions instead: `$call` applies a function that takes and returns a builder in the middle of a chain, and [reusable helpers](/docs/recipes/reusable-helpers) do the same for expressions. What Kysely opens is the query underneath. Before it is SQL, every Kysely query is an immutable tree of [operation nodes](https://kysely-org.github.io/kysely-apidoc/interfaces/OperationNode.html): a select node that holds its joins, its `where`, and its limit as nodes of their own. The tree is public. `toOperationNode()` returns it from any builder, the node types and [`OperationNodeTransformer`](https://kysely-org.github.io/kysely-apidoc/classes/OperationNodeTransformer.html) are exported, and plugins, custom expressions, and dialects are interfaces built on it.
 
 ### Plugins see the query
 
