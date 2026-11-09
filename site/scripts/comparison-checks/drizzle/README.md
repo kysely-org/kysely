@@ -56,6 +56,45 @@ npm test
 With `COMPARISON_DATABASE_URL` set to a disposable PostgreSQL database, it also
 runs the three bundles and checks that they return the same rows.
 
+## Type-checking cost
+
+`type-cost/` measures what each library asks of the compiler, as TypeScript's
+instantiation count from `tsc --extendedDiagnostics`. It uses this package's
+dependencies, plus Kysely 0.30.0-beta.2 as `kysely-next`:
+
+```sh
+npm run test:type-cost
+```
+
+`generate.mjs` writes one schema per library from one table shape, at 10, 100,
+and 1,000 tables: a `Database` interface in the style a type generator emits for
+Kysely, and `pgTable` objects for Drizzle. It writes the same ten queries for
+each library (a lookup by id, all columns, a left join, two inner joins, GROUP BY
+with HAVING, an IN subquery, a CTE, an insert, an update, and optional filters),
+each assigned to the same written-out row type, and the same ten again over a
+second set of tables. Neither side uses a `sql` template, and Drizzle's client
+is created without a relations schema. `equivalence.mjs` runs all of them on
+PGlite and requires the same rows from every library.
+
+`measure.mjs` type-checks 156 programs per compiler and asserts the counts in
+`expected.json` exactly (`--update` rewrites the file, `--time` also prints
+check times):
+
+- `baseline`: the library, a client, and the schema, with no query.
+- `all`: the ten queries. Minus `baseline`, this includes the types each library
+  instantiates once per program.
+- `all-twice`: the ten, and the ten again over the other tables. Minus `all`,
+  this is the cost of ten more queries.
+- `all-plus-<query>`: the ten, and one query again. Minus `all`, this is the
+  cost of one more query of that kind.
+
+TypeScript 7 checks files on several checkers, each with its own cache, so its
+default count repeats first-use work per checker and changes with how files are
+split. The counts are taken with `--singleThreaded`, where TypeScript 7 agrees
+with TypeScript 6 within 3%. Check time is measured in the default mode, depends
+on the machine, and is printed, never asserted. Every program is checked with
+`strict` and `skipLibCheck`.
+
 PGlite tests PostgreSQL execution semantics without a server. These fixtures do
 not test node-postgres transport or its default bigint parser; comparisons of
 aggregate values normalize the driver representation. They do not measure

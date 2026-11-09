@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node verify.mjs"
+    "test": "node verify.mjs",
+    "test:type-cost": "node type-cost/measure.mjs && node --import tsx type-cost/equivalence.mjs"
   },
   "devDependencies": {
     "kysely": "0.29.8",
+    "kysely-next": "npm:kysely@0.30.0-beta.2",
     "drizzle-stable": "npm:drizzle-orm@0.45.4",
     "drizzle-rc": "npm:drizzle-orm@1.0.0-rc.5",
     "@electric-sql/pglite": "0.5.10",
