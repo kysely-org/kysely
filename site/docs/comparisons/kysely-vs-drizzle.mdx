@@ -6,13 +6,15 @@ description: 'Compare Kysely and Drizzle ORM in TypeScript: compile-time referen
 
 # Kysely vs Drizzle ORM
 
-Kysely and Drizzle ORM start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API, bind values as parameters, and infer result types without generating a client. Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://orm.drizzle.team/docs/overview). In this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models declared in TypeScript, which Drizzle calls tables, migrations generated from them, a relational query API, and a SQL-style query builder. This page compares that builder with Kysely, and says where the rest of Drizzle earns its place.
-
-**Both infer the result of a query; Drizzle knows what each column is, and Kysely also knows whether the query can see it.** Drizzle's builder is SQL-like in clause order and JavaScript in the rest: columns are objects, operators are imported functions, and aliases are variables. Kysely writes SQL's own operators and aliases, and carries the tables and aliases in scope through every step, so a reference is checked where it is written: in a selection, a filter, a join condition, a window, or through `eb.ref` in a `sql` fragment.
-
-Kysely also builds the JSON, CASE, and aggregate expressions that Drizzle writes as annotated templates, and its builders are immutable values that run only when asked. The differences that cost most are the quiet ones: an annotated template or a mutated builder returns the wrong rows with no error.
+Kysely and Drizzle ORM start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API and bind values as parameters, with no generated client. **Both infer the result of a query; Drizzle knows what each column is, and Kysely also knows whether the query can see it.**
 
 Drizzle is the most downloaded ORM on npm: [47.9 million drizzle-orm downloads](https://api.npmjs.org/downloads/point/2026-10-31:2026-11-06/drizzle-orm) in the week of October 31, 2026, ahead of [`@prisma/client`](https://api.npmjs.org/downloads/point/2026-10-31:2026-11-06/@prisma/client) and [Kysely](https://api.npmjs.org/downloads/point/2026-10-31:2026-11-06/kysely). All counts include installs pulled in by other packages. Its team builds it [from Ukraine](https://orm.drizzle.team/docs/sustainability#drizzle-llc), and kept shipping through the war. **Drizzle brought SQL-first TypeScript to the mainstream, and every SQL-first library, Kysely included, has a bigger audience for it.**
+
+Drizzle's builder is SQL-like in clause order and JavaScript in the rest: columns are objects, operators are imported functions, and aliases are variables. Kysely writes SQL's own operators and aliases, and carries the tables and aliases in scope through every step, so a reference is checked where it is written: in a selection, a filter, a join condition, a window, or through `eb.ref` in a `sql` fragment.
+
+Kysely also builds the JSON, CASE, and aggregate expressions that Drizzle writes as annotated templates, and its builders are immutable values that run only when asked. The differences that cost most are the quiet ones: an annotated template returns a wrong value under a type that still compiles, and in Drizzle's dynamic mode [a second `where()` replaces the first](#shared-queries-branch-without-mutation) with no error, even when the first was a tenant filter.
+
+Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://orm.drizzle.team/docs/overview). In this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models declared in TypeScript, which Drizzle calls tables, migrations generated from them, a relational query API, and a SQL-style query builder. This page compares that builder with Kysely, and says where the rest of Drizzle earns its place.
 
 Drizzle here means 0.45.4 and 1.0.0-rc.5, its stable release and its release candidate in November 2026. Its behavior below is the same in both unless stated.
 
@@ -411,18 +413,13 @@ const pairs = await db
   .execute()
 ```
 
-SQL writes the alias where the table is used, `join person as other`, and so does Kysely. In Drizzle it is declared ahead of the query, because a column has to hang off an object before a selection or a join condition can name it. The words differ the same way. SQL has no `eq` and no `alias`; it has `=` and `as`, and Kysely writes both as SQL does.
+SQL writes the alias where the table is used, `join person as other`, and so does Kysely. In Drizzle it is declared ahead of the query, because a column has to hang off an object before a selection or a join condition can name it. A derived table is declared ahead of the query for the same reason, and so is a CTE.
 
-<details>
-<summary>Derived tables, CTEs, and operator names</summary>
+A Drizzle CTE takes three steps: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it. A query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, and `selectFrom('adults')` without it is a type error.
 
-A derived table is declared ahead of the query for the same reason. So is a CTE: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it, and a query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, inside the chain.
+Operators split the same way. Drizzle's are imported functions, `inArray` for `IN` and `ne` for `<>`, and a function per operator can type its operands. Kysely takes SQL's operators as strings and completes them in place, and it has names SQL lacks too: `eb.ref` and `eb.val` say whether a string is a reference or a value, and an expression past a plain comparison is written inside an `(eb) => ...` callback.
 
-Drizzle's operators are imported functions with names of their own: `IN` is `inArray`, `IS NULL` is `isNull`, and `<>` is `ne`. Kysely takes SQL's operators as the strings SQL writes, and completes them in place.
-
-</details>
-
-Drizzle's choices pay it back elsewhere. A function per operator can type its operands, and a declared alias is a value to pass around, which Kysely also allows. Kysely has names SQL lacks too: `eb.ref` and `eb.val` say whether a string is a reference or a value, and an expression past a plain comparison is written inside an `(eb) => ...` callback. **Drizzle keeps SQL's clause order and builds the rest from JavaScript values; Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.**
+**Drizzle keeps SQL's clause order and builds the rest from JavaScript values; Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.**
 
 ## Kysely is extended through its query tree, not its builders
 
@@ -547,6 +544,10 @@ Packages measured **October 24, 2026**, bundles **November 9, 2026**. Package si
 
 **Drizzle is an ORM in the data framework sense: models, generated migrations, relational reads, and a query builder.** Its tables are models under another name: each maps property names to columns and converts values, with relations declared beside it. This page compares its builder with Kysely, which is a query builder only. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers model APIs like Drizzle's relational queries.
 
+### Is Drizzle type-safe?
+
+**For values and results, yes; for scope, no.** Drizzle infers each row and checks a literal against its column. It does not check that a column belongs to the query: [a column object is accepted in any query](#drizzle-checks-each-column-kysely-checks-the-query). Kysely checks that too, with [gaps of its own](#is-kysely-fully-type-safe).
+
 ### Is Kysely faster than Drizzle?
 
 **The database cannot tell them apart: both send one parameterized statement, and [performance belongs to the statement](/docs/comparisons/query-builder-vs-raw-sql#performance-belongs-to-the-statement-not-the-authoring-tool).** Drizzle describes itself as "a thin TypeScript layer on top of SQL with almost 0 overhead", and its [prepared statements](https://orm.drizzle.team/docs/perf-queries) build the SQL once, with `sql.placeholder()` for the values that change, and reuse it on every call. Kysely has no placeholder API: it builds the statement on each call, and [`.compile()`](/docs/recipes/splitting-query-building-and-execution) splits building from execution only for a query whose values are fixed. Neither library is benchmarked here.
@@ -557,7 +558,7 @@ Packages measured **October 24, 2026**, bundles **November 9, 2026**. Package si
 
 ### Which is easier for a coding agent to use?
 
-**Both ship examples where an agent reads them; Kysely also checks what the agent writes, and its own examples.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with; in November 2026, nothing in Drizzle's repository does the same for its own.
+**Both ship examples where an agent reads them; Kysely also checks what the agent writes.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
 
 ### Why use Kysely instead of Drizzle?
 
