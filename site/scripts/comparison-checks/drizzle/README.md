@@ -36,6 +36,7 @@ generation from errors in PostgreSQL.
 | `removed-join.mts` | A join removed while collected filters still read its table: compiling, running without the option, and failing with it in Drizzle; rejected by Kysely in the chain, in a helper typed with that table, and in a reference passed as an expression; accepted by a Kysely helper typed with a union of tables. |
 | `statement-scope.mts` | Another table's column in ORDER BY, GROUP BY, HAVING, SET, and a delete's WHERE, a CTE that was never attached, and `returning()` resolving another table's column against the target table. |
 | `kysely-gaps.mts` | Kysely compiling `= null` and a union with reordered columns, where Drizzle rejects the first via types and throws on the second; and the references Kysely takes on trust: `sql.ref`, template text, a dynamic reference, and an expression from a standalone `expressionBuilder`. |
+| `inline-examples.mts` | Every JSDoc example labeled `ts` in the published declarations parsed as TypeScript: all of Kysely's parse, Drizzle 0.45.4 has one `...` placeholder, and 1.0.0-rc.5's MSSQL `delete` and `insert` examples do not parse. That nothing in Drizzle's repository checks its examples is a reading of its scripts and CI workflows, not something this suite can pin. |
 
 PGlite tests PostgreSQL execution semantics without a server. These fixtures do
 not test node-postgres transport or its default bigint parser; comparisons of
