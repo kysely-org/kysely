@@ -146,17 +146,20 @@ One reference failure is quiet: `returning({ id: pet.id })` on an insert into `p
 
 Most of these failures are loud once a test runs the branch that builds the reference; `matchingPeople` above passes every test that leaves the pet name out. The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
 
-### Is Kysely fully type-safe?
+**No query builder is perfectly type-safe, and Kysely is no exception; type safety is what it is built around, and every gap is treated as work to do.**
 
-**No query builder is perfectly type-safe; Kysely checks more of the query than Drizzle does, and treats the rest as work to do.** Its check is made where a reference is written, on a builder that knows the query, and it stops there.
+<details id="where-kyselys-checks-stop">
+<summary>Where Kysely's checks stop</summary>
 
-A reference written with `sql.ref` or as template text, a [dynamic reference](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html), an expression built ahead of time on a standalone `expressionBuilder`, and a helper whose builder parameter declares more tables than the caller's query has are all taken on trust. The reference shorthands `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
+Kysely's check is made where a reference is written, on a builder that knows the query, and it stops there. A reference written with `sql.ref` or as template text, a [dynamic reference](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html), an expression built ahead of time on a standalone `expressionBuilder`, and a helper whose builder parameter declares more tables than the caller's query has are all taken on trust. The reference shorthands `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
 
 Its scope rules are PostgreSQL's on every dialect. It rejects a select alias in `where` and `having`; MySQL accepts one in `HAVING`, SQLite in `WHERE` as well, and Kysely makes you repeat the expression there.
 
 Column objects pay Drizzle back here. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous.
 
 Two more Kysely gaps are quiet: `where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error, and a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it.
+
+</details>
 
 ## Kysely builds the expressions Drizzle writes as templates
 
@@ -546,7 +549,7 @@ Packages measured **October 24, 2026**, bundles **November 9, 2026**. Package si
 
 ### Is Drizzle type-safe?
 
-**For values and results, yes; for scope, no.** Drizzle infers each row and checks a literal against its column. It does not check that a column belongs to the query: [a column object is accepted in any query](#drizzle-checks-each-column-kysely-checks-the-query). Kysely checks that too, with [gaps of its own](#is-kysely-fully-type-safe).
+**For values and results, yes; for scope, no.** Drizzle infers each row and checks a literal against its column. It does not check that a column belongs to the query: [a column object is accepted in any query](#drizzle-checks-each-column-kysely-checks-the-query). Kysely checks that too, with [gaps of its own](#where-kyselys-checks-stop).
 
 ### Is Kysely faster than Drizzle?
 
