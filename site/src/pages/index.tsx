@@ -176,7 +176,7 @@ function SectionHero() {
 // permanent values for visitors with JavaScript disabled or the APIs blocked.
 const FALLBACK_STATS = {
   contributors: '150+',
-  downloads: '12M+',
+  downloads: '20M+',
   stars: '14k+',
 }
 
