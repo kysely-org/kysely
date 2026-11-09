@@ -6,7 +6,7 @@ description: 'Compare Kysely and Drizzle ORM in TypeScript: compile-time referen
 
 # Kysely vs Drizzle ORM
 
-Kysely and Drizzle ORM start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API, bind values as parameters, and infer result types without generating a client. Kysely is a type-safe SQL query builder. Drizzle describes itself as [a headless TypeScript ORM](https://orm.drizzle.team/docs/overview): tables declared in TypeScript, a SQL-like query builder, a relational query API beside it, and Drizzle Kit to generate migrations from the declarations. This page compares the two as query builders, and says where the rest of Drizzle earns its place.
+Kysely and Drizzle ORM start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API, bind values as parameters, and infer result types without generating a client. Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://orm.drizzle.team/docs/overview). In this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models declared in TypeScript, which Drizzle calls tables, migrations generated from them, a relational query API, and a SQL-style query builder. This page compares that builder with Kysely, and says where the rest of Drizzle earns its place.
 
 **Both infer the result of a query; Drizzle knows what each column is, and Kysely also knows whether the query can see it.** Drizzle's builder is SQL-like in clause order and JavaScript in the rest: columns are objects, operators are imported functions, and aliases are variables. Kysely writes SQL's own operators and aliases, and carries the tables and aliases in scope through every step, so a reference is checked where it is written: in a selection, a filter, a join condition, a window, or through `eb.ref` in a `sql` fragment. It builds the JSON, CASE, and aggregate expressions that Drizzle writes as annotated templates, and its builders are immutable values that run only when asked. The differences that cost most are the quiet ones: an annotated template or a mutated builder returns the wrong rows with no error.
 
@@ -533,7 +533,7 @@ Packages measured **October 24, 2026**, bundles **November 9, 2026**. Package si
 
 ### Is Drizzle an ORM or a query builder?
 
-**Both: Drizzle is a SQL-style query builder with an ORM's schema and relational layer around it.** This page compares that builder with Kysely, which is a query builder only. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers model APIs like Drizzle's relational queries.
+**Drizzle is an ORM in the data framework sense: models, generated migrations, relational reads, and a query builder.** Its tables are models under another name: each maps property names to columns and converts values, with relations declared beside it. This page compares its builder with Kysely, which is a query builder only. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers model APIs like Drizzle's relational queries.
 
 ### Is Kysely faster than Drizzle?
 
