@@ -1,0 +1,18 @@
+{
+  "name": "kysely-drizzle-comparison-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node verify.mjs"
+  },
+  "devDependencies": {
+    "kysely": "0.29.7",
+    "drizzle-stable": "npm:drizzle-orm@0.45.4",
+    "drizzle-rc": "npm:drizzle-orm@1.0.0-rc.5",
+    "@electric-sql/pglite": "0.5.10",
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3"
+  }
+}
