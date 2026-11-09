@@ -1,23 +1,25 @@
 ---
 sidebar_position: 6
 title: Kysely vs Drizzle
-description: 'Compare Kysely and Drizzle: query context, immutable builders, JSON traversal, SQL API depth, inline docs, custom dialects, and plugins.'
+description: 'Compare Kysely and Drizzle ORM in TypeScript: which references the compiler checks, typed JSON, CASE, and aggregate expressions, immutable query reuse, nested results, plugins, dialects, and using Kysely with a Drizzle schema.'
 ---
 
 # Kysely vs Drizzle
 
-Kysely checks table and alias references in the query context, keeps shared builders immutable, and infers results through JSON traversal and CASE expressions.
+Kysely and Drizzle start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API, bind values as parameters, and infer result types without generating a client. Kysely is a SQL query builder. Drizzle describes itself as [a headless TypeScript ORM](https://orm.drizzle.team/docs/overview): tables declared in TypeScript, a SQL-like query builder, a relational query API beside it, and Drizzle Kit to generate migrations from the declarations. This page compares the two as query builders, and says where the rest of Drizzle earns its place.
 
-Kysely is a SQL query builder. Drizzle is an ORM with a SQL-like builder; see [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm). These examples compare query checks, SQL API depth, composition, and extension APIs.
+**Both infer the result of a query; Drizzle knows what each column is, and Kysely also knows whether the query can see it.** Kysely carries the tables and aliases in scope through every step, so a reference is checked where it lands: a selection, a filter, a join condition, a window, or a `sql` fragment. It builds the JSON, CASE, and aggregate expressions that Drizzle writes as annotated templates, and its builders are immutable values that run only when asked.
 
-## Type safety beyond the result
+Drizzle here means 0.45.4, the current stable release, and 1.0.0-rc.5. Its behavior below is the same in both unless stated.
 
-Kysely checks which tables and aliases are available in each query.
+## Both infer the result of a join
 
-Assume configured `db` (Kysely) and `drizzleDb` clients, with `eq` and `gte` imported from Drizzle:
+Assume configured Kysely (`db`) and Drizzle (`drizzleDb`) clients over the same two tables:
 
 <details>
-<summary>Table definitions for the reference checks</summary>
+<summary>Database interface and Drizzle table objects</summary>
+
+Kysely's `Database` interface is types only, handwritten or [generated](/docs/generating-types) from the database:
 
 ```ts
 interface Database {
@@ -26,7 +28,7 @@ interface Database {
 }
 ```
 
-Drizzle table objects:
+Drizzle's tables are runtime objects, which Drizzle Kit also reads to generate migrations:
 
 ```ts
 import { integer, pgTable, text } from 'drizzle-orm/pg-core'
@@ -43,124 +45,95 @@ const pet = pgTable('pet', {
 })
 ```
 
-The definitions describe existing tables; they do not create them.
-
 </details>
 
-```ts title="A missing join"
-// Drizzle: TypeScript accepts this; PostgreSQL rejects the missing pet table.
+Select adults with their pets' names, keeping people who have no pet.
+
+With Drizzle:
+
+```ts
+const rows = await drizzleDb
+  .select({ first_name: person.first_name, pet_name: pet.name })
+  .from(person)
+  .leftJoin(pet, eq(pet.owner_id, person.id))
+  .where(gte(person.age, 18))
+  .orderBy(person.first_name)
+```
+
+With Kysely:
+
+```ts
+const rows = await db
+  .selectFrom('person')
+  .leftJoin('pet', 'pet.owner_id', 'person.id')
+  .select(['person.first_name', 'pet.name as pet_name'])
+  .where('person.age', '>=', 18)
+  .orderBy('person.first_name')
+  .execute()
+```
+
+The rows match, and so do the inferred types: `{ first_name: string; pet_name: string | null }[]`. Both libraries make `pet_name` nullable because the join is a left join. **Written correctly, the two queries are equivalent; the libraries differ in what the compiler says when a query is wrong.**
+
+## Drizzle checks each column; Kysely checks the query
+
+Drop the join and keep a filter on `pet`:
+
+```ts
+// Drizzle: compiles. PostgreSQL rejects the missing pet table.
 drizzleDb.select({ id: person.id }).from(person).where(eq(pet.name, 'Catto'))
 
-// Kysely: TypeScript rejects pet.name because pet has not been joined.
+// Kysely: TypeScript error, pet is not available in this query.
 db.selectFrom('person').select('id').where('pet.name', '=', 'Catto')
 ```
 
-AdonisJS creator Harminder Virk documented these gaps in his [December 2023 type-safety comparison](https://github.com/thetutlage/meta/discussions/8). They still reproduce in **Drizzle 0.45.4 and 1.0.0-rc.5**, checked October 24, 2026:
+A Drizzle column is a value. `pet.name` has one type wherever it is passed, `eq()` returns a condition that records no table, and `select()` is called before `from()`, so a selection is typed before the query has a table. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far.
 
-- An unjoined column selection passes TypeScript; Drizzle rejects it during SQL generation.
-- An unjoined filter or incorrect underlying-table reference after a subquery alias passes TypeScript and SQL generation, then fails in PostgreSQL.
+| Invalid reference                                                   | Kysely            | Drizzle                                                     |
+| ------------------------------------------------------------------- | ----------------- | ----------------------------------------------------------- |
+| Select `pet.name` without joining `pet`                             | TypeScript error. | Passes TypeScript; Drizzle throws while generating the SQL. |
+| Filter on `pet.name` without joining `pet`                          | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query.            |
+| Join a subquery aliased `pets`, then compare `pet.owner_id` in `on` | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query.            |
+| Partition a window by a column of a table the query never joined    | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query.            |
+| Reference a table the query never joined inside a `sql` fragment    | TypeScript error. | Passes TypeScript; PostgreSQL rejects the query.            |
 
-Kysely rejects all three through TypeScript.
+Drizzle looks for the first of these itself, while generating the SQL: `Your "pet_name" field references a column "pet"."name", but the table "pet" is not part of the query! Did you forget to join it?` The check exists; it runs after the compiler has passed the code. Harminder Virk, the creator of AdonisJS, [reported the first three rows in December 2023](https://github.com/thetutlage/meta/discussions/8). Drizzle's [relational query docs](https://orm.drizzle.team/docs/rqb-v2) state the rule in prose, because no type enforces it: columns "must go through the callback parameter, not through the imported table object".
 
-<details>
-<summary>Operator input checks</summary>
+**Every row in that table is a failed run with Drizzle and a compile error with Kysely.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
 
-These calls compile in both Drizzle versions:
+The gap is structural, not a missing feature. Closing it would mean every column, condition, and `sql` fragment carrying its table dependencies in its type, and every clause checking them against the query.
 
-```ts title="Drizzle"
-import { and, eq, sql } from 'drizzle-orm'
+Column objects pay Drizzle back elsewhere. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous. **In Drizzle, a column is a value that can be passed anywhere; in Kysely, a reference is checked where it lands.**
 
-eq(person.first_name, person.id) // text versus integer column
-and(person.id) // integer used as a boolean condition
-eq(sql<string>`${person.first_name}`, 42) // string expression versus number
+## Kysely's operators check both operands
+
+These Drizzle calls compile, and PostgreSQL rejects each one:
+
+```ts
+eq(person.first_name, person.id) // a text column compared with an integer column
+and(person.id) // an integer column used as a condition
 ```
 
-**The first two fail in PostgreSQL; Kysely rejects them through TypeScript:**
+Kysely rejects them in TypeScript:
 
-```ts title="Kysely: TypeScript errors"
+```ts
 db.selectFrom('person').where((eb) => eb('first_name', '=', eb.ref('id')))
 db.selectFrom('person').where((eb) => eb.and([eb.ref('id')]))
 ```
 
-Drizzle rejects some wrong column-to-literal values, such as `eq(person.id, 'one')`. That does not cover column/expression compatibility or boolean inputs. Kysely also rejects a number compared with a `sql<string>` expression.
+Drizzle does check a literal against its column: `eq(person.id, 'one')` is a type error. That check stops at literals: two columns of different types compile, and so does a `sql<string>` expression compared with `42`. **Drizzle checks a literal against its column; Kysely checks an expression against an expression.**
 
-</details>
+## Kysely builds the expressions Drizzle writes as templates
 
-<details>
-<summary>Checked references inside SQL fragments</summary>
+Past selections, joins, filters, and plain aggregates, Drizzle's builder hands over to its [`sql` template](https://orm.drizzle.team/docs/sql). JSON traversal, CASE, aggregate FILTER, and window clauses are SQL text with a result type declared by hand. Kysely has a builder for each, so the type is inferred and the references are checked.
 
-Kysely's query context checks continue inside a fragment through `eb.ref`:
+### JSON traversal
 
-```ts title="Kysely"
-const query = db
-  .selectFrom('person')
-  .select((eb) => sql<string>`lower(${eb.ref('first_name')})`.as('name'))
-// Replace first_name with pet.name: TypeScript error, pet is not joined.
-```
-
-```ts title="Drizzle: compiles, then fails in PostgreSQL"
-drizzleDb
-  .select({ name: sql<string>`lower(${pet.name})`.as('name') })
-  .from(person)
-```
-
-`eb.ref` checks the name, query context, and declared type. The fragment's grammar and `sql<T>` result annotation remain unchecked.
-
-</details>
-
-**Query context checks depend on information carried through the API.** Kysely builds selections against an existing FROM/JOIN context. Drizzle accepts selections before that context exists, and `SQL<T>` carries no table/alias dependencies. Adding more SQL helpers alone would not close this gap: expressions and builders would need to preserve those dependencies and check them against the query context.
-
-## Immutable builders and composition
-
-Drizzle mutates a shared builder:
-
-```ts title="Drizzle"
-const base = drizzleDb
-  .select({ id: person.id })
-  .from(person)
-  .where(gte(person.age, 18))
-
-const preview = base.limit(1)
-const everyone = base
-// Both now have LIMIT 1.
-```
-
-Kysely returns an independent branch:
-
-```ts title="Kysely"
-const base = db.selectFrom('person').select('id').where('age', '>=', 18)
-const preview = base.limit(1)
-const everyone = base
-// everyone has no limit.
-```
-
-Both Drizzle versions mutate the base. Create a fresh builder for independent branches:
-
-```ts
-const adults = () =>
-  drizzleDb.select({ id: person.id }).from(person).where(gte(person.age, 18))
-
-const preview = adults().limit(1)
-const everyone = adults()
-```
-
-Drizzle supports [query helpers](https://orm.drizzle.team/docs/dynamic-query-building); **Kysely lets callers branch from the same builder without changing each other's queries.**
-
-<span id="sql-coverage-and-escape-hatches" />
-
-## SQL depth and escape hatches
-
-Kysely provides builders for JSON traversal, CASE, aggregate FILTER clauses, and window expressions. The reviewed Drizzle versions express these through SQL templates. Nested relation reads also have a built-in Drizzle API, covered below.
-
-### Type-safe JSON traversal
-
-Use the same JSON shape in both libraries:
+A `user_settings.profile` column holds JSON typed as `Profile` in both libraries:
 
 <details>
 <summary>Matching JSON column definitions</summary>
 
 ```ts
-// Kysely's database interface:
 type Profile = { addresses: { city: string }[] }
 
 interface Database {
@@ -169,7 +142,6 @@ interface Database {
 ```
 
 ```ts
-// Drizzle's JSON column has the same Profile type:
 import { integer, jsonb, pgTable } from 'drizzle-orm/pg-core'
 
 const settings = pgTable('user_settings', {
@@ -180,9 +152,23 @@ const settings = pgTable('user_settings', {
 
 </details>
 
-Read the first address's city:
+Read the first address's city. With Drizzle:
 
-```ts title="Kysely"
+```ts
+const rows = await drizzleDb
+  .select({
+    id: settings.id,
+    first_city: sql<string | null>`
+      ${settings.profile}->'addresses'->0->'city'
+    `.as('first_city'),
+  })
+  .from(settings)
+// The string | null type is supplied by hand.
+```
+
+With Kysely:
+
+```ts
 const rows = await db
   .selectFrom('user_settings')
   .select('id')
@@ -193,37 +179,38 @@ const rows = await db
 // Inferred: { id: number; first_city: string | null }[]
 ```
 
-```ts title="Drizzle"
-const rows = await drizzleDb
-  .select({
-    id: settings.id,
-    first_city: sql<string | null>`
-      ${settings.profile}->'addresses'->0->'city'
-    `.as('first_city'),
-  })
-  .from(settings)
-// The string | null type is supplied manually.
-```
+Kysely infers `string | null` because the array may be empty. Now misspell `city` as `ctiy`:
 
-Kysely infers `string | null` for the potentially empty array. Now misspell `city` as `ctiy`:
-
-```ts title="Drizzle: compiles and silently returns null"
+```ts
+// Drizzle: compiles, runs, and returns null for every row.
 sql<string | null>`${settings.profile}->'addresses'->0->'ctiy'`
+
+// Kysely: TypeScript error, ctiy is not a key of an address.
+eb.ref('profile', '->').key('addresses').at(0).key('ctiy')
 ```
 
-```ts title="Kysely: the misspelled key is a TypeScript error"
-db.selectFrom('user_settings').select((eb) =>
-  eb.ref('profile', '->').key('addresses').at(0).key('ctiy').as('first_city'),
-)
+**A misspelled JSON key is a silent `null` in Drizzle and a compile error in Kysely.** Kysely also rejects reading `city` before indexing `addresses`. Both libraries trust the declared `Profile` type; neither validates the stored JSON.
+
+### CASE expressions
+
+Label each person by age, including people whose age is unknown. With Drizzle:
+
+```ts
+const query = drizzleDb
+  .select({
+    id: person.id,
+    age_group: sql<string>`case
+      when ${gte(person.age, 18)} then ${'adult'}
+      when ${lt(person.age, 18)} then ${'minor'}
+      else ${'unknown'}
+    end`.as('age_group'),
+  })
+  .from(person)
 ```
 
-**Both Drizzle versions silently return `null`; Kysely rejects the typo.** Kysely also rejects accessing `city` before indexing `addresses`. These checks use declared types, not runtime JSON validation.
+With Kysely:
 
-### CASE WHEN expressions
-
-[Open Collective uses CASE for currency conversion](https://github.com/opencollective/opencollective-api/blob/0a59b37c8b33574ee8d9d9a586d5a19506fd5921/server/graphql/v2/query/collection/OrdersCollectionQuery.ts#L790-L811). A smaller example labels `person.age`, including null ages:
-
-```ts title="Kysely"
+```ts
 const query = db
   .selectFrom('person')
   .select('id')
@@ -238,115 +225,29 @@ const query = db
       .end()
       .as('age_group'),
   )
-// Inferred: { id: number; age_group: string }[] on execution.
+// Inferred: { id: number; age_group: string }[]
 ```
 
-```ts title="Drizzle"
-import { gte, lt, sql } from 'drizzle-orm'
+Both return the same labels. Now remove the `else`. Kysely infers `string | null`, and a caller's `.toUpperCase()` stops compiling until it handles the null. Drizzle's `sql<string>` is unchanged, still claims a string, and a person with no age returns `null`. Drizzle's [own guide](https://orm.drizzle.team/docs/guides/update-many-with-different-value) writes CASE as a template, and the request for [native CASE support](https://github.com/drizzle-team/drizzle-orm/issues/1065) has been open since August 2023. **A `sql<T>` annotation is a claim about the expression; Kysely's inferred type is derived from it.**
 
-const query = drizzleDb
-  .select({
-    id: person.id,
-    age_group: sql<string>`case
-      when ${gte(person.age, 18)} then ${'adult'}
-      when ${lt(person.age, 18)} then ${'minor'}
-      else ${'unknown'}
-    end`.as('age_group'),
-  })
-  .from(person)
-```
+### Aggregate filters and windows
 
-Both return the same labels. Drizzle's [CASE recipe](https://orm.drizzle.team/docs/guides/update-many-with-different-value) likewise supplies SQL syntax and a result annotation manually.
-
-**Remove the ELSE fallback:** Kysely infers `string | null`; Drizzle's unchanged `sql<string>` still claims a string. A null age now returns `null`, so Kysely requires a check before `.toUpperCase()`. Its builder also checks comparison values and WHEN/THEN structure.
-
-### Nested arrays and objects through the SQL API
-
-Drizzle's [relational API](https://orm.drizzle.team/docs/rqb) supports nested relations with ordering, per-parent limits, inferred results, and empty arrays. Through the SQL-style APIs compared below, Kysely ships typed JSON helpers; Drizzle's wrapper supplies aggregation and the empty-array fallback manually.
-
-<details>
-<summary>Equivalent nested queries and a JSON alias mismatch</summary>
-
-Using the same `person` and `pet` tables, return each person's first two pets by name and ID:
-
-```ts title="Kysely"
-import { jsonArrayFrom } from 'kysely/helpers/postgres'
-
-const query = db
-  .selectFrom('person')
-  .select('person.id')
-  .select((eb) =>
-    jsonArrayFrom(
-      eb
-        .selectFrom('pet')
-        .select(['pet.id as pet_id', 'pet.name'])
-        .whereRef('pet.owner_id', '=', 'person.id')
-        .orderBy('pet.name')
-        .orderBy('pet.id')
-        .limit(2),
-    ).as('pets'),
-  )
-// Inferred: { id: number; pets: { pet_id: number; name: string }[] }[]
-```
-
-The subquery supplies the nested type and SQL aliases; a person without pets gets `[]`.
-
-The Drizzle SQL-style equivalent below wraps the subquery in JSON aggregation:
-
-```ts title="Drizzle"
-import { asc, eq, sql } from 'drizzle-orm'
-
-const petRows = drizzleDb
-  .select({
-    pet_id: sql<number>`${pet.id}`.as('pet_id'),
-    name: pet.name,
-  })
-  .from(pet)
-  .where(eq(pet.owner_id, person.id))
-  .orderBy(asc(pet.name), asc(pet.id))
-  .limit(2)
-
-const query = drizzleDb
-  .select({
-    id: person.id,
-    pets: sql<Awaited<typeof petRows>>`(
-      select coalesce(json_agg(pet_rows), '[]'::json)
-      from ${petRows.as('pet_rows')}
-    )`.as('pets'),
-  })
-  .from(person)
-```
-
-`Awaited<typeof petRows>` reuses the inferred selection type. This wrapper supplies JSON aggregation and the empty-array fallback; the selected expression supplies the SQL alias. Replace that alias with an object-key rename:
+Count images and videos in one row, the shape [Immich](https://immich.app/) builds with Kysely. With Drizzle:
 
 ```ts
-.select({ pet_id: pet.id, name: pet.name })
+const query = drizzleDb
+  .select({
+    image_count: sql<string>`count(*)
+      filter (where ${eq(asset.kind, 'image')})`.as('image_count'),
+    video_count: sql<string>`count(*)
+      filter (where ${eq(asset.kind, 'video')})`.as('video_count'),
+  })
+  .from(asset)
 ```
 
-**In this hand-written JSON wrapper, both Drizzle versions infer `pet_id`, but return JSON with `id`.** The wrapper bypasses Drizzle's row mapping for the inner selection, leaving the database column name in the JSON. Kysely's SQL alias and inferred key agree. Custom Drizzle helpers can package the wrapper; Kysely [ships them](/docs/recipes/relations).
+With Kysely:
 
-`jsonObjectFrom` infers the object or `null`; `jsonBuildObject` infers fields from expressions. PostgreSQL's `jsonAgg` remains a builder with ordering, filtering, distinct, and window support:
-
-```ts title="Kysely: aggregate a joined column"
-const query = db
-  .selectFrom('person')
-  .innerJoin('pet', 'pet.owner_id', 'person.id')
-  .select('person.id')
-  .select((eb) => eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('pet_names'))
-  .groupBy('person.id')
-```
-
-`jsonAgg` can return SQL null on empty input; `jsonArrayFrom` supplies `[]`. JSON needs driver parsing or [a result plugin](/docs/recipes/relations#the-json-data-type-and-functions).
-
-Drizzle's [SQL-style join guide](https://orm.drizzle.team/docs/joins#aggregating-results) shows JavaScript grouping as another option.
-
-</details>
-
-### Filtered aggregate counts
-
-[Immich uses filtered counts](https://github.com/immich-app/immich/blob/0733cc10ee7a0c8ebd5d37b1804b5c28944b7cdd/server/src/repositories/asset.repository.ts#L710-L722). This simplified query counts images and videos in one aggregate row using `asset.kind`, a string column:
-
-```ts title="Kysely"
+```ts
 const query = db
   .selectFrom('asset')
   .select((eb) => [
@@ -361,148 +262,223 @@ const query = db
   ])
 ```
 
-```ts title="Drizzle"
-import { eq, sql } from 'drizzle-orm'
+Drizzle's [`count()` with `.where()`](https://orm.drizzle.team/docs/guides/count-rows) and [`db.$count(table, filter)`](https://orm.drizzle.team/docs/select#count) cover a single conditional count. Its `count()` has no FILTER or OVER methods, so several filtered aggregates in one row, or any window, are templates. In Kysely a window is `eb.fn.agg<string>('rank').over((ob) => ob.partitionBy('trace_id').orderBy('start_time', 'desc'))`, and a partition by a table the query never joined is the fourth row of the table above.
 
-const query = drizzleDb
-  .select({
-    image_count: sql<string>`count(*)
-      filter (where ${eq(asset.kind, 'image')})`.as('image_count'),
-    video_count: sql<string>`count(*)
-      filter (where ${eq(asset.kind, 'video')})`.as('video_count'),
-  })
-  .from(asset)
-```
+## Kysely's escape hatch keeps references checked
 
-Drizzle's built-in [`count()` with `.where()`](https://orm.drizzle.team/docs/guides/count-rows) or [`db.$count(table, filter)`](https://orm.drizzle.team/docs/select#count) handles a single conditional count. The example above uses a separate filter for each aggregate. Drizzle binds the values, but its `count()` has no aggregate FILTER or OVER builder methods; those clauses use SQL templates.
-
-### Window functions
-
-[Langfuse's catalog ranks spans per trace](https://github.com/langfuse/langfuse/blob/536c2d6905d4311cc7c2b177454a084907328c43/packages/shared/src/server/query-ast/catalog.ts#L230-L250). Drizzle maps `events_core`'s `span_id`, `trace_id`, and `start_time` to `events.spanId`, `events.traceId`, and `events.startTime`:
-
-<details>
-<summary>Matching window queries and scope checks</summary>
-
-```ts title="Kysely"
-const query = db
-  .selectFrom('events_core')
-  .select('span_id')
-  .select((eb) =>
-    eb.fn
-      .agg<string>('rank')
-      .over((ob) => ob.partitionBy('trace_id').orderBy('start_time', 'desc'))
-      .as('rk'),
-  )
-```
-
-```ts title="Drizzle"
-import { desc, sql } from 'drizzle-orm'
-
-const query = drizzleDb
-  .select({
-    span_id: events.spanId,
-    rk: sql<string>`rank() over (
-      partition by ${events.traceId}
-      order by ${desc(events.startTime)}
-    )`.as('rk'),
-  })
-  .from(events)
-```
-
-Both return matching ranks, including ties.
-
-<details>
-<summary>An unjoined window partition passes Drizzle’s types and fails in PostgreSQL</summary>
-
-Now partition by the unjoined `person` table:
-
-```ts title="Drizzle: passes TypeScript and SQL generation"
-const query = drizzleDb
-  .select({
-    rk: sql<string>`rank() over (
-      partition by ${person.id}
-      order by ${desc(events.startTime)}
-    )`.as('rk'),
-  })
-  .from(events)
-// PostgreSQL rejects the partition reference outside the query context.
-```
-
-Stable Drizzle emits `"id"` (missing column); the RC emits `"person"."id"` (missing FROM entry). Both pass TypeScript and SQL generation.
-
-```ts title="Kysely: rejected before execution"
-db.selectFrom('events_core').select((eb) =>
-  eb.fn
-    .agg<string>('rank')
-    .over((ob) => ob.partitionBy('person.id'))
-    .as('rk'),
-)
-// TypeScript error: person is not available in this query.
-```
-
-</details>
-
-</details>
-
-These SQL examples were checked with **Kysely 0.29.7**, **Drizzle 0.45.4**, and **1.0.0-rc.5** using PGlite's PostgreSQL engine, with strict TypeScript checks and runtime result assertions. Count/rank string annotations assume the usual node-postgres bigint parsing; they do not convert results.
-
-[Reproduce the checks](https://github.com/kysely-org/kysely/tree/master/site/scripts/comparison-checks/drizzle).
-
-## Custom dialects and plugins
-
-### Supply your own database backend
-
-A [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) supplies the driver, compiler, adapter, and introspector through one public interface. Pass your implementation to `new Kysely<Database>({ dialect })`. Community [BigQuery](https://github.com/maktouch/kysely-bigquery) and [ClickHouse](https://github.com/founderpathcom/kysely-clickhouse) dialects use this extension model. Database interfaces support branded IDs, unions, and other TypeScript types without runtime column objects or value conversion.
-
-Drizzle supports [proxy execution](https://orm.drizzle.team/docs/connect-drizzle-proxy) and a `PgDialect` factory in published [stable](https://unpkg.com/drizzle-orm@0.45.4/pg-proxy/driver.d.ts) and [RC](https://unpkg.com/drizzle-orm@1.0.0-rc.5/pg-proxy/driver.d.ts) APIs. Its tables, builders, and dialect classes remain database-family-specific; Kysely exposes a common backend contract. See [dialects](/docs/dialects).
-
-### Transform queries before SQL compilation
-
-A [plugin](/docs/plugins) transforms the query tree before compilation and/or returned rows. Attach it to an instance or one query. For example, remove identical joins added by separate helpers:
+Kysely does not cover all of SQL either; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest. Both libraries have a `sql` template that binds values as parameters. They differ in what an interpolated reference is:
 
 ```ts
-import { DeduplicateJoinsPlugin } from 'kysely'
+// Drizzle: compiles. pet is not in the query, and PostgreSQL rejects it.
+drizzleDb
+  .select({ name: sql<string>`lower(${pet.name})`.as('name') })
+  .from(person)
 
-const query = db
-  .selectFrom('person')
-  .innerJoin('pet', 'pet.owner_id', 'person.id')
-  .innerJoin('pet', 'pet.owner_id', 'person.id')
-  .select('person.id')
-  .withPlugin(new DeduplicateJoinsPlugin())
-// Compiles with one identical INNER JOIN instead of two.
+// Kysely: eb.ref is checked against the tables in scope.
+db.selectFrom('person').select((eb) =>
+  sql<string>`lower(${eb.ref('first_name')})`.as('name'),
+)
+// Replace first_name with pet.name: TypeScript error, pet is not joined.
 ```
 
-The reviewed Drizzle APIs have SQL helpers and execution callbacks, but no comparable general query-tree/result plugin interface.
+Neither library checks a fragment's grammar or its declared result type. **Drizzle's `sql` template carries SQL text, bound values, and a declared type; Kysely's also carries checked references.** Wrap repeated fragments in [reusable helpers](/docs/recipes/reusable-helpers) that take `Expression<T>`; see the [`sql` API](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html) for more.
 
-Plugins do not change inferred result types automatically; result transformations must match your types.
+## Nested results stay in the same builder
 
-## Agent experience
+Drizzle's [relational queries](https://orm.drizzle.team/docs/rqb-v2) are the shortest way to read a declared relation. Return each person with their first two pets by name, in 1.0 syntax:
 
-Kysely ships [version-matched method docs and checked examples](https://github.com/kysely-org/kysely/blob/v0.29.7/src/query-builder/select-query-builder.ts) beside the API.
+```ts
+const rows = await drizzleDb.query.person.findMany({
+  columns: { first_name: true },
+  with: {
+    pets: { columns: { name: true }, orderBy: { name: 'asc' }, limit: 2 },
+  },
+})
+// { first_name: string; pets: { name: string }[] }[]
+```
 
-## Package size and dependencies
+One statement, an inferred nested type, and `[]` for a person with no pets. Kysely returns the same rows and the same type with `jsonArrayFrom`, from `kysely/helpers/postgres`:
+
+```ts
+const rows = await db
+  .selectFrom('person')
+  .select((eb) => [
+    'person.first_name',
+    jsonArrayFrom(
+      eb
+        .selectFrom('pet')
+        .select('pet.name')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .orderBy('pet.name')
+        .limit(2),
+    ).as('pets'),
+  ])
+  .execute()
+// { first_name: string; pets: { name: string }[] }[]
+```
+
+Drizzle's version is shorter, and it is a different API from the one in the rest of this page: relations are declared ahead of the query, filters and ordering are objects, not operators, and 1.0 [redesigned it](https://orm.drizzle.team/docs/relations-v1-v2). It reads declared relations. A read that needs a join outside them, a GROUP BY, or an aggregate over its rows moves to the SQL-style builder; the docs say so for aggregates: "As of now aggregations are not supported in extras, please use core queries for that." There a nested array is a hand-written `json_agg` with a `coalesce` fallback and a declared type, and a key renamed in the inner selection is typed under the new name and returned under the column's.
+
+In Kysely the nested subquery is an ordinary query: join inside it, aggregate it, filter it, with the same methods and the same checks. **Drizzle's relational API is a second query language beside its SQL builder; Kysely nests results in the builder it already has.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
+
+## Shared queries branch without mutation
+
+Drizzle mutates the shared base:
+
+```ts
+const base = drizzleDb
+  .select({ id: person.id })
+  .from(person)
+  .where(gte(person.age, 18))
+
+const preview = base.limit(1)
+const everyone = base
+// Both now have LIMIT 1.
+```
+
+Kysely branches independently:
+
+```ts
+const base = db.selectFrom('person').select('id').where('age', '>=', 18)
+const preview = base.limit(1)
+const everyone = base
+// everyone has no limit.
+```
+
+Drizzle's builder is designed for a query written in one go. Outside [dynamic mode](https://orm.drizzle.team/docs/dynamic-query-building), its types remove a method once it has been called, which the docs say "becomes a problem" for "a shared function that takes a query builder and enhances it". `$dynamic()` lifts that restriction and keeps the mutation, and a second `where()` replaces the first:
+
+```ts
+const adults = drizzleDb
+  .select({ id: person.id })
+  .from(person)
+  .where(gte(person.age, 18))
+  .$dynamic()
+
+const named = adults.where(eq(person.first_name, 'Jennifer'))
+// select "id" from "person" where "person"."first_name" = $1
+// The age filter is gone, from adults too.
+```
+
+A Drizzle maintainer called this [expected behavior](https://github.com/drizzle-team/drizzle-orm/issues/2321#issuecomment-2429838380) and closed the request to [merge the calls](https://github.com/drizzle-team/drizzle-orm/issues/1644) as not planned. The documented pattern is to [collect conditions](https://orm.drizzle.team/docs/guides/conditional-filters-in-query) and call `where(and(...))` once, with a function that builds a fresh query for each branch. In Kysely each `where()` adds to the last with AND and returns a new builder, so a shared function can add a filter, a join, or a limit without knowing what its caller added.
+
+**In Drizzle, sharing a builder means building it again; in Kysely, every builder is a value you can share.** Immutability has one trap of its own: a returned builder that is not kept is a change that never happened. Keep each returned builder, and use [`$if`](/docs/recipes/conditional-selects) when conditional selections change the result type.
+
+## Building a query never executes it
+
+A Drizzle builder is a promise: awaiting it runs the query. That keeps simple calls short, and it means an `async` helper executes a query it meant to return for further composition:
+
+```ts
+async function adultQuery() {
+  return drizzleDb
+    .select({ id: person.id })
+    .from(person)
+    .where(gte(person.age, 18))
+}
+
+const rows = await adultQuery()
+// Already executed. These are rows, not a builder to extend.
+```
+
+With Kysely, even an async helper returns a composable builder:
+
+```ts
+async function adultQuery() {
+  return db.selectFrom('person').select('id').where('age', '>=', 18)
+}
+
+const query = await adultQuery()
+const rows = await query.where('first_name', '=', 'Jennifer').execute()
+```
+
+**A Drizzle builder runs when it is awaited; a Kysely builder runs when you call `.execute()`.**
+
+## Kysely's plugins see the query
+
+A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives the query as a tree of operation nodes before it compiles, and the result after it runs, so it can rewrite tables, joins, and expressions. The [built-in plugins](/docs/plugins) convert camelCase, qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes one to a query or a derived instance and leaves the original unchanged.
+
+Drizzle's extension points are per concern: a logger, a [cache](https://orm.drizzle.team/docs/cache), [casing](https://orm.drizzle.team/docs/sql-schema-declaration#camel-and-snake-casing) in the schema declaration, and [custom column types](https://orm.drizzle.team/docs/custom-types) that convert values. Neither version has an interface that receives the query. Schema-per-tenant shows the difference. A Drizzle table is bound to its schema when it is declared, and the issue titled "working with dynamic schemas is practically impossible" has been [open since April 2023](https://github.com/drizzle-team/drizzle-orm/issues/423). In Kysely the schema is chosen per query, by a plugin:
+
+```ts
+const tenantDb = db.withSchema('tenant_1')
+// tenantDb.selectFrom('person') compiles to: from "tenant_1"."person"
+```
+
+**Drizzle's options cover the cases it names; Kysely's plugins see the query.**
+
+## Kysely's dialects are a public interface
+
+A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) is four exported factories: a driver, a query compiler, an adapter, and an introspector. A new database implements that interface, and the [community dialects](/docs/dialects) for BigQuery, ClickHouse, Oracle, and Firebird are built that way. The `Database` interface and the query API are the same types on every dialect.
+
+Drizzle's databases are the ones its team ships: PostgreSQL, MySQL, SQLite, and SingleStore, plus Gel in 0.45 and MSSQL and CockroachDB in 1.0. Each has its own table function, column builders, and query builder, so a schema is written per database family. A [proxy driver](https://orm.drizzle.team/docs/connect-drizzle-proxy) lets you supply the transport for a database Drizzle supports; it does not add one. **Kysely's dialects plug into its public interface; Drizzle's ship with Drizzle.**
+
+## Use Kysely with a Drizzle schema, one query at a time
+
+OpenClaw's creator, Peter Steinberger, [described replacing Drizzle with Kysely](https://x.com/steipete/status/2005692454553673900) in one of his projects. The move does not have to happen at once, or at all for the schema.
+
+### Can Kysely and Drizzle be used together?
+
+Yes. Keep [Drizzle Kit](https://orm.drizzle.team/docs/migrations) for schema and migrations, and write queries in Kysely against the same database:
+
+1. Keep the Drizzle tables and Drizzle Kit. Kysely's [types](/docs/generating-types) and [migrations](/docs/migrations) are separate choices.
+2. [Generate Kysely's types](/docs/generating-types) from the migrated database, in the migration step or in CI.
+3. Give both clients the same `pg` pool: `drizzle({ client: pool })` and `new PostgresDialect({ pool })`.
+4. Start with a query that shared functions extend, that traverses JSON, or that declares its types through `sql<T>`. Move it, inspect `.compile()`, and compare rows, nulls, ordering, and empty results.
+5. Keep each transaction on one client. The two share a pool, not a transaction.
+
+Drizzle 0.45.4 can also derive Kysely's types from its table objects, with no generation step:
+
+```ts
+import type { Kyselify } from 'drizzle-orm/kysely'
+
+interface Database {
+  person: Kyselify<typeof person>
+  pet: Kyselify<typeof pet>
+}
+
+const db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) })
+```
+
+1.0.0-rc.5 no longer ships that export, so generated types are the path that survives the upgrade.
+
+## Other practical considerations
+
+<details>
+<summary>Schema, migrations, and value conversion</summary>
+
+One Drizzle declaration is the source for types and for migrations: Drizzle Kit diffs the tables and generates SQL migrations, and can push to or pull from a database. Kysely has no migration generator. Its [migrations](/docs/migrations) are written by hand through the schema builder or any migration tool, and its types are declared or [generated](/docs/generating-types) from the database, so a migration applied without regenerating them is drift the compiler cannot see.
+
+Drizzle's columns also convert values, through date modes and [custom types](https://orm.drizzle.team/docs/custom-types). Kysely does not convert values or validate rows: its types describe what the driver returns, and conversion belongs to the driver's configuration or a plugin.
+
+</details>
+
+<details>
+<summary>Drivers and runtimes</summary>
+
+Both have zero runtime dependencies and run on Node.js, Deno, Bun, and edge runtimes. Drizzle ships its driver adapters, including Neon, PlanetScale, Cloudflare D1, libSQL, and Bun SQL, inside one package. Kysely's core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite; the rest are [organization and community dialects](/docs/dialects), installed separately.
+
+</details>
 
 <details>
 <summary>Measured package sizes and dependency trees</summary>
 
-Kysely's compressed package is **74% smaller** than stable Drizzle's and **89% smaller** than the RC's:
-
 | Published package  | Compressed download | Unpacked size | Direct dependencies |
 | ------------------ | ------------------- | ------------- | ------------------- |
-| Kysely 0.29.7      | **318.3 KiB**       | **1.65 MiB**  | 0                   |
+| Kysely 0.29.7      | 318.3 KiB           | 1.65 MiB      | 0                   |
 | Drizzle 0.45.4     | 1,205.7 KiB         | 10.03 MiB     | 0                   |
 | Drizzle 1.0.0-rc.5 | 2,989.0 KiB         | 17.02 MiB     | 0                   |
 
-All three have zero direct dependencies and resolve to **14 production packages** with `pg` 8.23.1. Optional peer integrations are excluded.
+With `pg` 8.23.1, all three resolve to 14 production packages. Drizzle's package includes every driver adapter and database family; Kysely's includes its five core dialects.
 
-Measured **October 24, 2026**: [measurement details](https://github.com/kysely-org/kysely/blob/master/site/scripts/package-footprints.json), [script](https://github.com/kysely-org/kysely/blob/master/site/scripts/measure-package-footprints.mjs). Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks. CI caching reduces repeat downloads.
+Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
 
 </details>
 
-## Schema changes and adoption
+## Choosing Drizzle or Kysely
 
-Keep [Drizzle Kit](https://orm.drizzle.team/docs/migrations) for schema management while adopting Kysely queries. Kysely's [types](/docs/generating-types) and [migrations](/docs/migrations) are separate choices.
+**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change: references checked against the query in every clause and fragment; JSON, CASE, and aggregate expressions whose types are inferred instead of declared; builders that behave like values, shared without rebuilding and executed only when asked; and public interfaces for plugins and dialects.** Its method docs and examples are version-matched in the package, so editors and coding agents read the API you installed.
 
-Start with a query that composes shared branches, traverses JSON, or uses SQL expressions with manual result types. Move it to Kysely, inspect `.compile()`, and compare rows, nulls, ordering, and empty results. Separate clients need connection capacity and do not automatically share transactions.
+**Keep Drizzle when one TypeScript declaration should drive types, migrations, and relational reads, and its queries are mostly written whole, in one place.** Drizzle Kit can stay either way, and Kysely can run beside it for the queries that are composed.
 
-[Get started with Kysely](/docs/getting-started).
+**Both put SQL first; Drizzle types the columns a query uses, and Kysely types the query.**
+
+[Get started with Kysely](/docs/getting-started), find equivalents in the [query examples](/docs/category/examples), or compare [query builders with ORMs](/docs/comparisons/query-builder-vs-orm).
