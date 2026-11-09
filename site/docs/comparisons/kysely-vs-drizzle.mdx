@@ -482,7 +482,9 @@ Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude
 
 ### Which is easier for a coding agent to use?
 
-**Both ship examples where an agent reads them; Kysely also checks what the agent writes.** Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with. And the checks on this page are an agent's feedback loop: a wrong reference is a compile error it can read and fix without a database.
+**Both ship examples where an agent reads them; Kysely also checks its examples, and what the agent writes.** Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with. Nothing in Drizzle's repository checks its own, and in 1.0.0-rc.5 the SQL Server `delete` and `insert` examples end the statement in the middle of the chain and do not parse.
+
+An example nobody compiles drifts as the API changes, and an agent takes the example beside a method as the truth about it. A drifted example costs a round of failed edits when the compiler catches the result, and a runtime error when it does not. **An unchecked example is a claim about the API; a type-checked one is verified against it on every release.** The checks on this page close the loop: a wrong reference is a compile error the agent can read and fix without a database.
 
 ### Why use Kysely instead of Drizzle?
 
