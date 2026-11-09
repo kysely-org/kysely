@@ -12,7 +12,7 @@ Drizzle is the most downloaded ORM on npm: [47.9 million drizzle-orm downloads](
 
 Drizzle's builder is SQL-like in clause order and JavaScript in the rest: columns are objects, operators are imported functions, and aliases are variables. Kysely writes SQL's own operators and aliases, and carries the tables in scope through every step, so a reference is checked where it is written.
 
-The differences that cost most are the quiet ones. A JSON or CASE expression that Drizzle writes as an annotated template returns a wrong value under a type that still compiles, and in Drizzle's dynamic mode [a second `where()` replaces the first](#shared-queries-branch-without-mutation) with no error, even when the first was a tenant filter.
+The differences that cost most are the quiet ones. A JSON or CASE expression that Drizzle writes as an annotated template can return a wrong value under a type that still compiles, and in Drizzle's dynamic mode [a second `where()` replaces the first](#shared-queries-branch-without-mutation) with no error, even when the first was a tenant filter.
 
 Kysely is a type-safe SQL query builder. Drizzle calls itself [a headless TypeScript ORM](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/overview.mdx#L8); in this site's terms it is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models, which Drizzle calls tables, migrations generated from them, a relational query API, and a SQL-style query builder. This page compares that builder with Kysely.
 
@@ -150,7 +150,9 @@ One reference failure is quiet: `returning({ id: pet.id })` on an insert into `p
 
 </details>
 
-Most of these failures are loud once a test runs the branch that builds the reference; `matchingPeople` above passes every test that leaves the pet name out. The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
+Most of these failures are loud once a test runs the branch that builds the reference; `matchingPeople` above passes every test that leaves the pet name out.
+
+The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
 
 **No query builder is perfectly type-safe, and Kysely is no exception; type safety is what it is built around, and every gap is treated as work to do.**
 
@@ -566,7 +568,7 @@ Measured **November 9, 2026**. Package sizes exclude dependencies; trees exclude
 
 ### Which is easier for a coding agent to use?
 
-**Both ship examples where an agent reads them; Kysely also checks what the agent writes.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`.
+**Both ship examples where an agent reads them; Kysely checks more of what the agent writes.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`.
 
 Drizzle's team [kept its API order](https://github.com/drizzle-team/drizzle-orm/discussions/2409#discussioncomment-9614641) to spare developers "huge type errors that are quite hard to understand", a trade priced for a person reading the error. An agent reads a long type error in the same loop as a short one, and before any query runs; what no loop reports is a `null` that arrives under a `string` type. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
 
