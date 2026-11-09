@@ -78,17 +78,42 @@ The rows match, and so do the inferred types: `{ first_name: string; pet_name: s
 
 ## Drizzle checks each column; Kysely checks the query
 
-Drop the join and keep a filter on `pet`:
+Production queries collect their filters. Put the query above in a function with an optional pet name, collecting conditions the way [Drizzle's guide](https://orm.drizzle.team/docs/guides/conditional-filters-in-query) does. Then a later change drops the pet's name from the result, and the join with it:
 
 ```ts
-// Drizzle: compiles. PostgreSQL rejects the missing pet table.
-drizzleDb.select({ id: person.id }).from(person).where(eq(pet.name, 'Catto'))
+function matchingPeople(options: { petName?: string }) {
+  const filters = [gte(person.age, 18)]
+  if (options.petName) filters.push(eq(pet.name, options.petName))
 
-// Kysely: TypeScript error, pet is not available in this query.
-db.selectFrom('person').select('id').where('pet.name', '=', 'Catto')
+  return drizzleDb
+    .select({ first_name: person.first_name })
+    .from(person)
+    .where(and(...filters))
+}
 ```
 
-A Drizzle column is a value. `pet.name` has one type wherever it is passed, `eq()` returns a condition that records no table, and `select()` is called before `from()`, so a selection is typed before the query has a table. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far.
+It compiles, and it runs for every request without a pet name. A request with one fails in PostgreSQL: the filter still reads `pet`, and the change never touched that line. The same function after the same change in Kysely:
+
+```ts
+function matchingPeople(options: { petName?: string }) {
+  let query = db
+    .selectFrom('person')
+    .select('person.first_name')
+    .where('person.age', '>=', 18)
+
+  if (options.petName) {
+    // TypeScript error: pet is not available in this query.
+    query = query.where('pet.name', '=', options.petName)
+  }
+  return query
+}
+```
+
+A Drizzle column is a value. `pet.name` has one type wherever it is passed, `eq()` returns a condition that records no table, and `select()` is called before `from()`, so a selection is typed before the query has a table. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. The gap is structural, not a missing feature: closing it would mean every column, condition, and `sql` fragment carrying its table dependencies in its type, and every clause checking them against the query.
+
+Move the filters into a shared helper and Drizzle's returns `SQL[]`, which names no table. A [Kysely helper](/docs/recipes/reusable-helpers) typed with the table it reads, `ExpressionBuilder<Database, 'pet'>`, rejects a query without it; one typed with a union of tables accepts a query that has only one of them.
+
+The split is the same wherever a reference lands. That includes ORDER BY, GROUP BY, HAVING, a CTE the query never attached, an update's SET, a delete's WHERE, and these:
 
 | Invalid reference                                                   | Kysely            | Drizzle                                                     |
 | ------------------------------------------------------------------- | ----------------- | ----------------------------------------------------------- |
@@ -102,13 +127,11 @@ Drizzle looks for the first of these itself, while generating the SQL: `Your "pe
 
 **Every row in that table is a failed run with Drizzle and a compile error with Kysely.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
 
-The gap is structural, not a missing feature. Closing it would mean every column, condition, and `sql` fragment carrying its table dependencies in its type, and every clause checking them against the query.
+Operands follow the same split. Drizzle checks a literal against its column: `eq(person.id, 'one')` is a type error, while `eq(person.first_name, person.id)`, a text column compared with an integer column, compiles and PostgreSQL rejects it. So do `like(person.id, '1%')`, a pattern match on an integer, and `where(and(person.id))`, a column that is not a condition. Kysely's expression builder checks an expression against an expression, so `eb('first_name', '=', eb.ref('id'))` is a type error, and so are both of those. Its reference shorthands do not: `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
 
-Operands follow the same split. Drizzle checks a literal against its column: `eq(person.id, 'one')` is a type error, while `eq(person.first_name, person.id)`, a text column compared with an integer column, compiles and PostgreSQL rejects it. Kysely's expression builder checks an expression against an expression, so `eb('first_name', '=', eb.ref('id'))` is a type error. Its reference shorthands do not: `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
+Column objects pay Drizzle back elsewhere. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous. Two more Kysely gaps are quiet: `where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error, and a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it. **In Drizzle, a column is a value that can be passed anywhere; in Kysely, a reference is checked where it lands.**
 
-Column objects pay Drizzle back elsewhere. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous. **In Drizzle, a column is a value that can be passed anywhere; in Kysely, a reference is checked where it lands.**
-
-The failures in this section are loud: any test that executes the query catches them. The ones further down this page are quiet: a misspelled JSON key returns `null`, a CASE without an ELSE returns `null` under a `string` type, a `limit()` on one branch of a shared query applies to the other, and a second `where()` drops the first. **A wrong reference fails on the first run; an unchecked template or a mutated builder returns the wrong result with no error at all.**
+Most failures in this section are loud once a test runs the branch that builds the reference; the function above passes every test that leaves the pet name out. One is quiet: `returning({ id: pet.id })` on an insert into `person` compiles and returns the person's `id`, because Drizzle writes the column without its table. The failures further down this page are quiet too: a misspelled JSON key returns `null`, a CASE without an ELSE returns `null` under a `string` type, a `limit()` on one branch of a shared query applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
 
 ## Kysely builds the expressions Drizzle writes as templates
 
