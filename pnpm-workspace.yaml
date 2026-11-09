@@ -43,7 +43,7 @@ auditConfig:
 
 catalogs:
   http:
-    hono: 4.13.16
+    hono: 4.13.17
   node:
     pathe: 2.0.3
 

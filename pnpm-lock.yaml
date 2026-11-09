@@ -166,8 +166,8 @@ settings:
 catalogs:
   http:
     hono:
-      specifier: 4.13.16
-      version: 4.13.16
+      specifier: 4.13.17
+      version: 4.13.17
   node:
     pathe:
       specifier: 2.0.3
@@ -349,7 +349,7 @@ importers:
         version: 3.10.2(acorn@8.16.0)(clean-css@5.3.3)(cssnano@6.1.2)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@7.2.0)(postcss@8.5.23)(react-dom@19.3.1)(react@19.3.1)(supports-color@10.2.2)
       '@hono/node-server':
         specifier: 2.1.5
-        version: 2.1.5(hono@4.13.16)
+        version: 2.1.5(hono@4.13.17)
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)
@@ -361,7 +361,7 @@ importers:
         version: 0.23.0(supports-color@10.2.2)
       hono:
         specifier: catalog:http
-        version: 4.13.16
+        version: 4.13.17
       mermaid:
         specifier: 12.3.0
         version: 12.3.0
@@ -382,7 +382,7 @@ importers:
     dependencies:
       hono:
         specifier: catalog:http
-        version: 4.13.16
+        version: 4.13.17
     devDependencies:
       wrangler:
         specifier: 4.156.0
@@ -4473,8 +4473,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.16:
-    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
+  hono@4.13.17:
+    resolution: {integrity: sha512-vZIcbkvjOR5hHRWERbGkr8fGfF0GGM1ooYkuH448iO3b2AdVEr3AXZSw4Z3Kn+1L5z0CVoVeyV29VGYmFh05kQ==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@2.8.9:
@@ -9968,9 +9968,9 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono/node-server@2.1.5(hono@4.13.16)':
+  '@hono/node-server@2.1.5(hono@4.13.17)':
     dependencies:
-      hono: 4.13.16
+      hono: 4.13.17
 
   '@iconify/types@2.0.0': {}
 
@@ -12899,7 +12899,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.16: {}
+  hono@4.13.17: {}
 
   hosted-git-info@2.8.9: {}
 
