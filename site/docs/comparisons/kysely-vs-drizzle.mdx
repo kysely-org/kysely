@@ -494,17 +494,20 @@ Both have zero runtime dependencies and run on Node.js, Deno, Bun, and edge runt
 
 Both libraries compute their types in the compiler. The cost below is TypeScript's instantiation count for one table shape at three schema sizes, and for the same ten queries in each library, four joins among them, returning the same rows.
 
-| Instantiations, TypeScript 6.0.3   | Kysely 0.29.8 | Drizzle 0.45.4 | Drizzle 1.0.0-rc.5 |
-| ---------------------------------- | ------------- | -------------- | ------------------ |
-| Schema of 10 tables, no queries    | 196           | 1,220          | 679                |
-| Schema of 1,000 tables, no queries | 196           | 24,980         | 17,509             |
-| Ten more queries, 10 tables        | 15,396        | 23,012         | 19,239             |
-| Ten more queries, 100 tables       | 22,686        | 23,012         | 19,239             |
-| Ten more queries, 1,000 tables     | 95,586        | 23,012         | 19,239             |
+| Instantiations, TypeScript 6.0.3          | Kysely 0.29.8 | Drizzle 0.45.4 | Drizzle 1.0.0-rc.5 |
+| ----------------------------------------- | ------------- | -------------- | ------------------ |
+| Schema of 10 tables, no queries           | 196           | 1,220          | 679                |
+| Schema of 1,000 tables, no queries        | 196           | 24,980         | 17,509             |
+| Ten more queries, 10 tables               | 15,396        | 23,012         | 19,239             |
+| Ten more queries, 100 tables              | 22,686        | 23,012         | 19,239             |
+| Ten more queries, 1,000 tables            | 95,586        | 23,012         | 19,239             |
+| Ten more queries, `$pickTables`, any size | 17,844        | 23,012         | 19,239             |
 
 Kysely's schema is an interface, which the compiler does not have to infer. Drizzle's is inferred from its table objects, at 24 instantiations per table in 0.45.4 and 17 in 1.0.0-rc.5, once per program.
 
 Queries go the other way. Drizzle's cost per query does not depend on the size of the schema. Kysely's is lower on a small schema, and each join adds about 24 instantiations for every table in the `Database` interface. The two cross near 100 tables, and at 1,000 tables these ten queries cost Kysely four to five times what they cost Drizzle.
+
+A Drizzle query sees only the tables it imports. A Kysely query sees the whole `Database` interface unless [`$pickTables`](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#picktables) narrows it to the tables it reads, in the same line that starts the query. Written that way, the ten cost the same at every schema size, below both Drizzle versions, for about 250 instantiations more per query on a small schema and a line nobody writes until the compiler is slow.
 
 "Ten more" is the cost of the ten in a program that already has ten of the same kind. The first ten cost more in each library, because shared types are instantiated once: 78,983, 31,394, and 29,835 at 10 tables. About 59,000 of Kysely's figure is the first CTE in a program, and Kysely 0.30.0-beta.2 removes it, for 20,019.
 
@@ -559,7 +562,7 @@ Measured **November 9, 2026**. Package sizes exclude dependencies; trees exclude
 
 ### Which type-checks faster?
 
-**Per query, Kysely on a small schema and Drizzle on a large one.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not. On the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
+**Per query, Kysely on a small schema; on a large one, Drizzle by default, and Kysely again once a query names its tables with `$pickTables`.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
 
 ### Which is easier for a coding agent to use?
 
