@@ -47,6 +47,53 @@
         "all-twice": 257156
       }
     },
+    "kysely-pick": {
+      "10": {
+        "baseline": 196,
+        "all": 83033,
+        "all-plus-by-id": 84390,
+        "all-plus-select-all": 84435,
+        "all-plus-left-join": 85525,
+        "all-plus-three-joins": 87573,
+        "all-plus-group-by": 85181,
+        "all-plus-subquery": 86148,
+        "all-plus-cte": 85678,
+        "all-plus-insert": 83517,
+        "all-plus-update": 84443,
+        "all-plus-filters": 84537,
+        "all-twice": 100591
+      },
+      "100": {
+        "baseline": 196,
+        "all": 83033,
+        "all-plus-by-id": 84390,
+        "all-plus-select-all": 84435,
+        "all-plus-left-join": 85525,
+        "all-plus-three-joins": 87573,
+        "all-plus-group-by": 85181,
+        "all-plus-subquery": 86148,
+        "all-plus-cte": 85678,
+        "all-plus-insert": 83517,
+        "all-plus-update": 84443,
+        "all-plus-filters": 84537,
+        "all-twice": 100591
+      },
+      "1000": {
+        "baseline": 196,
+        "all": 83033,
+        "all-plus-by-id": 84390,
+        "all-plus-select-all": 84435,
+        "all-plus-left-join": 85525,
+        "all-plus-three-joins": 87573,
+        "all-plus-group-by": 85181,
+        "all-plus-subquery": 86148,
+        "all-plus-cte": 85678,
+        "all-plus-insert": 83517,
+        "all-plus-update": 84443,
+        "all-plus-filters": 84537,
+        "all-twice": 100591
+      }
+    },
     "kysely-next": {
       "10": {
         "baseline": 196,
@@ -235,6 +282,53 @@
         "all-plus-update": 162913,
         "all-plus-filters": 162820,
         "all-twice": 255945
+      }
+    },
+    "kysely-pick": {
+      "10": {
+        "baseline": 196,
+        "all": 81536,
+        "all-plus-by-id": 82893,
+        "all-plus-select-all": 82938,
+        "all-plus-left-join": 84027,
+        "all-plus-three-joins": 86074,
+        "all-plus-group-by": 83684,
+        "all-plus-subquery": 84651,
+        "all-plus-cte": 84229,
+        "all-plus-insert": 82075,
+        "all-plus-update": 83132,
+        "all-plus-filters": 83040,
+        "all-twice": 99380
+      },
+      "100": {
+        "baseline": 196,
+        "all": 81536,
+        "all-plus-by-id": 82893,
+        "all-plus-select-all": 82938,
+        "all-plus-left-join": 84027,
+        "all-plus-three-joins": 86074,
+        "all-plus-group-by": 83684,
+        "all-plus-subquery": 84651,
+        "all-plus-cte": 84229,
+        "all-plus-insert": 82075,
+        "all-plus-update": 83132,
+        "all-plus-filters": 83040,
+        "all-twice": 99380
+      },
+      "1000": {
+        "baseline": 196,
+        "all": 81536,
+        "all-plus-by-id": 82893,
+        "all-plus-select-all": 82938,
+        "all-plus-left-join": 84027,
+        "all-plus-three-joins": 86074,
+        "all-plus-group-by": 83684,
+        "all-plus-subquery": 84651,
+        "all-plus-cte": 84229,
+        "all-plus-insert": 82075,
+        "all-plus-update": 83132,
+        "all-plus-filters": 83040,
+        "all-twice": 99380
       }
     },
     "kysely-next": {

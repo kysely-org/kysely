@@ -4,11 +4,18 @@ import { fileURLToPath } from 'node:url'
 
 const root = dirname(fileURLToPath(import.meta.url))
 
+// kysely-pick is Kysely 0.29.8 with each query narrowed by $pickTables to the
+// tables it reads, the same tables the Drizzle version of the query imports.
 export const libraries = {
-  kysely: { label: 'Kysely 0.29.8' },
-  'kysely-next': { label: 'Kysely 0.30.0-beta.2' },
-  'drizzle-stable': { label: 'Drizzle 0.45.4' },
-  'drizzle-rc': { label: 'Drizzle 1.0.0-rc.5' },
+  kysely: { label: 'Kysely 0.29.8', pkg: 'kysely' },
+  'kysely-pick': {
+    label: 'Kysely 0.29.8, $pickTables',
+    pkg: 'kysely',
+    pick: true,
+  },
+  'kysely-next': { label: 'Kysely 0.30.0-beta.2', pkg: 'kysely-next' },
+  'drizzle-stable': { label: 'Drizzle 0.45.4', pkg: 'drizzle-stable' },
+  'drizzle-rc': { label: 'Drizzle 1.0.0-rc.5', pkg: 'drizzle-rc' },
 }
 export const tableCounts = [10, 100, 1000]
 export const queries = [
@@ -405,7 +412,19 @@ const isKysely = (library) => library.startsWith('kysely')
 function queryModule(library, query) {
   const head = `type Row = ${rows[query]}\n\n${signature(query)}`
   if (isKysely(library)) {
-    return `import { db } from './db.ts'\n\n${head}\n${kyselyQueries[query]}\n}\n`
+    let body = kyselyQueries[query]
+    if (libraries[library].pick) {
+      const tables = drizzleQueries[query].tables
+        .map((name) => `'${name}'`)
+        .join(' | ')
+      const picked = body.replace(
+        /\bdb(\s*)\./,
+        (_, space) => `db${space}.$pickTables<${tables}>()${space}.`,
+      )
+      if (picked === body) throw new Error(`${query}: no db call to narrow`)
+      body = picked
+    }
+    return `import { db } from './db.ts'\n\n${head}\n${body}\n}\n`
   }
   const { operators, tables, body } = drizzleQueries[query]
   const operatorImport = operators.length
@@ -423,7 +442,7 @@ ${body}
 function dbModule(library) {
   if (isKysely(library)) {
     return `import { PGlite } from '@electric-sql/pglite'
-import { Kysely, PGliteDialect } from '${library}'
+import { Kysely, PGliteDialect } from '${libraries[library].pkg}'
 import type { Database } from './schema.ts'
 
 export const client = new PGlite()
@@ -472,7 +491,7 @@ export function generate() {
       const names = tableNames(tableCount)
       const files = {
         'schema.ts': isKysely(library)
-          ? kyselySchema(names, library)
+          ? kyselySchema(names, libraries[library].pkg)
           : drizzleSchema(names, library),
         'db.ts': dbModule(library),
         'baseline.ts': `import './db.ts'\nimport './schema.ts'\n`,

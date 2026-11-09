@@ -73,10 +73,12 @@ each library (a lookup by id, all columns, a left join, two inner joins, GROUP B
 with HAVING, an IN subquery, a CTE, an insert, an update, and optional filters),
 each assigned to the same written-out row type, and the same ten again over a
 second set of tables. Neither side uses a `sql` template, and Drizzle's client
-is created without a relations schema. `equivalence.mjs` runs all of them on
+is created without a relations schema. Kysely 0.29.8 is measured twice: as
+written, and with each query narrowed by `$pickTables` to the tables it reads,
+which are the tables the Drizzle version of the query imports. `equivalence.mjs` runs all of them on
 PGlite and requires the same rows from every library.
 
-`measure.mjs` type-checks 156 programs per compiler and asserts the counts in
+`measure.mjs` type-checks 195 programs per compiler and asserts the counts in
 `expected.json` exactly (`--update` rewrites the file, `--time` also prints
 check times):
 
