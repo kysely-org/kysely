@@ -13,7 +13,6 @@ on:
       - '.github/workflows/preview.yml'
       - '!assets/**'
       - '!docs/**'
-      - '!example/**'
       - '!site/**'
       - '!test/**'
       - '!.node-version'
@@ -65,4 +64,4 @@ jobs:
         run: pnpm run build
 
       - name: Release preview version
-        run: pnpm dlx pkg-pr-new@0.0.88 publish --template './example'
+        run: pnpm dlx pkg-pr-new@0.0.88 publish
