@@ -404,6 +404,8 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 **A Drizzle builder runs when it is awaited; a Kysely builder runs when you call `.execute()`.**
 
+Execution also takes a signal. Every Kysely `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. The PostgreSQL, MySQL, and MSSQL dialects implement the database side. Drizzle's query API takes no signal in 0.45.4 or 1.0.0-rc.5, and the request for one has been [open since December 2023](https://github.com/drizzle-team/drizzle-orm/issues/1602). Drizzle's own PostgreSQL driver, `@drizzle-team/postgres`, [cancels a query by `timeout` or `signal`](https://github.com/drizzle-team/drizzle-orm/blob/f251e997d78320e1b1f28db0745aacdddaf45d59/postgres/README.md#L66-L70) on a pooled connection, below the query builder.
+
 ## Kysely is extended through its query tree, not its builders
 
 Neither library has a public API for adding methods to its builders, and both are extended with functions. Kysely's `$call` applies a function that takes and returns a builder in the middle of a chain, and anything that implements [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expression.html) is accepted wherever Kysely takes an expression, which is how [your own helpers](/docs/recipes/extending-kysely) add what the builder lacks. Drizzle's helpers do the same by returning `sql<T>`.
@@ -412,7 +414,14 @@ What only Kysely opens is the query underneath. Before it is SQL, every Kysely q
 
 ### Plugins see the query
 
-A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives that tree before it compiles, and the result after it runs. A plugin is a class with two methods. This one makes an instance read-only, for a reporting endpoint or a coding agent, by refusing any statement that is not a select:
+A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives that tree before it compiles, and the result after it runs. The [built-in plugins](/docs/plugins) are written against that interface: they convert camelCase, qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes one to a query or a derived instance and leaves the original unchanged.
+
+Drizzle's extension points are per concern: a [logger](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/goodies.mdx#L23-L24) that receives the SQL text and its parameters, a [cache](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/cache.mdx#L4), [casing](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/sql-schema-declaration.mdx#L203-L207) in the schema declaration, and [custom column types](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/custom-types.mdx#L3) that convert values. A Drizzle builder keeps its clauses in a protected field, and its dialect writes them out as chunks of text, names, columns, and parameters. Neither version has an interface that receives the query in between.
+
+<details>
+<summary>A custom plugin: a read-only instance</summary>
+
+A plugin is a class with two methods. This one makes an instance read-only, for a reporting endpoint or a coding agent, by refusing any statement that is not a select:
 
 ```ts
 class ReadOnlyPlugin implements KyselyPlugin {
@@ -435,9 +444,7 @@ The plugin reads the statement itself, so an insert, update, delete, or merge is
 
 It is a runtime check, not a type error, and it reads the root node: a select that wraps a data-modifying CTE passes, and finding one takes the exported transformer. A read-only database role is still the boundary; the plugin reports the mistake earlier, in application code.
 
-The [built-in plugins](/docs/plugins) are written against the same interface: they convert camelCase, qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes one to a query or a derived instance and leaves the original unchanged.
-
-Drizzle's extension points are per concern: a [logger](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/goodies.mdx#L23-L24) that receives the SQL text and its parameters, a [cache](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/cache.mdx#L4), [casing](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/sql-schema-declaration.mdx#L203-L207) in the schema declaration, and [custom column types](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/custom-types.mdx#L3) that convert values. A Drizzle builder keeps its clauses in a protected field, and its dialect writes them out as chunks of text, names, columns, and parameters. Neither version has an interface that receives the query in between.
+</details>
 
 Schema-per-tenant shows the difference. A Drizzle table is bound to its schema when it is declared, and the issue titled "working with dynamic schemas is practically impossible" has been [open since April 2023](https://github.com/drizzle-team/drizzle-orm/issues/423). The [workaround a maintainer gave there](https://github.com/drizzle-team/drizzle-orm/issues/423#issuecomment-1501232679) is a factory that declares each table again for a schema name, `pgSchema(name).table(...)`, with every query built from the tables it returns. In Kysely the schema is chosen per query, by a plugin:
 
@@ -452,9 +459,16 @@ const tenantDb = db.withSchema('tenant_1')
 
 A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) is four exported factories: a driver, a query compiler, an adapter, and an introspector. A new database implements that interface, and the [community dialects](/docs/dialects) for BigQuery, ClickHouse, Oracle, and Firebird are built that way. The `Database` interface and the query API are the same types on every dialect, and do not know which one they target: `returning()` compiles on a MySQL instance, and MySQL rejects the statement.
 
-Drizzle's dialects ship inside Drizzle: PostgreSQL, MySQL, SQLite, and SingleStore, plus Gel in 0.45 and MSSQL and CockroachDB in 1.0. Each has its own table function, column builders, query builder, and dialect class, so its MySQL builder has no `returning()` to call, a schema is written per database family, and there is no shared dialect interface to implement.
+Drizzle's dialects ship inside Drizzle, one per database family, each with its own table function, column builders, query builder, and dialect class, and with no shared interface to implement. **A new database implements Kysely's dialect interface; in Drizzle it extends a database Drizzle already ships.**
 
-A [proxy driver](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/connect-drizzle-proxy.mdx#L8) lets you supply the transport for a database Drizzle supports; it does not add one. A third-party database starts from one of the shipped families instead: [drizzle-duckdb](https://www.npmjs.com/package/@duckdbfan/drizzle-duckdb), "based on drizzle's Postgres client", subclasses Drizzle's `PgDialect`, `PgSession`, and `PgDatabase`. **A new database implements Kysely's dialect interface; in Drizzle it extends a database Drizzle already ships.**
+<details>
+<summary>Drizzle's dialect families and third-party databases</summary>
+
+The families are PostgreSQL, MySQL, SQLite, and SingleStore, plus Gel in 0.45 and MSSQL and CockroachDB in 1.0. Because each has its own builder, its MySQL builder has no `returning()` to call, and a schema is written per family.
+
+A [proxy driver](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/connect-drizzle-proxy.mdx#L8) lets you supply the transport for a database Drizzle supports; it does not add one. A third-party database starts from one of the shipped families instead: [drizzle-duckdb](https://www.npmjs.com/package/@duckdbfan/drizzle-duckdb), "based on drizzle's Postgres client", subclasses Drizzle's `PgDialect`, `PgSession`, and `PgDatabase`.
+
+</details>
 
 ## Migrate from Drizzle to Kysely one query at a time
 
@@ -578,7 +592,7 @@ Drizzle's team [kept its API order](https://github.com/drizzle-team/drizzle-orm/
 
 - References are [checked against the query](#drizzle-checks-each-column-kysely-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
 - JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates); filtered aggregates and windows are built instead of templated.
-- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation) and [executed only when asked](#building-a-query-never-executes-it).
+- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
 - The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
 
 Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
