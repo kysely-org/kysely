@@ -127,13 +127,15 @@ Drizzle looks for the first of these itself, while generating the SQL: `Your "pe
 
 **Every row in that table is a failed run with Drizzle and a compile error with Kysely.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
 
-Operands follow the same split. Drizzle checks a literal against its column: `eq(person.id, 'one')` is a type error, while `eq(person.first_name, person.id)`, a text column compared with an integer column, compiles and PostgreSQL rejects it. So does `where(and(person.id))`, a column that is not a condition. Kysely's expression builder checks an expression against an expression, so `eb('first_name', '=', eb.ref('id'))` is a type error, and so is a condition that is not boolean. Its reference shorthands do not: `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
+Operands follow the same split. Drizzle checks a literal against its column: `eq(person.id, 'one')` is a type error, while `eq(person.first_name, person.id)`, a text column compared with an integer column, compiles and PostgreSQL rejects it. So does `where(and(person.id))`, a column that is not a condition. Kysely's expression builder checks an expression against an expression, so `eb('first_name', '=', eb.ref('id'))` is a type error, and so is a condition that is not boolean.
 
-Column objects pay Drizzle back elsewhere. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous. Two more Kysely gaps are quiet: `where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error, and a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it.
+Most of these failures are loud once a test runs the branch that builds the reference; the function above passes every test that leaves the pet name out. One is quiet: `returning({ id: pet.id })` on an insert into `person` compiles and returns the person's `id`, because Drizzle writes the column without its table. The failures further down this page are quiet too: a misspelled JSON key returns `null`, a CASE without an ELSE returns `null` under a `string` type, a `limit()` on one branch of a shared query applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
 
-Kysely's check is made where a reference is written, on a builder that knows the query, and it stops there. A reference written with `sql.ref` or as template text, a [dynamic reference](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html), an expression built ahead of time on a standalone `expressionBuilder`, and a helper whose builder parameter declares more tables than the caller's query has are all taken on trust. **No query builder is perfectly type-safe; Kysely checks more of the query than Drizzle does, and treats the rest as work to do.**
+### Is Kysely fully type-safe?
 
-Most failures in this section are loud once a test runs the branch that builds the reference; the function above passes every test that leaves the pet name out. One is quiet: `returning({ id: pet.id })` on an insert into `person` compiles and returns the person's `id`, because Drizzle writes the column without its table. The failures further down this page are quiet too: a misspelled JSON key returns `null`, a CASE without an ELSE returns `null` under a `string` type, a `limit()` on one branch of a shared query applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
+**No query builder is perfectly type-safe; Kysely checks more of the query than Drizzle does, and treats the rest as work to do.** Its check is made where a reference is written, on a builder that knows the query, and it stops there. A reference written with `sql.ref` or as template text, a [dynamic reference](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html), an expression built ahead of time on a standalone `expressionBuilder`, and a helper whose builder parameter declares more tables than the caller's query has are all taken on trust. The reference shorthands `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
+
+Column objects pay Drizzle back here. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous. Two more Kysely gaps are quiet: `where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error, and a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it.
 
 ## Kysely builds the expressions Drizzle writes as templates
 
@@ -406,7 +408,7 @@ A Kysely [dialect](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect
 
 Drizzle's dialects ship inside Drizzle: PostgreSQL, MySQL, SQLite, and SingleStore, plus Gel in 0.45 and MSSQL and CockroachDB in 1.0. Each has its own table function, column builders, query builder, and dialect class, so its MySQL builder has no `returning()` to call, a schema is written per database family, and there is no shared dialect interface to implement. A [proxy driver](https://orm.drizzle.team/docs/connect-drizzle-proxy) lets you supply the transport for a database Drizzle supports; it does not add one. A third-party database starts from one of the shipped families instead: [drizzle-duckdb](https://www.npmjs.com/package/@duckdbfan/drizzle-duckdb), "based on drizzle's Postgres client", subclasses Drizzle's `PgDialect`, `PgSession`, and `PgDatabase`. **A new database implements Kysely's dialect interface; in Drizzle it extends a database Drizzle already ships.**
 
-## Use Kysely with a Drizzle schema, one query at a time
+## Migrate from Drizzle to Kysely one query at a time
 
 OpenClaw's creator, Peter Steinberger, [described replacing Drizzle with Kysely](https://x.com/steipete/status/2005692454553673900) in one of his projects. The move does not have to happen at once, or at all for the schema.
 
@@ -456,6 +458,13 @@ Both have zero runtime dependencies and run on Node.js, Deno, Bun, and edge runt
 </details>
 
 <details>
+<summary>Type-checking cost</summary>
+
+Both libraries compute their types in the compiler, so both add to type-checking and editor time as the schema and its queries grow. Kysely's checks are part of that cost: every call carries the tables in scope and parses its reference strings. A deeply composed query can reach TypeScript's instantiation limit, and [`$assertType`](/docs/recipes/excessively-deep-types) simplifies the type at that point. Neither library's cost is measured here; `tsc --extendedDiagnostics` on your own schema is the number that counts.
+
+</details>
+
+<details>
 <summary>Measured package sizes and dependency trees</summary>
 
 | Published package  | Compressed download | Unpacked size | Direct dependencies |
@@ -482,9 +491,7 @@ Measured **October 24, 2026**. Package sizes exclude dependencies; trees exclude
 
 ### Which is easier for a coding agent to use?
 
-**Both ship examples where an agent reads them; Kysely also checks its examples, and what the agent writes.** Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with. Nothing in Drizzle's repository checks its own, and in 1.0.0-rc.5 the SQL Server `delete` and `insert` examples end the statement in the middle of the chain and do not parse.
-
-An example nobody compiles drifts as the API changes, and an agent takes the example beside a method as the truth about it. A drifted example costs a round of failed edits when the compiler catches the result, and a runtime error when it does not. **An unchecked example is a claim about the API; a type-checked one is verified against it on every release.** The checks on this page close the loop: a wrong reference is a compile error the agent can read and fix without a database.
+**Both ship examples where an agent reads them; Kysely also checks what the agent writes, and its own examples.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with; nothing in Drizzle's repository checks its own.
 
 ### Why use Kysely instead of Drizzle?
 
