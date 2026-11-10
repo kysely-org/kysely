@@ -342,6 +342,15 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "OpenPencil",
+    "repo": "open-pencil/open-pencil",
+    "path": "packages/cloud/src/server/sharing/service.ts",
+    "sha": "dd8bb5c76ff95022f3371a0a6111bb08a282eec8",
+    "href": "https://github.com/open-pencil/open-pencil/blob/dd8bb5c76ff95022f3371a0a6111bb08a282eec8/packages/cloud/src/server/sharing/service.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-10"
+  },
+  {
     "name": "OpenWork",
     "href": "https://techblog.openwork.co.jp/entry/tech-selection-megasearch",
     "group": "production",

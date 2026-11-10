@@ -260,6 +260,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 120 120',
     id: 'openclaw',
   },
+  // Official open-pencil/open-pencil assets/brand/mark.svg: grid dropped and
+  // parts one fill like its monochrome artwork; handle centers knock out.
+  OpenPencil: {
+    label: 'OpenPencil',
+    viewBox: '28 28 228 228',
+    id: 'openpencil',
+  },
   // Official lockup: assets.openwork.jp/images/common/logo_with_icon.svg.
   // The gradient icon facets keep their depth as tonal opacity.
   OpenWork: {
