@@ -164,7 +164,7 @@ Most of these failures are loud once a test runs the branch that builds the refe
 
 The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. A wrong reference fails only when its branch runs. An unchecked template or a mutated builder returns the wrong result with no error at all.
 
-**No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.**
+**No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford: the ten queries [measured below](#type-checking-cost) check in about 1.6 seconds on TypeScript 6 and 0.1 seconds on TypeScript 7 against a 1,000-table schema, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
 <details id="where-kyselys-checks-stop">
 <summary>Where Kysely's checks stop</summary>
@@ -628,7 +628,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 ### Which type-checks faster?
 
-**On a small schema, Kysely type-checks a query faster. On a large one, Drizzle does by default, and Kysely does again once `$pickTables` narrows the schema to the tables a query reads.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
+**On a small schema, Kysely type-checks a query faster. On a large one, Drizzle does by default, and Kysely does again once `$pickTables` narrows the schema to the tables a query reads.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables, and TypeScript 7 cuts Kysely's time at 1,000 tables to about a tenth. The [measurements](#type-checking-cost) are above.
 
 ### Which is easier for a coding agent to use?
 
