@@ -175,7 +175,9 @@ Its scope rules are PostgreSQL's on every dialect. It rejects a select alias in 
 
 Column objects pay Drizzle back here. An editor can rename one and jump to its declaration, and Drizzle qualifies it with its table in a join. Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous.
 
-Two more Kysely gaps are quiet: `where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error, and a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it.
+`where('age', '=', null)` compiles and matches no rows, where Drizzle's `eq(person.age, null)` is a type error. That is by design: Kysely builds the comparison as written, and `= null` is valid SQL. Code that filters on a nullable variable adds the built-in [`SafeNullComparisonPlugin`](/docs/plugins#safe-null-comparison-plugin), which rewrites `=` to `IS` when the value is null, and nothing is rewritten without it.
+
+One Kysely gap is quiet: a `union` whose sides list the same columns in a different order returns values under the wrong keys, where Drizzle throws before sending it.
 
 </details>
 
