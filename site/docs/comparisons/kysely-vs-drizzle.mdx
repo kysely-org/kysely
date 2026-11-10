@@ -628,7 +628,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 ### Which type-checks faster?
 
-**Per query, Kysely on a small schema; on a large one, Drizzle by default, and Kysely again once a query names its tables with `$pickTables`.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
+**Per query, Kysely on a small schema; on a large one, Drizzle by default, and Kysely again once `$pickTables` narrows the schema to the tables a query reads.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
 
 ### Which is easier for a coding agent to use?
 
