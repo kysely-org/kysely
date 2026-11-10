@@ -558,7 +558,7 @@ A bundler keeps only what an application imports. One PostgreSQL `select * from 
 | Drizzle 0.45.4     | 79.6 KiB  | 20.1 KiB |
 | Drizzle 1.0.0-rc.5 | 137.0 KiB | 36.4 KiB |
 
-Drizzle 0.45.4 makes the smallest bundle. Kysely's includes its query tree, query compiler, and schema builder.
+Drizzle 1.0.0-rc.5 bundles larger than Kysely, and 0.45.4 makes the smallest bundle. Kysely's includes its query tree, query compiler, and schema builder.
 
 Measured **November 9, 2026**. Package sizes exclude dependencies; trees exclude optional dependencies and peer auto-installation. The bundle is one query, not an application, and none of these are install benchmarks.
 
@@ -599,7 +599,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 ### Is Kysely smaller than Drizzle?
 
-**In a bundle, stable Drizzle is smaller; as an installed package, Kysely is.** One PostgreSQL query bundles to 20.1 KiB gzipped with Drizzle 0.45.4, 30.2 KiB with Kysely 0.29.8, and 36.4 KiB with Drizzle 1.0.0-rc.5. Kysely's published package is a 319.6 KiB download, against 1,205.7 KiB and 2,989.0 KiB for those two Drizzle versions. The [measurements](#measured-sizes) and what they exclude are above.
+**Than Drizzle 1.0, yes, in the bundle and as a package; than stable Drizzle, as a package only.** One PostgreSQL query bundles to 36.4 KiB gzipped with Drizzle 1.0.0-rc.5 and 30.2 KiB with Kysely 0.29.8; Drizzle 0.45.4 bundles to 20.1 KiB. Kysely's published package is a 319.6 KiB download, against 2,989.0 KiB for the release candidate, more than nine times the size, and 1,205.7 KiB for 0.45.4. The [measurements](#measured-sizes) and what they exclude are above.
 
 ### Which type-checks faster?
 
