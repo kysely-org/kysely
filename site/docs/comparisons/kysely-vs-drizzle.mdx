@@ -58,6 +58,8 @@ Select adults with their pets' names, keeping people who have no pet.
 With Drizzle:
 
 ```ts
+import { eq, gte } from 'drizzle-orm'
+
 const rows = await drizzleDb
   .select({ first_name: person.first_name, pet_name: pet.name })
   .from(person)
@@ -85,6 +87,8 @@ The rows match, and so do the inferred types: `{ first_name: string; pet_name: s
 Production queries collect their filters. Put the query above in a function with an optional pet name, collecting conditions the way [Drizzle's guide](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/guides/conditional-filters-in-query.mdx#L76-L93) does. Then a later change drops the pet's name from the result, and the join with it:
 
 ```ts
+import { and, eq, gte } from 'drizzle-orm'
+
 function matchingPeople(options: { petName?: string }) {
   const filters = [gte(person.age, 18)]
   if (options.petName) filters.push(eq(pet.name, options.petName))
@@ -184,6 +188,8 @@ Past selections, joins, filters, and plain aggregates, Drizzle's builder hands o
 A `user_settings.profile` column holds JSON typed as `Profile`, which is `{ addresses: { city: string }[] }`, in both libraries: in Kysely's `Database` interface, and through `jsonb().$type<Profile>()` on Drizzle's `settings` table object. Read the first address's city. With Drizzle:
 
 ```ts
+import { sql } from 'drizzle-orm'
+
 const rows = await drizzleDb
   .select({
     id: settings.id,
@@ -225,6 +231,8 @@ eb.ref('profile', '->').key('addresses').at(0).key('ctiy')
 Label each person by age, including people whose age is unknown. With Drizzle:
 
 ```ts
+import { gte, lt, sql } from 'drizzle-orm'
+
 const query = drizzleDb
   .select({
     id: person.id,
@@ -314,6 +322,8 @@ const rows = await drizzleDb.query.person.findMany({
 One statement, an inferred nested type, and `[]` for a person with no pets. Kysely returns the same rows and the same type with `jsonArrayFrom`, from `kysely/helpers/postgres`:
 
 ```ts
+import { jsonArrayFrom } from 'kysely/helpers/postgres'
+
 const rows = await db
   .selectFrom('person')
   .select((eb) => [
@@ -342,6 +352,8 @@ In Kysely the nested subquery is an ordinary query: join inside it, aggregate it
 Drizzle mutates the shared base:
 
 ```ts
+import { gte } from 'drizzle-orm'
+
 const base = drizzleDb
   .select({ id: person.id })
   .from(person)
@@ -364,6 +376,8 @@ const everyone = base
 Drizzle's types assume a query written in one go. Outside [dynamic mode](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/dynamic-query-building.mdx#L19), its types remove a method once it has been called, which the docs say "becomes a problem" for "a shared function that takes a query builder and enhances it". `$dynamic()` lifts that restriction and keeps the mutation, and a second `where()` replaces the first:
 
 ```ts
+import { eq } from 'drizzle-orm'
+
 const ownedPets = drizzleDb
   .select({ id: pet.id })
   .from(pet)
@@ -386,6 +400,8 @@ A Drizzle maintainer called this [expected behavior](https://github.com/drizzle-
 A Drizzle builder is thenable: awaiting it runs the query. That keeps simple calls short, and it means an `async` helper executes a query it meant to return for further composition:
 
 ```ts
+import { gte } from 'drizzle-orm'
+
 async function adultQuery() {
   return drizzleDb
     .select({ id: person.id })
@@ -430,6 +446,13 @@ Drizzle's extension points are per concern: a [logger](https://github.com/drizzl
 A plugin is a class with two methods. This one makes an instance read-only, for a reporting endpoint or a coding agent, by refusing any statement that is not a select:
 
 ```ts
+import {
+  SelectQueryNode,
+  type KyselyPlugin,
+  type PluginTransformQueryArgs,
+  type PluginTransformResultArgs,
+} from 'kysely'
+
 class ReadOnlyPlugin implements KyselyPlugin {
   transformQuery({ node }: PluginTransformQueryArgs) {
     if (!SelectQueryNode.is(node)) {
