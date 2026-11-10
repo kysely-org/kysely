@@ -42,7 +42,7 @@
     "mermaid": "12.3.0",
     "pagefind": "1.6.0",
     "pathe": "catalog:node",
-    "shiki": "4.5.0",
+    "shiki": "4.6.0",
     "typescript": "7.0.2"
   },
   "browserslist": {
