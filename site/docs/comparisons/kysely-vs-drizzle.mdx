@@ -128,9 +128,11 @@ The gap is structural, not a missing feature, and it is a choice. Asked in 2024 
 
 By that account, closing the gap means changing the order every query is written in. Kysely's order is the one PostgreSQL [processes a query in](https://www.postgresql.org/docs/current/sql-select.html): the `FROM` list first, the output expressions after it. **Kysely puts `from` first for the reason SQL evaluates it first: a query's inputs have to be known before its outputs can be checked.** Its bet is that a mistake reported at compile time costs less than the same mistake at runtime, for a developer and for a coding agent alike.
 
+### Aliases and CTEs are declared inside the statement
+
 The same design decides where a name is declared. SQL writes an alias where the table is used, `join person as other`, and so does Kysely: `.innerJoin('person as other', 'other.age', 'person.age')`. In Drizzle a column has to hang off an object before a selection or a join condition can name it, so an alias, a derived table, and a CTE are each declared in a variable ahead of the query.
 
-A Drizzle CTE then takes three steps: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it. A query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, and `selectFrom('adults')` without it is a type error. Drizzle keeps SQL's clause order and builds the rest from JavaScript values. Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.
+A Drizzle CTE then takes three steps: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it. A query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, and `selectFrom('adults')` without it is a type error. **Drizzle keeps SQL's clause order and builds the rest from JavaScript values. Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.**
 
 ### The same split in every clause
 
@@ -467,13 +469,19 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 **A Drizzle builder runs when it is awaited, and a Kysely builder runs when you call `.execute()`.**
 
+### Cancellation, streaming, and controlled transactions are calls on the builder
+
 Execution also takes a signal. Every query's `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. The PostgreSQL, MySQL, and MSSQL dialects implement the database side. Drizzle's query API takes no signal in 0.45.4 or 1.0.0-rc.5, and the request for one has been [open since December 2023](https://github.com/drizzle-team/drizzle-orm/issues/1602).
 
 Two more execution shapes are calls on the builder. `stream()` returns a select's rows as an async iterable through the PostgreSQL, MySQL, MSSQL, and SQLite dialects, where Drizzle has an `iterator()` for MySQL only and a request [open since April 2023](https://github.com/drizzle-team/drizzle-orm/issues/456). `db.startTransaction().execute()` returns a transaction controlled by `commit()`, `rollback()`, and savepoints, beside the callback form both libraries have and [requested in Drizzle since August 2023](https://github.com/drizzle-team/drizzle-orm/issues/966).
 
-Drizzle's callback form nests: a `tx.transaction()` inside another [runs as a savepoint](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/transactions.mdx#L18-L30). Kysely's callback transaction does not nest, and savepoints are calls on the controlled form. Kysely's log event also carries each query's duration, [requested in Drizzle since July 2024](https://github.com/drizzle-team/drizzle-orm/issues/2605).
+Drizzle's callback form nests: a `tx.transaction()` inside another [runs as a savepoint](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/transactions.mdx#L18-L30). Kysely's callback transaction does not nest, and savepoints are calls on the controlled form. Kysely's log event also carries each query's duration, [requested in Drizzle since July 2024](https://github.com/drizzle-team/drizzle-orm/issues/2605). **Cancellation, streaming, and a controlled transaction are methods in Kysely, and each is an open request in Drizzle's issue tracker.**
 
-A helper that runs inside or outside a transaction is typed once in Kysely: `Transaction<Database>` extends `Kysely<Database>`, so a parameter typed `Kysely<Database>` takes the database and a transaction alike. The handle `drizzle()` returns carries a `$client` property that Drizzle's transaction type lacks, so a parameter typed `typeof db` rejects `tx` with "Property '$client' is missing". The maintainers [closed the report](https://github.com/drizzle-team/drizzle-orm/issues/3175#issuecomment-5339950219) as not a bug, since "the transaction and database types are different", and the parameter is typed `Omit<typeof db, '$client'>`or the exported`NodePgDatabase<typeof schema>` instead.
+### One handle type for the database and a transaction
+
+Reusable helpers take a handle. A Kysely helper typed `Kysely<Database>` serves the regular instance and a transaction alike, because [`Transaction<Database>`](https://kysely-org.github.io/kysely-apidoc/classes/Transaction.html) extends `Kysely<Database>`: the same `insertPerson(db, person)` runs as `insertPerson(trx, person)` inside `db.transaction().execute()`, with no second signature.
+
+The handle `drizzle()` returns carries a `$client` property that Drizzle's transaction type lacks, so a helper parameter typed `typeof db` rejects `tx` with "Property '$client' is missing". The maintainers [closed the report](https://github.com/drizzle-team/drizzle-orm/issues/3175#issuecomment-5339950219) as not a bug, since "the transaction and database types are different", and the helper is typed with the exported `NodePgDatabase<typeof schema>` type instead. **One `Kysely<Database>` parameter serves the database and every transaction on it, so a helper is written once.**
 
 ## Kysely is extended through its query tree, not its builders
 
@@ -622,7 +630,8 @@ Drizzle vs Kysely is a choice between two libraries that both put SQL first. Wha
 
 - References are [checked against the query](#both-check-each-column-and-kysely-also-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
 - JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates), and [nested results](#nested-results-stay-in-the-same-builder), filtered aggregates, windows, and [recursive CTEs, `MERGE`, and row-value `IN`](#kysely-covers-more-of-sqls-statements) are built instead of templated.
-- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
+- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and [cancelled with an `AbortSignal`](#cancellation-streaming-and-controlled-transactions-are-calls-on-the-builder).
+- Helpers take [one handle type](#one-handle-type-for-the-database-and-a-transaction) for the database and a transaction.
 - The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
 
 Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
