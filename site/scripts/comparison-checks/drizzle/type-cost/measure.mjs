@@ -154,6 +154,20 @@ for (const compiler of Object.keys(compilers)) {
       ...names.map((library) => number(of(library, tableCount, 'baseline'))),
     ]),
   )
+  table(
+    `${compiler}: instantiations for the whole program (library, client, schema, and queries)`,
+    ['Tables', 'Program', ...labels],
+    tableCounts.flatMap((tableCount) =>
+      [
+        ['all', 'The ten queries'],
+        ['all-twice', 'The ten, and the ten again on other tables'],
+      ].map(([name, label]) => [
+        number(tableCount),
+        label,
+        ...names.map((library) => number(of(library, tableCount, name))),
+      ]),
+    ),
+  )
   for (const tableCount of tableCounts) {
     const added = (name, to) =>
       names.map((library) =>
