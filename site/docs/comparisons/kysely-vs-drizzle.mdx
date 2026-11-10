@@ -309,19 +309,30 @@ Neither library checks a fragment's grammar or its declared result type. **Drizz
 
 ## Nested results stay in the same builder
 
-Drizzle's [relational queries](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L7-L12) are the shortest way to read a declared relation. Return each person with their first two pets by name, in 1.0 syntax:
+Return each person with their first two pets by name, as one nested array per row. Drizzle's SQL builder has no JSON helper. Its [joins guide](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/joins.mdx#L358-L393) groups joined rows into nested objects in JavaScript with `reduce`, after they arrive, and nesting in SQL is a `sql` template around a subquery:
 
 ```ts
-const rows = await drizzleDb.query.person.findMany({
-  columns: { first_name: true },
-  with: {
-    pets: { columns: { name: true }, orderBy: { name: 'asc' }, limit: 2 },
-  },
-})
-// { first_name: string; pets: { name: string }[] }[]
+import { asc, eq, sql } from 'drizzle-orm'
+
+const pets = drizzleDb
+  .select({ name: pet.name })
+  .from(pet)
+  .where(eq(pet.owner_id, person.id))
+  .orderBy(asc(pet.name))
+  .limit(2)
+
+const rows = await drizzleDb
+  .select({
+    first_name: person.first_name,
+    pets: sql<{ name: string }[]>`
+      (select coalesce(json_agg(pet_rows), '[]'::json) from ${pets.as('pet_rows')})
+    `.as('pets'),
+  })
+  .from(person)
+// The { name: string }[] type is supplied by hand.
 ```
 
-One statement, an inferred nested type, and `[]` for a person with no pets. Kysely returns the same rows and the same type with `jsonArrayFrom`, from `kysely/helpers/postgres`:
+Kysely has a helper for it, `jsonArrayFrom` from `kysely/helpers/postgres`:
 
 ```ts
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
@@ -340,14 +351,14 @@ const rows = await db
     ).as('pets'),
   ])
   .execute()
-// { first_name: string; pets: { name: string }[] }[]
+// Inferred: { first_name: string; pets: { name: string }[] }[]
 ```
 
-Drizzle's version is shorter, and it is a different API from the one in the rest of this page: relations are declared ahead of the query, filters and ordering are objects, not operators, and 1.0 [redesigned it](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/relations-v1-v2.mdx#L9). It is a model API, and [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) compares that kind of API with a query builder.
+Both send one statement and return the same rows, `[]` included for a person with no pets. The helper infers its type from the subquery, and the template declares one. Leave out the `coalesce` and the template still claims an array while a person with no pets gets `null`. Rename a key in the subquery, `{ pet_name: pet.name }`, and Drizzle still writes `select "name"`: its selection keys are applied by the result mapper, which never sees the inside of `json_agg`, so the JSON arrives keyed `name` under a type that says `pet_name`. Kysely's `'pet.name as pet_name'` is a SQL alias, and the key and the type change together.
 
-It reads declared relations, and in 1.0 a per-parent count fits beside them, as a [`db.$count` subquery in `extras`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L917-L932). A read that needs a join outside the relations or a GROUP BY moves to the SQL-style builder, and for other aggregates [the docs](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L822) point there too: "As of now aggregations are not supported in extras, please use core queries for that." There a nested array is a hand-written `json_agg` with a `coalesce` fallback and a declared type.
+The nested subquery is an ordinary Kysely query: join inside it, aggregate it, filter it, with the same methods and the same checks, and `jsonObjectFrom` returns one row as an object, `null` when there is none. **A nested result is a template with a declared type in Drizzle's SQL builder, and a helper with an inferred type in Kysely's.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
 
-In Kysely the nested subquery is an ordinary query: join inside it, aggregate it, filter it, with the same methods and the same checks. **Drizzle's relational API is a second query language beside its SQL builder. Kysely nests results in the builder it already has.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
+Drizzle's [relational queries](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L7-L12) are the shorter way to read a declared relation: `findMany` with a `with` clause returns the same nested type in one statement. That is a model API beside the SQL builder, with relations declared ahead of the query and filters and ordering as objects, and 1.0 [redesigned it](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/relations-v1-v2.mdx#L9). It reads the declared relations, and a per-parent count fits beside them as a [`db.$count` subquery in `extras`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L917-L932). A read that needs a join outside them, a GROUP BY, or another aggregate goes back to the SQL builder, as [the docs](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/rqb.mdx#L822) say: "As of now aggregations are not supported in extras, please use core queries for that." There the nesting is the template above. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) compares that kind of API with a query builder.
 
 ## Shared queries branch without mutation
 
@@ -596,7 +607,7 @@ Drizzle vs Kysely is a choice between two libraries that both put SQL first. Wha
 **Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change.**
 
 - References are [checked against the query](#both-check-each-column-and-kysely-also-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
-- JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates), and filtered aggregates and windows are built instead of templated.
+- JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates), and [nested results](#nested-results-stay-in-the-same-builder), filtered aggregates, and windows are built instead of templated.
 - Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
 - The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
 
