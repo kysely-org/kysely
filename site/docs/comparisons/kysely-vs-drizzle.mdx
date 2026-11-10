@@ -587,24 +587,24 @@ Drizzle also ships a [query cache](https://github.com/drizzle-team/drizzle-orm-d
 <details id="type-checking-cost">
 <summary>Type-checking cost</summary>
 
-Both libraries compute their types in the compiler. The cost below is TypeScript's instantiation count for one table shape at three schema sizes, and for the same ten queries in each library, four joins among them, returning the same rows.
+Both libraries compute their types in the compiler. The cost below is TypeScript's instantiation count for a whole program: the library, a client, one table shape at three schema sizes, and the same queries in each library, four joins among the first ten, returning the same rows. The twenty are the ten written again over a second set of tables, since a query repeated over the same tables reuses the types the compiler has already computed.
 
-| Instantiations, TypeScript 6.0.3          | Kysely 0.29.8 | Drizzle 0.45.4 | Drizzle 1.0.0-rc.5 |
-| ----------------------------------------- | ------------- | -------------- | ------------------ |
-| Schema of 10 tables, no queries           | 196           | 1,220          | 679                |
-| Schema of 1,000 tables, no queries        | 196           | 24,980         | 17,509             |
-| Ten more queries, 10 tables               | 15,396        | 23,012         | 19,239             |
-| Ten more queries, 100 tables              | 22,686        | 23,012         | 19,239             |
-| Ten more queries, 1,000 tables            | 95,586        | 23,012         | 19,239             |
-| Ten more queries, `$pickTables`, any size | 17,844        | 23,012         | 19,239             |
+| Instantiations, TypeScript 6.0.3   | Kysely 0.29.8 | Kysely 0.29.8, `$pickTables` | Drizzle 0.45.4 | Drizzle 1.0.0-rc.5 |
+| ---------------------------------- | ------------- | ---------------------------- | -------------- | ------------------ |
+| Schema of 10 tables, no queries    | 196           | 196                          | 1,220          | 679                |
+| Schema of 1,000 tables, no queries | 196           | 196                          | 24,980         | 17,509             |
+| Ten queries, 10 tables             | 79,179        | 81,536                       | 32,614         | 30,514             |
+| Ten queries, 100 tables            | 86,559        | 81,536                       | 34,774         | 32,044             |
+| Ten queries, 1,000 tables          | 160,359       | 81,536                       | 56,374         | 47,344             |
+| Twenty queries, 10 tables          | 94,575        | 99,380                       | 55,626         | 49,753             |
+| Twenty queries, 100 tables         | 109,245       | 99,380                       | 57,786         | 51,283             |
+| Twenty queries, 1,000 tables       | 255,945       | 99,380                       | 79,386         | 66,583             |
 
 Kysely's schema is an interface, which the compiler does not have to infer. Drizzle's is inferred from its table objects, at 24 instantiations per table in 0.45.4 and 17 in 1.0.0-rc.5, once per program.
 
-Queries go the other way. Drizzle's cost per query does not depend on the size of the schema. Kysely's is lower on a small schema, and each join adds about 24 instantiations for every table in the `Database` interface. The two cross near 100 tables, and at 1,000 tables these ten queries cost Kysely four to five times what they cost Drizzle.
+The queries cost Kysely 0.29.8 more at every size here. About 59,000 of its total is one expression: the first CTE in a program written as `.with('name', (qb) => ...)`, paid once however many queries follow. Kysely 0.30.0-beta.2 removes it. Its totals are 20,215, 27,595, and 101,395 for the ten queries and 35,611, 50,281, and 196,981 for the twenty, below both Drizzle versions at 10 and 100 tables.
 
-A Drizzle query sees only the tables it imports. A Kysely query sees the whole `Database` interface unless [`$pickTables`](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#picktables) narrows it to the tables it reads, in the same line that starts the query. Written that way, the ten cost the same at every schema size, below both Drizzle versions, for about 250 instantiations more per query on a small schema and a line nobody writes until the compiler is slow.
-
-"Ten more" is the cost of the ten in a program that already has ten of the same kind. The first ten cost more in each library, because shared types are instantiated once: 78,983, 31,394, and 29,835 at 10 tables. About 59,000 of Kysely's figure is the first CTE in a program, and Kysely 0.30.0-beta.2 removes it, for 20,019.
+The rest grows with the schema. Each Kysely join costs about 24 instantiations for every table in the `Database` interface, and Drizzle's cost per query does not depend on the size of the schema, because a Drizzle query sees only the tables it imports. A Kysely query sees the whole `Database` interface unless [`$pickTables`](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#picktables) narrows it to the tables it reads, in the same line that starts the query. Written that way, the twenty queries cost the same at every schema size, for about 240 instantiations more per query on a small schema.
 
 Measured **November 9, 2026**. TypeScript 7.0.2, run single-threaded, counts within 3% of these. A deeply composed query can also reach TypeScript's instantiation limit, and [`$assertType`](/docs/recipes/excessively-deep-types) simplifies the type at that point. `tsc --extendedDiagnostics` on your own schema is the number that counts.
 
@@ -676,7 +676,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 ### Does Kysely or Drizzle type-check faster?
 
-**On a small schema, a Kysely query costs the compiler less. On a large one, a Drizzle query does by default, and a Kysely query does again once `$pickTables` narrows the schema to the tables it reads.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
+**Drizzle does, on Kysely 0.29.8: the same twenty queries cost the compiler about twice as much in Kysely on a 10-table schema, and three to four times as much at 1,000 tables.** Most of that is one cost Kysely pays once per program, for the first CTE written through a callback, which Kysely 0.30.0-beta.2 removes. The rest is each join's cost growing with the schema, which `$pickTables` holds flat. Kysely's schema itself costs the compiler nothing to infer, and Drizzle's costs more with every table. The [measurements](#type-checking-cost) are above.
 
 ### Which is easier for a coding agent to use?
 
