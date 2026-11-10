@@ -113,7 +113,9 @@ function matchingPeople(options: { petName?: string }) {
 }
 ```
 
-A Drizzle column is a value. `pet.name` has one type wherever it is passed, `eq()` returns a condition that records no table, and `select()` is called before `from()`, so a selection is typed before the query has a table. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. **Drizzle's compiler accepts a column object in any query; Kysely's checks every reference written on the query's own builder.**
+A Drizzle column is a value. `pet.name` has one type wherever it is passed, `eq()` returns a condition that records no table, and `select()` is called before `from()`, so a selection is typed before the query has a table. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. **With Drizzle, TypeScript accepts a column object in any query; with Kysely, it checks every reference written on the query's own builder.**
+
+### The gap is a design choice
 
 The gap is structural, not a missing feature, and it is a choice. Asked in 2024 for [a fully type-safe query builder](https://github.com/drizzle-team/drizzle-orm/discussions/2409), Drizzle's team [answered](https://github.com/drizzle-team/drizzle-orm/discussions/2409#discussioncomment-9614641) that it had "deliberately switched to our current API" because "it will provide better DX than huge type errors that are quite hard to understand for average TS developers", and that full type safety would need joins to come before the selection, "deviating the API from SQL even more".
 
@@ -121,7 +123,9 @@ By that account, closing the gap means changing the order every query is written
 
 The same design decides where a name is declared. SQL writes an alias where the table is used, `join person as other`, and so does Kysely: `.innerJoin('person as other', 'other.age', 'person.age')`. In Drizzle a column has to hang off an object before a selection or a join condition can name it, so an alias, a derived table, and a CTE are each declared in a variable ahead of the query.
 
-A Drizzle CTE then takes three steps: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it. A query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, and `selectFrom('adults')` without it is a type error. **Drizzle keeps SQL's clause order and builds the rest from JavaScript values; Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.**
+A Drizzle CTE then takes three steps: `$with('adults').as(...)` declares it, `.with(adults)` attaches it, and `.from(adults)` uses it. A query that skips the middle step compiles and fails in PostgreSQL. Kysely's `.with('adults', ...)` declares the CTE and puts it in scope in one call, and `selectFrom('adults')` without it is a type error. Drizzle keeps SQL's clause order and builds the rest from JavaScript values; Kysely keeps SQL's words, scope, and single statement, and moves one clause to check them.
+
+### The same split in every clause
 
 The split is the same wherever a reference lands. That includes ORDER BY, GROUP BY, HAVING, an update's SET, a delete's WHERE, and these:
 
@@ -150,9 +154,11 @@ One reference failure is quiet: `returning({ id: pet.id })` on an insert into `p
 
 </details>
 
+### Loud failures and quiet ones
+
 Most of these failures are loud once a test runs the branch that builds the reference; `matchingPeople` above passes every test that leaves the pet name out.
 
-The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. **A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.**
+The failures further down this page are quiet: [a misspelled JSON key](#json-traversal) returns `null`, [a CASE without an ELSE](#case-expressions) returns `null` under a `string` type, a `limit()` on one branch of [a shared query](#shared-queries-branch-without-mutation) applies to the other, and a second `where()` drops the first. A wrong reference fails only when its branch runs; an unchecked template or a mutated builder returns the wrong result with no error at all.
 
 **No query builder is perfectly type-safe, and Kysely is no exception; type safety is what it is built around, and every gap is treated as work to do.**
 
@@ -355,7 +361,7 @@ const everyone = base
 // everyone has no limit.
 ```
 
-Drizzle's builder is designed for a query written in one go. Outside [dynamic mode](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/dynamic-query-building.mdx#L19), its types remove a method once it has been called, which the docs say "becomes a problem" for "a shared function that takes a query builder and enhances it". `$dynamic()` lifts that restriction and keeps the mutation, and a second `where()` replaces the first:
+Drizzle's types assume a query written in one go. Outside [dynamic mode](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/dynamic-query-building.mdx#L19), its types remove a method once it has been called, which the docs say "becomes a problem" for "a shared function that takes a query builder and enhances it". `$dynamic()` lifts that restriction and keeps the mutation, and a second `where()` replaces the first:
 
 ```ts
 const ownedPets = drizzleDb
@@ -377,7 +383,7 @@ A Drizzle maintainer called this [expected behavior](https://github.com/drizzle-
 
 ## Building a query never executes it
 
-A Drizzle builder is a promise: awaiting it runs the query. That keeps simple calls short, and it means an `async` helper executes a query it meant to return for further composition:
+A Drizzle builder is thenable: awaiting it runs the query. That keeps simple calls short, and it means an `async` helper executes a query it meant to return for further composition:
 
 ```ts
 async function adultQuery() {
@@ -560,6 +566,25 @@ Measured **November 9, 2026**. Package sizes exclude dependencies; trees exclude
 
 ## Choosing Drizzle or Kysely
 
+Drizzle vs Kysely is not a choice between SQL and an abstraction; both put SQL first. It is a choice of how much of the query the compiler checks, and of what else the library does.
+
+### Why use Kysely instead of Drizzle?
+
+**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change.**
+
+- References are [checked against the query](#drizzle-checks-each-column-kysely-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
+- JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates); filtered aggregates and windows are built instead of templated.
+- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
+- The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
+
+Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
+
+### When is Drizzle the better choice?
+
+**Keep Drizzle when a person writes the schema and the queries, one TypeScript declaration should drive types, migrations, validation schemas, and relational reads, and the queries are mostly written whole, in one place.** A schema change is one edit there: [`drizzle-kit push`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/drizzle-kit-push.mdx#L14) applies it to the database without a migration file, and the types, validators, and relational queries follow with no generation step. Chosen for its builder alone, Drizzle trades the checks on this page for a smaller stable bundle, column objects an editor can rename, and a per-query type cost that does not grow with the schema.
+
+That value is priced for a person writing the code. When an agent writes most of it, it writes a migration as SQL as readily as a query, inspects the database through `psql` or a script instead of a studio, and already knows SQL, where a model API's options are a second vocabulary per library. [OpenClaw's contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71), written for agents, draws that line: schema and migrations as SQL, queries in Kysely. Drizzle Kit can stay either way, and Kysely can run beside it for the queries that are composed.
+
 ### Is Drizzle an ORM or a query builder?
 
 **Drizzle is an ORM in the data framework sense: models, generated migrations, relational reads, and a query builder.** Its tables are models under another name: each maps property names to columns and converts values, with relations declared beside it. This page compares its builder with Kysely, which is a query builder only. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers model APIs like Drizzle's relational queries.
@@ -585,23 +610,6 @@ Measured **November 9, 2026**. Package sizes exclude dependencies; trees exclude
 **Both ship examples where an agent reads them; Kysely checks more of what the agent writes.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`.
 
 Drizzle's team [kept its API order](https://github.com/drizzle-team/drizzle-orm/discussions/2409#discussioncomment-9614641) to spare developers "huge type errors that are quite hard to understand", a trade priced for a person reading the error. An agent reads a long type error in the same loop as a short one, and before any query runs; what no loop reports is a `null` that arrives under a `string` type. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
-
-### Why use Kysely instead of Drizzle?
-
-**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change.**
-
-- References are [checked against the query](#drizzle-checks-each-column-kysely-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
-- JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates); filtered aggregates and windows are built instead of templated.
-- Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
-- The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
-
-Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
-
-### When is Drizzle the better choice?
-
-**Keep Drizzle when a person writes the schema and the queries, one TypeScript declaration should drive types, migrations, validation schemas, and relational reads, and the queries are mostly written whole, in one place.** A schema change is one edit there: [`drizzle-kit push`](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/drizzle-kit-push.mdx#L14) applies it to the database without a migration file, and the types, validators, and relational queries follow with no generation step.
-
-That value is priced for a person writing the code. When an agent writes most of it, it writes a migration as SQL as readily as a query, inspects the database through `psql` or a script instead of a studio, and already knows SQL, where a model API's options are a second vocabulary per library. [OpenClaw's contributor guide](https://github.com/openclaw/openclaw/blob/28340c41f8b88ae6d11488e523808315319747b5/AGENTS.md#L71), written for agents, draws that line: schema and migrations as SQL, queries in Kysely. Drizzle Kit can stay either way, and Kysely can run beside it for the queries that are composed.
 
 **Both put SQL first; Drizzle types the columns a query uses, and Kysely types the query.**
 
