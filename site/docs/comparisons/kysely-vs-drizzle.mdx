@@ -8,7 +8,7 @@ description: 'Kysely vs Drizzle ORM for TypeScript: compile-time reference check
 
 Kysely and Drizzle ORM start from the same premise: SQL is the interface, and TypeScript should check it. Both compose statements through a typed API and bind values as parameters, with no generated client. **Both infer the result of a query. Drizzle knows what each column is, and Kysely also knows whether the query can see it.**
 
-Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads), maintained, and lead their category: Drizzle is the most downloaded ORM on npm, and Kysely the most downloaded SQL query builder. Its team builds it [from Ukraine](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/sustainability.mdx#L256-L258), and kept shipping through the war. **Drizzle brought SQL-first TypeScript to the mainstream, and every SQL-first library, Kysely included, has a bigger audience for it.**
+Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads), maintained, and lead their category: Drizzle is the most downloaded ORM on npm, and Kysely the most downloaded SQL query builder. **Drizzle brought SQL-first TypeScript to the mainstream, and every SQL-first library, Kysely included, has a bigger audience for it.**
 
 Drizzle's builder is SQL-like in clause order and JavaScript in the rest: columns are objects, operators are imported functions, and aliases are variables. Kysely writes SQL's own operators and aliases, and carries the tables in scope through every step, so a reference is checked where it is written.
 
