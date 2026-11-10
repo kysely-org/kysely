@@ -82,7 +82,7 @@ const rows = await db
 
 The rows match, and so do the inferred types: `{ first_name: string; pet_name: string | null }[]`. Both libraries make `pet_name` nullable because the join is a left join. Drizzle can also [return the pet's columns as a nested object](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/pg/joins.mdx#L278-L279): the statement stays flat, and Drizzle's result mapper groups the columns after the rows arrive, as `null` when every column of the join is. Kysely returns the row as the database shaped it, each joined column nullable on its own, and [nests in SQL](#nested-results-stay-in-the-same-builder) when a nested object is wanted. **Written correctly, the two queries are equivalent; the libraries differ in what the compiler says when a query is wrong.**
 
-## Drizzle checks each column; Kysely checks the query
+## Both check each column; Kysely also checks the query
 
 Production queries collect their filters. Put the query above in a function with an optional pet name, collecting conditions the way [Drizzle's guide](https://github.com/drizzle-team/drizzle-orm-docs/blob/7f7f847a41005aabd08b22fbb3d36030ef968479/src/content/docs/guides/conditional-filters-in-query.mdx#L76-L93) does. Then a later change drops the pet's name from the result, and the join with it:
 
@@ -597,7 +597,7 @@ Drizzle vs Kysely is not a choice between SQL and an abstraction; both put SQL f
 
 **Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change.**
 
-- References are [checked against the query](#drizzle-checks-each-column-kysely-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
+- References are [checked against the query](#both-check-each-column-kysely-also-checks-the-query) in every clause, with aliases and CTEs written inside the statement.
 - JSON and CASE expressions are [built, and their types inferred](#kysely-builds-the-expressions-drizzle-writes-as-templates); filtered aggregates and windows are built instead of templated.
 - Builders behave like values: [shared without rebuilding](#shared-queries-branch-without-mutation), [executed only when asked](#building-a-query-never-executes-it), and cancelled with an `AbortSignal`.
 - The [query tree is public](#kysely-is-extended-through-its-query-tree-not-its-builders), and plugins and dialects build on it.
@@ -616,7 +616,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 ### Is Drizzle type-safe?
 
-**For values and results, yes; for scope, no.** Drizzle infers each row and checks a literal against its column. It does not check that a column belongs to the query: [a column object is accepted in any query](#drizzle-checks-each-column-kysely-checks-the-query). Kysely checks that too, with [gaps of its own](#where-kyselys-checks-stop).
+**For values and results, yes; for scope, no.** Drizzle infers each row and checks a literal against its column. It does not check that a column belongs to the query: [a column object is accepted in any query](#both-check-each-column-kysely-also-checks-the-query). Kysely checks that too, with [gaps of its own](#where-kyselys-checks-stop).
 
 ### Is Kysely faster than Drizzle?
 
@@ -636,7 +636,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 Drizzle's team [kept its API order](https://github.com/drizzle-team/drizzle-orm/discussions/2409#discussioncomment-9614641) to spare developers "huge type errors that are quite hard to understand", a trade priced for a person reading the error. An agent reads a long type error in the same loop as a short one, and before any query runs; what no loop reports is a `null` that arrives under a `string` type. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
 
-**Both put SQL first; Drizzle types the columns a query uses, and Kysely types the query.**
+**Both put SQL first; Drizzle types the columns a query uses, and Kysely types the columns and the query.**
 
 [Get started with Kysely](/docs/getting-started), find equivalents in the [query examples](/docs/category/examples), or compare [query builders with ORMs](/docs/comparisons/query-builder-vs-orm).
 
