@@ -1,6 +1,7 @@
 ---
 sidebar_position: 6
 title: Kysely vs Drizzle ORM
+sidebar_label: Kysely vs Drizzle
 description: 'Kysely vs Drizzle ORM for TypeScript: compile-time reference checks, typed JSON and CASE, safe query reuse, and migrating from Drizzle one query at a time.'
 ---
 
@@ -439,7 +440,7 @@ const rows = await query.where('first_name', '=', 'Jennifer').execute()
 
 **A Drizzle builder runs when it is awaited, and a Kysely builder runs when you call `.execute()`.**
 
-Execution also takes a signal. Every Kysely `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. The PostgreSQL, MySQL, and MSSQL dialects implement the database side. Drizzle's query API takes no signal in 0.45.4 or 1.0.0-rc.5, and the request for one has been [open since December 2023](https://github.com/drizzle-team/drizzle-orm/issues/1602).
+Execution also takes a signal. Every query's `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. The PostgreSQL, MySQL, and MSSQL dialects implement the database side. Drizzle's query API takes no signal in 0.45.4 or 1.0.0-rc.5, and the request for one has been [open since December 2023](https://github.com/drizzle-team/drizzle-orm/issues/1602).
 
 ## Kysely is extended through its query tree, not its builders
 
@@ -635,7 +636,7 @@ That value is priced for a person writing the code. When an agent writes most of
 
 **Smaller than Drizzle 1.0 in the bundle and as a package, and smaller than stable Drizzle as a package only.** One PostgreSQL query bundles to 36.4 KiB gzipped with Drizzle 1.0.0-rc.5 and 30.2 KiB with Kysely 0.29.8, and Drizzle 0.45.4 bundles to 20.1 KiB. Kysely's published package is a 319.6 KiB download, against 2,989.0 KiB for the release candidate, more than nine times the size, and 1,205.7 KiB for 0.45.4. The [measurements](#measured-sizes) and what they exclude are above.
 
-### Which type-checks faster?
+### Does Kysely or Drizzle type-check faster?
 
 **On a small schema, a Kysely query costs the compiler less. On a large one, a Drizzle query does by default, and a Kysely query does again once `$pickTables` narrows the schema to the tables it reads.** Kysely's schema is an interface the compiler does not have to infer, and Drizzle's costs more with every table. Each Kysely join costs more as the schema grows, and Drizzle's queries do not, so on the same ten queries the two cross near 100 tables. The [measurements](#type-checking-cost) are above.
 
@@ -644,6 +645,8 @@ That value is priced for a person writing the code. When an agent writes most of
 **Both ship examples where an agent reads them, and Kysely checks more of what the agent writes.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference or a misspelled JSON key is a compile error it can read and fix without a database, where Drizzle gives it a failed run or a silent `null`.
 
 Drizzle's team [kept its API order](https://github.com/drizzle-team/drizzle-orm/discussions/2409#discussioncomment-9614641) to spare developers "huge type errors that are quite hard to understand", a trade priced for a person reading the error. An agent reads a long type error in the same loop as a short one, and before any query runs. What no loop reports is a `null` that arrives under a `string` type. Each library documents its methods in the type declarations it installs, and each site publishes an `llms.txt`. Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
+
+Try one shared query in each library: a filter that a second function extends, a JSON key it reads, and a join it later drops. Compare what the compiler reports before anything runs, and what the first request reports after.
 
 **Both put SQL first. Drizzle types the columns a query uses, and Kysely types the columns and the query.**
 
