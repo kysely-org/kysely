@@ -143,6 +143,74 @@ const aggregate = db
   .select((eb) => eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('pet_names'))
   .groupBy('person.id')
   .orderBy('person.id')
+const pagePets = drizzleDb
+  .select({ name: pet.name })
+  .from(pet)
+  .where(eq(pet.owner_id, person.id))
+  .orderBy(asc(pet.name))
+  .limit(2)
+const pageDrizzle = drizzleDb
+  .select({
+    first_name: person.first_name,
+    pets: sql<{ name: string }[]>`
+      (select coalesce(json_agg(pet_rows), '[]'::json) from ${pagePets.as('pet_rows')})
+    `.as('pets'),
+  })
+  .from(person)
+  .orderBy(person.id)
+const pageKysely = db
+  .selectFrom('person')
+  .select((eb) => [
+    'person.first_name',
+    jsonArrayFrom(
+      eb
+        .selectFrom('pet')
+        .select('pet.name')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .orderBy('pet.name')
+        .limit(2),
+    ).as('pets'),
+  ])
+  .orderBy('person.id')
+const renamedPets = drizzleDb
+  .select({ pet_name: pet.name })
+  .from(pet)
+  .where(eq(pet.owner_id, person.id))
+  .orderBy(asc(pet.name))
+  .limit(2)
+const renamedDrizzle = drizzleDb
+  .select({
+    first_name: person.first_name,
+    pets: sql<{ pet_name: string }[]>`
+      (select coalesce(json_agg(pet_rows), '[]'::json) from ${renamedPets.as('pet_rows')})
+    `.as('pets'),
+  })
+  .from(person)
+  .orderBy(person.id)
+const noCoalesce = drizzleDb
+  .select({
+    first_name: person.first_name,
+    pets: sql<{ name: string }[]>`
+      (select json_agg(pet_rows) from ${pagePets.as('pet_rows')})
+    `.as('pets'),
+  })
+  .from(person)
+  .orderBy(person.id)
+const rcPagePets = rcDb
+  .select({ pet_name: rcPet.name })
+  .from(rcPet)
+  .where(rcEq(rcPet.owner_id, rcPerson.id))
+  .orderBy(rcAsc(rcPet.name))
+  .limit(2)
+const rcRenamedDrizzle = rcDb
+  .select({
+    first_name: rcPerson.first_name,
+    pets: rcSql<{ pet_name: string }[]>`
+      (select coalesce(json_agg(pet_rows), '[]'::json) from ${rcPagePets.as('pet_rows')})
+    `.as('pets'),
+  })
+  .from(rcPerson)
+  .orderBy(rcPerson.id)
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
     ? true
@@ -156,6 +224,18 @@ type O = Expect<
   Equal<
     InferResult<typeof objectQuery>,
     { id: number; first_pet: { pet_id: number; name: string } | null }[]
+  >
+>
+type P = Expect<
+  Equal<
+    InferResult<typeof pageKysely>,
+    { first_name: string; pets: { name: string }[] }[]
+  >
+>
+type PD = Expect<
+  Equal<
+    Awaited<typeof pageDrizzle>,
+    { first_name: string; pets: { name: string }[] }[]
   >
 >
 try {
@@ -194,8 +274,21 @@ try {
   assert.deepEqual(await aggregate.execute(), [
     { id: 1, pet_names: ['Alpha', 'Beta', 'Zulu'] },
   ])
+  const pageExpected = [
+    { first_name: 'Jennifer', pets: [{ name: 'Alpha' }, { name: 'Beta' }] },
+    { first_name: 'Arnold', pets: [] },
+  ]
+  assert.deepEqual(await pageKysely.execute(), pageExpected)
+  assert.deepEqual(await pageDrizzle, pageExpected)
+  assert.match(renamedDrizzle.toSQL().sql, /\(select "name" from "pet"/)
+  assert.deepEqual(await renamedDrizzle, pageExpected)
+  assert.deepEqual(await rcRenamedDrizzle, pageExpected)
+  assert.deepEqual(await noCoalesce, [
+    { first_name: 'Jennifer', pets: [{ name: 'Alpha' }, { name: 'Beta' }] },
+    { first_name: 'Arnold', pets: null },
+  ])
   console.log(
-    'PASS: ordered/limited nested arrays and empty arrays match through real Drizzle stable/RC clients; Awaited reuses their inferred row type; Kysely object nullability and jsonAgg inference verified',
+    'PASS: ordered/limited nested arrays and empty arrays match through real Drizzle stable/RC clients; Awaited reuses their inferred row type; Kysely object nullability and jsonAgg inference verified; a key renamed inside a Drizzle json_agg subquery is written as the column name and a template without coalesce returns null for an empty array',
   )
 } finally {
   await db.destroy()
