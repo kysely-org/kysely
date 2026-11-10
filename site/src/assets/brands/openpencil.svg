@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 28 228 228">
+  <!-- OpenPencil -->
+  <mask id="kl-openpencil-handles" maskUnits="userSpaceOnUse" x="28" y="28" width="228" height="228">
+    <rect x="28" y="28" width="228" height="228" fill="#fff"/>
+    <path fill="#000" d="M68 44H84V60H68ZM218 118A10 10 0 1 1 198 118A10 10 0 1 1 218 118Z"/>
+  </mask>
+  <g mask="url(#kl-openpencil-handles)">
+    <path fill-rule="evenodd" d="M76 52H144C186 52 208 80 208 118S186 184 144 184H116V222L96 248L76 222ZM116 92V144H140C157 144 168 134 168 118S157 92 140 92Z"/>
+    <path d="M60 36H92V68H60ZM226 118A18 18 0 1 1 190 118A18 18 0 1 1 226 118Z"/>
+  </g>
+</svg>
