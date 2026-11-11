@@ -412,19 +412,11 @@ const rows = await peopleWithPets()
 
 Two helpers that each bind `:id` collide the same way. Kysely takes each value where the condition is written and numbers the placeholders as it compiles, so `where('person.first_name', '=', 'Jennifer').where('pet.name', '=', 'Catto')` sends two parameters and returns the row. **Kysely numbers its parameters as it compiles the statement, so no two values can share a name.**
 
-## Execution is explicit in both
+## Kysely queries can be cancelled
 
-Neither builder is thenable. TypeORM runs a query when `getMany()`, `getRawMany()`, or `execute()` is called, Kysely when `execute()` is, so an `async` helper returns a composable builder in both. Both stream a select's rows, TypeORM's `stream()` through [`pg-query-stream`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L857-L860) and Kysely's through `pg-cursor`.
+Every Kysely query's `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. TypeORM's `getMany()`, `getRawMany()`, and `stream()` take no arguments on either release, and its [`maxExecutionTime()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1034-L1036) is written into the statement as a MySQL optimizer hint. **A Kysely query can be stopped with an `AbortSignal`, before it is sent or while it runs.**
 
-What TypeORM's execution does not take is a signal. Every Kysely query's `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. TypeORM's `getMany()`, `getRawMany()`, and `stream()` take no arguments in either version, and its [`maxExecutionTime()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1034-L1036) is written into the statement as a MySQL optimizer hint. **Both libraries run a query only when asked. Kysely also lets you stop one.**
-
-### A transaction is the same handle type in both
-
-Both offer a callback transaction and a controlled one, TypeORM's through a `QueryRunner`, Kysely's through `startTransaction()`. TypeORM's callback transaction nests as a savepoint, where Kysely's does not, and savepoints are calls on Kysely's controlled form.
-
-One handle type serves the database and a transaction in both: a helper typed `EntityManager` takes `dataSource.manager` and the manager a transaction callback receives, and a helper typed `Kysely<Database>` takes the instance and a `Transaction<Database>`. **In both libraries, a helper written for the database handle also runs inside a transaction.**
-
-### A failed TypeORM query puts its values in the error
+## A failed TypeORM query puts its values in the error
 
 TypeORM throws a failed query as `QueryFailedError`, with the statement and every bound parameter as enumerable properties, on both releases. A logger or an error reporter that serializes the error records those values, so an email address, a token, or any other personal data bound to a failed query reaches the log.
 
@@ -573,7 +565,7 @@ TypeORM vs Kysely is a choice between a data framework whose query builder takes
 - Result types [come from the selection](#result-types-come-from-the-selection), not from the entity or an annotation you maintain.
 - JSON, CASE, filtered aggregates, windows, and [set operations and `MERGE`](#kysely-covers-more-of-sqls-statements) are built with checked references, and JSON and CASE results are inferred where TypeORM's are declared by hand.
 - [Nested results](#nested-results-stay-in-the-same-builder) are one statement and one row per parent.
-- Builders behave like values: [shared without cloning](#shared-queries-branch-without-mutation), [bound where each value is written](#each-value-is-bound-where-it-is-written), [grouped by `eb.or()`](#kysely-groups-the-conditions-it-builds), [sent as written](#kysely-sends-the-statement-you-wrote), and [cancelled with an `AbortSignal`](#execution-is-explicit-in-both).
+- Builders behave like values: [shared without cloning](#shared-queries-branch-without-mutation), [bound where each value is written](#each-value-is-bound-where-it-is-written), [grouped by `eb.or()`](#kysely-groups-the-conditions-it-builds), [sent as written](#kysely-sends-the-statement-you-wrote), and [cancelled with an `AbortSignal`](#kysely-queries-can-be-cancelled).
 - The [query tree is public](#kysely-is-extended-through-its-query-tree), and plugins and dialects build on it.
 
 Its types can come from the database itself, so it fits a schema that another tool, service, or team migrates, and they are plain interfaces that need no [decorator options](#decorators-and-the-toolchain). Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
