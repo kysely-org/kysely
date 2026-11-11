@@ -404,6 +404,34 @@ A move from TypeORM to Kysely does not have to happen at once, or at all for the
 
 Yes. [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) runs Kysely over an existing `DataSource`: its [`KyselyTypeORMDialect`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L207-L233) reuses TypeORM's connections, and its [`KyselifyEntity`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L185-L198) type derives Kysely's table types from the entity classes, with no generation step.
 
+```ts
+import {
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+import { KyselyTypeORMDialect, type KyselifyEntity } from 'kysely-typeorm'
+
+interface Database {
+  person: KyselifyEntity<Person>
+  pet: KyselifyEntity<Pet>
+}
+
+const db = new Kysely<Database>({
+  dialect: new KyselyTypeORMDialect({
+    kyselySubDialect: {
+      createAdapter: () => new PostgresAdapter(),
+      createIntrospector: (db) => new PostgresIntrospector(db),
+      createQueryCompiler: () => new PostgresQueryCompiler(),
+    },
+    typeORMDataSource: dataSource,
+  }),
+})
+```
+
+In the entity classes, relation properties are typed `NonAttribute<Pet[]>`, which `KyselifyEntity` leaves out, and a generated key `Generated<number>`, which makes it optional on insert. The classes stay TypeORM entities.
+
 1. Keep the entities, the generated migrations, and the repositories that persist entity graphs.
 2. Derive Kysely's types with `KyselifyEntity`, or [generate them](/docs/generating-types) from the migrated database, which also catches a column the entity does not declare.
 3. Start with a query that carries a `getRawMany<T>()` annotation, that shared functions extend, or that reads JSON. Move it, inspect `.compile()`, and compare rows, nulls, ordering, and empty results.
@@ -493,6 +521,10 @@ Its types come from the database itself, so it fits a schema that another tool, 
 ### Is TypeORM type-safe?
 
 **For entities and find options, yes. For the query builder, no.** TypeORM types the entity an operation returns and checks the properties named in a find option's `where`, `order`, and `relations`, though a find `select` still returns the whole entity type. Its query builder takes every clause as a string the compiler does not read, and types a raw result as `any` or as whatever you declare. Kysely checks the references and infers the result, with [gaps of its own](#where-kyselys-checks-stop).
+
+### Is there a type-safe query builder for TypeORM?
+
+**Kysely, through [kysely-typeorm](#can-kysely-and-typeorm-be-used-together).** It runs over the existing `DataSource` and derives its table types from the entities, so queries move to checked references and inferred results one at a time while the entities, migrations, and repositories stay.
 
 ### Is Kysely faster than TypeORM?
 
