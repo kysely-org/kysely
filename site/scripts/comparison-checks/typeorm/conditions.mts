@@ -65,6 +65,8 @@ assert.deepEqual(
 export function templateOperator() {
   // @ts-expect-error a misspelled column is a type error with a template operator too
   db.selectFrom('person').select('first_name').where('first_nam', sql`~*`, '^a')
+  // @ts-expect-error a string for an integer column is a type error with a template operator too
+  db.selectFrom('person').select('id').where('age', sql`my_operator`, 'old')
 }
 
 // A second select(), orderBy(), groupBy(), or having() replaces the first.
