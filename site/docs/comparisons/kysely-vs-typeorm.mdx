@@ -1,7 +1,7 @@
 ---
 sidebar_position: 7
 title: Kysely vs TypeORM
-description: 'Kysely vs TypeORM: a TypeORM alternative that checks every query reference, infers result types from the selection, and migrates one query at a time.'
+description: 'Kysely vs TypeORM: a TypeORM alternative that type-checks query references, infers result types from the selection, and migrates one query at a time.'
 ---
 
 # Kysely vs TypeORM
@@ -189,7 +189,7 @@ In 2017 that was a fair reading of the language. [Template literal types](https:
 
 Every failure in the table is loud once a test runs the branch that builds the reference. The `matchingPeople` function above passes every test that leaves the pet name out.
 
-The failures further down this page are quiet. Besides the [stale annotations](#result-types-come-from-the-selection), the second `where()`, and the repeated parameter name the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#nested-results-stay-in-the-same-builder) repeats a person, each with no error.
+The failures further down this page are quiet. Besides the [stale annotations](#result-types-come-from-the-selection), the second `where()`, and the repeated parameter name the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#kysely-pages-parents-in-one-statement) repeats a person, each with no error.
 
 **No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
@@ -333,7 +333,7 @@ One statement, one row per person, `[]` for a person with no pets, and `limit()`
 
 The join also decides pagination. TypeORM's [`take()` and `skip()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L907-L911) exist because `limit()` cuts joined rows rather than parents, and `take()` with a join runs two statements, one to pick the parents and one to load them. The query strategy pages parents too, across its three statements.
 
-Ordered by a joined column, the join's first statement picks distinct pairs of the parent's key and that column. Ordered by pet name, pages of one person returned Jennifer on two pages, once per pet, while `getCount()` still counts four people. `getManyAndCount()` sends the page and its total as separate statements, three with a join, so a write between them can make the two disagree. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.**
+Ordered by a joined column, the join's first statement picks distinct pairs of the parent's key and that column. Ordered by pet name, with one person per page, Jennifer appeared on two pages, once per pet, while `getCount()` still counts four people. `getManyAndCount()` sends the page and its total as separate statements, three with a join, so a write between them can make the two disagree. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.**
 
 ## Shared queries branch without mutation
 
@@ -378,7 +378,7 @@ The query returns every owner's pets named Kitty, with no error. When the first 
 
 A second [`orderBy()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L506) or [`groupBy()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L545) replaces the first the same way, and so does a second `select()`; `addOrderBy()`, `addGroupBy()`, and `addSelect()` are the methods that add. The docs say a second `having()` [overrides](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L467) too, and it is appended to the first with no `AND`, so PostgreSQL rejects the statement.
 
-In Kysely all of these methods add: `where()` joins the last with AND, and `select()`, `orderBy()`, `groupBy()`, and `having()` append. Each returns a new builder, so a shared function can add a filter, a join, or a limit without knowing what its caller added.
+In Kysely all of these methods add: each `where()` adds its condition with AND, and `select()`, `orderBy()`, `groupBy()`, and `having()` append. Each returns a new builder, so a shared function can add a filter, a join, or a limit without knowing what its caller added.
 
 **Every Kysely builder is a value you can share without cloning it first.** Immutability has one trap of its own: a returned builder that is not kept is a change that never happened. Keep each returned builder, and use [`$if`](/docs/recipes/conditional-selects) when conditional selections change the result type.
 
@@ -494,7 +494,7 @@ const db = new Kysely<Database>({
 })
 ```
 
-In the entity classes, relation properties are typed `NonAttribute<Pet[]>`, which `KyselifyEntity` leaves out, and a generated key `Generated<number>`, which makes it optional on insert. The classes stay TypeORM entities.
+For the bridge, type relation properties in the entity classes as `NonAttribute<Pet[]>`, which `KyselifyEntity` leaves out, and a generated key as `Generated<number>`, which makes it optional on insert. The classes stay TypeORM entities.
 
 1. Keep the entities, the generated migrations, and the repositories that persist entity graphs.
 2. Derive Kysely's types with `KyselifyEntity`, or [generate them](/docs/generating-types) from the migrated database, which also catches a column the entity does not declare.
@@ -578,7 +578,9 @@ Its types can come from the database itself, so it fits a schema that another to
 
 ### When is TypeORM the better choice?
 
-**Keep TypeORM when the entity class is the unit your code thinks in: decorated classes that drive types, generated migrations, and relations hydrated into instances, with Active Record or repositories persisting the graph.** It is also the choice when the database is one Kysely has no dialect for, MongoDB or SAP HANA among them. Its query builder can stay for the queries that already work, and Kysely can run beside it for the ones that are composed.
+**Keep TypeORM when a person writes the entities and the queries, and the entity class is the unit the code thinks in: decorated classes that drive types, generated migrations, and relations hydrated into instances, with Active Record or repositories persisting the graph.** It is also the choice when the database is one Kysely has no dialect for, MongoDB or SAP HANA among them. Its query builder can stay for the queries that already work, and Kysely can run beside it for the ones that are composed.
+
+Chosen for its query builder alone, TypeORM trades the checks on this page for property names that absorb a column rename, a built-in result cache, and nested callback transactions.
 
 ### Is TypeORM still maintained?
 
