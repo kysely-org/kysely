@@ -63,19 +63,19 @@ assert.equal(
 assert.deepEqual(await kyselyNamed.execute(), [])
 
 // Named parameters share one namespace per query.
-const adults = () =>
+const peopleWithPets = () =>
   dataSource
     .getRepository(Person)
     .createQueryBuilder('person')
     .innerJoin(Pet, 'pet', 'pet.owner_id = person.id')
     .select('person.first_name', 'first_name')
     .addSelect('pet.name', 'pet_name')
-const colliding = adults()
+const colliding = peopleWithPets()
   .where('person.first_name = :name', { name: 'Jennifer' })
   .andWhere('pet.name = :name', { name: 'Catto' })
 assert.deepEqual(colliding.getParameters(), { name: 'Catto' })
 assert.deepEqual(await colliding.getRawMany(), [])
-const distinctNames = adults()
+const distinctNames = peopleWithPets()
   .where('person.first_name = :personName', { personName: 'Jennifer' })
   .andWhere('pet.name = :petName', { petName: 'Catto' })
 assert.deepEqual(await distinctNames.getRawMany(), [
@@ -106,7 +106,10 @@ assert.ok(typeormReturned instanceof SelectQueryBuilder)
 async function kyselyHelper() {
   return db.selectFrom('person').select('id')
 }
-assert.equal((await (await kyselyHelper()).where('id', '=', 1).execute()).length, 1)
+assert.equal(
+  (await (await kyselyHelper()).where('id', '=', 1).execute()).length,
+  1,
+)
 
 // No AbortSignal on TypeORM's execution methods, in either version.
 expectType<Equal<Parameters<SelectQueryBuilder<Person>['getMany']>, []>>()
@@ -124,10 +127,7 @@ async function countPeople(manager: EntityManager) {
   return manager.getRepository(Person).createQueryBuilder('person').getCount()
 }
 assert.equal(await countPeople(dataSource.manager), 4)
-assert.equal(
-  await dataSource.transaction((manager) => countPeople(manager)),
-  4,
-)
+assert.equal(await dataSource.transaction((manager) => countPeople(manager)), 4)
 async function kyselyCount(handle: Kysely<Database>) {
   return (
     await handle
@@ -147,7 +147,9 @@ await dataSource.transaction(async (outer) => {
     await inner.query('select 1')
   })
 })
-const nestedStatements = queries.filter((q) => /savepoint|begin|commit/i.test(q))
+const nestedStatements = queries.filter((q) =>
+  /savepoint|begin|commit/i.test(q),
+)
 assert.ok(nestedStatements.some((q) => /^SAVEPOINT/i.test(q)))
 const runner: QueryRunner = dataSource.createQueryRunner()
 await runner.startTransaction()
