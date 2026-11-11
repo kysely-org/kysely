@@ -6,9 +6,11 @@ description: 'Kysely vs TypeORM for TypeScript: query-checked references instead
 
 # Kysely vs TypeORM
 
-TypeORM has been the TypeScript ORM since 2016: entities as classes, repositories, relations, and migrations generated from the entities. It supports both [Active Record and Data Mapper](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L23), follows [Hibernate, Doctrine, and Entity Framework](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L25-L26), and, by its own count, supports [more databases than any other JavaScript ORM](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L21), MongoDB, Oracle, SAP HANA, and Spanner among them. A [new team took over its maintenance in October 2024](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8-L12), and [1.0 shipped in May 2026](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L7) after a decade of 0.x releases. **TypeORM was TypeScript's first widely adopted ORM, and a generation of Node.js services learned relational data through it.**
+Kysely and TypeORM both have a query builder that keeps SQL's clause order. TypeORM's takes SQL as strings in every clause, `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, a join condition as text, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **TypeORM's types describe your entities. Kysely's describe your query.**
 
-Both libraries have a query builder that keeps SQL's clause order. TypeORM's takes SQL as strings in every clause, `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, a join condition as text, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **TypeORM's types describe your entities. Kysely's describe your query.**
+Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads) and maintained. TypeORM has been the TypeScript ORM since 2016: entities as classes, repositories, relations, and migrations generated from the entities. It supports both [Active Record and Data Mapper](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L23), follows [Hibernate, Doctrine, and Entity Framework](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L25-L26), and, by its own count, supports [more databases than any other JavaScript ORM](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L21), MongoDB, Oracle, SAP HANA, and Spanner among them.
+
+A [new team took over its maintenance in October 2024](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8-L12), and [1.0 shipped in May 2026](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L7) after a decade of 0.x releases. **TypeORM was TypeScript's first widely adopted ORM, and a generation of Node.js services learned relational data through it.**
 
 The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces the first](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#values-are-bound-by-position-not-by-name), each with no error.
 
@@ -366,7 +368,7 @@ const rows = await adults()
 // Both conditions compare with 'Catto'. The Jennifer and Catto row is gone.
 ```
 
-Two helpers that each bind `:id` collide the same way, and so do [a CTE and the query that uses it](https://github.com/typeorm/typeorm/issues/10983). Kysely takes each value where the condition is written and numbers the placeholders as it compiles, so `where('person.first_name', '=', 'Jennifer').where('pet.name', '=', 'Catto')` sends two parameters and returns the row. **A TypeORM query has one parameter namespace, and a repeated name overrides the earlier value quietly. Kysely numbers its parameters as it compiles the statement.**
+Two helpers that each bind `:id` collide the same way. Kysely takes each value where the condition is written and numbers the placeholders as it compiles, so `where('person.first_name', '=', 'Jennifer').where('pet.name', '=', 'Catto')` sends two parameters and returns the row. **A TypeORM query has one parameter namespace, and a repeated name overrides the earlier value quietly. Kysely numbers its parameters as it compiles the statement.**
 
 ## Execution is explicit in both
 
@@ -478,8 +480,6 @@ Its types come from the database itself, so it fits a schema that another tool, 
 **Kysely checks more of what the agent writes, and TypeORM's strings check nothing until the query runs.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference, a stale annotation, or a misspelled JSON key is a compile error it can read and fix without a database, where TypeORM gives it a failed request or a silent `null`.
 
 Each library documents its methods in the type declarations it installs, and Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
-
-Kysely is also the more downloaded of the two: npm counted [29.3 million Kysely downloads](https://api.npmjs.org/downloads/point/2026-11-03:2026-11-09/kysely) and [6.7 million TypeORM downloads](https://api.npmjs.org/downloads/point/2026-11-03:2026-11-09/typeorm) in the week of November 3, 2026. Both counts include installs pulled in by other packages.
 
 Try one shared query in each library: a filter that a second function extends, a JSON key it reads, and a join it later drops. Compare what the compiler reports before anything runs, and what the first request reports after.
 
