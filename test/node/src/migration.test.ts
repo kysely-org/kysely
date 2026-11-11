@@ -306,6 +306,53 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods).to.eql(['migration1', 'migration2'])
       })
 
+      describe('when the clock jumps back mid-run', () => {
+        const sandbox = createSandbox()
+
+        afterEach(() => {
+          sandbox.restore()
+        })
+
+        it('should not corrupt the execution order of migrations (issue #2244)', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({ now, toFake: ['Date'] })
+
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations([
+              'migration1',
+              {
+                name: 'migration2',
+                preUp: () => clock.setSystemTime(now - 10_000),
+              },
+              'migration3',
+            ])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+          expect(executedUpMethods1).to.eql([
+            'migration1',
+            'migration2',
+            'migration3',
+          ])
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations([
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+            ])
+
+          const { error: error2, results: results2 } =
+            await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(results2).to.eql([
+            { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+          ])
+          expect(executedUpMethods2).to.eql(['migration4'])
+        })
+      })
+
       describe('using folder of migration files', () => {
         beforeEach(async () => {
           await dropTestMigrationTables()

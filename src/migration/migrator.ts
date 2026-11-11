@@ -581,7 +581,8 @@ export class Migrator {
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
     const migrations = await this.#resolveMigrations()
-    const executedMigrations = await this.#getExecutedMigrations(db)
+    const { executedMigrations, maxExecutedAt } =
+      await this.#getExecutedMigrations(db)
 
     this.#ensureNoMissingMigrations(migrations, executedMigrations)
     if (!this.#allowUnorderedMigrations) {
@@ -597,6 +598,7 @@ export class Migrator {
       migrations,
       executedMigrations,
       lastMigration: getLast(executedMigrations),
+      maxExecutedAt,
       pendingMigrations,
     })
   }
@@ -621,10 +623,11 @@ export class Migrator {
       }))
   }
 
-  async #getExecutedMigrations(
-    db: Kysely<any>,
-  ): Promise<ReadonlyArray<string>> {
-    const executedMigrations = await db
+  async #getExecutedMigrations(db: Kysely<any>): Promise<{
+    executedMigrations: ReadonlyArray<string>
+    maxExecutedAt: number
+  }> {
+    const rows = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
       .select(['name', 'timestamp'])
@@ -634,20 +637,28 @@ export class Migrator {
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
-    return (
-      executedMigrations
-        // https://github.com/kysely-org/kysely/issues/843
-        .sort((a, b) => {
-          if (a.timestamp === b.timestamp) {
-            return nameComparator(a.name, b.name)
-          }
+    const executedMigrations = rows
+      // https://github.com/kysely-org/kysely/issues/843
+      .sort((a, b) => {
+        if (a.timestamp === b.timestamp) {
+          return nameComparator(a.name, b.name)
+        }
 
-          return (
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-          )
-        })
-        .map((it) => it.name)
-    )
+        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      })
+      .map((it) => it.name)
+
+    let maxExecutedAt = 0
+
+    for (const { timestamp } of rows) {
+      const executedAt = new Date(timestamp).getTime()
+
+      if (executedAt > maxExecutedAt) {
+        maxExecutedAt = executedAt
+      }
+    }
+
+    return { executedMigrations, maxExecutedAt }
   }
 
   #ensureNoMissingMigrations(
@@ -750,17 +761,23 @@ export class Migrator {
       }
     })
 
+    let { maxExecutedAt } = state
+
     for (let i = 0; i < results.length; i++) {
       const migration = state.pendingMigrations[i]
 
       try {
         await migration.up(db)
+
+        // https://github.com/kysely-org/kysely/issues/2244
+        maxExecutedAt = Math.max(Date.now(), maxExecutedAt + 1)
+
         await db
           .withPlugin(this.#schemaPlugin)
           .insertInto(this.#migrationTable)
           .values({
             name: migration.name,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(maxExecutedAt).toISOString(),
           })
           .execute()
 
@@ -1003,6 +1020,9 @@ interface MigrationState {
 
   // Name of the last executed migration.
   readonly lastMigration?: string
+
+  // Latest execution timestamp (ms) among executed migrations, 0 if none.
+  readonly maxExecutedAt: number
 
   // Migrations that have not yet ran
   readonly pendingMigrations: ReadonlyArray<NamedMigration>
