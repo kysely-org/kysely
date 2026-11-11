@@ -5,7 +5,7 @@ import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import type { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
 import type { CreateTableBuilder } from '../schema/create-table-builder.js'
-import { logOnce } from '../util/log-once.js'
+import { warnOnce } from '../util/log-once.js'
 import { freeze, getLast, isObject } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
@@ -822,7 +822,7 @@ export class Migrator {
     }
 
     if (now < maxExecutedAt) {
-      logOnce(
+      warnOnce(
         'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
       )
     }
