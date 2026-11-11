@@ -18,7 +18,7 @@ The differences that cost most are the quiet ones. A `getRawMany<T>()` annotatio
 
 Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack of models, migrations generated from them, a model API, and a SQL-style query builder. Its models are entities, and its model API is repositories and the find API.
 
-The sections below set its query builder against Kysely, and [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence. TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026, and its behavior below is the same in both unless stated.
+The sections below set its query builder against Kysely, and [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence. TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026. [Most installs still run 0.3.x](https://npmx.dev/package/typeorm/versions), so its behavior below is stated for both, and is the same in both unless stated. [Upgrading to 1.0 or moving to Kysely](#should-i-upgrade-to-typeorm-10-or-move-to-kysely) covers what 1.0 changes.
 
 ## Both build the same left join
 
@@ -125,7 +125,7 @@ The rows match. TypeORM's [raw results](https://github.com/typeorm/typeorm/blob/
 
 ## Kysely checks the references TypeORM takes as strings
 
-TypeORM's find API is typed: `find()` checks the properties named in `where`, `order`, and `relations` against the entity, and the query builder's `values()` and `set()` check an insert's or an update's values the same way. The find API covers what an entity and its declared relations express.
+TypeORM's find API is typed: `find()` checks the properties named in `where`, `order`, and `relations` against the entity, and the query builder's `values()` and `set()` check an insert's or an update's values the same way, with [one exception on 0.3.x](#should-i-upgrade-to-typeorm-10-or-move-to-kysely). The find API covers what an entity and its declared relations express.
 
 A join without a declared relation, a computed column, a grouped aggregate, or a subquery moves the code to the query builder. That is where a [model API runs out into SQL](/docs/comparisons/query-builder-vs-orm#query-builder-composition-survives-changing-requirements), so the builder holds a TypeORM codebase's hardest queries, and it is the part this page compares.
 
@@ -527,6 +527,14 @@ Its types can come from the database itself, so it fits a schema that another to
 ### Is TypeORM still maintained?
 
 **Yes.** In October 2024, after years in which, in the new maintainers' words, ["maintenance has slowed significantly"](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8), a team from Elevantiq, the company behind Vendure, [took over from TypeORM's original maintainers](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L12-L19). 1.0 shipped in May 2026, followed by 1.1.0 in July, 1.1.1 in September, and 1.1.2 in October, with nightly builds between them.
+
+### Should I upgrade to TypeORM 1.0 or move to Kysely?
+
+**Upgrading to 1.0 changes TypeORM's platform, APIs, and defaults, and leaves its query builder's strings as they are.** 1.0 requires [Node.js 20](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L15), [removes long-deprecated APIs](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L34-L66) with a [codemod](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/02-upgrading-from-0.3.md#L9-L17) for most of them, and takes find options' `select` and `relations` as objects only. Every check on this page behaves the same on 0.3.31 and 1.1.2: references in the builder are unchecked strings, raw results are `any`, and a second `where()` and a repeated parameter name behave as they did.
+
+One typing gap closed only in 1.0. On 0.3.x, `dataSource.createQueryBuilder().update(User)`, the [first example in TypeORM's update docs](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/3-update-query-builder.md#L6-L13), resolves to the overload that takes the values to set, so the builder's entity is `any` and `set()` accepts any key and any value. The overload dates from 0.3.0 in March 2022. The gap was [reported in January 2024](https://github.com/typeorm/typeorm/issues/10604), the issue was closed in a backlog cleanup in September 2025, and [the fix](https://github.com/typeorm/typeorm/pull/11296) merged in April 2026 for 1.0. 0.3.31, released in July 2026, still has it.
+
+The two moves can also be combined. Queries moved to Kysely use none of the APIs 1.0 removes, so a team on 0.3 can move its composed queries first, [through kysely-typeorm](#can-kysely-and-typeorm-be-used-together), and upgrade the entities on its own schedule.
 
 ### Is TypeORM type-safe?
 
