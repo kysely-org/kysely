@@ -6,7 +6,7 @@ description: 'Kysely vs TypeORM: a TypeORM alternative that checks every query r
 
 # Kysely vs TypeORM
 
-Kysely and TypeORM both have a query builder that keeps SQL's clause order. TypeORM's takes SQL as strings in every clause, `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, a join condition as text, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **Kysely's types describe the query itself, from each reference it names to the rows it returns.**
+Kysely and TypeORM both have a query builder that keeps SQL's clause order. TypeORM's takes each clause as a string or an untyped object, such as `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, or a join condition, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **Kysely's types describe the query itself, from each reference it names to the rows it returns.**
 
 Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads) and maintained. Since 2016, TypeORM has given TypeScript entities as classes, repositories, relations, and migrations generated from the entities. It offers both [Active Record and Data Mapper](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L23), follows [Hibernate, Doctrine, and Entity Framework](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L25-L26), and, by its own count, supports [more databases than any other JavaScript ORM](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L21), MongoDB, Oracle, SAP HANA, and Spanner among them.
 
@@ -14,7 +14,7 @@ A [new team took over its maintenance in October 2024](https://github.com/typeor
 
 The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces the first](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#each-value-is-bound-where-it-is-written), each with no error.
 
-Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models, which TypeORM calls entities, migrations generated from them, a model API, which TypeORM calls repositories and the find API, and a SQL-style query builder. This page compares that builder with Kysely. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence.
+Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack of models, migrations generated from them, a model API, and a SQL-style query builder. TypeORM calls its models entities, and its model API repositories and the find API. This page compares that builder with Kysely. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence.
 
 TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026. Its behavior below is the same in both unless stated.
 
@@ -122,6 +122,8 @@ const rows = await db
 The rows match. TypeORM's [raw results](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L826-L833) are `any[]`, and `getRawMany<T>()` takes a row type you write and maintain beside the query. Kysely infers the row, and makes `pet_name` nullable because the join is a left join. **Written correctly, the two queries are equivalent, and only Kysely's has a result type the compiler derived.**
 
 ## Kysely checks the references TypeORM takes as strings
+
+TypeORM's find API is typed: `find()` checks the properties named in `where`, `order`, and `relations` against the entity. It covers what an entity and its declared relations express. A join without a declared relation, a computed column, a grouped aggregate, or a subquery moves the code to the query builder. That is where a [model API runs out into SQL](/docs/comparisons/query-builder-vs-orm#query-builder-composition-survives-changing-requirements), so the builder holds a TypeORM codebase's hardest queries, and it is the part this page compares.
 
 Production queries collect their filters. Put the query above in a function with an optional pet name, and later drop the pet's name from the result, and the join with it:
 
@@ -508,7 +510,7 @@ TypeORM vs Kysely is a choice between a data framework whose query builder takes
 - Builders behave like values: [shared without cloning](#shared-queries-branch-without-mutation), [bound where each value is written](#each-value-is-bound-where-it-is-written), and [cancelled with an `AbortSignal`](#execution-is-explicit-in-both).
 - The [query tree is public](#kysely-is-extended-through-its-query-tree), and plugins and dialects build on it.
 
-Its types come from the database itself, so it fits a schema that another tool, service, or team migrates, and they are plain interfaces that need no [decorator options](#decorators-and-the-toolchain). Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
+Its types can come from the database itself, so it fits a schema that another tool, service, or team migrates, and they are plain interfaces that need no [decorator options](#decorators-and-the-toolchain). Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
 
 ### When is TypeORM the better choice?
 
@@ -520,7 +522,7 @@ Its types come from the database itself, so it fits a schema that another tool, 
 
 ### Is TypeORM type-safe?
 
-**For entities and find options, yes. For the query builder, no.** TypeORM types the entity an operation returns and checks the properties named in a find option's `where`, `order`, and `relations`, though a find `select` still returns the whole entity type. Its query builder takes every clause as a string the compiler does not read, and types a raw result as `any` or as whatever you declare. Kysely checks the references and infers the result, with [gaps of its own](#where-kyselys-checks-stop).
+**For entities and find options, yes. For the query builder, no.** TypeORM types the entity an operation returns and checks the properties named in a find option's `where`, `order`, and `relations`, though a find `select` still returns the whole entity type. Its query builder takes every clause as a string or an untyped object the compiler does not check against the entity, and types a raw result as `any` or as whatever you declare. Kysely checks the references and infers the result, with [gaps of its own](#where-kyselys-checks-stop).
 
 ### Is there a type-safe query builder for TypeORM?
 
