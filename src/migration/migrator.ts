@@ -803,6 +803,16 @@ export class Migrator {
     return { results }
   }
 
+  async #createIfNotExists(
+    qb: CreateTableBuilder<any, any> | CreateSchemaBuilder,
+  ): Promise<void> {
+    if (this.#props.db.getExecutor().adapter.supportsCreateIfNotExists) {
+      qb = qb.ifNotExists()
+    }
+
+    await qb.execute()
+  }
+
   // https://github.com/kysely-org/kysely/issues/2244
   #getNextExecutedAt(maxExecutedAt: number): number {
     const now = Date.now()
@@ -818,16 +828,6 @@ export class Migrator {
     }
 
     return maxExecutedAt + 1
-  }
-
-  async #createIfNotExists(
-    qb: CreateTableBuilder<any, any> | CreateSchemaBuilder,
-  ): Promise<void> {
-    if (this.#props.db.getExecutor().adapter.supportsCreateIfNotExists) {
-      qb = qb.ifNotExists()
-    }
-
-    await qb.execute()
   }
 }
 
