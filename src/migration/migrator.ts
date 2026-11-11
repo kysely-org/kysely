@@ -773,13 +773,17 @@ export class Migrator {
         // https://github.com/kysely-org/kysely/issues/2244
         const now = Date.now()
 
-        if (now < maxExecutedAt) {
-          logOnce(
-            'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
-          )
-        }
+        if (now > maxExecutedAt) {
+          maxExecutedAt = now
+        } else {
+          if (now < maxExecutedAt) {
+            logOnce(
+              'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
+            )
+          }
 
-        maxExecutedAt = Math.max(now, maxExecutedAt + 1)
+          maxExecutedAt += 1
+        }
 
         await db
           .withPlugin(this.#schemaPlugin)
