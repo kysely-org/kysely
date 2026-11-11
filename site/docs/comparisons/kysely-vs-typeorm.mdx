@@ -398,6 +398,30 @@ One handle type serves the database and a transaction in both: a helper typed `E
 
 What TypeORM's execution does not take is a signal. Every Kysely query's `execute()` and `stream()` accepts a web-standard [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), and an option chooses what happens to a query already running: stop waiting, cancel it on the database, or kill its session. TypeORM's `getMany()`, `getRawMany()`, and `stream()` take no arguments in either version, and its [`maxExecutionTime()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1034-L1036) is written into the statement as a MySQL optimizer hint. **Both libraries run a query only when asked. Kysely also lets you stop one.**
 
+## Kysely sends the statement you wrote
+
+TypeORM's builder adds to a statement from the entity's metadata. Give `person` a `deleted_at` column declared as its [delete date](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/entity/1-entities.md#L177) (`deleteDate: true` in `EntitySchema`, `@DeleteDateColumn()` with decorators), and every select and count on it gets `"deleted_at" IS NULL`. So does the `ON` condition of a join written by hand:
+
+```ts
+const rows = await dataSource
+  .getRepository(Pet)
+  .createQueryBuilder('pet')
+  .leftJoin(Person, 'person', 'person.id = pet.owner_id')
+  .select('pet.name', 'name')
+  .addSelect('person.first_name', 'owner')
+  .withDeleted()
+  .getRawMany()
+// LEFT JOIN "person" "person"
+//   ON "person"."id" = "pet"."owner_id" AND "person"."deleted_at" IS NULL
+// A pet whose owner was soft-deleted is returned with owner: null.
+```
+
+The pet stays in the result, and its owner reads `null`, as if it had none. [`withDeleted()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1229-L1237) lifts the filter only from joins added after it, so called last it reaches the main table alone. The [issue about it](https://github.com/typeorm/typeorm/issues/11906) has been open since January 2026, a TypeORM collaborator [wrote](https://github.com/typeorm/typeorm/issues/11906#issuecomment-3779516272) "The current behavior looks strange to me for sure", and other users rely on the position to choose which joins keep the filter. It dates from [a 2021 fix](https://github.com/typeorm/typeorm/pull/7296) that kept soft-deleted relations out of `find`.
+
+The filter itself is a feature: soft-deleted rows stay out of every query without a condition in each one. The other additions are conveniences. `getMany()` adds the primary key it needs to build entities, an insert gets `RETURNING` for generated and default columns, an update sets the update-date column, and `getRawMany()` names an unaliased column `person_first_name`. A paginated `take()` with a join [runs two statements](#nested-results-stay-in-the-same-builder).
+
+Kysely compiles the join above to the statement written, with no condition added, and `.compile()` shows it before it runs. A soft-delete scope is a condition you write once, in a helper every query calls or in a [plugin](#kysely-is-extended-through-its-query-tree) that rewrites the query tree. **Kysely sends the statement you wrote, and changes it only through plugins you install.**
+
 ## Kysely is extended through its query tree
 
 TypeORM's extension points are its entity lifecycle: [listeners and subscribers](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/listeners-and-subscribers.md) on insert, update, and remove, custom repositories, naming strategies, column transformers, a [logger](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/logging.md) that receives the SQL text and its parameters, and a built-in [query result cache](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/6-caching.md#L3) with Redis and database stores. Subscribers also get `beforeQuery` and `afterQuery` events, which, like the logger, receive the SQL text and its parameters. The query builder keeps its clauses in an expression map and writes SQL from it, so no extension point receives the query as a structure.
@@ -516,6 +540,7 @@ TypeORM vs Kysely is a choice between a data framework whose query builder takes
 - JSON, CASE, filtered aggregates, windows, and [set operations and `MERGE`](#kysely-covers-more-of-sqls-statements) are built with checked references, and JSON and CASE results are inferred where TypeORM's are declared by hand.
 - [Nested results](#nested-results-stay-in-the-same-builder) are one statement and one row per parent.
 - Builders behave like values: [shared without cloning](#shared-queries-branch-without-mutation), [bound where each value is written](#each-value-is-bound-where-it-is-written), and [cancelled with an `AbortSignal`](#execution-is-explicit-in-both).
+- Statements are [sent as written](#kysely-sends-the-statement-you-wrote), with no condition added from entity metadata.
 - The [query tree is public](#kysely-is-extended-through-its-query-tree), and plugins and dialects build on it.
 
 Its types can come from the database itself, so it fits a schema that another tool, service, or team migrates, and they are plain interfaces that need no [decorator options](#decorators-and-the-toolchain). Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
