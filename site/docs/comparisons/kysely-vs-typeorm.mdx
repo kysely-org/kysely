@@ -523,7 +523,7 @@ That constrains the toolchain. Node's built-in type stripping refuses a decorate
 <details>
 <summary>Drivers, runtimes, replicas, and caching</summary>
 
-TypeORM runs on Node.js, in the browser, and on React Native, Expo, Cordova, and NativeScript, and talks to PostgreSQL, MySQL and MariaDB, SQLite, SQL Server, Oracle, SAP HANA, Spanner, CockroachDB, and MongoDB through drivers inside one package. Kysely has zero runtime dependencies and runs on Node.js, Deno, Bun, edge runtimes, and [in the browser](/docs/runtimes/browser). Its core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite, and the rest are [organization and community dialects](/docs/dialects), installed separately.
+TypeORM runs on Node.js, in the browser, and on React Native, Expo, Cordova, and NativeScript, and talks to PostgreSQL, MySQL and MariaDB, SQLite, SQL Server, Oracle, SAP HANA, Spanner, CockroachDB, and MongoDB through drivers inside one package. Kysely has zero runtime dependencies and runs wherever JavaScript does, Node.js, Deno, Bun, edge runtimes, and [the browser](/docs/runtimes/browser) among them. Its core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite, and the rest are [organization and community dialects](/docs/dialects), installed separately.
 
 TypeORM's data source routes reads to replicas and writes to the primary when [`replication`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/data-source/3-multiple-data-sources.md#L189-L191) is configured. For Kysely, [kysely-replication](https://github.com/kysely-org/kysely-replication/blob/6f43103e487a8bcafd44d468f91af32e4a1dba43/README.md#L19-L20) builds a replication-aware instance.
 
