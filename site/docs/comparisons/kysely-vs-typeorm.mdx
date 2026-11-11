@@ -10,15 +10,15 @@ Kysely and TypeORM both have a query builder that keeps SQL's clause order. Type
 
 Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads) and maintained. Since 2016, TypeORM has given TypeScript entities as classes, repositories, relations, and migrations generated from the entities. It offers both [Active Record and Data Mapper](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L23), follows [Hibernate, Doctrine, and Entity Framework](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L25-L26), and, by its own count, supports [more databases than any other JavaScript ORM](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L21), MongoDB, Oracle, SAP HANA, and Spanner among them.
 
-A [new team took over its maintenance in October 2024](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8-L12), and [1.0 shipped in May 2026](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L7) after a decade of 0.x releases. NestJS ships an official integration, `@nestjs/typeorm`, and its docs call TypeORM [one of the most mature ORMs available for TypeScript](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L3). **TypeORM was TypeScript's first widely adopted ORM, and a generation of Node.js services learned relational data through it.**
+A [new team took over its maintenance in October 2024](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8-L12), and [1.0 shipped in May 2026](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L7) after a decade of 0.x releases. NestJS ships an official integration, `@nestjs/typeorm`, and its docs call TypeORM [one of the most mature ORMs available for TypeScript](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L3). **TypeORM was the first widely adopted ORM written for TypeScript, and a generation of Node.js services learned relational data through it.**
 
 The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces the first](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#each-value-is-bound-where-it-is-written), each with no error.
 
-Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack of models, migrations generated from them, a model API, and a SQL-style query builder. TypeORM calls its models entities, and its model API repositories and the find API. This page compares that builder with Kysely. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence.
-
-TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026. Its behavior below is the same in both unless stated.
-
 ## Both build the same left join
+
+Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack of models, migrations generated from them, a model API, and a SQL-style query builder. Its models are entities, and its model API is repositories and the find API.
+
+This page compares TypeORM's query builder with Kysely, and [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence. TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026, and its behavior below is the same in both unless stated.
 
 Assume configured Kysely (`db`) and TypeORM (`dataSource`) clients over the same two tables:
 
@@ -197,6 +197,8 @@ Kysely's references are strings read by the type system: completed and checked, 
 `where('age', '=', null)` compiles and matches no rows. That is by design: Kysely builds the comparison as written, and `= null` is valid SQL. Code that filters on a nullable variable adds the built-in [`SafeNullComparisonPlugin`](/docs/plugins#safe-null-comparison-plugin), which rewrites `=` to `IS` when the value is null, and nothing is rewritten without it.
 
 One Kysely gap is quiet: a `union` whose sides list the same columns in a different order returns values under the wrong keys.
+
+The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. [Excessively deep types](/docs/recipes/excessively-deep-types) covers the limit TypeScript can hit and how to stay inside it.
 
 </details>
 
@@ -497,7 +499,7 @@ Measured **November 11, 2026**. Package sizes exclude dependencies, and trees ex
 
 ## Choosing TypeORM or Kysely
 
-TypeORM vs Kysely is a choice between a data framework whose query builder takes SQL as strings and a query builder whose types follow the query. What differs is how much of a query the compiler checks, and what else the library does.
+TypeORM vs Kysely is a choice between a data framework whose query builder takes each clause as a string or an untyped object, and a query builder whose types follow the query. What differs is how much of a query the compiler checks, and what else the library does.
 
 ### Why use Kysely instead of TypeORM?
 
