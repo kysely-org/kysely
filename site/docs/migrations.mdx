@@ -49,7 +49,7 @@ const migrator = new Migrator({
 
 ### Execution timestamps
 
-Kysely keeps track of executed migrations in a `kysely_migration` table (configurable with the `migrationTableName` option). Each row holds the migration's `name` and a `timestamp` of when it was executed, stored as an ISO 8601 string. Kysely uses it to order executed migrations, e.g. to undo them in reverse execution order when migrating down. It is also exposed as `executedAt` by `Migrator.getMigrations`.
+Kysely's migrator keeps track of executed migrations in a `kysely_migration` table (configurable with the `migrationTableName` option). Each row holds the migration's `name` and a `timestamp` of when it was executed, stored as an ISO 8601 string. The migrator uses it to order executed migrations, e.g. to undo them in reverse execution order when migrating down. It is also exposed as `executedAt` by `Migrator.getMigrations`.
 
 In most cases, the timestamp is the time on the machine running the migrator when the migration was applied (as reported by `Date.now()`), not the database server's time. Since it determines the execution order, it never goes backwards. If the machine clock is behind the latest recorded timestamp, for example after a virtual machine time sync, an NTP step or a leap second, because of clock drift between machines running migrations, or because the clock was ahead when a previous migration was applied, the migration is recorded 1 millisecond after the latest recorded timestamp instead, and a warning is logged once. Don't rely on it as an exact audit log of when migrations ran.
 
