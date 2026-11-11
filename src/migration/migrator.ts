@@ -624,10 +624,7 @@ export class Migrator {
       }))
   }
 
-  async #getExecutedMigrations(db: Kysely<any>): Promise<{
-    executedMigrations: ReadonlyArray<string>
-    maxExecutedAt: number
-  }> {
+  async #getExecutedMigrations(db: Kysely<any>): Promise<ExecutedMigrations> {
     const rows = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
@@ -1036,6 +1033,11 @@ export interface MigrationInfo {
 
 interface NamedMigration extends Migration {
   readonly name: string
+}
+
+interface ExecutedMigrations {
+  readonly executedMigrations: ReadonlyArray<string>
+  readonly maxExecutedAt: number
 }
 
 interface MigrationState {
