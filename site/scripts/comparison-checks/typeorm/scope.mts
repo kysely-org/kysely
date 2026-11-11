@@ -159,7 +159,29 @@ function kyselyInvalid() {
 }
 void kyselyInvalid
 
+function typeormTypedWrites() {
+  const insert = () => dataSource.createQueryBuilder().insert().into(Person)
+  const update = () => repo().createQueryBuilder().update()
+  insert().values({
+    // @ts-expect-error first_nam is not a property of Person.
+    first_nam: 'x',
+  })
+  insert().values({
+    // @ts-expect-error age takes a number or null.
+    age: 'old',
+  })
+  update().set({
+    // @ts-expect-error first_nam is not a property of Person.
+    first_nam: 'x',
+  })
+  update().set({
+    // @ts-expect-error age takes a number or null.
+    age: 'old',
+  })
+}
+void typeormTypedWrites
+
 await cleanup()
 console.log(
-  `PASS (TypeORM ${typeormVersion}): matching left-join rows, raw results typed any and Kysely's inferred row, a removed join that compiles in TypeORM and fails in PostgreSQL only with the option set, and six invalid references that pass TypeScript in TypeORM and are rejected by Kysely's types`,
+  `PASS (TypeORM ${typeormVersion}): matching left-join rows, raw results typed any and Kysely's inferred row, a removed join that compiles in TypeORM and fails in PostgreSQL only with the option set, six invalid references that pass TypeScript in TypeORM and are rejected by Kysely's types, and insert values and update sets that TypeORM types against the entity`,
 )
