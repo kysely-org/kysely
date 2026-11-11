@@ -823,7 +823,7 @@ export class Migrator {
 
     if (now < maxExecutedAt) {
       warnOnce(
-        'The clock is behind the latest migration `executedAt`. Recording migrations 1 millisecond after it instead.',
+        'The machine clock is behind the latest migration `executedAt`. Recording migrations 1 millisecond after it instead.',
       )
     }
 
