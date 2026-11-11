@@ -823,7 +823,7 @@ export class Migrator {
 
     if (now < maxExecutedAt) {
       warnOnce(
-        'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
+        'The clock is behind the latest migration `executedAt`. Recording migrations 1 millisecond after it instead.',
       )
     }
 
