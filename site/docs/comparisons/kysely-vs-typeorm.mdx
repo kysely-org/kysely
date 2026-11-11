@@ -1,12 +1,12 @@
 ---
 sidebar_position: 7
 title: Kysely vs TypeORM
-description: 'Kysely vs TypeORM for TypeScript: query-checked references instead of SQL strings, result types inferred from the selection, immutable builders, and migration.'
+description: 'Kysely vs TypeORM: a TypeORM alternative that checks every query reference, infers result types from the selection, and migrates one query at a time.'
 ---
 
 # Kysely vs TypeORM
 
-Kysely and TypeORM both have a query builder that keeps SQL's clause order. TypeORM's takes SQL as strings in every clause, `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, a join condition as text, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **TypeORM's types describe your entities. Kysely's describe your query.**
+Kysely and TypeORM both have a query builder that keeps SQL's clause order. TypeORM's takes SQL as strings in every clause, `where('person.age >= :minAge')`, `select('pet.name', 'pet_name')`, a join condition as text, and returns entity instances or raw rows typed `any`. Kysely takes references and values as typed arguments and derives the result type from the selection. **Kysely's types describe the query itself, from each reference it names to the rows it returns.**
 
 Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads) and maintained. TypeORM has been the TypeScript ORM since 2016: entities as classes, repositories, relations, and migrations generated from the entities. It supports both [Active Record and Data Mapper](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L23), follows [Hibernate, Doctrine, and Entity Framework](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L25-L26), and, by its own count, supports [more databases than any other JavaScript ORM](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/README.md#L21), MongoDB, Oracle, SAP HANA, and Spanner among them.
 
@@ -157,7 +157,7 @@ function matchingPeople(options: { petName?: string }) {
 }
 ```
 
-TypeORM reads `alias.property` inside its strings and maps the property to its column name, so a column renamed in the database is one edit in the entity. An alias is [a regular SQL alias](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L246-L250), not checked against the query's joins, and a property it does not recognize is passed through as written. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. **With TypeORM, TypeScript accepts any string in any clause. With Kysely, it checks every reference written on the query's own builder.**
+TypeORM reads `alias.property` inside its strings and maps the property to its column name, so a column renamed in the database is one edit in the entity. An alias is [a regular SQL alias](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L246-L250), not checked against the query's joins, and a property it does not recognize is passed through as written. Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. **Kysely checks every reference written on the query's own builder, in each clause where TypeORM takes a string.**
 
 ### The same split in every clause
 
@@ -278,7 +278,7 @@ Whole statements and clauses follow the line the expressions do. Each row below 
 | Row-value `IN`: `(id, owner_id) in ((1, 1), (3, 1))` | `eb(eb.refTuple('id', 'owner_id'), 'in', [eb.tuple(1, 1)])` | A string in `where()`.                                                                                                                                                                                                  |
 | `IS DISTINCT FROM`                                   | `where('age', 'is distinct from', 40)`                      | A string in `where()`.                                                                                                                                                                                                  |
 
-TypeORM's builder does cover a lot of PostgreSQL: [common table expressions](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1242-L1245), recursive and materialized ones included, `DISTINCT ON`, `NULLS FIRST` and `NULLS LAST`, row locks with `SKIP LOCKED`, `RETURNING`, [`ON CONFLICT`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/2-insert-query-builder.md#L39-L41) by columns or constraint name with `EXCLUDED` written for you, and, since 1.0, [`INSERT ... SELECT`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L79). **Statement coverage is the same difference again: a clause TypeORM writes as text, Kysely writes as a method with its references checked.**
+TypeORM's builder does cover a lot of PostgreSQL: [common table expressions](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L1242-L1245), recursive and materialized ones included, `DISTINCT ON`, `NULLS FIRST` and `NULLS LAST`, row locks with `SKIP LOCKED`, `RETURNING`, [`ON CONFLICT`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/2-insert-query-builder.md#L39-L41) by columns or constraint name with `EXCLUDED` written for you, and, since 1.0, [`INSERT ... SELECT`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L79). **Each of these clauses is a Kysely method, and its references are checked like the rest of the query.**
 
 ## Kysely's escape hatch keeps references checked
 
@@ -363,7 +363,15 @@ The query returns every owner's pets named Kitty, with no error. When the first 
 TypeORM binds values through named parameters in the SQL string, and the names share one namespace per query. The docs open the query builder page with [a note on it](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L40-L42), and repeat it: [values will be overridden](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L308) if a name is set twice.
 
 ```ts
-const rows = await adults()
+const peopleWithPets = () =>
+  dataSource
+    .getRepository(Person)
+    .createQueryBuilder('person')
+    .innerJoin(Pet, 'pet', 'pet.owner_id = person.id')
+    .select('person.first_name', 'first_name')
+    .addSelect('pet.name', 'pet_name')
+
+const rows = await peopleWithPets()
   .where('person.first_name = :name', { name: 'Jennifer' })
   .andWhere('pet.name = :name', { name: 'Catto' })
   .getRawMany()
@@ -394,12 +402,16 @@ A move from TypeORM to Kysely does not have to happen at once, or at all for the
 
 ### Can Kysely and TypeORM be used together?
 
-Yes. [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) runs Kysely over an existing `DataSource`: its [`KyselyTypeORMDialect`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L207-L233) reuses TypeORM's connections, and its [`KyselifyEntity`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L185-L198) type derives Kysely's table types from the entity classes, with no generation step. In a NestJS app, the `DataSource` it takes is the one `@nestjs/typeorm` already [injects](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L68).
+Yes. [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) runs Kysely over an existing `DataSource`: its [`KyselyTypeORMDialect`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L207-L233) reuses TypeORM's connections, and its [`KyselifyEntity`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L185-L198) type derives Kysely's table types from the entity classes, with no generation step.
 
 1. Keep the entities, the generated migrations, and the repositories that persist entity graphs.
 2. Derive Kysely's types with `KyselifyEntity`, or [generate them](/docs/generating-types) from the migrated database, which also catches a column the entity does not declare.
 3. Start with a query that carries a `getRawMany<T>()` annotation, that shared functions extend, or that reads JSON. Move it, inspect `.compile()`, and compare rows, nulls, ordering, and empty results.
 4. Keep each transaction on one client. The bridge shares connections, not a transaction in progress.
+
+### Can I use Kysely in a NestJS app?
+
+**Yes.** Kysely needs no framework integration: a provider that returns a `Kysely<Database>` instance makes it injectable like any other service. Beside TypeORM, `KyselyTypeORMDialect` takes the `DataSource` that `@nestjs/typeorm` already [injects](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L68), so both clients share its connections.
 
 ## Other practical considerations
 
@@ -409,6 +421,15 @@ Yes. [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) runs Kysely 
 One TypeORM entity is the source for types, for [generated migrations](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/migrations/04-generating.md), and for `synchronize` in development. Kysely has no migration generator. Its [migrations](/docs/migrations) are written by hand through the schema builder or any migration tool, and its types are declared or [generated](/docs/generating-types) from the database, so a migration applied without regenerating them is drift the compiler cannot see.
 
 It also makes the database the source of truth: Kysely queries a schema that another service or migration tool owns, with nothing declared a second time. TypeORM's column transformers and date handling convert values on the way in and out, and `invalidWhereValuesBehavior`, which [1.0 defaults to `throw`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L71-L72), guards the find API against an `undefined` in a where condition. Kysely's types describe what the driver returns, conversion belongs to the driver's configuration or a plugin, and `where('age', '=', undefined)` is a type error.
+
+</details>
+
+<details id="decorators-and-the-toolchain">
+<summary>Decorators and the toolchain</summary>
+
+TypeORM's decorators are TypeScript's legacy decorators. Its [getting started guide](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/getting-started.md#L155-L177) asks for `experimentalDecorators`, `emitDecoratorMetadata`, and the `reflect-metadata` shim, and on TypeScript 6 and 7 its column decorators do not type-check as standard decorators.
+
+That constrains the toolchain. Node's built-in type stripping refuses a decorated class. esbuild emits no decorator metadata, so `@Column()` without a type leaves TypeORM nothing to read, and it throws when the class is defined. An explicit type on every column, or `EntitySchema` as on this page, avoids both. Kysely's `Database` interface is a type, erased like any other, and needs no compiler option.
 
 </details>
 
@@ -459,7 +480,7 @@ TypeORM vs Kysely is a choice between a data framework whose query builder takes
 - Builders behave like values: [shared without cloning](#shared-queries-branch-without-mutation), [bound where each value is written](#each-value-is-bound-where-it-is-written), and [cancelled with an `AbortSignal`](#execution-is-explicit-in-both).
 - The [query tree is public](#kysely-is-extended-through-its-query-tree), and plugins and dialects build on it.
 
-Its types come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
+Its types come from the database itself, so it fits a schema that another tool, service, or team migrates, and they are plain interfaces that need no [decorator options](#decorators-and-the-toolchain). Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
 
 ### When is TypeORM the better choice?
 
