@@ -14,6 +14,8 @@ export const DEFAULT_ALLOW_UNORDERED_MIGRATIONS = false
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
+const CLOCK_BEHIND_WARNING_THRESHOLD_MILLISECONDS = 1_000
+
 export interface Migration {
   up(db: Kysely<any>): Promise<void>
 
@@ -818,7 +820,7 @@ export class Migrator {
       return now
     }
 
-    if (now < maxExecutedAt) {
+    if (maxExecutedAt - now >= CLOCK_BEHIND_WARNING_THRESHOLD_MILLISECONDS) {
       warnOnce(
         'The machine clock is behind the latest migration `executedAt`. Recording migrations 1 millisecond after it instead.',
       )
