@@ -1002,6 +1002,16 @@ export interface MigrationInfo {
   /**
    * When was the migration executed.
    *
+   * In most cases, this is the time on the machine running the migrator when
+   * the migration was applied (as reported by `Date.now()`), not the database
+   * server's time.
+   * Execution timestamps are used to determine the order in which migrations
+   * were executed, so they never go backwards. If the machine clock is behind
+   * the latest recorded execution timestamp (e.g. it was stepped back by an NTP
+   * sync, it drifted from the clock of another machine running migrations, or
+   * it was ahead when a previous migration was applied), the migration is
+   * recorded 1 millisecond after the latest recorded execution timestamp instead.
+   *
    * If this is undefined, the migration hasn't been executed yet.
    */
   executedAt?: Date
