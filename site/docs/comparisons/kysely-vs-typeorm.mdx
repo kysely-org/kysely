@@ -191,7 +191,7 @@ TypeORM's builder kept the API its users already had. **TypeORM's builder was de
 
 Every failure in the table is loud once a test runs the branch that builds the reference. The `matchingPeople` function above passes every test that leaves the pet name out.
 
-The failures further down this page are quiet. Besides the [stale annotations](#result-types-come-from-the-selection), the second `where()`, and the repeated parameter name the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#kysely-pages-parents-in-one-statement) repeats a person, each with no error.
+The failures further down this page are quiet. Besides the [stale annotations](#result-types-come-from-the-selection) and the two failures the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#kysely-pages-parents-in-one-statement) repeats a person, each with no error.
 
 **No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
@@ -278,7 +278,7 @@ Kysely infers `string | null` because the array may be empty. Misspell `city` as
 
 CASE follows the same line. A `case when ... end` string without an `ELSE` returns `null` for a person whose age is unknown, under whatever type the annotation claims. Kysely's `eb.case()` infers `string | null` when the `else` is left out, and a caller's `.toUpperCase()` stops compiling until it handles the null.
 
-Counting is the exception TypeORM's builder types: `getCount()` returns a `number`. Every other aggregate in the builder is a string in `select()`, returned as `pg` returns it. Repositories also have `sum()`, `average()`, `minimum()`, and `maximum()`, typed `number | null` over a numeric column and an optional find `where`.
+`getCount()` is the one aggregate TypeORM's builder types, as a `number`. Every other aggregate in the builder is a string in `select()`, returned as `pg` returns it. Repositories also have `sum()`, `average()`, `minimum()`, and `maximum()`, typed `number | null` over a numeric column and an optional find `where`.
 
 ## Kysely covers more of SQL's statements
 
@@ -302,11 +302,11 @@ Kysely does not cover all of SQL either. It covers what applications write most,
 
 ## Nested results stay in the same builder
 
-Return each person with their pets. TypeORM's `leftJoinAndSelect('person.pets', 'pet')` reads the declared relation and returns `Person` instances with `pets: Pet[]`, typed through the entity class. That is the shape most TypeORM code wants, and it is where entity hydration earns its keep. A filter on the joined alias trims that collection: `.where('pet.name = :name', { name: 'Catto' })` returns Jennifer with `pets` holding Catto alone, typed as all of her pets.
+Return each person with their pets. TypeORM's `leftJoinAndSelect('person.pets', 'pet')` reads the declared relation and returns `Person` instances with `pets: Pet[]`, typed through the entity class. That is the shape most TypeORM code wants, and it is where entity hydration earns its keep. A filter on the joined alias trims that collection: `.where('pet.name = :name', { name: 'Catto' })` returns Jennifer with `pets` holding Catto alone, under the same `Pet[]` type as an unfiltered load.
 
 The statement behind it is a flat join. PostgreSQL returns one row per pet, and TypeORM groups the rows into objects after they arrive: a person with two pets is two rows on the wire and one entity in memory. That expansion is the subject of [a performance issue open since March 2019](https://github.com/typeorm/typeorm/issues/3857), and of a [2026 request](https://github.com/typeorm/typeorm/issues/12699) to aggregate relations as JSON instead.
 
-The find API can load relations without the join. With [`relationLoadStrategy: 'query'`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/relations/5-eager-and-lazy-relations.md#L71-L79), per query or as the data source's default, each relation is read by statements of its own, so no parent is repeated. On both releases, one relation cost three statements: the people, their pets, and a second lookup of pet ids by owner. `setFindOptions()` brings the strategy into the builder.
+The find API can load relations without the join. With [`relationLoadStrategy: 'query'`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/relations/5-eager-and-lazy-relations.md#L71-L79), per query or as the data source's default, each relation is read by statements of its own, so no parent is repeated. On both releases, one relation takes three statements: the people, their pets, and a second lookup of pet ids by owner. `setFindOptions()` brings the strategy into the builder.
 
 Kysely nests in SQL, with `jsonArrayFrom` from `kysely/helpers/postgres`:
 
@@ -488,7 +488,7 @@ const db = new Kysely<Database>({
 })
 ```
 
-For the bridge, type relation properties in the entity classes as `NonAttribute<Pet[]>`, which `KyselifyEntity` leaves out, and a generated key as `Generated<number>`, which makes it optional on insert. The classes stay TypeORM entities.
+For the bridge, declare the relations in the classes above as `pets: NonAttribute<Pet[]>` and `owner: NonAttribute<Person>`, since `KyselifyEntity` leaves `NonAttribute` properties out, and a generated key as `Generated<number>`, which makes it optional on insert. The classes stay TypeORM entities.
 
 1. Keep the entities, the generated migrations, and the repositories that persist entity graphs.
 2. Derive Kysely's types with `KyselifyEntity`, or [generate them](/docs/generating-types) from the migrated database, which also catches a column the entity does not declare.
