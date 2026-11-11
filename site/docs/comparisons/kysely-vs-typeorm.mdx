@@ -12,7 +12,7 @@ Both libraries have a query builder that keeps SQL's clause order. TypeORM's tak
 
 The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces the first](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#values-are-bound-by-position-not-by-name), each with no error.
 
-TypeORM is an ORM in the [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects) sense: entities, generated migrations, a repository and find API, and a SQL-style query builder. This page compares that builder with Kysely, which is a query builder only. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the find API and entity persistence.
+Kysely is a type-safe SQL query builder. In this site's terms TypeORM is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects), the familiar stack: models, which TypeORM calls entities, migrations generated from them, a model API, which TypeORM calls repositories and the find API, and a SQL-style query builder. This page compares that builder with Kysely. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers the model API and entity persistence.
 
 TypeORM here means 1.1.2 and 0.3.31, its current and legacy releases in November 2026. Its behavior below is the same in both unless stated.
 
