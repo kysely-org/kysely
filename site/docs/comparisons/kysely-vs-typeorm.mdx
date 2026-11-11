@@ -418,7 +418,7 @@ Every Kysely query's `execute()` and `stream()` accepts a web-standard [`AbortSi
 
 ## A failed TypeORM query puts its values in the error
 
-TypeORM throws a failed query as `QueryFailedError`, with the statement and every bound parameter as enumerable properties, on both releases. A logger or an error reporter that serializes the error records those values, so an email address, a token, or any other personal data bound to a failed query reaches the log.
+TypeORM throws a failed query as `QueryFailedError`, with the statement and every bound parameter as enumerable properties, on both releases. A logger or an error reporter that serializes the error records those values, so a password hash, an API token, an email address, or any other credential or personal data bound to a failed query reaches the log.
 
 Kysely passes the driver's error through, and node-postgres adds no parameters to it. Kysely's `log` option receives the compiled query and its parameters on an error, and the default logger prints the SQL text only, so recording the values is the logger's choice. PostgreSQL's own `detail` still names the conflicting key of a unique violation, in both libraries. **Kysely's errors carry no bound values of their own, so what reaches an error reporter is what the database said.**
 
