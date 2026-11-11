@@ -12,7 +12,7 @@ Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@pr
 
 A [new team took over its maintenance in October 2024](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/blog/2024-10-01-future-of-typeorm/index.md#L8-L12), and [1.0 shipped in May 2026](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/releases/1.0/01-release-notes.md#L7) after a decade of 0.x releases. NestJS ships an official integration, `@nestjs/typeorm`, and its docs call TypeORM [one of the most mature ORMs available for TypeScript](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L3). **TypeORM was the first widely adopted ORM written for TypeScript, and a generation of Node.js services learned relational data through it.**
 
-The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces the first](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#each-value-is-bound-where-it-is-written), each with no error.
+The differences that cost most are the quiet ones. A `getRawMany<T>()` annotation outlives the selection it described, a partial selection is typed as the whole entity, a second `where()` [replaces an owner filter](#shared-queries-branch-without-mutation), and a repeated parameter name [overrides the earlier value](#each-value-is-bound-where-it-is-written), each with no error.
 
 ## Both build the same left join
 
@@ -237,7 +237,7 @@ In Kysely the same two queries are typed `{ name: string }[]` and `{ id: number 
 
 ## Kysely builds the expressions TypeORM writes as text
 
-Past selections, joins, and filters, TypeORM's builder hands over to SQL text. JSON traversal, CASE, filtered aggregates, and window clauses are strings in `select()` or `addSelect()`, with a result type declared by hand on `getRawMany<T>()`. Kysely has a builder for each, so the references are checked, and for JSON and CASE the type is inferred.
+JSON traversal, CASE, filtered aggregates, and window clauses are SQL text in `select()` or `addSelect()`, with a result type declared by hand on `getRawMany<T>()`. Kysely has a builder for each, so the references are checked, and for JSON and CASE the type is inferred.
 
 A `user_settings.profile` column holds JSON typed as `Profile`, which is `{ addresses: { city: string }[] }`. Read the first address's city. With TypeORM:
 
@@ -266,7 +266,7 @@ const rows = await db
 
 Kysely infers `string | null` because the array may be empty. Misspell `city` as `ctiy`: TypeORM compiles, runs, and returns `null` for every row under a type that still says `string | null`. Kysely reports that `ctiy` is not a key of an address. **A misspelled JSON key is a silent `null` in TypeORM and a compile error in Kysely.** Both libraries trust the declared `Profile` type, and neither validates the stored JSON.
 
-CASE follows the same line. A `case when ... end` string without an `ELSE` returns `null` for a person whose age is unknown, under whatever type the annotation claims. Kysely's `eb.case()` infers `string | null` when the `else` is left out, and a caller's `.toUpperCase()` stops compiling until it handles the null. Counting is the exception TypeORM types: `getCount()` returns a `number`. Every other aggregate is a string in `select()`, returned as `pg` returns it.
+CASE follows the same line. A `case when ... end` string without an `ELSE` returns `null` for a person whose age is unknown, under whatever type the annotation claims. Kysely's `eb.case()` infers `string | null` when the `else` is left out, and a caller's `.toUpperCase()` stops compiling until it handles the null. Counting is the exception TypeORM's builder types: `getCount()` returns a `number`. Every other aggregate in the builder is a string in `select()`, returned as `pg` returns it. Repositories also have `sum()`, `average()`, `minimum()`, and `maximum()`, typed `number | null` over a numeric column and an optional find `where`.
 
 ## Kysely covers more of SQL's statements
 
@@ -331,8 +331,8 @@ const base = dataSource
   .where('person.age >= :minAge', { minAge: 18 })
 
 const preview = base.limit(1)
-const everyone = base
-// Both now have LIMIT 1. base.clone() before limit() avoids it.
+const everyone = await base.getRawMany()
+// One row: limit() changed base. base.clone().limit(1) avoids it.
 ```
 
 Kysely branches independently:
@@ -340,8 +340,8 @@ Kysely branches independently:
 ```ts
 const base = db.selectFrom('person').select('id').where('age', '>=', 18)
 const preview = base.limit(1)
-const everyone = base
-// everyone has no limit.
+const everyone = await base.execute()
+// Every adult: limit() returned a new builder.
 ```
 
 The same mutation decides what `where()` means. TypeORM's docs say that [using `.where` more than once overrides all previous `WHERE` expressions](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L418), and `andWhere()` is the method that adds:
@@ -468,7 +468,7 @@ That constrains the toolchain. Node's built-in type stripping refuses a decorate
 <details>
 <summary>Drivers, runtimes, and caching</summary>
 
-TypeORM runs on Node.js, in the browser, and on React Native, Expo, Cordova, and NativeScript, and talks to PostgreSQL, MySQL and MariaDB, SQLite, SQL Server, Oracle, SAP HANA, Spanner, CockroachDB, and MongoDB through drivers inside one package. Kysely has zero runtime dependencies and runs on Node.js, Deno, Bun, and edge runtimes. Its core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite, and the rest are [organization and community dialects](/docs/dialects), installed separately.
+TypeORM runs on Node.js, in the browser, and on React Native, Expo, Cordova, and NativeScript, and talks to PostgreSQL, MySQL and MariaDB, SQLite, SQL Server, Oracle, SAP HANA, Spanner, CockroachDB, and MongoDB through drivers inside one package. Kysely has zero runtime dependencies and runs on Node.js, Deno, Bun, edge runtimes, and [in the browser](/docs/runtimes/browser). Its core dialects are PostgreSQL, MySQL, MSSQL, SQLite, and PGlite, and the rest are [organization and community dialects](/docs/dialects), installed separately.
 
 TypeORM caches query results when asked, per query with `.cache()` or for every query from the data source options. Kysely ships no cache. A plugin receives each query and its result, which is where one would be built.
 
