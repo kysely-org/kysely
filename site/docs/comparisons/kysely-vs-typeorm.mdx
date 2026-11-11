@@ -439,7 +439,7 @@ In the entity classes, relation properties are typed `NonAttribute<Pet[]>`, whic
 
 ### Can I use Kysely in a NestJS app?
 
-**Yes.** Kysely needs no framework integration: a provider that returns a `Kysely<Database>` instance makes it injectable like any other service. Beside TypeORM, `KyselyTypeORMDialect` takes the `DataSource` that `@nestjs/typeorm` already [injects](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L68), so both clients share its connections.
+**Yes.** Kysely needs no framework integration: a provider that returns a `Kysely<Database>` instance makes it injectable like any other service. Beside TypeORM, `KyselyTypeORMDialect` takes the `DataSource` that `@nestjs/typeorm` already [injects](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/data/typeorm.md#L68), so both clients share its connections. Nest's own outbox, workflows, and webhooks packages also take a Kysely instance through [`fromKysely(db)`](https://github.com/nestjs/docs.nestjs.com/blob/3c9dc71f93c350245210075fc634980df1caa3dd/content/reliability/outbox.md#L1300) and join the transaction its callback receives.
 
 ## Other practical considerations
 
