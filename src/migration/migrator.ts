@@ -770,20 +770,7 @@ export class Migrator {
       try {
         await migration.up(db)
 
-        // https://github.com/kysely-org/kysely/issues/2244
-        const now = Date.now()
-
-        if (now > maxExecutedAt) {
-          maxExecutedAt = now
-        } else {
-          if (now < maxExecutedAt) {
-            logOnce(
-              'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
-            )
-          }
-
-          maxExecutedAt += 1
-        }
+        maxExecutedAt = this.#getNextExecutedAt(maxExecutedAt)
 
         await db
           .withPlugin(this.#schemaPlugin)
@@ -814,6 +801,23 @@ export class Migrator {
     }
 
     return { results }
+  }
+
+  // https://github.com/kysely-org/kysely/issues/2244
+  #getNextExecutedAt(maxExecutedAt: number): number {
+    const now = Date.now()
+
+    if (now > maxExecutedAt) {
+      return now
+    }
+
+    if (now < maxExecutedAt) {
+      logOnce(
+        'kysely: the machine clock is behind the latest migration execution timestamp. Migrations are recorded 1 millisecond after it instead, so their `executedAt` might not reflect when they were applied. See https://kysely.dev/docs/migrations#execution-timestamps',
+      )
+    }
+
+    return maxExecutedAt + 1
   }
 
   async #createIfNotExists(
