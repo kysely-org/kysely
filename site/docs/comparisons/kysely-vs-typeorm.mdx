@@ -1,6 +1,7 @@
 ---
 sidebar_position: 7
-title: Kysely vs TypeORM
+title: 'Kysely vs TypeORM: a type-safe TypeORM alternative'
+sidebar_label: Kysely vs TypeORM
 description: 'Kysely vs TypeORM: a TypeORM alternative that type-checks query references, infers result types from the selection, and migrates one query at a time.'
 ---
 
@@ -191,7 +192,7 @@ TypeORM's builder kept the API its users already had. **TypeORM's builder was de
 
 Every failure in the table is loud once a test runs the branch that builds the reference. The `matchingPeople` function above passes every test that leaves the pet name out.
 
-The failures further down this page are quiet. Besides the [stale annotations](#result-types-come-from-the-selection) and the two failures the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#kysely-pages-parents-in-one-statement) repeats a person, each with no error.
+The failures further down this page are quiet. Besides the four the introduction names, [a misspelled JSON key](#kysely-builds-the-expressions-typeorm-writes-as-text) returns `null`, [an `OR` added to a scoped query](#kysely-groups-the-conditions-it-builds) returns another owner's rows, and [a page ordered by a joined column](#kysely-pages-parents-in-one-statement) repeats a person, each with no error.
 
 **No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
@@ -335,7 +336,7 @@ One statement, one row per person, `[]` for a person with no pets, and `limit()`
 
 The join also decides pagination. TypeORM's [`take()` and `skip()`](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L907-L911) exist because `limit()` cuts joined rows rather than parents, and `take()` with a join runs two statements, one to pick the parents and one to load them. The query strategy pages parents too, across its three statements.
 
-Ordered by a joined column, the join's first statement picks distinct pairs of the parent's key and that column. Ordered by pet name, with one person per page, Jennifer appeared on two pages, once per pet, while `getCount()` still counts four people. `getManyAndCount()` sends the page and its total as separate statements, three with a join, so a write between them can make the two disagree. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.**
+Ordered by a joined column, the join's first statement picks distinct pairs of the parent's key and that column. Ordered by pet name, with one person per page, Jennifer appears on two pages, once per pet, while `getCount()` still counts four people. `getManyAndCount()` sends the page and its total as separate statements, three with a join, so a write between them can make the two disagree. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.**
 
 ## Shared queries branch without mutation
 
@@ -418,7 +419,7 @@ Every Kysely query's `execute()` and `stream()` accepts a web-standard [`AbortSi
 
 ## A failed TypeORM query puts its values in the error
 
-TypeORM throws a failed query as `QueryFailedError`, with the statement and every bound parameter as enumerable properties, on both releases. A logger or an error reporter that serializes the error records those values, so a password hash, an API token, an email address, or any other credential or personal data bound to a failed query reaches the log.
+TypeORM throws a failed query as `QueryFailedError`, with the statement and every bound parameter as enumerable properties, on both releases. The values make a failure easy to reproduce, and a logger or an error reporter that serializes the error records them too, so a password hash, an API token, an email address, or any other credential or personal data bound to a failed query reaches the log.
 
 Kysely passes the driver's error through, and node-postgres adds no parameters to it. Kysely's `log` option receives the compiled query and its parameters on an error, and the default logger prints the SQL text only, so recording the values is the logger's choice. PostgreSQL's own `detail` still names the conflicting key of a unique violation, in both libraries. **Kysely's errors carry no bound values of their own, so what reaches an error reporter is what the database said.**
 
