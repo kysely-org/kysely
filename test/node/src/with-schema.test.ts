@@ -300,7 +300,70 @@ for (const dialect of DIALECTS.filter(
 
             await query.execute()
           })
+
+          it(`should not add schema to ${clause} tables in subqueries`, async () => {
+            const db = ctx.db.withSchema('mammals')
+
+            const query = db
+              .selectFrom(
+                db
+                  .selectFrom('pet')
+                  .select('pet.id')
+                  [selectModifierFn]('pet')
+                  .as('p'),
+              )
+              .select('p.id')
+              .where(
+                'p.id',
+                'in',
+                db.selectFrom('pet').select('pet.id')[selectModifierFn]('pet'),
+              )
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: `select "p"."id" from (select "mammals"."pet"."id" from "mammals"."pet" ${clause} of "pet") as "p" where "p"."id" in (select "mammals"."pet"."id" from "mammals"."pet" ${clause} of "pet")`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
         }
+
+        it('should not add schema for json_agg and to_json parameters in subqueries', async () => {
+          const db = ctx.db.withSchema('mammals')
+
+          const query = db
+            .selectFrom(
+              db
+                .selectFrom('pet')
+                .select((eb) => eb.fn.jsonAgg('pet').as('agg'))
+                .as('p'),
+            )
+            .selectAll('p')
+            .where(({ exists }) =>
+              exists(
+                db
+                  .selectFrom('pet')
+                  .select((eb) => eb.fn.toJson('pet').as('json')),
+              ),
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select "p".* from (select json_agg("pet") as "agg" from "mammals"."pet") as "p" where exists (select to_json("pet") as "json" from "mammals"."pet")',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
       }
     })
 
