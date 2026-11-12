@@ -421,6 +421,31 @@ for (const dialect of DIALECTS) {
         })
       })
 
+      it('should fail without running new migrations if an executed migration has an invalid timestamp', async () => {
+        const { migrator: migrator1 } = createMigrations(['migration1'])
+
+        const { error: error1 } = await migrator1.migrateToLatest()
+        expect(error1).to.be.undefined
+
+        await (ctx.db as Kysely<any>)
+          .updateTable(DEFAULT_MIGRATION_TABLE)
+          .set({ timestamp: 'not a timestamp' })
+          .where('name', '=', 'migration1')
+          .execute()
+
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(['migration1', 'migration2'])
+
+        const { error: error2, results: results2 } =
+          await migrator2.migrateToLatest()
+
+        expect(getMessage(error2)).to.eql(
+          'corrupted migrations: previously executed migration migration1 has an invalid timestamp not a timestamp',
+        )
+        expect(results2).to.be.undefined
+        expect(executedUpMethods2).to.eql([])
+      })
+
       describe("when the clock doesn't advance between migrations", () => {
         const sandbox = createSandbox()
 
