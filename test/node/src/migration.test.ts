@@ -306,6 +306,190 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods).to.eql(['migration1', 'migration2'])
       })
 
+      describe('when the clock jumps back mid-run', () => {
+        const sandbox = createSandbox()
+
+        afterEach(() => {
+          sandbox.restore()
+        })
+
+        it('should not corrupt the execution order of migrations (issue #2244)', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({ now, toFake: ['Date'] })
+
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations([
+              'migration1',
+              {
+                name: 'migration2',
+                preUp: () => clock.setSystemTime(now - 10_000),
+              },
+              'migration3',
+            ])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+          expect(executedUpMethods1).to.eql([
+            'migration1',
+            'migration2',
+            'migration3',
+          ])
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations([
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+            ])
+
+          const { error: error2, results: results2 } =
+            await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(results2).to.eql([
+            { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+          ])
+          expect(executedUpMethods2).to.eql(['migration4'])
+        })
+      })
+
+      describe('when the clock is behind the latest executed migration', () => {
+        const sandbox = createSandbox()
+
+        afterEach(() => {
+          sandbox.restore()
+        })
+
+        it('should record new migrations right after it', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({
+            now: now + 3_600_000,
+            toFake: ['Date'],
+          })
+
+          const { migrator: migrator1 } = createMigrations([
+            'migration1',
+            'migration2',
+          ])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+
+          clock.setSystemTime(now)
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration1', 'migration2', 'migration3'])
+
+          const { error: error2 } = await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(executedUpMethods2).to.eql(['migration3'])
+
+          const migrations = await migrator2.getMigrations()
+          expect(migrations.map((it) => it.executedAt?.getTime())).to.eql([
+            now + 3_600_000,
+            now + 3_600_001,
+            now + 3_600_002,
+          ])
+        })
+
+        it('should record new migrations right after it when there is only one executed migration', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({
+            now: now + 3_600_000,
+            toFake: ['Date'],
+          })
+
+          const { migrator: migrator1 } = createMigrations(['migration1'])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+
+          clock.setSystemTime(now)
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration1', 'migration2'])
+
+          const { error: error2 } = await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(executedUpMethods2).to.eql(['migration2'])
+
+          const migrations = await migrator2.getMigrations()
+          expect(migrations.map((it) => it.executedAt?.getTime())).to.eql([
+            now + 3_600_000,
+            now + 3_600_001,
+          ])
+        })
+      })
+
+      it('should fail without running new migrations if an executed migration has an invalid timestamp', async () => {
+        const { migrator: migrator1 } = createMigrations(['migration1'])
+
+        const { error: error1 } = await migrator1.migrateToLatest()
+        expect(error1).to.be.undefined
+
+        await (ctx.db as Kysely<any>)
+          .updateTable(DEFAULT_MIGRATION_TABLE)
+          .set({ timestamp: 'not a timestamp' })
+          .where('name', '=', 'migration1')
+          .execute()
+
+        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+          createMigrations(['migration1', 'migration2'])
+
+        const { error: error2, results: results2 } =
+          await migrator2.migrateToLatest()
+
+        expect(getMessage(error2)).to.eql(
+          'corrupted migrations: previously executed migration migration1 has an invalid timestamp not a timestamp',
+        )
+        expect(results2).to.be.undefined
+        expect(executedUpMethods2).to.eql([])
+      })
+
+      describe("when the clock doesn't advance between migrations", () => {
+        const sandbox = createSandbox()
+
+        afterEach(() => {
+          sandbox.restore()
+        })
+
+        it('should not corrupt the execution order of migrations', async () => {
+          sandbox.useFakeTimers({ now: Date.now(), toFake: ['Date'] })
+
+          const { migrator: migrator1, executedUpMethods: executedUpMethods1 } =
+            createMigrations([
+              '2024-01-01-create-table',
+              '2024-01-01_update-table',
+            ])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+          expect(executedUpMethods1).to.eql([
+            '2024-01-01-create-table',
+            '2024-01-01_update-table',
+          ])
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations([
+              '2024-01-01-create-table',
+              '2024-01-01_update-table',
+              '2024-01-02-create-table',
+            ])
+
+          const { error: error2, results: results2 } =
+            await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(results2).to.eql([
+            {
+              migrationName: '2024-01-02-create-table',
+              direction: 'Up',
+              status: 'Success',
+            },
+          ])
+          expect(executedUpMethods2).to.eql(['2024-01-02-create-table'])
+        })
+      })
+
       describe('using folder of migration files', () => {
         beforeEach(async () => {
           await dropTestMigrationTables()
@@ -1095,6 +1279,46 @@ for (const dialect of DIALECTS) {
           'migration2',
           'migration1',
         ])
+      })
+
+      describe('when the clock jumps back mid-run', () => {
+        const sandbox = createSandbox()
+
+        afterEach(() => {
+          sandbox.restore()
+        })
+
+        it('should migrate down the last executed migration with allowUnorderedMigrations enabled', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({ now, toFake: ['Date'] })
+
+          const { migrator, executedDownMethods } = createMigrations(
+            [
+              'migration1',
+              {
+                name: 'migration2',
+                preUp: () => clock.setSystemTime(now - 10_000),
+              },
+              'migration3',
+            ],
+            { allowUnorderedMigrations: true },
+          )
+
+          const { error: error1 } = await migrator.migrateToLatest()
+          expect(error1).to.be.undefined
+
+          const { error: error2, results: results2 } =
+            await migrator.migrateDown()
+          expect(error2).to.be.undefined
+          expect(results2).to.eql([
+            {
+              migrationName: 'migration3',
+              direction: 'Down',
+              status: 'Success',
+            },
+          ])
+          expect(executedDownMethods).to.eql(['migration3'])
+        })
       })
 
       describe('Migrate up should work when timestamps are equal', () => {
