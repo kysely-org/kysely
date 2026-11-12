@@ -637,26 +637,24 @@ export class Migrator {
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
+    let maxExecutedAt =
+      rows.length === 1 ? new Date(rows[0].timestamp).getTime() : 0
+
     const executedMigrations = rows
       // https://github.com/kysely-org/kysely/issues/843
       .sort((a, b) => {
+        const aExecutedAt = new Date(a.timestamp).getTime()
+        const bExecutedAt = new Date(b.timestamp).getTime()
+
+        maxExecutedAt = Math.max(maxExecutedAt, aExecutedAt, bExecutedAt)
+
         if (a.timestamp === b.timestamp) {
           return nameComparator(a.name, b.name)
         }
 
-        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        return aExecutedAt - bExecutedAt
       })
       .map((it) => it.name)
-
-    let maxExecutedAt = 0
-
-    for (const { timestamp } of rows) {
-      const executedAt = new Date(timestamp).getTime()
-
-      if (executedAt > maxExecutedAt) {
-        maxExecutedAt = executedAt
-      }
-    }
 
     return { executedMigrations, maxExecutedAt }
   }

@@ -391,6 +391,34 @@ for (const dialect of DIALECTS) {
             now + 3_600_002,
           ])
         })
+
+        it('should record new migrations right after it when there is only one executed migration', async () => {
+          const now = Date.now()
+          const clock = sandbox.useFakeTimers({
+            now: now + 3_600_000,
+            toFake: ['Date'],
+          })
+
+          const { migrator: migrator1 } = createMigrations(['migration1'])
+
+          const { error: error1 } = await migrator1.migrateToLatest()
+          expect(error1).to.be.undefined
+
+          clock.setSystemTime(now)
+
+          const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
+            createMigrations(['migration1', 'migration2'])
+
+          const { error: error2 } = await migrator2.migrateToLatest()
+          expect(error2).to.be.undefined
+          expect(executedUpMethods2).to.eql(['migration2'])
+
+          const migrations = await migrator2.getMigrations()
+          expect(migrations.map((it) => it.executedAt?.getTime())).to.eql([
+            now + 3_600_000,
+            now + 3_600_001,
+          ])
+        })
       })
 
       describe("when the clock doesn't advance between migrations", () => {
