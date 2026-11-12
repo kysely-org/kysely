@@ -634,13 +634,19 @@ export class Migrator {
       .$narrowType<{ name: string; timestamp: string }>()
       .execute()
 
+    if (rows.length === 1) {
+      const [{ name, timestamp }] = rows
+
+      return {
+        executedMigrations: [name],
+        maxExecutedAt: this.#getExecutedAt(name, timestamp),
+      }
+    }
+
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
-    let maxExecutedAt =
-      rows.length === 1
-        ? this.#getExecutedAt(rows[0].name, rows[0].timestamp)
-        : 0
+    let maxExecutedAt = 0
 
     const executedMigrations = rows
       // https://github.com/kysely-org/kysely/issues/843
