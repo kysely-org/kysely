@@ -43,7 +43,7 @@ auditConfig:
 
 catalogs:
   http:
-    hono: 4.13.17
+    hono: 4.13.18
   node:
     pathe: 2.0.3
 
@@ -66,7 +66,7 @@ minimumReleaseAgeStrict: true
 
 minimumReleaseAgeExclude:
   - afdocs@0.22.2
-  - "@electric-sql/pglite@0.5.15"
+  - '@electric-sql/pglite@0.5.15'
 
 overrides:
   # https://github.com/advisories/GHSA-27r3-jxmh-p828
