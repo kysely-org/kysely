@@ -637,13 +637,16 @@ export class Migrator {
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
-    let maxExecutedAt = rows.length === 1 ? this.#getExecutedAt(rows[0]) : 0
+    let maxExecutedAt =
+      rows.length === 1
+        ? this.#getExecutedAt(rows[0].name, rows[0].timestamp)
+        : 0
 
     const executedMigrations = rows
       // https://github.com/kysely-org/kysely/issues/843
       .sort((a, b) => {
-        const aExecutedAt = this.#getExecutedAt(a)
-        const bExecutedAt = this.#getExecutedAt(b)
+        const aExecutedAt = this.#getExecutedAt(a.name, a.timestamp)
+        const bExecutedAt = this.#getExecutedAt(b.name, b.timestamp)
 
         maxExecutedAt = Math.max(maxExecutedAt, aExecutedAt, bExecutedAt)
 
@@ -658,8 +661,8 @@ export class Migrator {
     return { executedMigrations, maxExecutedAt }
   }
 
-  #getExecutedAt(row: { name: string; timestamp: string }): number {
-    const executedAt = new Date(row.timestamp).getTime()
+  #getExecutedAt(name: string, timestamp: string): number {
+    const executedAt = new Date(timestamp).getTime()
 
     if (!Number.isNaN(executedAt)) {
       return executedAt
@@ -670,7 +673,7 @@ export class Migrator {
     }
 
     throw new Error(
-      `corrupted migrations: previously executed migration ${row.name} has an invalid timestamp ${row.timestamp}`,
+      `corrupted migrations: previously executed migration ${name} has an invalid timestamp ${timestamp}`,
     )
   }
 
