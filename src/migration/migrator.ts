@@ -648,7 +648,11 @@ export class Migrator {
 
         maxExecutedAt = Math.max(maxExecutedAt, aExecutedAt, bExecutedAt)
 
-        if (aExecutedAt === bExecutedAt) {
+        if (
+          aExecutedAt === bExecutedAt ||
+          Number.isNaN(aExecutedAt) ||
+          Number.isNaN(bExecutedAt)
+        ) {
           return nameComparator(a.name, b.name)
         }
 
