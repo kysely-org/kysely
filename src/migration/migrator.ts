@@ -5,6 +5,7 @@ import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import type { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
 import type { CreateTableBuilder } from '../schema/create-table-builder.js'
+import { warnOnce } from '../util/log-once.js'
 import { freeze, getLast, isObject } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
@@ -12,6 +13,8 @@ export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const DEFAULT_ALLOW_UNORDERED_MIGRATIONS = false
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
+
+const CLOCK_BEHIND_WARNING_THRESHOLD_MILLISECONDS = 1_000
 
 export interface Migration {
   up(db: Kysely<any>): Promise<void>
@@ -559,7 +562,8 @@ export class Migrator {
 
   async #getState(db: Kysely<any>): Promise<MigrationState> {
     const migrations = await this.#resolveMigrations()
-    const executedMigrations = await this.#getExecutedMigrations(db)
+    const { executedMigrations, maxExecutedAt } =
+      await this.#getExecutedMigrations(db)
 
     this.#ensureNoMissingMigrations(migrations, executedMigrations)
     if (!this.#allowUnorderedMigrations) {
@@ -575,6 +579,7 @@ export class Migrator {
       migrations,
       executedMigrations,
       lastMigration: getLast(executedMigrations),
+      maxExecutedAt,
       pendingMigrations,
     })
   }
@@ -599,33 +604,61 @@ export class Migrator {
       }))
   }
 
-  async #getExecutedMigrations(
-    db: Kysely<any>,
-  ): Promise<ReadonlyArray<string>> {
-    const executedMigrations = await db
+  async #getExecutedMigrations(db: Kysely<any>): Promise<ExecutedMigrations> {
+    const rows = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
       .select(['name', 'timestamp'])
       .$narrowType<{ name: string; timestamp: string }>()
       .execute()
 
+    if (rows.length === 0) {
+      return { executedMigrations: [], maxExecutedAt: 0 }
+    }
+
+    if (rows.length === 1) {
+      const [{ name, timestamp }] = rows
+
+      return {
+        executedMigrations: [name],
+        maxExecutedAt: this.#getExecutedAt(name, timestamp),
+      }
+    }
+
     const nameComparator =
       this.#props.nameComparator || ((a, b) => a.localeCompare(b))
 
-    return (
-      executedMigrations
-        // https://github.com/kysely-org/kysely/issues/843
-        .sort((a, b) => {
-          if (a.timestamp === b.timestamp) {
-            return nameComparator(a.name, b.name)
-          }
+    let maxExecutedAt = 0
 
-          return (
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-          )
-        })
-        .map((it) => it.name)
-    )
+    const executedMigrations = rows
+      // https://github.com/kysely-org/kysely/issues/843
+      .sort((a, b) => {
+        const aExecutedAt = this.#getExecutedAt(a.name, a.timestamp)
+        const bExecutedAt = this.#getExecutedAt(b.name, b.timestamp)
+
+        maxExecutedAt = Math.max(maxExecutedAt, aExecutedAt, bExecutedAt)
+
+        if (aExecutedAt === bExecutedAt) {
+          return nameComparator(a.name, b.name)
+        }
+
+        return aExecutedAt - bExecutedAt
+      })
+      .map((it) => it.name)
+
+    return { executedMigrations, maxExecutedAt }
+  }
+
+  #getExecutedAt(name: string, timestamp: string): number {
+    const executedAt = new Date(timestamp).getTime()
+
+    if (Number.isNaN(executedAt)) {
+      throw new Error(
+        `corrupted migrations: previously executed migration ${name} has an invalid timestamp ${timestamp}`,
+      )
+    }
+
+    return executedAt
   }
 
   #ensureNoMissingMigrations(
@@ -729,17 +762,22 @@ export class Migrator {
       }
     })
 
+    let { maxExecutedAt } = state
+
     for (let i = 0; i < results.length; i++) {
       const migration = state.pendingMigrations[i]
 
       try {
         await migration.up(db)
+
+        maxExecutedAt = this.#getNextExecutedAt(maxExecutedAt)
+
         await db
           .withPlugin(this.#schemaPlugin)
           .insertInto(this.#migrationTable)
           .values({
             name: migration.name,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(maxExecutedAt).toISOString(),
           })
           .execute()
 
@@ -773,6 +811,23 @@ export class Migrator {
     }
 
     await qb.execute()
+  }
+
+  // https://github.com/kysely-org/kysely/issues/2244
+  #getNextExecutedAt(maxExecutedAt: number): number {
+    const now = Date.now()
+
+    if (now > maxExecutedAt) {
+      return now
+    }
+
+    if (maxExecutedAt - now >= CLOCK_BEHIND_WARNING_THRESHOLD_MILLISECONDS) {
+      warnOnce(
+        'The machine clock is behind the latest migration `executedAt`. Recording migrations 1 millisecond after it instead.',
+      )
+    }
+
+    return maxExecutedAt + 1
   }
 }
 
@@ -962,6 +1017,16 @@ export interface MigrationInfo {
   /**
    * When was the migration executed.
    *
+   * In most cases, this is the time on the machine running the migrator when
+   * the migration was applied (as reported by `Date.now()`), not the database
+   * server's time.
+   * Execution timestamps are used to determine the order in which migrations
+   * were executed, so they never go backwards. If the machine clock is behind
+   * the latest recorded execution timestamp (e.g. it was stepped back by an NTP
+   * sync, it drifted from the clock of another machine running migrations, or
+   * it was ahead when a previous migration was applied), the migration is
+   * recorded 1 millisecond after the latest recorded execution timestamp instead.
+   *
    * If this is undefined, the migration hasn't been executed yet.
    */
   executedAt?: Date
@@ -969,6 +1034,11 @@ export interface MigrationInfo {
 
 interface NamedMigration extends Migration {
   readonly name: string
+}
+
+interface ExecutedMigrations {
+  readonly executedMigrations: ReadonlyArray<string>
+  readonly maxExecutedAt: number
 }
 
 interface MigrationState {
@@ -980,6 +1050,9 @@ interface MigrationState {
 
   // Name of the last executed migration.
   readonly lastMigration?: string
+
+  // Latest execution timestamp (ms) among executed migrations, 0 if none.
+  readonly maxExecutedAt: number
 
   // Migrations that have not yet ran
   readonly pendingMigrations: ReadonlyArray<NamedMigration>
