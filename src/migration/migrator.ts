@@ -634,6 +634,10 @@ export class Migrator {
       .$narrowType<{ name: string; timestamp: string }>()
       .execute()
 
+    if (rows.length === 0) {
+      return { executedMigrations: [], maxExecutedAt: 0 }
+    }
+
     if (rows.length === 1) {
       const [{ name, timestamp }] = rows
 
