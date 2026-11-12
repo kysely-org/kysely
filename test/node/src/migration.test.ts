@@ -446,37 +446,6 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
-      it('should run new migrations if an executed migration has an invalid timestamp with allowUnorderedMigrations enabled', async () => {
-        const { migrator: migrator1 } = createMigrations(['migration1'], {
-          allowUnorderedMigrations: true,
-        })
-
-        const { error: error1 } = await migrator1.migrateToLatest()
-        expect(error1).to.be.undefined
-
-        await (ctx.db as Kysely<any>)
-          .updateTable(DEFAULT_MIGRATION_TABLE)
-          .set({ timestamp: 'not a timestamp' })
-          .where('name', '=', 'migration1')
-          .execute()
-
-        const { migrator: migrator2, executedUpMethods: executedUpMethods2 } =
-          createMigrations(['migration1', 'migration2'], {
-            allowUnorderedMigrations: true,
-          })
-
-        const { error: error2 } = await migrator2.migrateToLatest()
-        expect(error2).to.be.undefined
-        expect(executedUpMethods2).to.eql(['migration2'])
-
-        const { error: error3, results: results3 } =
-          await migrator2.migrateDown()
-        expect(error3).to.be.undefined
-        expect(results3).to.eql([
-          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
-        ])
-      })
-
       describe("when the clock doesn't advance between migrations", () => {
         const sandbox = createSandbox()
 

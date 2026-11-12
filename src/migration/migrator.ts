@@ -664,17 +664,13 @@ export class Migrator {
   #getExecutedAt(name: string, timestamp: string): number {
     const executedAt = new Date(timestamp).getTime()
 
-    if (!Number.isNaN(executedAt)) {
-      return executedAt
+    if (Number.isNaN(executedAt)) {
+      throw new Error(
+        `corrupted migrations: previously executed migration ${name} has an invalid timestamp ${timestamp}`,
+      )
     }
 
-    if (this.#allowUnorderedMigrations) {
-      return 0
-    }
-
-    throw new Error(
-      `corrupted migrations: previously executed migration ${name} has an invalid timestamp ${timestamp}`,
-    )
+    return executedAt
   }
 
   #ensureNoMissingMigrations(
