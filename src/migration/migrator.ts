@@ -648,7 +648,7 @@ export class Migrator {
 
         maxExecutedAt = Math.max(maxExecutedAt, aExecutedAt, bExecutedAt)
 
-        if (a.timestamp === b.timestamp) {
+        if (aExecutedAt === bExecutedAt) {
           return nameComparator(a.name, b.name)
         }
 
