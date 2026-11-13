@@ -50,9 +50,11 @@ queries.length = 0
 await Person.findAll({ include: [{ model: Pet, as: 'pets', separate: true }] })
 assert.equal(queries.length, 2)
 
-// A filter on the include trims the hydrated collection under the same type.
+// A filter on the include makes it required: people with no matching pet drop out.
 const filtered = await Person.findAll({ include: [{ model: Pet, as: 'pets', where: { name: 'Catto' } }] })
 assert.deepEqual(filtered.map((p) => p.pets!.map((pet) => pet.name)), [['Catto']])
+const kept = await Person.findAll({ include: [{ model: Pet, as: 'pets', where: { name: 'Catto' }, required: false }] })
+assert.equal(kept.length, 4)
 
 // Kysely nests in SQL.
 const nested = await db
