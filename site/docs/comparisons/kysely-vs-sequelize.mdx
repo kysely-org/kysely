@@ -108,7 +108,7 @@ const rows = await Person.findAll({
   order: [['id', 'ASC']],
   raw: true,
 })
-// Person[]: no pet_count.
+// Typed as the model: no pet_count.
 ```
 
 With Kysely:
@@ -331,9 +331,9 @@ const pets = await ownedBy(1).where('owner_id', '=', 2).execute()
 
 ## Kysely binds every value as a parameter
 
-Sequelize's finders write each value into the statement as an escaped literal. `findAll({ where: { first_name: 'Jennifer' } })` sends `WHERE "Person"."first_name" = 'Jennifer'` as text, on both releases, and so does `destroy()`. `create()` and `update()` bind their values, and a raw query binds only with the `bind` option. Sequelize's docs call the inlined form [replacements](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/raw-queries.mdx#L48-L49): "escaped and inserted into the query by Sequelize before the query is sent to the database".
+Sequelize's finders write each value into the statement as an escaped literal. `findAll({ where: { first_name: 'Jennifer' } })` sends `WHERE "Person"."first_name" = 'Jennifer'` as text, on both releases, and so does `destroy()`. The escaping keeps it safe from injection, and the values still travel with the text. `create()` and `update()` bind their values, and a raw query binds only with the `bind` option. Sequelize's docs call the inlined form [replacements](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/raw-queries.mdx#L48-L49): "escaped and inserted into the query by Sequelize before the query is sent to the database".
 
-Bind parameters for every query were [requested in October 2019](https://github.com/sequelize/sequelize/issues/11586), marked important, and are still open; in 2023 a maintainer [described an option](https://github.com/sequelize/sequelize/issues/11586#issuecomment-1436470379) to choose between bind parameters and replacements. Kysely sends a placeholder in the text and `'Jennifer'` beside it as a parameter, for every statement it builds, its `sql` templates included.
+Bind parameters for every query were [requested in October 2019](https://github.com/sequelize/sequelize/issues/11586), marked important, and are still open; in 2023 a maintainer [described an option](https://github.com/sequelize/sequelize/issues/11586#issuecomment-1436470379) to choose between bind parameters and replacements. Kysely sends a placeholder in the text and `'Jennifer'` beside it as a parameter, for every value a query takes, its `sql` templates included, unless it is written with `sql.lit`.
 
 ### A failed Sequelize query puts its values in the error
 
