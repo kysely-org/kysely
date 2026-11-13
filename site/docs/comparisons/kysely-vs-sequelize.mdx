@@ -1,0 +1,461 @@
+---
+sidebar_position: 8
+title: 'Kysely vs Sequelize: a type-safe Sequelize alternative'
+sidebar_label: Kysely vs Sequelize
+description: 'Kysely vs Sequelize: a Sequelize alternative that type-checks query references, infers result types from the selection, and migrates one query at a time.'
+---
+
+# Kysely vs Sequelize
+
+Kysely and Sequelize both build SQL from TypeScript. Sequelize describes a query as an options object on a model, such as `findAll({ attributes, include, where, group })`, and types it through the model. Its `where` keys are checked, and the strings in `col()`, `order`, `group`, and `'$pets.name$'` are passed through. Kysely describes the query as SQL's clauses and derives the result type from the selection. **Kysely's types describe the query itself, from each reference it names to the rows it returns.**
+
+Both are [well adopted](https://npmx.dev/compare?packages=kysely,drizzle-orm,@prisma/client,typeorm,knex,sequelize,@mikro-orm/core&facets=downloads) and maintained. Sequelize has been on npm since 2011, and by its own description it is an ORM for [PostgreSQL, MySQL, MariaDB, SQLite, SQL Server, Oracle, Db2, Db2 for IBM i, and Snowflake](https://github.com/sequelize/sequelize/blob/53d1e8a6199fff85a8d6cd7d9bf0f3487f0cf798/README.md#L13), with transactions, relations, eager and lazy loading, and read replication. **Sequelize is one of the longest-running ORMs in JavaScript, and still one of the most installed.**
+
+The differences that cost most are the quiet ones. On Sequelize 6, a caller's `where` on a scope's attribute [replaces the scope's filter](#kysely-keeps-every-filter-a-caller-adds). An attribute renamed in `attributes` is still [typed under its old name](#result-types-come-from-the-selection), `findAndCountAll()` with an include [counts joined rows](#kysely-pages-parents-in-one-statement), and every finder [writes its values into the SQL text](#kysely-sends-values-as-parameters), where a log or an error report picks them up. Each happens with no error.
+
+## This page compares Sequelize's finders
+
+Kysely is a type-safe SQL query builder. In this site's terms Sequelize is a [data framework](/docs/comparisons/query-builder-vs-orm#orms-data-frameworks-and-plain-objects): models, a model API, migrations, and hooks. It has no SQL query builder, by design. The request for [a query builder](https://github.com/sequelize/sequelize/issues/394) has been open since January 2013, and asked to support `MERGE`, a maintainer [answered](https://github.com/sequelize/sequelize/issues/15547#issuecomment-1382268336) "For better or worse, this library is not a query builder, so we don't provide APIs to generate specific queries. We're on a higher abstraction layer".
+
+Sequelize code composes its queries in the finders, `findAll()`, `findOne()`, `count()`, and the rest, configured by an options object, so this page sets those against Kysely. [SQL query builder vs ORM](/docs/comparisons/query-builder-vs-orm) covers model instances and persistence.
+
+Sequelize here means 6.37.8, the release npm installs, and 7.0.0-alpha.48, the latest prerelease of its next major, in November 2026. The behavior below holds on both unless a sentence says otherwise, and [waiting for Sequelize 7 or moving to Kysely](#should-i-wait-for-sequelize-7-or-move-to-kysely) covers what 7 changes.
+
+## Both build the same grouped count
+
+Assume configured Kysely (`db`) and Sequelize clients over the same two tables:
+
+<details>
+<summary>Database interface and Sequelize models</summary>
+
+Kysely's `Database` interface is types only, handwritten or [generated](/docs/generating-types) from the database:
+
+```ts
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+```
+
+Sequelize's models are classes typed with its inference helpers and initialized with their attributes:
+
+```ts
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+```
+
+Sequelize 7 imports the same names from `@sequelize/core`.
+
+</details>
+
+Count each person's pets, keeping people who have none.
+
+With Sequelize:
+
+```ts
+const rows = await Person.findAll({
+  attributes: ['id', 'first_name', [fn('COUNT', col('pets.id')), 'pet_count']],
+  include: [{ model: Pet, as: 'pets', attributes: [] }],
+  group: ['Person.id'],
+  order: [['id', 'ASC']],
+  raw: true,
+})
+// Typed as the model: no pet_count.
+```
+
+With Kysely:
+
+```ts
+const rows = await db
+  .selectFrom('person')
+  .leftJoin('pet', 'pet.owner_id', 'person.id')
+  .select(['person.id', 'person.first_name'])
+  .select((eb) => eb.fn.count('pet.id').as('pet_count'))
+  .groupBy('person.id')
+  .orderBy('person.id')
+  .execute()
+// Inferred: { id: number; first_name: string; pet_count: string | number | bigint }[]
+```
+
+The rows match. Sequelize types raw results as the model, `Person[]` on 6 and its attributes on 7, so `pet_count` is missing from the type and the selected attributes do not narrow it. Kysely derives the row from the selection, and types `count` as every type a driver can return for it until you declare one with `count<number>()` or a cast. **Written correctly, the two queries are equivalent, and only Kysely's has a result type derived from the query.**
+
+## Kysely checks the references Sequelize takes as strings
+
+Sequelize's `where` object is typed when the model declares its attributes, as the classes above do: `where: { first_nam: 'Jennifer' }` is a type error, and so are the values `update()` and `create()` take for a model. Sequelize 7 also checks the attribute names in `attributes`.
+
+[sequelize-typescript](https://github.com/sequelize/sequelize-typescript), whose decorators declare the same `Model` classes, writes [`class Person extends Model {}`](https://github.com/sequelize/sequelize-typescript/blob/8ded61aa26e192b455c682377d45cef0582e11e2/README.md#L96-L103) as its default form. That form types the attributes as `any`, so the misspelled `where` key compiles, until the class passes an attributes interface to `Model`.
+
+The rest of a finder names columns as strings. `col()` and `fn()` take any text, `order` and `group` take column names, `'$pets.name$'` filters on an included table, and an include names its association by alias.
+
+A join without a declared association, a computed column, a subquery, a CTE, a set operation, or a window function leaves the options object for `literal()`, which inserts [arbitrary content without escaping](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/other-topics/sub-queries.md#L114) and, in Sequelize's own words, "may be a source of (major) security vulnerabilities". Sequelize 7's `sql` tag escapes its values, and its row type is still declared by hand. That is where a [model API runs out into SQL](/docs/comparisons/query-builder-vs-orm#query-builder-composition-survives-changing-requirements). In Kysely each of them is a method on the same builder, with its references checked like the rest of the query.
+
+Production queries collect their filters. Write a lookup with an optional pet name, and later drop the include that loaded the pets:
+
+```ts
+function matchingPeople(options: { petName?: string }) {
+  const where: WhereOptions = { age: { [Op.gte]: 18 } }
+
+  if (options.petName) {
+    where['$pets.name$'] = options.petName
+  }
+  return Person.findAll({ attributes: ['first_name'], where, raw: true })
+}
+```
+
+It compiles, and it runs for every request without a pet name. A request with one fails in PostgreSQL: the filter still reads `pets`, and the change never touched that line. The same function after the same change in Kysely:
+
+```ts
+function matchingPeople(options: { petName?: string }) {
+  let query = db
+    .selectFrom('person')
+    .select('person.first_name')
+    .where('person.age', '>=', 18)
+
+  if (options.petName) {
+    // TypeScript error: pet is not available in this query.
+    query = query.where('pet.name', '=', options.petName)
+  }
+  return query
+}
+```
+
+Kysely's `selectFrom` comes first, and every later method is typed against the tables and aliases accumulated so far. **Kysely checks every reference written on the query's own builder, in each place Sequelize takes a string.**
+
+### The same split in every option
+
+| Invalid reference                                  | Kysely            | Sequelize                                                          |
+| -------------------------------------------------- | ----------------- | ------------------------------------------------------------------ |
+| Select `col('pets.name')` without including `pets` | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Filter on `'$pets.name$'` without including `pets` | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Order or group by the misspelled `first_nam`       | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Select the misspelled attribute `first_nam`        | TypeScript error. | Passes TypeScript and fails in PostgreSQL on 6. A type error on 7. |
+| Include the misspelled association `petz`          | TypeScript error. | Passes TypeScript, and Sequelize throws before sending it.         |
+| Compare the integer column `age` with `'old'`      | TypeScript error. | Passes TypeScript, fails in PostgreSQL on 6 and in Sequelize on 7. |
+
+**Every row in that table is a compile error with Kysely, and on Sequelize 6 a failed request.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
+
+### Loud failures and quiet ones
+
+Every failure in the table is loud once a test runs the branch that builds the reference, and `matchingPeople` passes every test that leaves the pet name out. The failures further down this page are quiet: four the introduction names, a [raw result with an include](#kysely-nests-results-in-sql) typed as the parent, an include filter that drops the parents it does not match, and a [paranoid include](#kysely-sends-the-statement-you-wrote) that reads a soft-deleted parent as `null`, each with no error.
+
+**No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
+
+<details id="where-kyselys-checks-stop">
+<summary>Where Kysely's checks stop</summary>
+
+Kysely's check is made where a reference is written, on a builder that knows the query, and it stops there. A reference written with `sql.ref` or as template text, a [dynamic reference](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html), an expression built ahead of time on a standalone `expressionBuilder`, and a helper whose builder parameter declares more tables than the caller's query has are all taken on trust. The reference shorthands `whereRef`, `onRef`, and the three-argument join take two column names without comparing their types.
+
+Kysely's references are strings read by the type system: completed and checked, yet an unqualified `id` after joining two tables that both have one compiles, and PostgreSQL rejects it as ambiguous.
+
+A column renamed in the database is a compile error in every Kysely query that names it. Sequelize's `field` option maps an attribute to a column, so the rename is one edit in the model, and every finder that names the attribute still compiles to the new column.
+
+`where('age', '=', null)` compiles and matches no rows. That is by design: Kysely builds the comparison as written, and `= null` is valid SQL. Code that filters on a nullable variable adds the built-in [`SafeNullComparisonPlugin`](/docs/plugins#safe-null-comparison-plugin), which rewrites `=` to `IS` when the value is null, and nothing is rewritten without it. Sequelize writes `IS NULL` for a `null` in a `where` object.
+
+One Kysely gap is quiet: a `union` whose sides list the same columns in a different order returns values under the wrong keys.
+
+The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. [Excessively deep types](/docs/recipes/excessively-deep-types) covers the limit TypeScript can hit and how to stay inside it.
+
+</details>
+
+## Result types come from the selection
+
+A finder returns model instances typed as the model, or with `raw: true`, plain objects typed as the model on 6 and as its attributes on 7. Neither is derived from `attributes`.
+
+Rename an attribute:
+
+```ts
+const person = await Person.findOne({
+  attributes: [['first_name', 'name']],
+  where: { id: 1 },
+  raw: true,
+})
+
+person?.first_name // Typed string. undefined at runtime: the row has name.
+```
+
+Select one attribute and read another:
+
+```ts
+const person = await Person.findByPk(1, {
+  attributes: ['id'],
+  rejectOnEmpty: true,
+})
+
+person.first_name // Typed string. undefined at runtime: it was not selected.
+```
+
+A computed attribute such as `pet_count` goes the other way: it reaches the row and never the type, so on an instance it takes `get('pet_count')`, and on a raw row a cast. Sequelize 7 accepts a row type for raw results, `findAll<Person, Row>()`, which you write and maintain beside the query, and a stale one still compiles.
+
+In Kysely the same queries are typed `{ name: string }` and `{ id: number }`, the count is a column on the row, and a caller reading a column that is no longer selected stops compiling. **A Kysely result is typed as the selection you made, so changing the selection changes the type every caller sees.**
+
+## Kysely nests results in SQL
+
+Return each person with their pets. `findAll({ include: [{ model: Pet, as: 'pets' }] })` reads the association and returns `Person` instances with `pets` loaded, typed through the model's `NonAttribute<Pet[]>`. That is the shape most Sequelize code wants, and it is where model hydration earns its keep. A `where` inside the include filters the pets, and Sequelize also [sets `required: true`](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/advanced-association-concepts/eager-loading.md#L180) for it, so the join becomes an `INNER JOIN` and a person with no matching pet drops out of the result. `required: false` keeps them, under the same `Pet[]` type.
+
+The statement behind it is a flat join. PostgreSQL returns one row per pet, and Sequelize groups the rows into instances after they arrive. With `raw: true` it skips the grouping: Jennifer, with two pets, comes back as two rows with keys such as `'pets.name'`, typed as `Person`. A hasMany include can also load with [`separate: true`](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/select-in-depth.md#L353-L358), one statement per association, so no parent is repeated.
+
+Kysely nests in SQL, with `jsonArrayFrom` from `kysely/helpers/postgres`:
+
+```ts
+import { jsonArrayFrom } from 'kysely/helpers/postgres'
+
+const rows = await db
+  .selectFrom('person')
+  .select((eb) => [
+    'person.first_name',
+    jsonArrayFrom(
+      eb
+        .selectFrom('pet')
+        .select('pet.name')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .orderBy('pet.name'),
+    ).as('pets'),
+  ])
+  .execute()
+// Inferred: { first_name: string; pets: { name: string }[] }[]
+```
+
+One statement, one row per person, `[]` for a person with no pets, and `limit()` counts people. A `where` inside the subquery filters the pets, and every person stays. The nested subquery is an ordinary Kysely query: join inside it, aggregate it, filter it, with the same methods and the same checks. **Kysely asks PostgreSQL for the nested object and types it, so the rows arrive already shaped.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
+
+### Kysely pages parents in one statement
+
+The join also decides pagination. A `limit` on a finder with an include pages parents: Sequelize moves the parent's part of the query into a subquery and joins the children to it. Options that read the included table can end up inside that subquery. A `'$pets.name$'` filter with a `limit` fails in PostgreSQL. So does the grouped count above once it adds a `having` that compares the count with `pet_target` and a `limit`. Both run once `subQuery: false` keeps the join and the aggregate in one query.
+
+`findAndCountAll()` sends the page and its total as separate statements. With an include, the count counts joined rows: four people, one of them without pets, count as five, until `distinct: true` is set. The [issue about it](https://github.com/sequelize/sequelize/issues/9481) has been open since May 2018. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.** A page past the last row returns no rows, and so no total.
+
+## Kysely keeps every filter a caller adds
+
+Scopes are Sequelize's reusable queries: a named options object a model applies before the finder's own. On Sequelize 6, the finder's `where` is [merged with the scope's shallowly](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/other-topics/scopes.md#L173), "meaning that identical keys will be overwritten":
+
+```ts
+Pet.addScope('ownedBy', (ownerId: number) => ({ where: { owner_id: ownerId } }))
+
+const pets = await Pet.scope({ method: ['ownedBy', 1] }).findAll({
+  where: { owner_id: 2 },
+})
+// WHERE "Pet"."owner_id" = 2: the scope's owner filter is gone.
+```
+
+The query returns another owner's pets, with no error. When the scope is a tenant or an owner filter, that is a data leak, and a [2023 report](https://github.com/sequelize/sequelize/issues/16582) called it "an unsafe scene when the user can escape a predefined scope". [Sequelize's docs](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/other-topics/scopes.md#L195-L211) describe it, and since March 2022 a model or an instance can opt into `whereMergeStrategy: 'and'`. Sequelize 7 joins the two with AND by default.
+
+In Kysely each `where()` adds its condition with AND, and every method returns a new builder, so a shared function can add a filter, a join, or a limit without knowing what its caller added:
+
+```ts
+const ownedBy = (ownerId: number) =>
+  db.selectFrom('pet').select('name').where('owner_id', '=', ownerId)
+
+const pets = await ownedBy(1).where('owner_id', '=', 2).execute()
+// where "owner_id" = $1 and "owner_id" = $2: no rows.
+```
+
+**Every Kysely builder is a value you can share, and a filter added to it can only narrow it.** Immutability has one trap of its own: a returned builder that is not kept is a change that never happened. Keep each returned builder, and use [`$if`](/docs/recipes/conditional-selects) when conditional selections change the result type.
+
+## Kysely sends values as parameters
+
+Sequelize's finders write each value into the statement as an escaped literal. `findAll({ where: { first_name: 'Jennifer' } })` sends `WHERE "Person"."first_name" = 'Jennifer'` as text, on both releases, and so does `destroy()`. The escaping keeps it safe from injection, and the values still travel with the text. `create()` and `update()` bind their values, and a raw query binds only with the `bind` option. Sequelize's docs call the inlined form [replacements](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/raw-queries.mdx#L48-L49): "escaped and inserted into the query by Sequelize before the query is sent to the database".
+
+Bind parameters for every query were [requested in October 2019](https://github.com/sequelize/sequelize/issues/11586) and are still open. Kysely sends a placeholder in the text and `'Jennifer'` beside it as a parameter, for every value a query takes, its `sql` templates included, unless it is written with `sql.lit`.
+
+### A failed Sequelize query puts its values in the error
+
+Sequelize 6 [logs every statement with `console.log` by default](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/getting-started.md#L102), so an application that never set `logging` prints each finder's values to standard output. Sequelize 7 logs nothing by default.
+
+On both releases, a failed query throws an error with the statement as an enumerable `sql` property. The text makes a failure easy to reproduce, and a logger or an error reporter that serializes the error records it too, so a password hash, an API token, an email address, or any other credential or personal data in a failed finder's `where` reaches the log.
+
+Kysely passes the driver's error through, and node-postgres adds no statement or parameters to it. Kysely's `log` option receives the compiled query on an error, so recording the values is the logger's choice. PostgreSQL's own `detail` still names the conflicting key of a unique violation, in both libraries. **Kysely's errors carry no bound values of their own, so what reaches an error reporter is what the database said.**
+
+## Kysely sends the statement you wrote
+
+Sequelize's finders add to a statement from the model's options. Make `Person` [paranoid](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/models/paranoid.mdx) with a `deleted_at` column, and its `destroy()` becomes an `UPDATE` that sets the delete date, and every finder on it gets `"deleted_at" IS NULL`. So does the join condition of an include, here through a `Pet.belongsTo(Person, { as: 'owner' })` association:
+
+```ts
+const pets = await Pet.findAll({
+  include: [{ model: Person, as: 'owner' }],
+})
+// LEFT OUTER JOIN "person" AS "owner"
+//   ON "Pet"."owner_id" = "owner"."id" AND "owner"."deleted_at" IS NULL
+// A pet whose owner was soft-deleted is returned with owner: null.
+```
+
+The pet stays in the result, and its owner reads `null`, as if it had none. The docs show [`include.paranoid: false`](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/models/paranoid.mdx#L136-L148) to load soft-deleted records, and a raw query gets no filter at all.
+
+The filter itself is a feature that keeps soft-deleted rows out of every finder, and default scopes add their options the same way. In Kysely a soft-delete filter is a condition you write once, in a helper every query calls or in a [plugin](/docs/plugins) that rewrites the query tree. **Kysely sends the statement you wrote, and changes it only through plugins you install.**
+
+## Migrate from Sequelize to Kysely one query at a time
+
+A move from Sequelize to Kysely does not have to happen at once, or at all for the models.
+
+### Can Kysely and Sequelize be used together?
+
+Yes. [kysely-sequelize](https://github.com/kysely-org/kysely-sequelize) runs Kysely over an existing Sequelize 6 instance: its [`KyselySequelizeDialect`](https://github.com/kysely-org/kysely-sequelize/blob/c86004253c1341d6aa1b61908684a629ba470053/README.md#L367-L403) reuses Sequelize's connections, and its [`KyselifyModel`](https://github.com/kysely-org/kysely-sequelize/blob/c86004253c1341d6aa1b61908684a629ba470053/README.md#L157-L175) type derives Kysely's table types from the model classes, with no generation step.
+
+```ts
+import {
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+import { KyselySequelizeDialect, type KyselifyModel } from 'kysely-sequelize'
+
+interface Database {
+  person: KyselifyModel<Person>
+  pet: KyselifyModel<Pet>
+}
+
+const db = new Kysely<Database>({
+  dialect: new KyselySequelizeDialect({
+    kyselySubDialect: {
+      createAdapter: () => new PostgresAdapter(),
+      createIntrospector: (db) => new PostgresIntrospector(db),
+      createQueryCompiler: () => new PostgresQueryCompiler(),
+    },
+    sequelize,
+  }),
+})
+```
+
+`KyselifyModel` leaves `NonAttribute` properties such as `pets` out, and a key declared `CreationOptional<number>` becomes optional on insert. The classes stay Sequelize models.
+
+1. Keep the models, the migrations, and the hooks and validations that run on instances.
+2. Derive Kysely's types with `KyselifyModel`, or [generate them](/docs/generating-types) from the migrated database, which also catches a column the model does not declare.
+3. Start with a finder that reads computed attributes, uses `literal()`, or shares a scope with callers. Move it, inspect `.compile()`, and compare rows, nulls, ordering, and empty results.
+4. Keep each transaction on one client. The bridge shares connections, not a transaction in progress.
+
+## Other practical considerations
+
+<details id="measured-sizes">
+<summary>Measured package sizes and dependency trees</summary>
+
+| Published package              | Compressed download | Unpacked size | Direct dependencies |
+| ------------------------------ | ------------------- | ------------- | ------------------- |
+| Kysely 0.29.8                  | 319.6 KiB           | 1.66 MiB      | 0                   |
+| Sequelize 6.37.8               | 594.1 KiB           | 2.77 MiB      | 16                  |
+| @sequelize/core 7.0.0-alpha.48 | 668.0 KiB           | 3.02 MiB      | 18                  |
+
+PostgreSQL production trees, including transitive dependencies:
+
+| PostgreSQL setup                                     | Unique production packages |
+| ---------------------------------------------------- | -------------------------- |
+| Kysely 0.29.8 + pg 8.23.1                            | **14**                     |
+| Sequelize 6.37.8 + pg 8.23.1 + pg-hstore 2.3.4       | 35                         |
+| @sequelize/core + @sequelize/postgres 7.0.0-alpha.48 | 67                         |
+
+Sequelize 6 includes every dialect's code and asks for `pg` and `pg-hstore` beside it. Sequelize 7 moves each dialect into its own package, `@sequelize/postgres` bringing `pg`. Kysely's package includes its five core dialects.
+
+Measured **November 13, 2026**. Package sizes exclude dependencies, and trees exclude optional dependencies and peer auto-installation. These are not bundle sizes or install benchmarks.
+
+</details>
+
+## Choosing Sequelize or Kysely
+
+Sequelize vs Kysely is a choice between a data framework whose finders take an options object typed through the model, and a query builder whose types follow the query.
+
+### Why use Kysely instead of Sequelize?
+
+**Choose Kysely when queries are composed, shared, and changed, and you want TypeScript to check each change.**
+
+- References are [checked against the query](#kysely-checks-the-references-sequelize-takes-as-strings) in every clause, where a finder passes `col()`, `order`, `group`, and `'$pets.name$'` strings to the database, and subqueries, CTEs, set operations, and window functions are methods, where a finder takes `literal()` text.
+- Result types [come from the selection](#result-types-come-from-the-selection), not from the model.
+- [Nested results and pages](#kysely-nests-results-in-sql) are one statement and one row per parent.
+- A filter [only narrows a shared query](#kysely-keeps-every-filter-a-caller-adds), values are [sent as parameters](#kysely-sends-values-as-parameters), and statements are [sent as written](#kysely-sends-the-statement-you-wrote).
+- Queries can be cancelled with an [`AbortSignal`](https://kysely-org.github.io/kysely-apidoc/interfaces/AbortableQueryOptions.html), which Sequelize's finders do not take ([requested in March 2022](https://github.com/sequelize/sequelize/issues/14247)).
+
+Its types can come from the database itself, so it fits a schema that another tool, service, or team migrates. Immich, Open Collective, and Docmost [compose production queries with it](/docs/comparisons/query-builder-vs-raw-sql#production-code-draws-the-same-line).
+
+### When is Sequelize the better choice?
+
+**Keep Sequelize when a person writes the models and the queries, and the model is the unit the code thinks in: hooks and validations on instances, associations loaded into them, and scopes that name the common finders.** It is also the choice when the database is one Kysely has no dialect for, Db2 or Snowflake among them. Its finders can stay for the queries that already work, and Kysely can run beside them for the ones that are composed.
+
+Chosen for its finders alone, Sequelize trades the checks on this page for attribute names that absorb a column rename and, on 7, queries that join the surrounding transaction [without passing it](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/transactions.md#L189-L190), where a Kysely query runs on the transaction handle it is built from.
+
+### Is Sequelize still maintained?
+
+**Yes, on 6.** 6.37.8 shipped in March 2026, and the repository is active. Sequelize 7 has been in alpha since December 2021, with 7.0.0-alpha.48 the latest, from February 2026, and Sequelize's README is [seeking new maintainers](https://github.com/sequelize/sequelize/blob/53d1e8a6199fff85a8d6cd7d9bf0f3487f0cf798/README.md#L17-L29) "to help finalize and release the next major version", with funding for them.
+
+### Should I wait for Sequelize 7 or move to Kysely?
+
+**Sequelize 7 closes some of the gaps on this page and keeps the finder model that leaves the rest.** On 7, a scope's `where` and the finder's join with AND, attribute names are checked, a string compared with an integer is refused before it is sent, transactions follow the callback through AsyncLocalStorage, and the default logger is off. `col()`, `order`, `group`, and `'$pets.name$'` are still unchecked strings, results are still typed as the model, values are still written into the text, and subqueries are still raw SQL.
+
+7 is also a new package, `@sequelize/core`, with its dialects in packages of their own and [a list of breaking changes](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/other-topics/upgrade.md), and it has no release date. The two moves can be combined: queries moved to Kysely use none of the finder APIs that 7 changes, so a team on 6 can move its composed queries first, [through kysely-sequelize](#can-kysely-and-sequelize-be-used-together), and keep the models on 6 until 7 ships.
+
+### Is Sequelize type-safe?
+
+**For model attributes, `where` keys, and the values it writes, yes, when the model declares its attributes. For the rest of a finder and its results, no.** A `where` object and the values `create()` and `update()` take are [checked against the model](#kysely-checks-the-references-sequelize-takes-as-strings), and 7 checks attribute names too. The strings in `col()`, `order`, `group`, and `'$pets.name$'` are not checked, and a result is typed as the model whatever was selected. Kysely checks the references and infers the result, with [gaps of its own](#where-kyselys-checks-stop).
+
+### Is there a type-safe query builder for Sequelize?
+
+**Kysely, through [kysely-sequelize](#can-kysely-and-sequelize-be-used-together).** It runs over the existing Sequelize 6 instance and derives its table types from the models, so queries move to checked references and inferred results one at a time while the models, migrations, and hooks stay.
+
+### Is Kysely faster than Sequelize?
+
+**The database cannot tell them apart when the statements match, and [performance belongs to the statement](/docs/comparisons/query-builder-vs-raw-sql#performance-belongs-to-the-statement-not-the-authoring-tool).** The statements do not always match. Sequelize hydrates instances from expanded join rows, pages an include through a subquery, and sends `findAndCountAll()` as two statements. Kysely returns rows as the database shaped them and nests in SQL. Neither library is benchmarked here.
+
+### Is Kysely smaller than Sequelize?
+
+**Yes, as a package and as a dependency tree.** Kysely's published package is a 319.6 KiB download with no dependencies, against 594.1 KiB and 16 dependencies for Sequelize 6.37.8, and with `pg` the production trees are 14 and 35 packages. The [measurements](#measured-sizes) and what they exclude are above.
+
+### Which is easier for a coding agent to use?
+
+**Kysely checks more of what the agent writes, before the query runs.** An agent works by editing and running the compiler again, and the checks on this page sit inside that loop: a wrong reference, a stale result type, or a misspelled column is a compile error it can read and fix without a database, where a finder gives it a failed request or an `undefined`.
+
+Each library documents its methods in the type declarations it installs, and Kysely's inline examples are [type-checked in CI](/docs/integrations/llms) against the release they ship with.
+
+**Kysely types the query you write, in every clause, before it runs.**
+
+[Get started with Kysely](/docs/getting-started), find equivalents in the [query examples](/docs/category/examples), or compare [query builders with ORMs](/docs/comparisons/query-builder-vs-orm), [query builders with raw SQL](/docs/comparisons/query-builder-vs-raw-sql), [Kysely with Drizzle](/docs/comparisons/kysely-vs-drizzle), [Kysely with TypeORM](/docs/comparisons/kysely-vs-typeorm), and [Kysely with Knex](/docs/comparisons/kysely-vs-knex).
+
+<details>
+<summary>Adoption: replacing Sequelize with Kysely</summary>
+
+[Coop](https://github.com/roostorg/coop), ROOST's open source review and moderation tool, moved its server from Sequelize to Kysely in spring 2026, one area per pull request. [The last of them](https://github.com/roostorg/coop/pull/420), "Final server-side step of the Sequelize -> Kysely migration", deleted the server's models and its `sequelize` dependency in May, and Sequelize remains in the package that runs its migrations.
+
+</details>
