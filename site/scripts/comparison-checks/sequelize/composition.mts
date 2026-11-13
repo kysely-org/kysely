@@ -12,6 +12,11 @@ const overridden = await names(scoped(Pet, 'ownedBy1').findAll({ where: { owner_
 // 6.37.8 replaces the scope's owner_id; 7.0.0-alpha.48 joins both with AND.
 assert.deepEqual(overridden, isAlpha ? [] : ['Kitty'])
 
+// The same with a function scope, as a tenant or owner filter is usually written.
+Pet.addScope('ownedBy', (ownerId: number) => ({ where: { owner_id: ownerId } }))
+const scopedBy = scoped(Pet, { method: ['ownedBy', 1] })
+assert.deepEqual(await names(scopedBy.findAll({ where: { owner_id: 2 } })), isAlpha ? [] : ['Kitty'])
+
 const combined = await names(scoped(Pet, 'ownedBy1').findAll({ where: { name: 'Kitty' } }))
 assert.deepEqual(combined, [])
 
@@ -27,8 +32,12 @@ if (!isAlpha) {
 }
 
 // Kysely: every where() adds a condition, and builders do not change.
-const ownedBy1 = db.selectFrom('pet').select('name').where('owner_id', '=', 1)
-assert.deepEqual(await ownedBy1.where('owner_id', '=', 2).execute(), [])
+const ownedBy = (ownerId: number) =>
+  db.selectFrom('pet').select('name').where('owner_id', '=', ownerId)
+const narrowed = ownedBy(1).where('owner_id', '=', 2)
+assert.equal(narrowed.compile().sql, 'select "name" from "pet" where "owner_id" = $1 and "owner_id" = $2')
+assert.deepEqual(await narrowed.execute(), [])
+const ownedBy1 = ownedBy(1)
 const preview = ownedBy1.limit(1)
 assert.equal((await ownedBy1.execute()).length, 2)
 assert.equal((await preview.execute()).length, 1)

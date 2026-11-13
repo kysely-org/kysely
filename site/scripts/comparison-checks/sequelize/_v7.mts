@@ -19,11 +19,15 @@ export type {
   InferCreationAttributes,
   CreationOptional,
   NonAttribute,
+  WhereOptions,
 } from '@sequelize/core'
 
 export const sequelizeVersion = '7.0.0-alpha.48'
 
-export function scoped<M extends Model>(model: ModelStatic<M>, name: string) {
+export function scoped<M extends Model>(
+  model: ModelStatic<M>,
+  name: string | { method: [string, ...unknown[]] },
+) {
   return model.withScope(name)
 }
 

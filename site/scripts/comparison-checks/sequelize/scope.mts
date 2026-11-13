@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { col, fn, Op } from '#sequelize-under-test'
+import { col, fn, Op, type WhereOptions } from '#sequelize-under-test'
 import { connect, expectType, isAlpha, pgCode, Person, Pet, type Equal } from './_setup.mts'
 
 const { db, cleanup } = await connect()
@@ -87,7 +87,8 @@ void (() => {
 
 // The include is removed with the pet's name, and the collected filter stays.
 function sequelizeMatchingPeople(options: { petName?: string }) {
-  const where: Record<string, unknown> = { age: { [Op.gte]: 18 } }
+  const where: WhereOptions = { age: { [Op.gte]: 18 } }
+
   if (options.petName) {
     where['$pets.name$'] = options.petName
   }
