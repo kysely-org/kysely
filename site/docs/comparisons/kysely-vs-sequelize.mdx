@@ -169,20 +169,20 @@ Kysely's `selectFrom` comes first, and every later method is typed against the t
 
 ### The same split in every option
 
-| Invalid reference                                  | Kysely            | Sequelize                                                         |
-| -------------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| Select `col('pets.name')` without including `pets` | TypeScript error. | Passes TypeScript; PostgreSQL rejects it.                         |
-| Filter on `'$pets.name$'` without including `pets` | TypeScript error. | Passes TypeScript; PostgreSQL rejects it.                         |
-| Order or group by the misspelled `first_nam`       | TypeScript error. | Passes TypeScript; PostgreSQL rejects it.                         |
-| Select the misspelled attribute `first_nam`        | TypeScript error. | Passes TypeScript on 6; PostgreSQL rejects it. A type error on 7. |
-| Include the misspelled association `petz`          | TypeScript error. | Passes TypeScript; Sequelize throws before sending it.            |
-| Compare the integer column `age` with `'old'`      | TypeScript error. | Passes TypeScript; PostgreSQL rejects it on 6, Sequelize on 7.    |
+| Invalid reference                                  | Kysely            | Sequelize                                                          |
+| -------------------------------------------------- | ----------------- | ------------------------------------------------------------------ |
+| Select `col('pets.name')` without including `pets` | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Filter on `'$pets.name$'` without including `pets` | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Order or group by the misspelled `first_nam`       | TypeScript error. | Passes TypeScript, fails in PostgreSQL.                            |
+| Select the misspelled attribute `first_nam`        | TypeScript error. | Passes TypeScript and fails in PostgreSQL on 6. A type error on 7. |
+| Include the misspelled association `petz`          | TypeScript error. | Passes TypeScript, and Sequelize throws before sending it.         |
+| Compare the integer column `age` with `'old'`      | TypeScript error. | Passes TypeScript, fails in PostgreSQL on 6 and in Sequelize on 7. |
 
 **Every row in that table is a compile error with Kysely, and on Sequelize 6 a failed request.** PostgreSQL [stops at the first error](https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY), so unchecked mistakes surface one execution at a time, against a database. The compiler reports them together, before a connection is opened, which is also the loop a coding agent can run on every edit.
 
 ### Loud failures and quiet ones
 
-Every failure in the table is loud once a test runs the branch that builds the reference, and `matchingPeople` passes every test that leaves the pet name out. The failures further down this page are quiet: four the introduction names, a [raw result with an include](#kysely-nests-results-in-sql) typed as the parent, and a [paranoid include](#kysely-sends-the-statement-you-wrote) that reads a soft-deleted parent as `null`, each with no error.
+Every failure in the table is loud once a test runs the branch that builds the reference, and `matchingPeople` passes every test that leaves the pet name out. The failures further down this page are quiet: four the introduction names, a [raw result with an include](#kysely-nests-results-in-sql) typed as the parent, an include filter that drops the parents it does not match, and a [paranoid include](#kysely-sends-the-statement-you-wrote) that reads a soft-deleted parent as `null`, each with no error.
 
 **No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
@@ -236,7 +236,7 @@ In Kysely the same queries are typed `{ name: string }` and `{ id: number }`, th
 
 ## Kysely nests results in SQL
 
-Return each person with their pets. `findAll({ include: [{ model: Pet, as: 'pets' }] })` reads the association and returns `Person` instances with `pets` loaded, typed through the model's `NonAttribute<Pet[]>`. That is the shape most Sequelize code wants, and it is where model hydration earns its keep. A `where` inside the include trims that collection, under the same `Pet[]` type as an unfiltered load.
+Return each person with their pets. `findAll({ include: [{ model: Pet, as: 'pets' }] })` reads the association and returns `Person` instances with `pets` loaded, typed through the model's `NonAttribute<Pet[]>`. That is the shape most Sequelize code wants, and it is where model hydration earns its keep. A `where` inside the include filters the pets, and Sequelize also [sets `required: true`](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/advanced-association-concepts/eager-loading.md#L180) for it, so the join becomes an `INNER JOIN` and a person with no matching pet drops out of the result. `required: false` keeps them, under the same `Pet[]` type.
 
 The statement behind it is a flat join. PostgreSQL returns one row per pet, and Sequelize groups the rows into instances after they arrive. With `raw: true` it skips the grouping: Jennifer, with two pets, comes back as two rows with keys such as `'pets.name'`, typed as `Person`. A hasMany include can also load with [`separate: true`](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/querying/select-in-depth.md#L353-L358), one statement per association, so no parent is repeated.
 
@@ -261,13 +261,13 @@ const rows = await db
 // Inferred: { first_name: string; pets: { name: string }[] }[]
 ```
 
-One statement, one row per person, `[]` for a person with no pets, and `limit()` counts people. The nested subquery is an ordinary Kysely query: join inside it, aggregate it, filter it, with the same methods and the same checks. **Kysely asks PostgreSQL for the nested object and types it, so the rows arrive already shaped.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
+One statement, one row per person, `[]` for a person with no pets, and `limit()` counts people. A `where` inside the subquery filters the pets, and every person stays. The nested subquery is an ordinary Kysely query: join inside it, aggregate it, filter it, with the same methods and the same checks. **Kysely asks PostgreSQL for the nested object and types it, so the rows arrive already shaped.** The helpers are per dialect, and a driver that returns JSON as text needs [`ParseJSONResultsPlugin`](/docs/recipes/relations#the-json-data-type-and-functions). See [nested relations](/docs/recipes/relations).
 
 ### Kysely pages parents in one statement
 
 The join also decides pagination. A `limit` on a finder with an include pages parents: Sequelize moves the parent's part of the query into a subquery and joins the children to it. Options that read the included table can end up inside that subquery. A `'$pets.name$'` filter with a `limit` fails in PostgreSQL. So does the grouped count above once it adds a `having` that compares the count with `pet_target` and a `limit`. Both run once `subQuery: false` keeps the join and the aggregate in one query.
 
-`findAndCountAll()` sends the page and its total as separate statements. With an include, the count counts joined rows: four people with four pets between them count as five, until `distinct: true` is set. The [issue about it](https://github.com/sequelize/sequelize/issues/9481) has been open since May 2018. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.** A page past the last row returns no rows, and so no total.
+`findAndCountAll()` sends the page and its total as separate statements. With an include, the count counts joined rows: four people, one of them without pets, count as five, until `distinct: true` is set. The [issue about it](https://github.com/sequelize/sequelize/issues/9481) has been open since May 2018. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.** A page past the last row returns no rows, and so no total.
 
 ## Kysely keeps every filter a caller adds
 
@@ -439,7 +439,7 @@ Chosen for its finders alone, Sequelize trades the checks on this page for attri
 
 ### Is Kysely smaller than Sequelize?
 
-**Yes, as a package and as a dependency tree.** Kysely's published package is a 319.6 KiB download with no dependencies, against 594.1 KiB and 16 dependencies for Sequelize 6.37.8; with `pg`, the production trees are 14 and 35 packages. The [measurements](#measured-sizes) and what they exclude are above.
+**Yes, as a package and as a dependency tree.** Kysely's published package is a 319.6 KiB download with no dependencies, against 594.1 KiB and 16 dependencies for Sequelize 6.37.8, and with `pg` the production trees are 14 and 35 packages. The [measurements](#measured-sizes) and what they exclude are above.
 
 ### Which is easier for a coding agent to use?
 
