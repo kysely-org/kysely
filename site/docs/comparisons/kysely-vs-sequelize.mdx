@@ -190,7 +190,7 @@ That layer is where Sequelize's typing work has gone. [`InferAttributes` and `In
 
 Every failure in the table is loud once a test runs the branch that builds the reference. The `matchingPeople` function above passes every test that leaves the pet name out.
 
-The failures further down this page are quiet. Besides those the introduction names, [a raw result with an include](#nested-results-stay-in-the-same-builder) arrives as one flat row per child under dotted keys, typed as the parent, and [a paranoid include](#kysely-sends-the-statement-you-wrote) reads a soft-deleted parent as `null`, each with no error.
+The failures further down this page are quiet. Besides the four the introduction names, [a raw result with an include](#nested-results-stay-in-the-same-builder) arrives as one flat row per child under dotted keys, typed as the parent, and [a paranoid include](#kysely-sends-the-statement-you-wrote) reads a soft-deleted parent as `null`, each with no error.
 
 **No query builder is perfectly type-safe, and Kysely is no exception. Type safety is what it is built around, and every gap is treated as work to do.** TypeScript's native compiler widens what that work can afford, and Kysely's direction is to spend that headroom on stricter and more ambitious checks.
 
@@ -238,7 +238,7 @@ const person = await Person.findByPk(1, {
 person.first_name // Typed string. undefined at runtime: it was not selected.
 ```
 
-A computed attribute such as `pet_count` goes the other way: it reaches the row and never the type, so reading it takes `get('pet_count')` or a cast. Sequelize 7 accepts a row type for raw results, `findAll<Person, Row>()`, which you write and maintain beside the query, and a stale one still compiles.
+A computed attribute such as `pet_count` goes the other way: it reaches the row and never the type, so on an instance it takes `get('pet_count')`, and on a raw row a cast. Sequelize 7 accepts a row type for raw results, `findAll<Person, Row>()`, which you write and maintain beside the query, and a stale one still compiles.
 
 In Kysely the same queries are typed `{ name: string }` and `{ id: number }`, the count is a column on the row, and a caller reading a column that is no longer selected stops compiling. **A Kysely result is typed as the selection you made, so changing the selection changes the type every caller sees.**
 
@@ -300,7 +300,7 @@ One statement, one row per person, `[]` for a person with no pets, and `limit()`
 
 The join also decides pagination. A `limit` on a finder with an include pages parents: Sequelize moves the parent's part of the query into a subquery and joins the children to it. Options that read the included table can end up inside that subquery. A `'$pets.name$'` filter with a `limit` fails in PostgreSQL. So does the grouped count above once it adds a `having` that compares the count with `pet_target` and a `limit`. Both run once `subQuery: false` keeps the join and the aggregate in one query.
 
-`findAndCountAll()` sends the page and its total as separate statements. With an include, the count counts joined rows: four people with four pets between them count as five, until `distinct: true` is set. The [issue about it](https://github.com/sequelize/sequelize/issues/9481) has been open since May 2018. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.**
+`findAndCountAll()` sends the page and its total as separate statements. With an include, the count counts joined rows: four people with four pets between them count as five, until `distinct: true` is set. The [issue about it](https://github.com/sequelize/sequelize/issues/9481) has been open since May 2018. **Kysely reads a page of parents and its total in one statement, with `eb.fn.countAll().over()` as a column.** A page past the last row returns no rows, and so no total.
 
 ## Kysely keeps every filter a caller adds
 
@@ -341,7 +341,7 @@ A statement with its values in the text carries them wherever the text goes. Seq
 
 On both releases, a failed query throws an error with the statement as an enumerable `sql` property. The text makes a failure easy to reproduce, and a logger or an error reporter that serializes the error records it too, so a password hash, an API token, an email address, or any other credential or personal data in a failed finder's `where` reaches the log.
 
-Kysely passes the driver's error through, and node-postgres adds no statement or parameters to it. Kysely's `log` option receives the compiled query and its parameters on an error, and the default logger prints the SQL text only, so recording the values is the logger's choice. **A Kysely statement carries placeholders where values go, so its text is safe to log and its errors carry no bound values of their own.**
+Kysely passes the driver's error through, and node-postgres adds no statement or parameters to it. Kysely's `log` option receives the compiled query and its parameters on an error, and the default logger prints the SQL text only, so recording the values is the logger's choice. PostgreSQL's own `detail` still names the conflicting key of a unique violation, in both libraries. **Kysely's errors carry no bound values of their own, so what reaches an error reporter is what the database said.**
 
 ## Kysely queries can be cancelled
 
