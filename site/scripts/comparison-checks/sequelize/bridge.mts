@@ -35,6 +35,7 @@ if (!isAlpha) {
         createIntrospector: (db) => new PostgresIntrospector(db),
         createQueryCompiler: () => new PostgresQueryCompiler(),
       },
+      // @ts-expect-error kysely-sequelize 0.2.0 types the instance as sequelize-typescript's Sequelize.
       sequelize,
     }),
   })

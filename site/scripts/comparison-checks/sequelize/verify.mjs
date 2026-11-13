@@ -42,6 +42,7 @@ for (const [name, version] of Object.entries({
   kysely: '0.29.8',
   'kysely-sequelize': '0.2.0',
   sequelize: '6.37.8',
+  'sequelize-typescript': '2.1.6',
   '@sequelize/core': '7.0.0-alpha.48',
   '@sequelize/postgres': '7.0.0-alpha.48',
   pg: '8.23.1',

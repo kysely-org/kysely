@@ -14,7 +14,9 @@
     "kysely-sequelize": "0.2.0",
     "pg": "8.23.1",
     "pg-hstore": "2.3.4",
+    "reflect-metadata": "0.2.2",
     "sequelize": "6.37.8",
+    "sequelize-typescript": "2.1.6",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3"
