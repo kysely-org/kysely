@@ -7,13 +7,15 @@ description: 'Try Kysely in an interactive playground and share TypeScript query
 
 [@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://play.kysely.dev). You can use it to quickly test stuff out and for creating code examples for your issues, PRs and Discord messages.
 
-```ts twoslash playground
-const person = await db
+import { PlaygroundFrame } from '@site/src/components/Playground'
+
+<PlaygroundFrame
+  code={`const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
   .where('id', '=', 1)
-  .executeTakeFirst()
-```
+  .executeTakeFirst()`}
+/>
 
 ## Codesandbox
 

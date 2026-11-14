@@ -10,8 +10,26 @@ type Tab = (typeof TABS)[number]
 
 const LABELS: Record<Tab, string> = { code: 'Code', playground: 'Playground' }
 
-export function Playground({ children, code }: PlaygroundProps) {
+export function PlaygroundFrame({ code }: { code: string }) {
   const { colorMode } = useColorMode()
+
+  return (
+    <iframe
+      allow="clipboard-write"
+      className={styles.playground}
+      src={getPlaygroundUrl(code, {
+        theme: colorMode,
+        notheme: '1',
+        open: '1',
+        nomore: '1',
+        nohotkey: '1',
+      })}
+      title="Kysely Playground"
+    />
+  )
+}
+
+export function Playground({ children, code }: PlaygroundProps) {
   const id = useId()
   const [active, setActive] = useState<Tab>('code')
   const [opened, setOpened] = useState(false)
@@ -85,18 +103,7 @@ export function Playground({ children, code }: PlaygroundProps) {
           hidden={active !== 'playground'}
           data-pagefind-ignore
         >
-          <iframe
-            allow="clipboard-write"
-            className={styles.playground}
-            src={getPlaygroundUrl(code, {
-              theme: colorMode,
-              notheme: '1',
-              open: '1',
-              nomore: '1',
-              nohotkey: '1',
-            })}
-            title="Kysely Playground"
-          />
+          <PlaygroundFrame code={code} />
         </div>
       )}
     </div>
