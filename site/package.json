@@ -42,6 +42,7 @@
     "@types/react-dom": "19.3.0",
     "afdocs": "0.23.0",
     "hono": "catalog:http",
+    "kysely-supabase": "0.2.1",
     "mdast-util-from-markdown": "2.0.3",
     "mdast-util-gfm": "3.1.0",
     "mdast-util-to-hast": "13.2.1",
@@ -49,6 +50,7 @@
     "pagefind": "1.6.0",
     "pathe": "catalog:node",
     "shiki": "4.6.0",
+    "supabase": "2.122.1",
     "twoslash": "0.3.9",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3"
