@@ -13,6 +13,7 @@ import generateBrandLogoSprite from './plugins/generate-brand-logo-sprite'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
 import rehypeMarkdownIgnore from './plugins/rehype-markdown-ignore.mjs'
+import twoslashPopups from './plugins/twoslash-popups.mjs'
 import remarkShiki from './plugins/remark-shiki.mjs'
 import packageJson from './package.json'
 
@@ -121,6 +122,7 @@ export default {
     preloadDemoPoster,
     generateAgentDiscoveryCatalogs,
     generateBrandLogoSprite,
+    twoslashPopups,
     // `docusaurus start` has no Pagefind bundle (it's generated from the
     // built HTML), which would leave the search button dead in dev. Serve
     // the last production build's index instead: content may be stale, but

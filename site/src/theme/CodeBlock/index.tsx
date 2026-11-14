@@ -8,14 +8,16 @@ interface ShikiProps extends Props {
   highlightedHtml?: string
   loadPopups?: () => Promise<readonly string[]>
   playground?: string
+  popups?: string
 }
 
 // Markdown arrives highlighted at build time. Blocks authored in React load
 // Shiki on demand; neither path loads a TypeScript compiler in the browser.
 export default function CodeBlock({
   highlightedHtml,
-  loadPopups,
+  loadPopups: loadPopupList,
   playground,
+  popups: popupsUrl,
   ...props
 }: ShikiProps): React.JSX.Element {
   const { pathname } = useLocation()
@@ -70,18 +72,24 @@ export default function CodeBlock({
     hoverTimer.current = setTimeout(() => setPopup(undefined), 120)
   }
 
+  const loadPopups =
+    loadPopupList ??
+    (popupsUrl
+      ? () =>
+          fetch(popupsUrl).then(
+            (response) => response.json() as Promise<readonly string[]>,
+          )
+      : undefined)
+
   async function getPopupHtml(hover: Element) {
     const id = hover.getAttribute('data-popup')
-    if (id == null) return undefined
-    const template = hover
-      .closest('.shiki-block')
-      ?.querySelector(`template[data-popup="${id}"]`)
-    if (template instanceof HTMLTemplateElement) {
-      return template.content.querySelector('.twoslash-popup-container')
-        ?.innerHTML
+    if (id == null || !loadPopups) return undefined
+    try {
+      return (await (popups.current ??= loadPopups()))[Number(id)]
+    } catch {
+      popups.current = undefined
+      return undefined
     }
-    if (!loadPopups) return undefined
-    return (await (popups.current ??= loadPopups()))[Number(id)]
   }
 
   async function showType(target: EventTarget) {
@@ -141,7 +149,10 @@ export default function CodeBlock({
       </div>
       <div
         onPointerEnter={() => {
-          if (loadPopups) popups.current ??= loadPopups()
+          if (loadPopups && !popups.current) {
+            popups.current = loadPopups()
+            popups.current.catch(() => {})
+          }
         }}
         onMouseOver={(event) => showType(event.target)}
         onMouseLeave={hideType}

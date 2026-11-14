@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import { dirname } from 'node:path'
+import { writePopups } from './twoslash-popups.mjs'
 const root = fileURLToPath(new URL('../../', import.meta.url)).replace(
   /\/$/,
   '',
@@ -138,9 +139,8 @@ export async function highlightCode(
         ? [
             twoslash,
             {
-              name: 'hoisted-type-popups',
+              name: 'external-type-popups',
               root(root) {
-                const popups = []
                 function visit(node) {
                   if (node.properties?.class?.includes('twoslash-hover')) {
                     node.properties.tabIndex = 0
@@ -149,34 +149,25 @@ export async function highlightCode(
                     )
                     if (index !== -1) {
                       const [template] = node.children.splice(index, 1)
-                      const id = collectPopup
-                        ? collectPopup(template.content)
-                        : popups.push(template) - 1
-                      template.properties['data-popup'] = id
-                      node.properties['data-popup'] = id
+                      node.properties['data-popup'] = collectPopup(
+                        template.content,
+                      )
                     }
                   }
                   node.children?.forEach(visit)
                 }
                 visit(root)
-                if (!popups.length) return
-                root.children.push({
-                  type: 'element',
-                  tagName: 'div',
-                  properties: {
-                    class: 'twoslash-popups',
-                    hidden: true,
-                    'data-markdown-ignore': true,
-                    'data-pagefind-ignore': true,
-                  },
-                  children: popups,
-                })
               },
             },
           ]
         : []),
     ],
   })
+}
+
+export async function popupToHtml(content) {
+  const { hastToHtml } = await import('shiki')
+  return hastToHtml({ type: 'root', children: content.children[0].children })
 }
 
 const component = 'KyselyShikiCodeBlock'
@@ -195,6 +186,7 @@ export default function remarkShiki() {
 
         const meta = node.meta ?? ''
         const playground = /\bplayground\b/.test(meta)
+        const popups = []
         const html = await highlightCode(
           playground
             ? `// @filename: type-editor.ts\n${await exampleTypes}\n// @filename: index.ts\n// ---cut---\n${node.value}`
@@ -203,8 +195,12 @@ export default function remarkShiki() {
             lang: node.lang || 'text',
             meta,
             twoslash: /\btwoslash\b/.test(meta),
+            collectPopup: (content) => popups.push(content) - 1,
           },
         )
+        const popupsUrl = popups.length
+          ? await writePopups(await Promise.all(popups.map(popupToHtml)))
+          : undefined
 
         parent.children[i] = {
           type: 'mdxJsxFlowElement',
@@ -213,6 +209,7 @@ export default function remarkShiki() {
             language: node.lang || 'text',
             children: node.value,
             highlightedHtml: html,
+            ...(popupsUrl ? { popups: popupsUrl } : {}),
             title: /\btitle="([^"]*)"/.exec(meta)?.[1] ?? '',
             ...(playground ? { playground: 'true' } : {}),
           }).map(([name, value]) => ({ type: 'mdxJsxAttribute', name, value })),

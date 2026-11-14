@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 import remarkShiki from './remark-shiki.mjs'
 
@@ -30,11 +31,22 @@ const rows = await db.selectFrom('person').select('id').execute()`
   assert.equal(props.playground, 'true')
   assert.equal(props.children, code)
   assert.match(props.highlightedHtml, /twoslash-hover" tabindex="0"/)
-  assert.match(props.highlightedHtml, /data-pagefind-ignore/)
-  assert.match(
+  assert.doesNotMatch(
     props.highlightedHtml,
-    /<\/pre><div class="twoslash-popups" hidden data-markdown-ignore data-pagefind-ignore><template data-popup="0"><span class="twoslash-popup-container/,
+    /twoslash-popup-container|<template/,
   )
+  assert.match(props.highlightedHtml, /data-popup="0"/)
+  assert.match(props.popups, /^\/twoslash\/[0-9a-f]{16}\.json$/)
+  const popups = JSON.parse(
+    await readFile(
+      new URL(
+        `../node_modules/.cache${props.popups.replace('/twoslash', '/twoslash-popups')}`,
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  )
+  assert.ok(popups.some((popup) => popup.includes('twoslash-popup-docs')))
   assert.doesNotMatch(
     props.highlightedHtml,
     /interface PersonTable|---cut---|@filename/,
