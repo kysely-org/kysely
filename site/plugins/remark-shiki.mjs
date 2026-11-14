@@ -91,9 +91,7 @@ async function loadHighlighter() {
           'kysely/*': [`${root}/src/*`],
           '@kysely/kysely': [`${root}/src/index.ts`],
           'pg-pool': [`${root}/site/plugins/twoslash-types/pg-pool.d.ts`],
-          'kysely-supabase': [
-            `${root}/site/node_modules/kysely-supabase/dist/index.d.mts`,
-          ],
+          '*': [`${root}/site/node_modules/*`],
           'type-editor': [`${root}/type-editor.ts`],
         },
       },
