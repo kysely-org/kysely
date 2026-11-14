@@ -8,7 +8,12 @@ import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import type { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import type { AbortableOperationOptions } from '../../util/abort.js'
-import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import {
+  isFunction,
+  isObject,
+  isString,
+  freeze,
+} from '../../util/object-utils.js'
 import { createQueryId, type QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import type {
@@ -28,12 +33,30 @@ export class MysqlDriver implements Driver {
 
   constructor(config: MysqlDialectConfig) {
     this.#config = freeze({ ...config })
+
+    if (!isFunction(this.#config.pool)) {
+      assertSupportedPoolConfig(this.#config.pool)
+    }
   }
 
   async init(options?: AbortableOperationOptions): Promise<void> {
-    this.#pool = isFunction(this.#config.pool)
-      ? await this.#config.pool(options)
-      : this.#config.pool
+    if (!isFunction(this.#config.pool)) {
+      this.#pool = this.#config.pool
+      return
+    }
+
+    const pool = await this.#config.pool(options)
+
+    try {
+      assertSupportedPoolConfig(pool)
+    } catch (err) {
+      // `init` is retried on the next query and `destroy` is skipped when `init`
+      // fails, so the rejected pool has to be ended here.
+      await endPool(pool).catch(() => {})
+      throw err
+    }
+
+    this.#pool = pool
   }
 
   async acquireConnection(
@@ -141,15 +164,7 @@ export class MysqlDriver implements Driver {
   }
 
   async destroy(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.#pool!.end((err) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      })
-    })
+    return endPool(this.#pool!)
   }
 
   async #acquireConnection(): Promise<MysqlPoolConnection> {
@@ -163,6 +178,46 @@ export class MysqlDriver implements Driver {
       })
     })
   }
+}
+
+// mysql2's `nestTables` and `rowsAsArray` options change the shape of query
+// results, which no longer match the flat objects Kysely types them as. mysql2
+// treats every string as a `nestTables` mode, including `''`.
+function assertSupportedPoolConfig(pool: MysqlPool): void {
+  const { config } = pool as { config?: unknown }
+  const connectionConfig = isObject(config)
+    ? config.connectionConfig
+    : undefined
+
+  if (!isObject(connectionConfig)) {
+    return
+  }
+
+  const { nestTables, rowsAsArray } = connectionConfig
+
+  if (nestTables === true || isString(nestTables)) {
+    throw new Error(
+      "mysql2's `nestTables` pool option is not supported, as it changes the shape of query results",
+    )
+  }
+
+  if (rowsAsArray) {
+    throw new Error(
+      "mysql2's `rowsAsArray` pool option is not supported, as it changes the shape of query results",
+    )
+  }
+}
+
+function endPool(pool: MysqlPool): Promise<void> {
+  return new Promise((resolve, reject) => {
+    pool.end((err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
 }
 
 function isOkPacket(obj: unknown): obj is MysqlOkPacket {
