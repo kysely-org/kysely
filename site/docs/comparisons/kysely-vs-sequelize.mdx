@@ -325,7 +325,7 @@ A column renamed in the database is a compile error in every Kysely query that n
 
 One Kysely gap is quiet: a `union` whose sides list the same columns in a different order returns values under the wrong keys.
 
-The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. [Excessively deep types](/docs/recipes/excessively-deep-types) covers the limit TypeScript can hit and how to stay inside it.
+The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor.
 
 </details>
 
