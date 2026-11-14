@@ -7,21 +7,21 @@ import { compare, freeze } from '../../util/object-utils.js'
 import type { QueryId } from '../../util/query-id.js'
 
 export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
-  protected transformSelectQuery(
+  protected override transformSelectQuery(
     node: SelectQueryNode,
     queryId: QueryId,
   ): SelectQueryNode {
     return this.#transformQuery(super.transformSelectQuery(node, queryId))
   }
 
-  protected transformUpdateQuery(
+  protected override transformUpdateQuery(
     node: UpdateQueryNode,
     queryId: QueryId,
   ): UpdateQueryNode {
     return this.#transformQuery(super.transformUpdateQuery(node, queryId))
   }
 
-  protected transformDeleteQuery(
+  protected override transformDeleteQuery(
     node: DeleteQueryNode,
     queryId: QueryId,
   ): DeleteQueryNode {
