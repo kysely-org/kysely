@@ -399,8 +399,8 @@ importers:
         specifier: 12.3.0
         version: 12.3.0
       objection:
-        specifier: 3.1.5
-        version: 3.1.5(knex@3.3.0)
+        specifier: 4.4.3
+        version: 4.4.3(knex@3.3.0)(typescript@7.0.2)
       pagefind:
         specifier: 1.6.0
         version: 1.6.0
@@ -3141,6 +3141,9 @@ packages:
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
 
+  ajv-formats@3.0.1:
+    resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
+
   ajv-keywords@3.5.2:
     resolution: {integrity: sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==}
     peerDependencies:
@@ -3992,9 +3995,6 @@ packages:
 
   dayjs@1.11.23:
     resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
-
-  db-errors@0.2.3:
-    resolution: {integrity: sha512-OOgqgDuCavHXjYSJoV2yGhv6SeG8nk42aoCSoyXLZUH7VwFG27rxbavU1z+VrZbZjphw5UkDQwUlD21MwZpUng==}
 
   debounce@1.2.1:
     resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
@@ -5962,11 +5962,15 @@ packages:
     resolution: {integrity: sha512-nK28WOo+QIjBkDduTINE4JkF/UJJKyf2EJxvJKfblDpyg0Q+pkOHNTL0Qwy6NP6FhE/EnzV73BxxqcJaXY9anw==}
     engines: {node: '>= 0.4'}
 
-  objection@3.1.5:
-    resolution: {integrity: sha512-Hx/ipAwXSuRBbOMWFKtRsAN0yITafqXtWB4OT4Z9wED7ty1h7bOnBdhLtcNus23GwLJqcMsRWdodL2p5GwlnfQ==}
-    engines: {node: '>=14.0.0'}
+  objection@4.4.3:
+    resolution: {integrity: sha512-Ie1jBkoQvzCT7SBuh1nNl/c2gC6lACOy6vY7dygWyZr70bP1Um660XbxCLhXAQ9Uqwok4LWLjzsnKgNd7JpV6w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      knex: '>=1.0.1'
+      knex: ^3.3.0
+      typescript: '>=5.8'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
@@ -11990,6 +11994,10 @@ snapshots:
     dependencies:
       ajv: 8.18.0
 
+  ajv-formats@3.0.1:
+    dependencies:
+      ajv: 8.18.0
+
   ajv-keywords@3.5.2(ajv@6.14.0):
     dependencies:
       ajv: 6.14.0
@@ -12924,8 +12932,6 @@ snapshots:
       lodash-es: 4.18.1
 
   dayjs@1.11.23: {}
-
-  db-errors@0.2.3: {}
 
   debounce@1.2.1: {}
 
@@ -15279,12 +15285,13 @@ snapshots:
       has-symbols: 1.1.0
       object-keys: 1.1.1
 
-  objection@3.1.5(knex@3.3.0):
+  objection@4.4.3(knex@3.3.0)(typescript@7.0.2):
     dependencies:
       ajv: 8.18.0
-      ajv-formats: 2.1.1
-      db-errors: 0.2.3
+      ajv-formats: 3.0.1
       knex: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+    optionalDependencies:
+      typescript: 7.0.2
 
   obuf@1.1.2: {}
 

@@ -130,6 +130,7 @@ trustPolicy: no-downgrade
 # https://pnpm.io/settings#trustpolicyexclude
 trustPolicyExclude:
   - semver@5.7.2 || 6.3.1 # tsd@0.20.0 || @docusaurus/core@3.10.0 dependency - https://socket.dev/npm/package/semver/overview/5.7.2 || https://socket.dev/npm/package/semver/overview/6.3.1
+  - objection@4.4.3 # site dependency - publishing moved to GitHub Actions in ditojs/objection after Vincit revoked maintainer access - https://github.com/Vincit/objection.js/issues/2813
 
 updateConfig:
   # Don't show in `pnpm outdated` or update in `pnpm update`.
