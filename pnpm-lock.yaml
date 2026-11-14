@@ -356,6 +356,9 @@ importers:
       '@signalwire/docusaurus-plugin-llms-txt':
         specifier: 1.2.2
         version: 1.2.2(@docusaurus/core@3.10.2)(supports-color@10.2.2)
+      '@types/pg-pool':
+        specifier: 2.0.7
+        version: 2.0.7
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
@@ -404,6 +407,9 @@ importers:
       pathe:
         specifier: catalog:node
         version: 2.0.3
+      pg-pool:
+        specifier: 3.14.0
+        version: 3.14.0(pg@8.23.1)
       postgres:
         specifier: 3.4.9
         version: 3.4.9
@@ -2784,6 +2790,9 @@ packages:
 
   '@types/pg-cursor@2.7.2':
     resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
+
+  '@types/pg-pool@2.0.7':
+    resolution: {integrity: sha512-U4CwmGVQcbEuqpyju8/ptOKg6gEC+Tqsvj2xS9o1g71bUh8twxnC6ZL5rZKCsGN0iyH0CwgUyc9VR5owNQF9Ng==}
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
@@ -11642,6 +11651,10 @@ snapshots:
   '@types/pg-cursor@2.7.2':
     dependencies:
       '@types/node': 26.6.6
+      '@types/pg': 8.23.1
+
+  '@types/pg-pool@2.0.7':
+    dependencies:
       '@types/pg': 8.23.1
 
   '@types/pg@8.23.1':

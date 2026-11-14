@@ -90,8 +90,10 @@ async function loadHighlighter() {
           kysely: [`${root}/src/index.ts`],
           'kysely/*': [`${root}/src/*`],
           '@kysely/kysely': [`${root}/src/index.ts`],
-          'pg-pool': [`${root}/site/plugins/twoslash-types/pg-pool.d.ts`],
-          '*': [`${root}/site/node_modules/*`],
+          '*': [
+            `${root}/site/node_modules/@types/*`,
+            `${root}/site/node_modules/*`,
+          ],
           'type-editor': [`${root}/type-editor.ts`],
         },
       },
