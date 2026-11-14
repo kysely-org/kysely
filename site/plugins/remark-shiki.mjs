@@ -83,9 +83,13 @@ async function loadHighlighter() {
         target: ts.ScriptTarget.ESNext,
         module: ts.ModuleKind.ESNext,
         moduleResolution: ts.ModuleResolutionKind.Bundler,
+        allowImportingTsExtensions: true,
+        noEmit: true,
         paths: {
           kysely: [`${root}/src/index.ts`],
           'kysely/*': [`${root}/src/*`],
+          '@kysely/kysely': [`${root}/src/index.ts`],
+          'pg-pool': [`${root}/site/plugins/twoslash-types/pg-pool.d.ts`],
           'type-editor': [`${root}/type-editor.ts`],
         },
       },
@@ -111,6 +115,70 @@ async function loadHighlighter() {
   return { codeToHtml, twoslash, transformerMetaHighlight }
 }
 
+export async function highlightCode(
+  code,
+  { lang = 'text', meta = '', twoslash: hasTypes = false, collectPopup } = {},
+) {
+  const { codeToHtml, twoslash, transformerMetaHighlight } =
+    await (highlighter ??= loadHighlighter())
+  return codeToHtml(code, {
+    lang,
+    themes: { light: 'light-plus', dark: 'dark-plus' },
+    defaultColor: false,
+    meta: { __raw: meta },
+    transformers: [
+      transformerMetaHighlight(),
+      {
+        name: 'language-class',
+        code(node) {
+          this.addClassToHast(node, `language-${lang}`)
+        },
+      },
+      ...(hasTypes
+        ? [
+            twoslash,
+            {
+              name: 'hoisted-type-popups',
+              root(root) {
+                const popups = []
+                function visit(node) {
+                  if (node.properties?.class?.includes('twoslash-hover')) {
+                    node.properties.tabIndex = 0
+                    const index = node.children.findIndex(
+                      (child) => child.tagName === 'template',
+                    )
+                    if (index !== -1) {
+                      const [template] = node.children.splice(index, 1)
+                      const id = collectPopup
+                        ? collectPopup(template.content)
+                        : popups.push(template) - 1
+                      template.properties['data-popup'] = id
+                      node.properties['data-popup'] = id
+                    }
+                  }
+                  node.children?.forEach(visit)
+                }
+                visit(root)
+                if (!popups.length) return
+                root.children.push({
+                  type: 'element',
+                  tagName: 'div',
+                  properties: {
+                    class: 'twoslash-popups',
+                    hidden: true,
+                    'data-markdown-ignore': true,
+                    'data-pagefind-ignore': true,
+                  },
+                  children: popups,
+                })
+              },
+            },
+          ]
+        : []),
+    ],
+  })
+}
+
 const component = 'KyselyShikiCodeBlock'
 
 export default function remarkShiki() {
@@ -125,70 +193,18 @@ export default function remarkShiki() {
           continue
         }
 
-        const { codeToHtml, twoslash, transformerMetaHighlight } =
-          await (highlighter ??= loadHighlighter())
         const meta = node.meta ?? ''
         const playground = /\bplayground\b/.test(meta)
-        const hasTypes = /\btwoslash\b/.test(meta)
-        const source = playground
-          ? `// @filename: type-editor.ts\n${await exampleTypes}\n// @filename: index.ts\n// ---cut---\n${node.value}`
-          : node.value
-        const html = await codeToHtml(source, {
-          lang: node.lang || 'text',
-          themes: { light: 'light-plus', dark: 'dark-plus' },
-          defaultColor: false,
-          meta: { __raw: meta },
-          transformers: [
-            transformerMetaHighlight(),
-            {
-              name: 'language-class',
-              code(code) {
-                this.addClassToHast(code, `language-${node.lang || 'text'}`)
-              },
-            },
-            ...(hasTypes
-              ? [
-                  twoslash,
-                  {
-                    name: 'hoisted-type-popups',
-                    root(root) {
-                      const popups = []
-                      function visit(node) {
-                        if (
-                          node.properties?.class?.includes('twoslash-hover')
-                        ) {
-                          node.properties.tabIndex = 0
-                          const index = node.children.findIndex(
-                            (child) => child.tagName === 'template',
-                          )
-                          if (index !== -1) {
-                            const [template] = node.children.splice(index, 1)
-                            template.properties['data-popup'] = popups.length
-                            node.properties['data-popup'] = popups.length
-                            popups.push(template)
-                          }
-                        }
-                        node.children?.forEach(visit)
-                      }
-                      visit(root)
-                      if (!popups.length) return
-                      root.children.push({
-                        type: 'element',
-                        tagName: 'div',
-                        properties: {
-                          class: 'twoslash-popups',
-                          hidden: true,
-                          'data-markdown-ignore': true,
-                          'data-pagefind-ignore': true,
-                        },
-                        children: popups,
-                      })
-                    },
-                  },
-                ]
-              : []),
-          ],
-        })
+        const html = await highlightCode(
+          playground
+            ? `// @filename: type-editor.ts\n${await exampleTypes}\n// @filename: index.ts\n// ---cut---\n${node.value}`
+            : node.value,
+          {
+            lang: node.lang || 'text',
+            meta,
+            twoslash: /\btwoslash\b/.test(meta),
+          },
+        )
 
         parent.children[i] = {
           type: 'mdxJsxFlowElement',

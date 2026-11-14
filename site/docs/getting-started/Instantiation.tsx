@@ -1,13 +1,8 @@
 import Admonition from '@theme/Admonition'
-import CodeBlock from '@theme/CodeBlock'
+import { TypeScriptCode } from './TypeScriptCode'
 import { IUseADifferentDialect } from './IUseADifferentDialect'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
-  getDriverNPMPackageNames,
-  getKyselyImportPath,
-  POOL_NPM_PACKAGE_NAMES,
-  type Dialect,
-  type PackageManager,
   type PropsWithDialect,
   DIALECT_CLASS_NAMES,
   type PropsWithPackageManager,
@@ -17,6 +12,7 @@ import {
   DEFAULT_DIALECT,
   PACKAGE_MANAGERS,
 } from './shared'
+import { databaseCode } from './snippets'
 
 export type InstantiationProps = PropsWithDialect<PropsWithPackageManager>
 
@@ -36,11 +32,6 @@ export function Instantiation(props: InstantiationProps) {
     value: props.packageManager,
   })
 
-  const dialectSpecificCodeSnippet = getDialectSpecificCodeSnippet(
-    dialect,
-    packageManager,
-  )
-
   const dialectClassName = DIALECT_CLASS_NAMES[dialect]
 
   return (
@@ -52,18 +43,10 @@ export function Instantiation(props: InstantiationProps) {
         <strong> dialect</strong>
         <strong>:</strong>
       </p>
-      <CodeBlock language="ts" title="src/database.ts">
-        {`import { Database } from './types.ts' // this is the Database interface we defined earlier
-${dialectSpecificCodeSnippet}
-
-// Database interface is passed to Kysely's constructor, and from now on, Kysely 
-// knows your database structure.
-// Dialect is passed to Kysely's constructor, and from now on, Kysely knows how 
-// to communicate with your database.
-export const db = new Kysely<Database>({
-  dialect,
-})`}
-      </CodeBlock>
+      <TypeScriptCode
+        title="src/database.ts"
+        code={databaseCode(dialect, packageManager)}
+      />
       {dialectSelectionID || packageManagerSelectionID ? (
         <div style={{ display: 'flex', gap: '25px', justifyContent: 'end' }}>
           <IUseADifferentPackageManager
@@ -108,109 +91,4 @@ export const db = new Kysely<Database>({
       </Admonition>
     </>
   )
-}
-
-function getDialectSpecificCodeSnippet(
-  dialect: Dialect,
-  packageManager: PackageManager,
-): string {
-  const driverNPMPackageName = getDriverNPMPackageNames(packageManager)[dialect]
-  const dialectClassName = DIALECT_CLASS_NAMES[dialect]
-  const poolClassName = 'Pool'
-  const poolClassImport =
-    packageManager === 'deno' ? poolClassName : `{ ${poolClassName} }`
-  const kyselyPackageName = getKyselyImportPath(packageManager)
-
-  if (dialect === 'postgresql') {
-    return `import ${poolClassImport} from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
-
-const dialect = new ${dialectClassName}({
-  pool: new ${poolClassName}({
-    database: 'test',
-    host: 'localhost',
-    user: 'admin',
-    port: 5434,
-    max: 10,
-  })
-})`
-  }
-
-  if (dialect === 'mysql') {
-    const poolFactoryName = 'createPool'
-
-    return `import { ${poolFactoryName} } from '${driverNPMPackageName}' // do not use 'mysql2/promises'!
-import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
-
-const dialect = new ${dialectClassName}({
-  pool: ${poolFactoryName}({
-    database: 'test',
-    host: 'localhost',
-    user: 'admin',
-    password: '123',
-    port: 3308,
-    connectionLimit: 10,
-  })
-})`
-  }
-
-  if (dialect === 'mssql') {
-    const poolPackageName = POOL_NPM_PACKAGE_NAMES.mssql
-
-    return `import * as ${driverNPMPackageName} from '${driverNPMPackageName}'
-import * as ${poolPackageName} from '${poolPackageName}'
-import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
-
-const dialect = new ${dialectClassName}({
-  ${poolPackageName}: {
-    ...${poolPackageName},
-    options: {
-      min: 0,
-      max: 10,
-    },
-  },
-  ${driverNPMPackageName}: {
-    ...${driverNPMPackageName},
-    connectionFactory: () => new ${driverNPMPackageName}.Connection({
-      authentication: {
-        options: {
-          password: 'password',
-          userName: 'username',
-        },
-        type: 'default',
-      },
-      options: {
-        database: 'some_db',
-        port: 1433,
-        trustServerCertificate: true,
-      },
-      server: 'localhost',
-    }),
-  },
-})`
-  }
-
-  if (dialect === 'sqlite') {
-    const driverImportName = 'SQLite'
-
-    return `import ${driverImportName} from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
-
-const dialect = new ${dialectClassName}({
-  database: new ${driverImportName}(':memory:'),
-})`
-  }
-
-  if (dialect === 'pglite') {
-    const driverImportName = 'PGlite'
-
-    return `import { ${driverImportName} } from '${driverNPMPackageName}'
-import { Kysely, ${dialectClassName} } from '${kyselyPackageName}'
-
-const dialect = new ${dialectClassName}({
-  pglite: new ${driverImportName}(),
-})`
-  }
-
-  throw new Error(`Unsupported dialect: ${dialect}`)
 }

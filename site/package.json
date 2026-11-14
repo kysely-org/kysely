@@ -6,7 +6,7 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "build": "pnpm run snippets && docusaurus build && pagefind",
-    "snippets": "node scripts/highlight-snippets.mjs",
+    "snippets": "node scripts/highlight-snippets.mjs && node --no-warnings=MODULE_TYPELESS_PACKAGE_JSON scripts/highlight-getting-started.mts",
     "test:shiki": "node --test plugins/remark-shiki.test.mjs",
     "proof-links": "node scripts/verify-proof-links.mjs",
     "swizzle": "docusaurus swizzle",

@@ -1,71 +1,17 @@
 import Admonition from '@theme/Admonition'
-import CodeBlock from '@theme/CodeBlock'
+import { TypeScriptCode } from './TypeScriptCode'
 import Link from '@docusaurus/Link'
 import { IUseADifferentDialect } from './IUseADifferentDialect'
 import {
   DEFAULT_DIALECT,
   DEFAULT_PACKAGE_MANAGER,
   DIALECTS,
-  getKyselyImportPath,
   PACKAGE_MANAGERS,
   useSearchState,
-  type Dialect,
   type PropsWithDialect,
   type PropsWithPackageManager,
 } from './shared'
-
-const postgresqlCodeSnippet = `    await db.schema.createTable('person')
-      .addColumn('id', 'serial', (cb) => cb.primaryKey())
-      .addColumn('first_name', 'varchar', (cb) => cb.notNull())
-      .addColumn('last_name', 'varchar')
-      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'timestamp', (cb) =>
-        cb.notNull().defaultTo(sql\`now()\`)
-      )
-      .execute()`
-
-const dialectSpecificCodeSnippets: Record<Dialect, string> = {
-  postgresql: postgresqlCodeSnippet,
-  mysql: `    await db.schema.createTable('person')
-      .addColumn('id', 'integer', (cb) => cb.primaryKey().autoIncrement())
-      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
-      .addColumn('last_name', 'varchar(255)')
-      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'timestamp', (cb) =>
-        cb.notNull().defaultTo(sql\`now()\`)
-      )
-      .execute()`,
-  // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
-  mssql: `    await db.schema.createTable('person')
-      .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`identity\`))
-      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
-      .addColumn('last_name', 'varchar(255)')
-      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'datetime', (cb) =>
-        cb.notNull().defaultTo(sql\`GETDATE()\`)
-      )
-      .execute()`,
-  sqlite: `    await db.schema.createTable('person')
-      .addColumn('id', 'integer', (cb) => cb.primaryKey().autoIncrement().notNull())
-      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
-      .addColumn('last_name', 'varchar(255)')
-      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'timestamp', (cb) =>
-        cb.notNull().defaultTo(sql\`current_timestamp\`)
-      )
-      .execute()`,
-  pglite: postgresqlCodeSnippet,
-}
-
-const truncateTableSnippet = `await sql\`truncate table \${sql.table('person')}\`.execute(db)`
-
-const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
-  postgresql: truncateTableSnippet,
-  mysql: truncateTableSnippet,
-  mssql: truncateTableSnippet,
-  sqlite: `await sql\`delete from \${sql.table('person')}\`.execute(db)`,
-  pglite: truncateTableSnippet,
-}
+import { specCode } from './snippets'
 
 export function Summary(props: PropsWithDialect<PropsWithPackageManager>) {
   const dialect = useSearchState({
@@ -81,10 +27,6 @@ export function Summary(props: PropsWithDialect<PropsWithPackageManager>) {
     value: props.packageManager,
   })
 
-  const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
-  const dialectSpecificTruncateSnippet =
-    dialectSpecificTruncateSnippets[dialect]
-
   return (
     <>
       <p>
@@ -95,49 +37,10 @@ export function Summary(props: PropsWithDialect<PropsWithPackageManager>) {
         <br />
         <strong>Let's put it all to the test:</strong>
       </p>
-      <CodeBlock language="ts" title="src/PersonRepository.spec.ts">
-        {`import { sql } from '${getKyselyImportPath(packageManager)}'
-import { db } from './database'
-import * as PersonRepository from './PersonRepository'
-
-describe('PersonRepository', () => {
-  before(async () => {
-${dialectSpecificCodeSnippet}
-  })
-    
-  afterEach(async () => {
-    ${dialectSpecificTruncateSnippet}
-  })
-    
-  after(async () => {
-    await db.schema.dropTable('person').execute()
-  })
-    
-  it('should find a person with a given id', async () => {
-    await PersonRepository.findPersonById(123)
-  })
-    
-  it('should find all people named Arnold', async () => {
-    await PersonRepository.findPeople({ first_name: 'Arnold' })
-  })
-    
-  it('should update gender of a person with a given id', async () => {
-    await PersonRepository.updatePerson(123, { gender: 'woman' })
-  })
-    
-  it('should create a person', async () => {
-    await PersonRepository.createPerson({
-      first_name: 'Jennifer',
-      last_name: 'Aniston',
-      gender: 'woman',
-    })
-  })
-    
-  it('should delete a person with a given id', async () => {
-    await PersonRepository.deletePerson(123)
-  })
-})`}
-      </CodeBlock>
+      <TypeScriptCode
+        title="src/PersonRepository.spec.ts"
+        code={specCode(dialect, packageManager)}
+      />
       <IUseADifferentDialect
         dialect={dialect}
         dialectSelectionID={props.dialectSelectionID}

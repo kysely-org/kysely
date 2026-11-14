@@ -6,6 +6,7 @@ import { Playground } from '../../components/Playground'
 
 interface ShikiProps extends Props {
   highlightedHtml?: string
+  loadPopups?: () => Promise<readonly string[]>
   playground?: string
 }
 
@@ -13,6 +14,7 @@ interface ShikiProps extends Props {
 // Shiki on demand; neither path loads a TypeScript compiler in the browser.
 export default function CodeBlock({
   highlightedHtml,
+  loadPopups,
   playground,
   ...props
 }: ShikiProps): React.JSX.Element {
@@ -33,6 +35,7 @@ export default function CodeBlock({
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+  const popups = useRef<Promise<readonly string[]> | undefined>(undefined)
   const html =
     highlightedHtml ?? (rendered?.code === code ? rendered.html : undefined)
 
@@ -67,26 +70,36 @@ export default function CodeBlock({
     hoverTimer.current = setTimeout(() => setPopup(undefined), 120)
   }
 
-  function showType(target: EventTarget) {
+  async function getPopupHtml(hover: Element) {
+    const id = hover.getAttribute('data-popup')
+    if (id == null) return undefined
+    const template = hover
+      .closest('.shiki-block')
+      ?.querySelector(`template[data-popup="${id}"]`)
+    if (template instanceof HTMLTemplateElement) {
+      return template.content.querySelector('.twoslash-popup-container')
+        ?.innerHTML
+    }
+    if (!loadPopups) return undefined
+    return (await (popups.current ??= loadPopups()))[Number(id)]
+  }
+
+  async function showType(target: EventTarget) {
     if (!(target instanceof Element)) return
     const hover = target.closest('.twoslash-hover')
-    const template = hover
-      ?.closest('.shiki-block')
-      ?.querySelector(
-        `template[data-popup="${hover.getAttribute('data-popup')}"]`,
-      )
-    const content =
-      template instanceof HTMLTemplateElement
-        ? template.content.querySelector('.twoslash-popup-container')
-        : null
-    if (!hover || !content) {
+    const popupHtml = hover ? await getPopupHtml(hover) : undefined
+    if (
+      !hover ||
+      popupHtml == null ||
+      !(hover.matches(':hover') || hover === document.activeElement)
+    ) {
       hideType()
       return
     }
     clearTimeout(hoverTimer.current)
     const rect = hover.getBoundingClientRect()
     setPopup({
-      html: content.innerHTML,
+      html: popupHtml,
       left: Math.max(
         8,
         Math.min(
@@ -127,6 +140,9 @@ export default function CodeBlock({
         </div>
       </div>
       <div
+        onPointerEnter={() => {
+          if (loadPopups) popups.current ??= loadPopups()
+        }}
         onMouseOver={(event) => showType(event.target)}
         onMouseLeave={hideType}
         onFocus={(event) => showType(event.target)}
