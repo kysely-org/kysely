@@ -114,7 +114,7 @@
     "pg": "8.23.1",
     "pg-cursor": "2.22.1",
     "playwright": "1.65.0",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "prototype-pollution-vulnerable-lodash.merge-dont-upgrade": "npm:lodash.merge@4.6.1",
     "remeda": "2.59.0",
     "semver": "7.8.6",
