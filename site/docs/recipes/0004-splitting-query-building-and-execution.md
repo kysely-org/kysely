@@ -9,6 +9,9 @@ Kysely is primarily a type-safe sql query builder.
 It also does query execution, migrations, etc. in order to align with Knex's "batteries
 included" approach.
 
+**Note**: You cannot compile queries without knowing all of the arguments that go into
+them. They must either be based on compile-time constants or be wrapped in a function.
+
 ## "Cold" Kysely instances
 
 In order to use Kysely purely as a query builder without database driver dependencies,
@@ -57,13 +60,15 @@ use "hot" kysely instances, with real drivers, if you want to.
 To compile a query, simply call `.compile()` at the end of the query building chain:
 
 ```ts
-const compiledQuery = db
-  .selectFrom('person')
-  .select('first_name')
-  .where('id', '=', id)
-  .compile()
+function queryPerson(id: number) {
+  const compiledQuery = db
+    .selectFrom('person')
+    .select('first_name')
+    .where('id', '=', id)
+    .compile()
 
-console.log(compiledQuery) // { sql: 'select "first_name" from "person" where "id" = $1', parameters: [1], query: { ... } }
+  console.log(compiledQuery) // { sql: 'select "first_name" from "person" where "id" = $1', parameters: [1], query: { ... } }
+}
 ```
 
 The result of `.compile()` is a `CompiledQuery` object. It contains the query string
@@ -78,9 +83,11 @@ Raw queries can be compiled as well:
 ```ts
 import { Selectable, sql } from 'kysely'
 
-const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${id}`.compile(db)
+function queryPerson(id: number) {
+  const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${id}`.compile(db)
 
-console.log(compiledQuery) // { sql: 'select * from person where id = $1', parameters: [1], query: { ... } }
+  console.log(compiledQuery) // { sql: 'select * from person where id = $1', parameters: [1], query: { ... } }
+}
 ```
 
 ## Infer result type
@@ -95,7 +102,7 @@ import { InferResult } from 'kysely'
 const query = db
   .selectFrom('person')
   .select('first_name')
-  .where('id', '=', id)
+  .where('id', '=', 123)
 
 type QueryReturnType = InferResult<typeof query> // { first_name: string }[]
 
@@ -110,13 +117,15 @@ The `CompiledQuery` object returned by `.compile()` can be executed
 via "hot" Kysely instances (real drivers in use):
 
 ```ts
-const compiledQuery = db
-  .selectFrom('person')
-  .select('first_name')
-  .where('id', '=', id)
-  .compile()
+function queryPerson(id: number) {
+  const compiledQuery = db
+    .selectFrom('person')
+    .select('first_name')
+    .where('id', '=', id)
+    .compile()
 
-const results = await db.executeQuery(compiledQuery)
+  return db.executeQuery(compiledQuery)
+}
 ```
 
 The `QueryResult` object returned by `.executeQuery()` contains the query results'
