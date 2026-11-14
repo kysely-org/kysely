@@ -1,17 +1,31 @@
-.playground {
-  border: 1px solid var(--gray-3);
-  border-radius: 7px;
-  min-height: 600px;
-  width: 100%;
+.container {
+  margin-bottom: var(--ifm-leading);
 }
 
-.visuallyHidden {
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
+.tabs {
+  list-style: none;
+  margin: 0 0 8px;
+  padding-left: 0;
+}
+
+.tabs > li {
+  margin: 0;
+}
+
+.tab {
+  background: transparent;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  color: inherit;
+  font: inherit;
+  padding: 6px 14px;
+}
+
+.playground {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  display: block;
+  min-height: 600px;
+  width: 100%;
 }
