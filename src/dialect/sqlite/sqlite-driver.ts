@@ -1,3 +1,4 @@
+import { markAsAbortedTransactionError } from '../../driver/aborted-transaction-error.js'
 import type {
   DatabaseConnection,
   QueryResult,
@@ -110,20 +111,31 @@ class SqliteConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
-    const stmt = this.#db.prepare(sql)
 
-    if (stmt.reader) {
-      return {
-        rows: stmt.all(parameters) as O[],
+    const statement = this.#db.prepare(sql)
+
+    const inTransactionBefore = this.#db.inTransaction
+
+    try {
+      if (statement.reader) {
+        return {
+          rows: statement.all(parameters) as O[],
+        }
       }
-    }
 
-    const { changes, lastInsertRowid } = stmt.run(parameters)
+      const { changes, lastInsertRowid } = statement.run(parameters)
 
-    return {
-      insertId: lastInsertRowid != null ? BigInt(lastInsertRowid) : undefined,
-      numAffectedRows: changes != null ? BigInt(changes) : undefined,
-      rows: [],
+      return {
+        insertId: lastInsertRowid != null ? BigInt(lastInsertRowid) : undefined,
+        numAffectedRows: changes != null ? BigInt(changes) : undefined,
+        rows: [],
+      }
+    } catch (error) {
+      if (inTransactionBefore && this.#db.inTransaction === false) {
+        markAsAbortedTransactionError(error)
+      }
+
+      throw error
     }
   }
 
