@@ -8,12 +8,22 @@ const docs = join(root, '..', '..', '..', 'docs', 'comparisons')
 // Ignore indentation and formatting when matching the duplicated examples.
 // Runtime assertions and compiler checks separately verify their behavior.
 const normalize = (text) => text.replace(/\s+/g, '')
+// Compare what readers see: drop Twoslash's hidden context and directives.
+const visible = (code) =>
+  code
+    .split('// ---cut---\n')
+    .at(-1)
+    .replace(/^\/\/ @[a-zA-Z]+(?::.*)?\n/gm, '')
+    .replace(
+      /^[ \t]*\/\/ ---cut-start---\n[\s\S]*?^[ \t]*\/\/ ---cut-end---\n/gm,
+      '',
+    )
 const blocks = (page) =>
   [
     ...readFileSync(join(docs, page), 'utf8').matchAll(
       /```(?:ts|sql)[^\n]*\n([\s\S]*?)\n```/g,
     ),
-  ].map((match) => normalize(match[1]))
+  ].map((match) => normalize(visible(match[1])))
 
 const examples = {
   'scenarios.mts': {
