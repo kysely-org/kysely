@@ -131,3 +131,19 @@
   overflow: hidden;
   clip-path: inset(50%);
 }
+.shiki-block pre:has(.twoslash-error-line) {
+  container-type: inline-size;
+}
+.shiki-block pre:has(.twoslash-error-line) > code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+}
+.shiki-block .twoslash-error-line {
+  position: sticky;
+  left: 0;
+  box-sizing: border-box;
+  width: 100cqi;
+  min-width: 0;
+  white-space: pre-wrap;
+}

@@ -207,7 +207,10 @@ export default function remarkShiki() {
           name: component,
           attributes: Object.entries({
             language: node.lang || 'text',
-            children: node.value.split('// ---cut---\n').at(-1),
+            children: node.value
+              .split('// ---cut---\n')
+              .at(-1)
+              .replace(/^\/\/ @[a-zA-Z]+(?::.*)?\n/gm, ''),
             highlightedHtml: html,
             ...(popupsUrl ? { popups: popupsUrl } : {}),
             title: /\btitle="([^"]*)"/.exec(meta)?.[1] ?? '',

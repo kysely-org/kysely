@@ -81,3 +81,19 @@ await db.schema.dropTable('person').execute()`,
   assert.equal(props.children, "await db.schema.dropTable('person').execute()")
   assert.doesNotMatch(props.highlightedHtml, /declare const db/)
 })
+
+test('expected errors render without leaking Twoslash directives', async () => {
+  const props = await render(
+    `import type { Kysely } from 'kysely'
+declare const db: Kysely<{ person: { first_name: string } }>
+// ---cut---
+// @errors: 2339
+const person = await db.selectFrom('person').select('first_name').executeTakeFirstOrThrow()
+person.last_name`,
+    'twoslash',
+  )
+  assert.doesNotMatch(props.children, /@errors/)
+  assert.match(props.children, /^const person/)
+  assert.match(props.highlightedHtml, /twoslash-error/)
+  assert.match(props.highlightedHtml, /Property 'last_name' does not exist/)
+})
