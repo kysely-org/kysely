@@ -49,7 +49,16 @@ export type Database = KyselifyDatabase<SupabaseDatabase>
 
 ### Pass translated types to Kysely constructor
 
-```ts title="src/db.ts"
+```ts title="src/db.ts" twoslash
+// @filename: globals.d.ts
+/// <reference types="node" />
+// @filename: types.ts
+import type { Generated } from 'kysely'
+export interface Database {
+  person: { id: Generated<number>; first_name: string }
+}
+// @filename: db.ts
+// ---cut---
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
 import type { Database } from './types'
