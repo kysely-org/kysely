@@ -18,7 +18,15 @@ WHERE upper(last_name) = $1
 
 Kysely doesn't have a built-in `upper` function but there are at least three ways you could write this:
 
-```ts
+```ts twoslash
+import { sql } from 'kysely'
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+// ---cut---
 const lastName = 'STALLONE'
 
 const persons = await db
@@ -47,7 +55,7 @@ but each option could be more readable or type-safe.
 
 Fortunately Kysely allows you to easily create composable, reusable and type-safe helper functions:
 
-```ts
+```ts twoslash
 import { Expression, sql } from 'kysely'
 
 function upper(expr: Expression<string>) {
@@ -65,7 +73,27 @@ function concat(...exprs: Expression<string>[]) {
 
 Using the `upper` helper, our query would look like this:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { Expression, sql } from 'kysely'
+
+function upper(expr: Expression<string>) {
+  return sql<string>`upper(${expr})`
+}
+
+function lower(expr: Expression<string>) {
+  return sql<string>`lower(${expr})`
+}
+
+function concat(...exprs: Expression<string>[]) {
+  return sql.join<string>(exprs, sql`||`)
+}
+// ---cut---
 const lastName = 'STALLONE'
 
 const persons = await db
@@ -85,7 +113,27 @@ See [this recipe](https://kysely.dev/docs/recipes/expressions) to learn more abo
 
 So we've learned that everything's an expression and that expressions are composable. Let's put this idea to use:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { Expression, sql } from 'kysely'
+
+function upper(expr: Expression<string>) {
+  return sql<string>`upper(${expr})`
+}
+
+function lower(expr: Expression<string>) {
+  return sql<string>`lower(${expr})`
+}
+
+function concat(...exprs: Expression<string>[]) {
+  return sql.join<string>(exprs, sql`||`)
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
@@ -103,7 +151,27 @@ const persons = await db
 
 So far we've only used our helper functions in the first argument of `where` but you can use them anywhere:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { Expression, sql } from 'kysely'
+
+function upper(expr: Expression<string>) {
+  return sql<string>`upper(${expr})`
+}
+
+function lower(expr: Expression<string>) {
+  return sql<string>`lower(${expr})`
+}
+
+function concat(...exprs: Expression<string>[]) {
+  return sql.join<string>(exprs, sql`||`)
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .innerJoin('pet', (join) => join.on(eb => eb(
@@ -125,7 +193,14 @@ const persons = await db
 
 Here's an example of a helper function that uses the expression builder to build a subquery that gets filtered by a dynamic string expression.
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+// ---cut---
 import { Expression, expressionBuilder } from 'kysely'
 
 function idsOfPersonsThatHaveDogNamed(name: Expression<string>) {
@@ -143,7 +218,27 @@ function idsOfPersonsThatHaveDogNamed(name: Expression<string>) {
 
 And here's how you could use it:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { Expression, expressionBuilder } from 'kysely'
+
+function idsOfPersonsThatHaveDogNamed(name: Expression<string>) {
+  const eb = expressionBuilder<DB>()
+
+  // A subquery that returns the identifiers of all persons
+  // that have a dog named `name`.
+  return eb
+    .selectFrom('pet')
+    .select('pet.owner_id')
+    .where('pet.species', '=', 'dog')
+    .where('pet.name', '=', name)
+}
+// ---cut---
 const dogName = 'Doggo'
 
 const persons = await db
@@ -181,13 +276,26 @@ When the expression builder `eb` is used as a function, it creates a binary expr
 
 This means you can create helpers like this:
 
-```ts
+```ts twoslash
+import { sql, type Expression, type SqlBool } from 'kysely'
+// ---cut---
 function isOlderThan(age: Expression<number>) {
   return sql<SqlBool>`age > ${age}`
 }
 ```
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { sql, type Expression, type SqlBool } from 'kysely'
+function isOlderThan(age: Expression<number>) {
+  return sql<SqlBool>`age > ${age}`
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
@@ -201,7 +309,15 @@ Here we pass a dynamic `Date` expression to a function expression that takes par
 
 It is a timestamp to milliseconds helper and it is quite handy as a way to keep dates consistent, even after JSON functions throw away data type information denying drivers from transforming to `Date` in TypeScript-side.
 
-```ts
+```ts twoslash
+import { expressionBuilder, type Expression } from 'kysely'
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+// ---cut---
 export function timestampToUnix(expr: Expression<Date>) {
   const eb = expressionBuilder<DB>()
   
@@ -211,7 +327,21 @@ export function timestampToUnix(expr: Expression<Date>) {
 
 Here's how to use it:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression } from 'kysely'
+export function timestampToUnix(expr: Expression<Date>) {
+  const eb = expressionBuilder<DB>()
+  
+  return eb(eb.fn<number>('UNIX_TIMESTAMP', [expr]), '*', 1_000)
+}
+declare const kysely: Kysely<DB & { table: { created_at: Date } }>
+// ---cut---
 await kysely.selectFrom('table').select((eb) => timestampToUnix(eb.ref('created_at')).as('created_at'))
 ```
 
@@ -219,8 +349,8 @@ await kysely.selectFrom('table').select((eb) => timestampToUnix(eb.ref('created_
 
 If you want your helpers to work with nullable expressions (nullable columns etc.), you can do something like this:
 
-```ts
-import { Expression } from 'kysely'
+```ts twoslash
+import { Expression, sql } from 'kysely'
 
 // This function accepts both nullable and non-nullable string expressions.
 function toInt<T extends string | null>(expr: Expression<T>) {
@@ -234,7 +364,15 @@ function toInt<T extends string | null>(expr: Expression<T>) {
 
 Let's say we have the following query:
 
-```ts
+```ts twoslash
+import type { Expression } from 'kysely'
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+// ---cut---
 const expr: Expression<{ name: string }> = db
   .selectFrom('pet')
   .select('pet.name')
@@ -242,7 +380,27 @@ const expr: Expression<{ name: string }> = db
 
 The expression type of our query is `Expression<{ name: string }>` but SQL allows you to use a query like that as an `Expression<string>`. In other words, SQL allows you to use single-column record types like scalars. Most of the time Kysely is able to automatically handle this case but with helper functions you need to use `$asScalar()` to convert the type. Here's an example:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+import { Expression, sql } from 'kysely'
+
+function upper(expr: Expression<string>) {
+  return sql<string>`upper(${expr})`
+}
+
+function lower(expr: Expression<string>) {
+  return sql<string>`lower(${expr})`
+}
+
+function concat(...exprs: Expression<string>[]) {
+  return sql.join<string>(exprs, sql`||`)
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .select((eb) => [
