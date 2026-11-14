@@ -97,3 +97,24 @@ person.last_name`,
   assert.match(props.highlightedHtml, /twoslash-error/)
   assert.match(props.highlightedHtml, /Property 'last_name' does not exist/)
 })
+
+test('hidden ranges inside a block stay out of the copied code', async () => {
+  const props = await render(
+    `import type { Expression, OperationNode } from 'kysely'
+class Value<T> implements Expression<T> {
+  // ... methods ...
+  // ---cut-start---
+  get expressionType(): T | undefined {
+    return undefined
+  }
+  toOperationNode(): OperationNode {
+    throw new Error()
+  }
+  // ---cut-end---
+}`,
+    'twoslash',
+  )
+  assert.doesNotMatch(props.children, /cut-start|expressionType/)
+  assert.match(props.children, /\/\/ \.\.\. methods \.\.\.\n}$/)
+  assert.doesNotMatch(props.highlightedHtml, /expressionType/)
+})

@@ -96,6 +96,7 @@ async function loadHighlighter() {
       },
     }),
     rendererRich({
+      queryRendering: 'line',
       renderMarkdown,
       renderMarkdownInline,
       hast: {
@@ -210,7 +211,11 @@ export default function remarkShiki() {
             children: node.value
               .split('// ---cut---\n')
               .at(-1)
-              .replace(/^\/\/ @[a-zA-Z]+(?::.*)?\n/gm, ''),
+              .replace(/^\/\/ @[a-zA-Z]+(?::.*)?\n/gm, '')
+              .replace(
+                /^[ \t]*\/\/ ---cut-start---\n[\s\S]*?^[ \t]*\/\/ ---cut-end---\n/gm,
+                '',
+              ),
             highlightedHtml: html,
             ...(popupsUrl ? { popups: popupsUrl } : {}),
             title: /\btitle="([^"]*)"/.exec(meta)?.[1] ?? '',

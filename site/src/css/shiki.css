@@ -147,3 +147,8 @@
   min-width: 0;
   white-space: pre-wrap;
 }
+.shiki-block {
+  --twoslash-popup-bg: var(--ifm-background-surface-color);
+  --twoslash-popup-color: var(--ifm-font-color-base);
+  --twoslash-border-color: var(--ifm-color-emphasis-300);
+}
