@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Props } from '@theme/CodeBlock'
 import { useLocation } from '@docusaurus/router'
+import { Playground } from '../../components/Playground'
 import { getPlaygroundUrl } from '../../components/playground-state'
 
 interface ShikiProps extends Props {
@@ -101,7 +102,7 @@ export default function CodeBlock({
     }
   }
 
-  return (
+  const block = (
     <div
       className="shiki-block code-example"
       data-pagefind-weight={pathname.startsWith('/docs/examples/') ? '8' : '2'}
@@ -163,4 +164,6 @@ export default function CodeBlock({
         )}
     </div>
   )
+
+  return playground ? <Playground code={code}>{block}</Playground> : block
 }

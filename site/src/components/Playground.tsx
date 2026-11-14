@@ -1,122 +1,109 @@
 import { useColorMode } from '@docusaurus/theme-common'
-import { useEffect, useRef, useState } from 'react'
-import styles from './Playground.module.css'
-import { GENERATED_PLAYGROUND_EXAMPLE_TYPES } from './playground-example-types'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
-import CodeBlock from '@theme/CodeBlock'
+import styles from './Playground.module.css'
+import { getPlaygroundUrl } from './playground-state'
 
-export function Playground(props: PlaygroundProps) {
-  const src = useSrc(props)
-  const [loadFailed, setLoadFailed] = useState<boolean>(false)
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+const TABS = ['code', 'playground'] as const
 
-  useEffect(() => {
-    const { current: iframe } = iframeRef
+type Tab = (typeof TABS)[number]
 
-    if (!iframe) {
-      return
-    }
+const LABELS: Record<Tab, string> = { code: 'Code', playground: 'Playground' }
 
-    let failTimer: NodeJS.Timeout
+export function Playground({ children, code }: PlaygroundProps) {
+  const { colorMode } = useColorMode()
+  const id = useId()
+  const [active, setActive] = useState<Tab>('code')
+  const [opened, setOpened] = useState(false)
+  const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
+    code: null,
+    playground: null,
+  })
 
-    const handleLoad = () => {
-      clearTimeout(failTimer)
-    }
-
-    iframe.addEventListener('load', handleLoad)
-
-    failTimer = setTimeout(() => {
-      setLoadFailed(true)
-    }, 2_000)
-
-    return () => {
-      iframe.removeEventListener('load', handleLoad)
-      clearTimeout(failTimer)
-    }
-  }, [src])
+  function select(tab: Tab, focus = false) {
+    setActive(tab)
+    if (tab === 'playground') setOpened(true)
+    if (focus) tabRefs.current[tab]?.focus()
+  }
 
   return (
-    <>
-      {!loadFailed && (
-        <iframe
-          allow="clipboard-write"
-          autoFocus
-          className={styles.playground}
-          ref={iframeRef}
-          src={src}
-        />
-      )}
-      <div
-        className={clsx(
-          'code-example',
-          !loadFailed ? styles.visuallyHidden : undefined,
-        )}
+    <div className={styles.container}>
+      <ul
+        role="tablist"
+        aria-label="Example view"
+        className={clsx('tabs', styles.tabs)}
+        data-pagefind-ignore
       >
-        <CodeBlock language="ts">
-          {[GENERATED_PLAYGROUND_EXAMPLE_TYPES, props.setupCode, props.code]
-            .filter(Boolean)
-            .join('\n\n')}
-        </CodeBlock>
+        {TABS.map((tab, index) => (
+          <li key={tab} role="presentation">
+            <button
+              type="button"
+              role="tab"
+              id={`${id}-${tab}-tab`}
+              aria-controls={`${id}-${tab}-panel`}
+              aria-selected={active === tab}
+              tabIndex={active === tab ? 0 : -1}
+              className={clsx(
+                'tabs__item',
+                styles.tab,
+                active === tab && 'tabs__item--active',
+              )}
+              ref={(element) => {
+                tabRefs.current[tab] = element
+              }}
+              onClick={() => select(tab)}
+              onKeyDown={(event) => {
+                const offset =
+                  event.key === 'ArrowRight'
+                    ? 1
+                    : event.key === 'ArrowLeft'
+                      ? -1
+                      : 0
+                if (!offset) return
+                event.preventDefault()
+                select(TABS[(index + offset + TABS.length) % TABS.length], true)
+              }}
+            >
+              {LABELS[tab]}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div
+        role="tabpanel"
+        id={`${id}-code-panel`}
+        aria-labelledby={`${id}-code-tab`}
+        hidden={active !== 'code'}
+      >
+        {children}
       </div>
-    </>
+      {opened && (
+        <div
+          role="tabpanel"
+          id={`${id}-playground-panel`}
+          aria-labelledby={`${id}-playground-tab`}
+          hidden={active !== 'playground'}
+          data-pagefind-ignore
+        >
+          <iframe
+            allow="clipboard-write"
+            className={styles.playground}
+            src={getPlaygroundUrl(code, {
+              theme: colorMode,
+              notheme: '1',
+              open: '1',
+              nomore: '1',
+              nohotkey: '1',
+            })}
+            title="Kysely Playground"
+          />
+        </div>
+      )}
+    </div>
   )
 }
 
-function useSrc(props: PlaygroundProps) {
-  const { colorMode } = useColorMode()
-  const [src, setSrc] = useState('')
-
-  useEffect(() => {
-    const params = new URLSearchParams()
-
-    params.set('theme', colorMode)
-    params.set('notheme', '1')
-
-    if (!props.disableIframeMode) {
-      params.set('open', '1')
-      params.set('nomore', '1')
-      params.set('nohotkey', '1')
-    }
-
-    setSrc(`https://play.kysely.dev/?${params}${getPlaygroundStateHash(props)}`)
-  }, [colorMode])
-
-  return src
-}
-
-function getPlaygroundStateHash(props: PlaygroundProps) {
-  const { kyselyVersion } = props
-
-  const state: PlaygroundState = {
-    dialect: props.dialect || 'postgres',
-    editors: { query: props.code, type: GENERATED_PLAYGROUND_EXAMPLE_TYPES },
-    hideType: true,
-  }
-
-  if (kyselyVersion) {
-    state.kysely = { type: 'tag', name: kyselyVersion }
-  }
-
-  return '#r' + encodeURIComponent(JSON.stringify(state))
-}
-
 interface PlaygroundProps {
-  kyselyVersion?: string
-  dialect?: 'postgres'
+  children: ReactNode
   code: string
-  setupCode?: string
-  disableIframeMode: boolean
-}
-
-interface PlaygroundState {
-  dialect: 'postgres' | 'mysql' | 'mssql' | 'sqlite'
-  editors: {
-    type: string
-    query: string
-  }
-  hideType?: boolean
-  kysely?: {
-    type: 'tag' | 'branch'
-    name: string
-  }
 }
