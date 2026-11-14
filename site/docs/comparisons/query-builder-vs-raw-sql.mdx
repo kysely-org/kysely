@@ -38,7 +38,22 @@ order by asset.owner_id, asset.name;
 
 It runs unchanged in a SQL console, under `EXPLAIN ANALYZE`, and in a review by someone who does not write TypeScript. In application code it is a string: nothing checks `asset.owner_id` against the schema, the result type is whatever the caller annotates, and a renamed column is found by search. The same report in Kysely:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const unfiledFavorites = await db
   .with('favorites', (qb) =>
     qb
@@ -63,7 +78,23 @@ The builder version reads as an API, not as a second language: `with`, `selectFr
 
 A fixed write is checked the same way. An insert that omits a required column is a valid statement until it runs: PostgreSQL prepares it without objection and rejects the row at execution. Kysely's `values()` accepts the table's columns only and requires each one the declaration marks neither generated nor nullable:
 
-```ts
+```ts twoslash
+// @errors: 2345
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+declare const db: Kysely<Database>
+// ---cut---
 await db
   .insertInto('asset')
   .values({ id: 'asset-7', name: 'IMG_0001.jpg' }) // TypeScript error: owner_id is required
@@ -81,7 +112,7 @@ An asset list starts as an owner's assets, sorted by name and ID and limited to 
 <details>
 <summary>Database types and request options for the following examples</summary>
 
-```ts
+```ts twoslash
 interface Database {
   asset: {
     id: string
@@ -96,7 +127,7 @@ interface Database {
 }
 ```
 
-```ts
+```ts twoslash
 type AssetOptions = {
   ownerId: string
   albumId?: string
@@ -195,7 +226,45 @@ The nullable parameter, with the casts PostgreSQL [requires on a reused paramete
 
 The list chooses its fields and pagination after calling `matchingAssets`; the total reuses the filters without inheriting the limit:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
+}
+// ---cut---
 const assets = await matchingAssets(options)
   .select(['asset.id', 'asset.name'])
   .orderBy('asset.name')
@@ -275,7 +344,37 @@ The test of a composition layer is what happens when someone changes it without 
 
 A per-album export needs each row's album ID. With fragments, the caller adds the column:
 
-```ts
+```ts twoslash
+import postgres from 'postgres'
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const sql: postgres.Sql
+declare const options: AssetOptions
+const albumJoin = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`inner join album_asset on album_asset.asset_id = asset.id`
+    : sql``
+const albumFilter = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`and album_asset.album_id = ${options.albumId}`
+    : sql``
+const nameFilter = (options: AssetOptions) =>
+  options.namePrefix !== undefined
+    ? sql`and asset.name like ${options.namePrefix + '%'}`
+    : sql``
+
+function matchingAssetSql(options: AssetOptions) {
+  return sql`
+    from asset ${albumJoin(options)}
+    where asset.owner_id = ${options.ownerId}
+      ${albumFilter(options)} ${nameFilter(options)}
+  `
+}
+// ---cut---
 const albumExport = await sql<{ id: string; name: string; album_id: string }[]>`
   select asset.id, asset.name, album_asset.album_id ${matchingAssetSql(options)}
   order by asset.name, asset.id
@@ -284,7 +383,46 @@ const albumExport = await sql<{ id: string; name: string; album_id: string }[]>`
 
 This compiles and runs for requests that supply an album. For the rest, the helper omits the join and PostgreSQL rejects `album_asset.album_id`; the fragment records nothing about when `album_asset` is present. The same caller does not compile with Kysely:
 
-```ts
+```ts twoslash
+// @errors: 2769
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
+}
+// ---cut---
 const albumExport = await matchingAssets(options)
   .select(['asset.id', 'asset.name', 'album_asset.album_id']) // TypeScript error
   .execute()
@@ -298,7 +436,18 @@ With SQL files the export is a new statement with its own `exists`. **A generate
 
 Suppose a migration renames `asset.name` to `asset.label`, and an agent must update the application. With Kysely, [regenerate the declarations](/docs/generating-types) once and type-check:
 
-```ts
+```ts twoslash
+// @errors: 2345 2769
+import type { Kysely } from 'kysely'
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+// ---cut---
 interface Database {
   asset: {
     id: string
@@ -361,7 +510,7 @@ A request without an album sends no `album_asset` reference, so each shape the a
 
 **Raw SQL has a place inside Kysely: as an expression inside a composed query, not a statement beside it.** Kysely does not cover all of SQL; it covers what applications write most, extends that coverage release by release, and types the escape hatch for the rest. A `sql` template inside a query is an expression like any other: a reference passed through `eb.ref` is checked against the tables in scope, values bind as parameters, and the declared result type flows into the query. The builder's `like` operator has no `ESCAPE` clause; a [reusable helper](/docs/recipes/reusable-helpers) supplies it:
 
-```ts
+```ts twoslash
 import { Expression, sql } from 'kysely'
 
 function like(column: Expression<string>, pattern: string, escape = '\\') {

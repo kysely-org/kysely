@@ -42,7 +42,23 @@ Products marketed as ORMs often bundle mapping and persistence with schema defin
 
 Start with pages owned by a user and an optional title filter. Both approaches handle this list well. The examples follow how the query changes as it needs a parent title, a computed flag, and eventually a recursive permission lookup. They use Kysely with PostgreSQL:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+}
+
+declare const db: Kysely<Database>
+declare const userId: number
+declare const title: string | undefined
+// ---cut---
 // db is a Kysely<Database> instance. Here, page has numeric id and
 // owner_id columns, nullable numeric parent_id, non-null text title,
 // and non-null updated_at timestamps represented by Date values.
@@ -70,7 +86,44 @@ const pages = await pageQuery.execute()
 
 An export reuses the filters, adds the timestamp, and leaves out pagination:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+}
+
+declare const db: Kysely<Database>
+declare const userId: number
+declare const title: string | undefined
+// db is a Kysely<Database> instance. Here, page has numeric id and
+// owner_id columns, nullable numeric parent_id, non-null text title,
+// and non-null updated_at timestamps represented by Date values.
+function searchPages(userId: number, title: string | undefined) {
+  let query = db.selectFrom('page').where('page.owner_id', '=', userId)
+
+  if (title !== undefined) {
+    query = query.where('page.title', '=', title)
+  }
+
+  return query
+}
+
+const pageQuery = searchPages(userId, title)
+  .select(['page.id', 'page.title'])
+  .orderBy('page.id')
+  .limit(20)
+
+const pages = await pageQuery.execute()
+// Inferred result:
+// { id: number; title: string }[]
+// ---cut---
 const exportedPages = await searchPages(userId, title)
   .select(['page.id', 'page.title', 'page.updated_at'])
   .orderBy('page.id')
@@ -81,7 +134,44 @@ const exportedPages = await searchPages(userId, title)
 
 An admin view needs each parent's title. Extend the paginated query before execution:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+}
+
+declare const db: Kysely<Database>
+declare const userId: number
+declare const title: string | undefined
+// db is a Kysely<Database> instance. Here, page has numeric id and
+// owner_id columns, nullable numeric parent_id, non-null text title,
+// and non-null updated_at timestamps represented by Date values.
+function searchPages(userId: number, title: string | undefined) {
+  let query = db.selectFrom('page').where('page.owner_id', '=', userId)
+
+  if (title !== undefined) {
+    query = query.where('page.title', '=', title)
+  }
+
+  return query
+}
+
+const pageQuery = searchPages(userId, title)
+  .select(['page.id', 'page.title'])
+  .orderBy('page.id')
+  .limit(20)
+
+const pages = await pageQuery.execute()
+// Inferred result:
+// { id: number; title: string }[]
+// ---cut---
 const pagesWithParents = await pageQuery
   .leftJoin('page as parent', 'parent.id', 'page.parent_id')
   .select('parent.title as parent_title')
@@ -98,7 +188,44 @@ Assuming `page.id` is unique, the parent join above preserves one row per page. 
 
 The list now needs to flag pages with an immediate child updated more recently than the page itself. Add a correlated `exists` expression:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+}
+
+declare const db: Kysely<Database>
+declare const userId: number
+declare const title: string | undefined
+// db is a Kysely<Database> instance. Here, page has numeric id and
+// owner_id columns, nullable numeric parent_id, non-null text title,
+// and non-null updated_at timestamps represented by Date values.
+function searchPages(userId: number, title: string | undefined) {
+  let query = db.selectFrom('page').where('page.owner_id', '=', userId)
+
+  if (title !== undefined) {
+    query = query.where('page.title', '=', title)
+  }
+
+  return query
+}
+
+const pageQuery = searchPages(userId, title)
+  .select(['page.id', 'page.title'])
+  .orderBy('page.id')
+  .limit(20)
+
+const pages = await pageQuery.execute()
+// Inferred result:
+// { id: number; title: string }[]
+// ---cut---
 const pagesWithNewerChildren = await pageQuery
   .select((eb) =>
     eb
@@ -126,7 +253,33 @@ A model API may require a mapped computed property: MikroORM's [SQL formulas](ht
 
 When you want a page and its comments as related objects, a model API can handle the loading and assembly. With Objection.js, assume a `Page` model mapped to `page` and a declared `comments` relation:
 
-```ts
+```ts twoslash
+import { Model } from 'objection'
+
+class Comment extends Model {
+  static tableName = 'comment'
+  id!: number
+  page_id!: number
+  body!: string
+}
+
+class Page extends Model {
+  static tableName = 'page'
+  id!: number
+  owner_id!: number
+  title!: string
+  comments?: Comment[]
+
+  static relationMappings = () => ({
+    comments: {
+      relation: Model.HasManyRelation,
+      modelClass: Comment,
+      join: { from: 'page.id', to: 'comment.page_id' },
+    },
+  })
+}
+declare const userId: number
+// ---cut---
 const pagesWithComments = await Page.query()
   .where('owner_id', userId)
   .orderBy('id')
@@ -169,7 +322,28 @@ The database performs traversal, rule lookup, ordering, and limiting in one stat
 
 Compose it with Kysely using the same query operations as the earlier queries. Assume the page column types above, numeric `page_access.page_id` and `page_access.user_id`, and a non-null string `page_access.level`. The `pageId` and `userId` values are numbers:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+  page_access: {
+    page_id: number
+    user_id: number
+    level: string
+  }
+}
+
+declare const db: Kysely<Database>
+declare const pageId: number
+declare const userId: number
+// ---cut---
 import { sql } from 'kysely'
 
 const nearestRule = db
@@ -220,7 +394,44 @@ When a model operation produces an expensive query, you still need to understand
 
 Suppose the flag above was first implemented by joining children, grouping by page, and counting the matches:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+
+interface Database {
+  page: {
+    id: number
+    owner_id: number
+    parent_id: number | null
+    title: string
+    updated_at: Date
+  }
+}
+
+declare const db: Kysely<Database>
+declare const userId: number
+declare const title: string | undefined
+// db is a Kysely<Database> instance. Here, page has numeric id and
+// owner_id columns, nullable numeric parent_id, non-null text title,
+// and non-null updated_at timestamps represented by Date values.
+function searchPages(userId: number, title: string | undefined) {
+  let query = db.selectFrom('page').where('page.owner_id', '=', userId)
+
+  if (title !== undefined) {
+    query = query.where('page.title', '=', title)
+  }
+
+  return query
+}
+
+const pageQuery = searchPages(userId, title)
+  .select(['page.id', 'page.title'])
+  .orderBy('page.id')
+  .limit(20)
+
+const pages = await pageQuery.execute()
+// Inferred result:
+// { id: number; title: string }[]
+// ---cut---
 const flaggedPages = await pageQuery
   .leftJoin('page as child', (join) =>
     join
@@ -248,7 +459,32 @@ Some ORMs also track object identity and pending changes. [MikroORM's unit of wo
 
 **An ORM can coordinate related writes from a graph of models.** With Objection.js, assume `Page` and `Comment` models with a `comments` relation joining `page.id` to `comment.page_id`:
 
-```ts
+```ts twoslash
+import { Model } from 'objection'
+
+class Comment extends Model {
+  static tableName = 'comment'
+  id!: number
+  page_id!: number
+  body!: string
+}
+
+class Page extends Model {
+  static tableName = 'page'
+  id!: number
+  owner_id!: number
+  title!: string
+  comments?: Comment[]
+
+  static relationMappings = () => ({
+    comments: {
+      relation: Model.HasManyRelation,
+      modelClass: Comment,
+      join: { from: 'page.id', to: 'comment.page_id' },
+    },
+  })
+}
+// ---cut---
 const page = await Page.transaction(async (trx) => {
   return await Page.query(trx).insertGraph({
     title: 'Getting started',
@@ -261,7 +497,22 @@ Objection's [`insertGraph`](https://vincit.github.io/objection.js/guide/query-ex
 
 With Kysely and PostgreSQL, your code coordinates the same writes, typically as an ordinary shared function. For this example, assume `page` has a generated numeric `id` and a required `title`, and `comment` requires `page_id` and `body`, with no other required insert inputs:
 
-```ts
+```ts twoslash
+import { Kysely, type Generated } from 'kysely'
+
+interface Database {
+  page: {
+    id: Generated<number>
+    title: string
+  }
+  comment: {
+    page_id: number
+    body: string
+  }
+}
+
+declare const db: Kysely<Database>
+// ---cut---
 async function createPageWithComment(title: string, body: string) {
   return await db.transaction().execute(async (trx) => {
     const page = await trx

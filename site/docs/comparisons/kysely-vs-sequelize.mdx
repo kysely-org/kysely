@@ -30,7 +30,7 @@ Assume configured Kysely (`db`) and Sequelize clients over the same two tables:
 
 Kysely's `Database` interface is types only, handwritten or [generated](/docs/generating-types) from the database:
 
-```ts
+```ts twoslash
 interface Database {
   person: {
     id: number
@@ -44,7 +44,10 @@ interface Database {
 
 Sequelize's models are classes typed with its inference helpers and initialized with their attributes:
 
-```ts
+```ts twoslash
+import { Sequelize } from 'sequelize'
+declare const sequelize: Sequelize
+// ---cut---
 import {
   DataTypes,
   Model,
@@ -100,7 +103,55 @@ Count each person's pets, keeping people who have none.
 
 With Sequelize:
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 const rows = await Person.findAll({
   attributes: ['id', 'first_name', [fn('COUNT', col('pets.id')), 'pet_count']],
   include: [{ model: Pet, as: 'pets', attributes: [] }],
@@ -113,7 +164,19 @@ const rows = await Person.findAll({
 
 With Kysely:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const rows = await db
   .selectFrom('person')
   .leftJoin('pet', 'pet.owner_id', 'person.id')
@@ -139,7 +202,55 @@ A join without a declared association, a computed column, a subquery, a CTE, a s
 
 Production queries collect their filters. Write a lookup with an optional pet name, and later drop the include that loaded the pets:
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 function matchingPeople(options: { petName?: string }) {
   const where: WhereOptions = { age: { [Op.gte]: 18 } }
 
@@ -152,7 +263,20 @@ function matchingPeople(options: { petName?: string }) {
 
 It compiles, and it runs for every request without a pet name. A request with one fails in PostgreSQL: the filter still reads `pets`, and the change never touched that line. The same function after the same change in Kysely:
 
-```ts
+```ts twoslash
+// @errors: 2345
+import type { Kysely } from 'kysely'
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 function matchingPeople(options: { petName?: string }) {
   let query = db
     .selectFrom('person')
@@ -211,7 +335,55 @@ A finder returns model instances typed as the model, or with `raw: true`, plain 
 
 Rename an attribute:
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 const person = await Person.findOne({
   attributes: [['first_name', 'name']],
   where: { id: 1 },
@@ -223,7 +395,55 @@ person?.first_name // Typed string. undefined at runtime: the row has name.
 
 Select one attribute and read another:
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 const person = await Person.findByPk(1, {
   attributes: ['id'],
   rejectOnEmpty: true,
@@ -244,7 +464,19 @@ The statement behind it is a flat join. PostgreSQL returns one row per pet, and 
 
 Kysely nests in SQL, with `jsonArrayFrom` from `kysely/helpers/postgres`:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
 
 const rows = await db
@@ -275,7 +507,55 @@ The join also decides pagination. A `limit` on a finder with an include pages pa
 
 Scopes are Sequelize's reusable queries: a named options object a model applies before the finder's own. On Sequelize 6, the finder's `where` is [merged with the scope's shallowly](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/versioned_docs/version-6.x.x/other-topics/scopes.md#L173), "meaning that identical keys will be overwritten":
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 Pet.addScope('ownedBy', (ownerId: number) => ({ where: { owner_id: ownerId } }))
 
 const pets = await Pet.scope({ method: ['ownedBy', 1] }).findAll({
@@ -288,7 +568,19 @@ The query returns another owner's pets, with no error. When the scope is a tenan
 
 In Kysely each `where()` adds its condition with AND, and every method returns a new builder, so a shared function can add a filter, a join, or a limit without knowing what its caller added:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: {
+    id: number
+    first_name: string
+    age: number | null
+    pet_target: number
+  }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const ownedBy = (ownerId: number) =>
   db.selectFrom('pet').select('name').where('owner_id', '=', ownerId)
 
@@ -316,7 +608,56 @@ Kysely passes the driver's error through, and node-postgres adds no statement or
 
 Sequelize's finders add to a statement from the model's options. Make `Person` [paranoid](https://github.com/sequelize/website/blob/843c76173ebd444c58706da53ed8c006a7b4f6d5/docs/models/paranoid.mdx) with a `deleted_at` column, and its `destroy()` becomes an `UPDATE` that sets the delete date, and every finder on it gets `"deleted_at" IS NULL`. So does the join condition of an include, here through a `Pet.belongsTo(Person, { as: 'owner' })` association:
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+Pet.belongsTo(Person, { as: 'owner', foreignKey: 'owner_id' })
+// ---cut---
 const pets = await Pet.findAll({
   include: [{ model: Person, as: 'owner' }],
 })
@@ -337,7 +678,55 @@ A move from Sequelize to Kysely does not have to happen at once, or at all for t
 
 Yes. [kysely-sequelize](https://github.com/kysely-org/kysely-sequelize) runs Kysely over an existing Sequelize 6 instance: its [`KyselySequelizeDialect`](https://github.com/kysely-org/kysely-sequelize/blob/c86004253c1341d6aa1b61908684a629ba470053/README.md#L367-L403) reuses Sequelize's connections, and its [`KyselifyModel`](https://github.com/kysely-org/kysely-sequelize/blob/c86004253c1341d6aa1b61908684a629ba470053/README.md#L157-L175) type derives Kysely's table types from the model classes, with no generation step.
 
-```ts
+```ts twoslash
+import { Sequelize, col, fn, Op, type WhereOptions } from 'sequelize'
+declare const sequelize: Sequelize
+import {
+  DataTypes,
+  Model,
+  type InferAttributes,
+  type InferCreationAttributes,
+  type NonAttribute,
+} from 'sequelize'
+
+class Person extends Model<
+  InferAttributes<Person>,
+  InferCreationAttributes<Person>
+> {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pet_target: number
+  declare pets?: NonAttribute<Pet[]>
+}
+
+class Pet extends Model<InferAttributes<Pet>, InferCreationAttributes<Pet>> {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+}
+
+Person.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    first_name: { type: DataTypes.TEXT, allowNull: false },
+    age: { type: DataTypes.INTEGER, allowNull: true },
+    pet_target: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Person', tableName: 'person', timestamps: false },
+)
+
+Pet.init(
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    owner_id: { type: DataTypes.INTEGER, allowNull: false },
+  },
+  { sequelize, modelName: 'Pet', tableName: 'pet', timestamps: false },
+)
+
+Person.hasMany(Pet, { as: 'pets', foreignKey: 'owner_id' })
+// ---cut---
 import {
   Kysely,
   PostgresAdapter,
