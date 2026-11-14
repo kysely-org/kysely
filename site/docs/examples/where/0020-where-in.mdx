@@ -6,15 +6,13 @@ title: 'Where in'
 
 Find multiple items using a list of identifiers:
 
-import { Playground } from '../../../src/components/Playground'
-
-import {
-  whereIn
-} from './0020-where-in'
-
-<div style={{ marginBottom: '1em' }}>
-  <Playground code={whereIn} />
-</div>
+```ts twoslash playground
+const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  .where('id', 'in', [1, 2, 3])
+  .execute()
+```
 
 :::info[More examples]
 The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),

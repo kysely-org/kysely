@@ -6,15 +6,13 @@ title: 'A single column'
 
 Select a single column:
 
-import { Playground } from '../../../src/components/Playground'
-
-import {
-  aSingleColumn
-} from './0010-a-single-column'
-
-<div style={{ marginBottom: '1em' }}>
-  <Playground code={aSingleColumn} />
-</div>
+```ts twoslash playground
+const persons = await db
+  .selectFrom('person')
+  .select('id')
+  .where('first_name', '=', 'Arnold')
+  .execute()
+```
 
 :::info[More examples]
 The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),

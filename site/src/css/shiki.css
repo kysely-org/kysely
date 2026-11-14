@@ -1,0 +1,107 @@
+.shiki-block {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  margin-bottom: var(--ifm-leading);
+  overflow: hidden;
+  background: #fff;
+}
+
+.shiki-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  font-size: 0.8rem;
+}
+
+.shiki-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.shiki-toolbar button {
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+.shiki-toolbar button:focus-visible,
+.shiki-block .twoslash-hover:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.shiki-block pre {
+  margin: 0;
+  padding: 16px;
+  border-radius: 0;
+  background: transparent;
+  overflow: auto;
+}
+.shiki-block pre code {
+  padding: 0;
+  background: transparent;
+}
+.shiki-block .shiki,
+.shiki-block .shiki span,
+.shiki-type-popup span {
+  color: var(--shiki-light);
+}
+[data-theme='dark'] .shiki-block {
+  background: #1e1e1e;
+}
+[data-theme='dark'] .shiki-block .shiki,
+[data-theme='dark'] .shiki-block .shiki span,
+[data-theme='dark'] .shiki-type-popup span {
+  color: var(--shiki-dark);
+}
+.shiki-block .highlighted {
+  display: inline-block;
+  width: 100%;
+  background: var(--docusaurus-highlighted-code-line-bg);
+}
+
+/* Render hovers in a portal so horizontal scrolling never clips them. */
+.shiki-block pre.twoslash .twoslash-popup-container {
+  display: none;
+}
+.shiki-type-popup {
+  position: fixed;
+  z-index: 1000;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 16px));
+  max-height: 45vh;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  box-shadow: 0 4px 20px #0003;
+  font-size: 13px;
+  pointer-events: auto;
+}
+.shiki-type-popup pre {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+}
+.shiki-type-popup .twoslash-popup-docs {
+  white-space: normal;
+}
+.shiki-type-popup .twoslash-popup-docs p:last-child {
+  margin-bottom: 0;
+}
+.shiki-copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
