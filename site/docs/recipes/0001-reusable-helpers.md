@@ -268,7 +268,20 @@ where
 
 In all our examples we've used the following syntax:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string; gender: 'male' | 'female' | 'other' }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' | 'hamster' }
+}
+declare const db: Kysely<DB>
+declare const left: 'first_name'
+declare const operator: '='
+declare const right: string
+// ---cut---
+// ---cut-start---
+db.selectFrom('person')
+// ---cut-end---
 .where(eb => eb(left, operator, right))
 ```
 
