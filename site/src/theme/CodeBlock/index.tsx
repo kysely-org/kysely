@@ -142,7 +142,7 @@ export default function CodeBlock({
           <div dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
           <pre>
-            <code>{code}</code>
+            <code className={`language-${language}`}>{code}</code>
           </pre>
         )}
       </div>

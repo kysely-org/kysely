@@ -80,6 +80,12 @@ export default function remarkShiki() {
           meta: { __raw: meta },
           transformers: [
             transformerMetaHighlight(),
+            {
+              name: 'language-class',
+              code(code) {
+                this.addClassToHast(code, `language-${node.lang || 'text'}`)
+              },
+            },
             ...(hasTypes
               ? [
                   twoslash,

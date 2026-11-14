@@ -12,6 +12,7 @@ import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-c
 import generateBrandLogoSprite from './plugins/generate-brand-logo-sprite'
 import remarkAgentDocs from './plugins/remark-agent-docs.mjs'
 import rehypeRemoveComments from './plugins/rehype-remove-comments.mjs'
+import rehypeStripCodeChrome from './plugins/rehype-strip-code-chrome.mjs'
 import remarkShiki from './plugins/remark-shiki.mjs'
 import packageJson from './package.json'
 
@@ -143,7 +144,10 @@ export default {
       '@signalwire/docusaurus-plugin-llms-txt',
       {
         content: {
-          beforeDefaultRehypePlugins: [rehypeRemoveComments],
+          beforeDefaultRehypePlugins: [
+            rehypeRemoveComments,
+            rehypeStripCodeChrome,
+          ],
           // https://www.npmjs.com/package/@signalwire/docusaurus-plugin-llms-txt#content-selectors
           contentSelectors: [
             '.theme-doc-markdown', // Docusaurus main content area
