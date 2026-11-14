@@ -28,6 +28,8 @@ Use the website's recipes and documentation index for broader discovery, and the
 
 The website's playground examples are generated from the same annotated JSDoc. API documentation and website examples share their source, rather than relying on separately maintained copies.
 
+TypeScript code blocks in the website's guides, examples, and recipes are type-checked when the site builds, against the Kysely source they document. A snippet that stops compiling fails the build, and hovering an identifier shows its inferred type and documentation.
+
 `llms.txt` documentation is automatically generated and kept up-to-date with each push on GitHub and is based on the [llms.txt standard](https://llmstxt.org/).
 
 We audit the website's agent experience with [AFDocs](https://afdocs.dev), the tool behind Mintlify's Agent Score.
