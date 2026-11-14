@@ -14,7 +14,7 @@ included" approach.
 In order to use Kysely purely as a query builder without database driver dependencies,
 you can instantiate it with the built-in `DummyDriver` class:
 
-```ts
+```ts twoslash
 import {
   Generated,
   DummyDriver,
@@ -56,7 +56,36 @@ use "hot" kysely instances, with real drivers, if you want to.
 
 To compile a query, simply call `.compile()` at the end of the query building chain:
 
-```ts
+```ts twoslash
+import {
+  Generated,
+  DummyDriver,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter: () => new PostgresAdapter(),
+    createDriver: () => new DummyDriver(),
+    createIntrospector: (db) => new PostgresIntrospector(db),
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  },
+})
+declare const id: number
+// ---cut---
 const compiledQuery = db
   .selectFrom('person')
   .select('first_name')
@@ -75,7 +104,36 @@ dialect used (PostgreSQL in this example).
 
 Raw queries can be compiled as well:
 
-```ts
+```ts twoslash
+import {
+  Generated,
+  DummyDriver,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter: () => new PostgresAdapter(),
+    createDriver: () => new DummyDriver(),
+    createIntrospector: (db) => new PostgresIntrospector(db),
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  },
+})
+declare const id: number
+// ---cut---
 import { Selectable, sql } from 'kysely'
 
 const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${id}`.compile(db)
@@ -89,7 +147,36 @@ Kysely supports inferring a (compiled) query's result type even when detached fr
 query building chains. This allows splitting query building, compilation and execution
 code without losing type-safety.
 
-```ts
+```ts twoslash
+import {
+  Generated,
+  DummyDriver,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter: () => new PostgresAdapter(),
+    createDriver: () => new DummyDriver(),
+    createIntrospector: (db) => new PostgresIntrospector(db),
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  },
+})
+declare const id: number
+// ---cut---
 import { InferResult } from 'kysely'
 
 const query = db
@@ -109,7 +196,36 @@ type CompiledQueryReturnType = InferResult<typeof compiledQuery> // { first_name
 The `CompiledQuery` object returned by `.compile()` can be executed
 via "hot" Kysely instances (real drivers in use):
 
-```ts
+```ts twoslash
+import {
+  Generated,
+  DummyDriver,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'kysely'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter: () => new PostgresAdapter(),
+    createDriver: () => new DummyDriver(),
+    createIntrospector: (db) => new PostgresIntrospector(db),
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  },
+})
+declare const id: number
+// ---cut---
 const compiledQuery = db
   .selectFrom('person')
   .select('first_name')
