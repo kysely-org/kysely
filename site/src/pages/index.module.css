@@ -424,7 +424,8 @@ a.stat:hover .statValue {
    until intent. */
 .productionNames a:not(.productionCTA)::after {
   color: var(--kl-faint);
-  content: '↗';
+  content: '\2197\FE0E';
+  font-family: 'Segoe UI Symbol', var(--ifm-font-family-base);
   font-size: 10px;
   position: absolute;
   right: 4px;

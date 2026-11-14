@@ -437,8 +437,9 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
 }
 
 .navbar__link:has([class*='iconExternalLink'])::after {
-  content: '↗';
+  content: '\2197\FE0E';
   display: inline-block;
+  font-family: 'Segoe UI Symbol', var(--ifm-font-family-base);
   font-size: 11px;
   margin-left: 3px;
   opacity: 0.55;
