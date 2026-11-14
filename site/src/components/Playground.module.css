@@ -3,13 +3,8 @@
 }
 
 .tabs {
-  list-style: none;
-  margin: 0 0 8px;
-  padding-left: 0;
-}
-
-.tabs > li {
-  margin: 0;
+  align-items: flex-end;
+  margin-bottom: 8px;
 }
 
 .tab {

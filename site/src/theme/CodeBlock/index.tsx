@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import type { Props } from '@theme/CodeBlock'
 import { useLocation } from '@docusaurus/router'
 import { Playground } from '../../components/Playground'
-import { getPlaygroundUrl } from '../../components/playground-state'
 
 interface ShikiProps extends Props {
   highlightedHtml?: string
@@ -118,15 +117,6 @@ export default function CodeBlock({
       <div className="shiki-toolbar" data-markdown-ignore data-pagefind-ignore>
         <span>{props.title || language}</span>
         <div>
-          {playground && (
-            <a
-              href={getPlaygroundUrl(code)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open in Kysely Playground ↗
-            </a>
-          )}
           <button
             type="button"
             onClick={copy}

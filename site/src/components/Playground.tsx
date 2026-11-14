@@ -28,7 +28,7 @@ export function Playground({ children, code }: PlaygroundProps) {
 
   return (
     <div className={styles.container}>
-      <ul
+      <div
         role="tablist"
         aria-label="Example view"
         className={clsx('tabs', styles.tabs)}
@@ -36,40 +36,39 @@ export function Playground({ children, code }: PlaygroundProps) {
         data-pagefind-ignore
       >
         {TABS.map((tab, index) => (
-          <li key={tab} role="presentation">
-            <button
-              type="button"
-              role="tab"
-              id={`${id}-${tab}-tab`}
-              aria-controls={`${id}-${tab}-panel`}
-              aria-selected={active === tab}
-              tabIndex={active === tab ? 0 : -1}
-              className={clsx(
-                'tabs__item',
-                styles.tab,
-                active === tab && 'tabs__item--active',
-              )}
-              ref={(element) => {
-                tabRefs.current[tab] = element
-              }}
-              onClick={() => select(tab)}
-              onKeyDown={(event) => {
-                const offset =
-                  event.key === 'ArrowRight'
-                    ? 1
-                    : event.key === 'ArrowLeft'
-                      ? -1
-                      : 0
-                if (!offset) return
-                event.preventDefault()
-                select(TABS[(index + offset + TABS.length) % TABS.length], true)
-              }}
-            >
-              {LABELS[tab]}
-            </button>
-          </li>
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            id={`${id}-${tab}-tab`}
+            aria-controls={`${id}-${tab}-panel`}
+            aria-selected={active === tab}
+            tabIndex={active === tab ? 0 : -1}
+            className={clsx(
+              'tabs__item',
+              styles.tab,
+              active === tab && 'tabs__item--active',
+            )}
+            ref={(element) => {
+              tabRefs.current[tab] = element
+            }}
+            onClick={() => select(tab)}
+            onKeyDown={(event) => {
+              const offset =
+                event.key === 'ArrowRight'
+                  ? 1
+                  : event.key === 'ArrowLeft'
+                    ? -1
+                    : 0
+              if (!offset) return
+              event.preventDefault()
+              select(TABS[(index + offset + TABS.length) % TABS.length], true)
+            }}
+          >
+            {LABELS[tab]}
+          </button>
         ))}
-      </ul>
+      </div>
       <div
         role="tabpanel"
         id={`${id}-code-panel`}
