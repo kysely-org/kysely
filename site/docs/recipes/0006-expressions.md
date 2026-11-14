@@ -14,7 +14,17 @@ Expressions are usually built using an instance of [`ExpressionBuilder<DB, TB>`]
 
 You can get an instance of the expression builder using a callback:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+declare const firstName: string
+declare const lastName: string
+// ---cut---
 const person = await db
   .selectFrom('person')
   // `eb` is an instance of ExpressionBuilder<DB, 'person'>
@@ -100,7 +110,15 @@ You might be wondering, "why do I need to use a callback to get the expression b
 
 There's also a global function `expressionBuilder` you can use to create expression builders:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+// ---cut---
 import { expressionBuilder } from 'kysely'
 
 // `eb1` has type `ExpressionBuilder<DB, never>` which means there are no tables in the
@@ -115,7 +133,7 @@ const eb2 = expressionBuilder<DB, 'person'>()
 // In this one you'd have access to tables `person` and `pet` and all their columns.
 const eb3 = expressionBuilder<DB, 'person' | 'pet'>()
 
-let qb = query
+let qb = db
   .selectFrom('person')
   .innerJoin('movie as m', 'm.director_id', 'person.id')
 
@@ -135,8 +153,17 @@ qb = qb.where(eb.not(eb.exists(
 The expression builder can be used to create reusable helper functions.
 Let's say we have a complex `where` expression we want to reuse in multiple queries:
 
-```ts
-function hasDogNamed(name: string): Expression<boolean> {
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression, type SqlBool } from 'kysely'
+// ---cut---
+function hasDogNamed(name: string): Expression<SqlBool> {
   const eb = expressionBuilder<DB, 'person'>()
 
   return eb.exists(
@@ -151,7 +178,27 @@ function hasDogNamed(name: string): Expression<boolean> {
 
 This helper can now be used in any query, and would work just fine if "person" table is in context:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression, type SqlBool } from 'kysely'
+function hasDogNamed(name: string): Expression<SqlBool> {
+  const eb = expressionBuilder<DB, 'person'>()
+
+  return eb.exists(
+    eb.selectFrom('pet')
+      .select('pet.id')
+      .whereRef('pet.owner_id', '=', 'person.id')
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name)
+  )
+}
+// ---cut---
 const doggoPersons = await db
   .selectFrom('person')
   .selectAll('person')
@@ -161,7 +208,27 @@ const doggoPersons = await db
 
 However, the above helper is not very type-safe. The following code would compile, but fail at runtime:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression, type SqlBool } from 'kysely'
+function hasDogNamed(name: string): Expression<SqlBool> {
+  const eb = expressionBuilder<DB, 'person'>()
+
+  return eb.exists(
+    eb.selectFrom('pet')
+      .select('pet.id')
+      .whereRef('pet.owner_id', '=', 'person.id')
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name)
+  )
+}
+// ---cut---
 const bigFatFailure = await db
   .selectFrom('movie') // <-- "person" table is not in context!
   .selectAll('movie')
@@ -174,7 +241,16 @@ as arguments. In the following example we pass in the person's id as an expressi
 changed the type of `name` from `string` to `Expression<string>`, which allows us to pass
 in arbitrary expressions instead of just values.
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression, type SqlBool } from 'kysely'
+// ---cut---
 function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
   // Create an expression builder without any tables in the context.
   // This way we make no assumptions about the calling context.
@@ -192,7 +268,29 @@ function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
 
 Here's how you'd use our brand new helper:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import { expressionBuilder, type Expression, type SqlBool } from 'kysely'
+function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
+  // Create an expression builder without any tables in the context.
+  // This way we make no assumptions about the calling context.
+  const eb = expressionBuilder<DB>()
+
+  return eb.exists(
+    eb.selectFrom('pet')
+      .select('pet.id')
+      .where('pet.owner_id', '=', ownerId)
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name)
+  )
+}
+// ---cut---
 const doggoPersons = await db
   .selectFrom('person')
   .selectAll('person')
@@ -211,7 +309,17 @@ In the following, we'll only cover `where` expressions. The same logic applies t
 Having a set of optional filters you want to combine using `and`, is the most basic and common use case of conditional `where` expressions.
 Since the `where`, `having` and other filter functions are additive, most of the time this is enough:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+declare const firstName: string | undefined
+declare const lastName: string | undefined
+// ---cut---
 let query = db
   .selectFrom('person')
   .selectAll('person')
@@ -231,7 +339,18 @@ const persons = await query.execute()
 
 The same query can be built using the expression builder like this:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface DB {
+  person: { id: Generated<number>; first_name: string; last_name: string | null }
+  pet: { id: Generated<number>; name: string; owner_id: number; species: 'dog' | 'cat' }
+  movie: { id: Generated<number>; name: string; director_id: number }
+}
+declare const db: Kysely<DB>
+import type { Expression, SqlBool } from 'kysely'
+declare const firstName: string | undefined
+declare const lastName: string | undefined
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
