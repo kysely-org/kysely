@@ -32,6 +32,7 @@ export function Playground({ children, code }: PlaygroundProps) {
         role="tablist"
         aria-label="Example view"
         className={clsx('tabs', styles.tabs)}
+        data-markdown-ignore
         data-pagefind-ignore
       >
         {TABS.map((tab, index) => (

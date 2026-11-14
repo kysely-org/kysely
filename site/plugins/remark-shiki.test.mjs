@@ -31,6 +31,10 @@ const rows = await db.selectFrom('person').select('id').execute()`
   assert.equal(props.children, code)
   assert.match(props.highlightedHtml, /twoslash-hover" tabindex="0"/)
   assert.match(props.highlightedHtml, /data-pagefind-ignore/)
+  assert.match(
+    props.highlightedHtml,
+    /<\/pre><div class="twoslash-popups" hidden data-markdown-ignore data-pagefind-ignore><template data-popup="0"><span class="twoslash-popup-container/,
+  )
   assert.doesNotMatch(
     props.highlightedHtml,
     /interface PersonTable|---cut---|@filename/,

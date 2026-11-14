@@ -16,16 +16,61 @@ const require = createRequire(import.meta.url)
 let highlighter
 async function loadHighlighter() {
   const [
-    { codeToHtml },
+    { codeToHtml, getSingletonHighlighter },
     { createTransformerFactory, rendererRich },
     { createTwoslasher },
     { transformerMetaHighlight },
+    { fromMarkdown },
+    { gfmFromMarkdown },
+    { defaultHandlers, toHast },
   ] = await Promise.all([
     import('shiki'),
     import('@shikijs/twoslash/core'),
     import('twoslash'),
     import('@shikijs/transformers'),
+    import('mdast-util-from-markdown'),
+    import('mdast-util-gfm'),
+    import('mdast-util-to-hast'),
   ])
+
+  await getSingletonHighlighter({
+    langs: ['sql'],
+    themes: ['light-plus', 'dark-plus'],
+  })
+
+  function renderMarkdown(markdown) {
+    const mdast = fromMarkdown(
+      markdown.replace(/\{@link\s+([^}|\s]+)[^}]*\}/g, '`$1`'),
+      { mdastExtensions: [gfmFromMarkdown()] },
+    )
+    return toHast(mdast, {
+      handlers: {
+        code: (state, node) => {
+          try {
+            return this.codeToHast(node.value, {
+              ...this.options,
+              transformers: [],
+              lang: node.lang || 'text',
+            }).children[0]
+          } catch {
+            return defaultHandlers.code(state, node)
+          }
+        },
+      },
+    }).children
+  }
+
+  function renderMarkdownInline(markdown, context) {
+    const children = renderMarkdown.call(
+      this,
+      context === 'tag:param'
+        ? markdown.replace(/^([\w$-]+)/, '`$1` ')
+        : markdown,
+    )
+    return children.length === 1 && children[0].tagName === 'p'
+      ? children[0].children
+      : children
+  }
   const ts = require('typescript-6')
   // Twoslash needs the compiler API and standard library from TypeScript 6.
   const twoslash = createTransformerFactory(
@@ -45,7 +90,22 @@ async function loadHighlighter() {
         },
       },
     }),
-    rendererRich(),
+    rendererRich({
+      renderMarkdown,
+      renderMarkdownInline,
+      hast: {
+        hoverCompose: ({ popup, token }) => [
+          token,
+          {
+            type: 'element',
+            tagName: 'template',
+            properties: {},
+            children: [],
+            content: { type: 'root', children: [popup] },
+          },
+        ],
+      },
+    }),
   )()
 
   return { codeToHtml, twoslash, transformerMetaHighlight }
@@ -90,19 +150,39 @@ export default function remarkShiki() {
               ? [
                   twoslash,
                   {
-                    name: 'accessible-type-hovers',
-                    root(node) {
+                    name: 'hoisted-type-popups',
+                    root(root) {
+                      const popups = []
                       function visit(node) {
-                        const classes = node.properties?.class
-                        if (classes?.includes('twoslash-hover'))
+                        if (
+                          node.properties?.class?.includes('twoslash-hover')
+                        ) {
                           node.properties.tabIndex = 0
-                        if (classes?.includes('twoslash-popup-container')) {
-                          node.properties['data-pagefind-ignore'] = true
-                          node.properties['aria-hidden'] = true
+                          const index = node.children.findIndex(
+                            (child) => child.tagName === 'template',
+                          )
+                          if (index !== -1) {
+                            const [template] = node.children.splice(index, 1)
+                            template.properties['data-popup'] = popups.length
+                            node.properties['data-popup'] = popups.length
+                            popups.push(template)
+                          }
                         }
                         node.children?.forEach(visit)
                       }
-                      visit(node)
+                      visit(root)
+                      if (!popups.length) return
+                      root.children.push({
+                        type: 'element',
+                        tagName: 'div',
+                        properties: {
+                          class: 'twoslash-popups',
+                          hidden: true,
+                          'data-markdown-ignore': true,
+                          'data-pagefind-ignore': true,
+                        },
+                        children: popups,
+                      })
                     },
                   },
                 ]

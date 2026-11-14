@@ -71,7 +71,15 @@ export default function CodeBlock({
   function showType(target: EventTarget) {
     if (!(target instanceof Element)) return
     const hover = target.closest('.twoslash-hover')
-    const content = hover?.querySelector('.twoslash-popup-container')
+    const template = hover
+      ?.closest('.shiki-block')
+      ?.querySelector(
+        `template[data-popup="${hover.getAttribute('data-popup')}"]`,
+      )
+    const content =
+      template instanceof HTMLTemplateElement
+        ? template.content.querySelector('.twoslash-popup-container')
+        : null
     if (!hover || !content) {
       hideType()
       return
@@ -107,7 +115,7 @@ export default function CodeBlock({
       className="shiki-block code-example"
       data-pagefind-weight={pathname.startsWith('/docs/examples/') ? '8' : '2'}
     >
-      <div className="shiki-toolbar" data-pagefind-ignore>
+      <div className="shiki-toolbar" data-markdown-ignore data-pagefind-ignore>
         <span>{props.title || language}</span>
         <div>
           {playground && (

@@ -67,9 +67,6 @@
 }
 
 /* Render hovers in a portal so horizontal scrolling never clips them. */
-.shiki-block pre.twoslash .twoslash-popup-container {
-  display: none;
-}
 .shiki-type-popup {
   position: fixed;
   z-index: 1000;
@@ -80,7 +77,7 @@
   padding: 12px;
   border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: 6px;
-  background: var(--ifm-background-color);
+  background: var(--ifm-background-surface-color);
   color: var(--ifm-font-color-base);
   box-shadow: 0 4px 20px #0003;
   font-size: 13px;
@@ -92,8 +89,37 @@
   padding: 0;
   white-space: pre-wrap;
 }
-.shiki-type-popup .twoslash-popup-docs {
+.shiki-type-popup.twoslash .twoslash-popup-code {
+  display: block;
+  padding: 0 0 8px !important;
+  border: 0;
+  background: transparent;
+}
+.shiki-type-popup pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.shiki-type-popup.twoslash .twoslash-popup-docs {
+  padding: 10px 0 0 !important;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
+  font-size: 1em;
   white-space: normal;
+}
+.shiki-type-popup .twoslash-popup-docs :is(h1, h2, h3, h4) {
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+.shiki-type-popup .twoslash-popup-docs pre {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--ifm-color-emphasis-100);
+}
+.shiki-type-popup .twoslash-popup-docs p {
+  margin-bottom: 8px;
 }
 .shiki-type-popup .twoslash-popup-docs p:last-child {
   margin-bottom: 0;
