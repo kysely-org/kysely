@@ -144,7 +144,29 @@ Assume a `Kysely<Database>` instance named `db`, a configured Postgres.js client
 
 Put the shared query in a function. Kysely's `$call` hands the builder to a function and returns its result, so each addition is a plain `if`; the join is applied inside the branch that needs it, and the references in that branch are checked against the joined table:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+// ---cut---
 function matchingAssets(options: AssetOptions) {
   return db
     .selectFrom('asset')
@@ -165,7 +187,17 @@ function matchingAssets(options: AssetOptions) {
 
 With raw SQL, the same rules live in fragment helpers. Postgres.js numbers the parameters; a `pool.query` string built by concatenation renumbers its `$n` placeholders by hand each time a filter moves:
 
-```ts
+```ts twoslash
+import postgres from 'postgres'
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const sql: postgres.Sql
+declare const options: AssetOptions
+// ---cut---
 const albumJoin = (options: AssetOptions) =>
   options.albumId !== undefined
     ? sql`inner join album_asset on album_asset.asset_id = asset.id`
@@ -188,7 +220,37 @@ function matchingAssetSql(options: AssetOptions) {
 }
 ```
 
-```ts
+```ts twoslash
+import postgres from 'postgres'
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const sql: postgres.Sql
+declare const options: AssetOptions
+const albumJoin = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`inner join album_asset on album_asset.asset_id = asset.id`
+    : sql``
+const albumFilter = (options: AssetOptions) =>
+  options.albumId !== undefined
+    ? sql`and album_asset.album_id = ${options.albumId}`
+    : sql``
+const nameFilter = (options: AssetOptions) =>
+  options.namePrefix !== undefined
+    ? sql`and asset.name like ${options.namePrefix + '%'}`
+    : sql``
+
+function matchingAssetSql(options: AssetOptions) {
+  return sql`
+    from asset ${albumJoin(options)}
+    where asset.owner_id = ${options.ownerId}
+      ${albumFilter(options)} ${nameFilter(options)}
+  `
+}
+// ---cut---
 const assets = await sql<{ id: string; name: string }[]>`
   select asset.id, asset.name ${matchingAssetSql(options)}
   order by asset.name, asset.id limit 50
@@ -285,7 +347,45 @@ Each consumer keeps its own selections and pagination; each inherits the shared 
 
 An export needs each asset's folder name, and unfiled assets have none:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
+}
+// ---cut---
 const exportedAssets = await matchingAssets(options)
   .leftJoin('folder', 'folder.id', 'asset.folder_id')
   .select(['asset.id', 'asset.name', 'folder.name as folder_name'])
@@ -301,7 +401,46 @@ const exportedAssets = await matchingAssets(options)
 
 The list needs tags when requested. Add a correlated JSON subquery with `jsonArrayFrom` from `kysely/helpers/postgres`:
 
-```ts
+```ts twoslash
+import { jsonArrayFrom } from 'kysely/helpers/postgres'
+import type { Kysely } from 'kysely'
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
+}
+// ---cut---
 const assets = await matchingAssets(options)
   .select(['asset.id', 'asset.name'])
   .$if(options.includeTags, (qb) =>
@@ -518,7 +657,50 @@ function like(column: Expression<string>, pattern: string, escape = '\\') {
 }
 ```
 
-```ts
+```ts twoslash
+import { Expression, sql, type Kysely } from 'kysely'
+
+function like(column: Expression<string>, pattern: string, escape = '\\') {
+  return sql<boolean>`${column} like ${pattern} escape ${escape}`
+}
+interface Database {
+  asset: {
+    id: string
+    name: string
+    owner_id: string
+    folder_id: string | null
+  }
+  folder: { id: string; name: string }
+  album_asset: { album_id: string; asset_id: string }
+  asset_tag: { asset_id: string; tag_id: string }
+  tag: { id: string; name: string }
+}
+type AssetOptions = {
+  ownerId: string
+  albumId?: string
+  includeTags: boolean
+  namePrefix?: string
+}
+declare const db: Kysely<Database>
+declare const options: AssetOptions
+declare const pattern: string
+function matchingAssets(options: AssetOptions) {
+  return db
+    .selectFrom('asset')
+    .where('asset.owner_id', '=', options.ownerId)
+    .$call((qb) => {
+      if (options.albumId !== undefined) {
+        qb = qb
+          .innerJoin('album_asset', 'album_asset.asset_id', 'asset.id')
+          .where('album_asset.album_id', '=', options.albumId)
+      }
+      if (options.namePrefix !== undefined) {
+        qb = qb.where('asset.name', 'like', options.namePrefix + '%')
+      }
+      return qb
+    })
+}
+// ---cut---
 const matches = await matchingAssets(options)
   .where((eb) => like(eb.ref('asset.name'), pattern))
   .select(['asset.id', 'asset.name'])
