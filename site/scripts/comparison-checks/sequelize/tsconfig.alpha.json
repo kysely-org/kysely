@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "customConditions": [
+      "alpha"
+    ]
+  },
+  "include": [
+    "*.mts",
+    "types/*.v7.mts"
+  ]
+}
