@@ -41,7 +41,7 @@ async function loadHighlighter() {
 
   function renderMarkdown(markdown) {
     const mdast = fromMarkdown(
-      markdown.replace(/\{@link\s+([^}|\s]+)[^}]*\}/g, '`$1`'),
+      markdown.replace(/\n?\{@link\s+([^}|\s]+)[^}]*\}\n?/g, '`$1`'),
       { mdastExtensions: [gfmFromMarkdown()] },
     )
     return toHast(mdast, {
@@ -207,7 +207,7 @@ export default function remarkShiki() {
           name: component,
           attributes: Object.entries({
             language: node.lang || 'text',
-            children: node.value,
+            children: node.value.split('// ---cut---\n').at(-1),
             highlightedHtml: html,
             ...(popupsUrl ? { popups: popupsUrl } : {}),
             title: /\btitle="([^"]*)"/.exec(meta)?.[1] ?? '',

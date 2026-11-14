@@ -69,3 +69,15 @@ test('Mermaid remains available to the diagram renderer', async () => {
   await remarkShiki()(tree)
   assert.deepEqual(tree.children, [node])
 })
+
+test('hidden Twoslash context stays out of the copied code', async () => {
+  const props = await render(
+    `import type { Kysely } from 'kysely'
+declare const db: Kysely<any>
+// ---cut---
+await db.schema.dropTable('person').execute()`,
+    'twoslash',
+  )
+  assert.equal(props.children, "await db.schema.dropTable('person').execute()")
+  assert.doesNotMatch(props.highlightedHtml, /declare const db/)
+})

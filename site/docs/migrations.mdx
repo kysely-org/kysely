@@ -9,7 +9,7 @@ description: 'Write and run Kysely database migrations with up and down function
 
 Migration files should look like this:
 
-```ts
+```ts twoslash
 import { Kysely } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
@@ -37,12 +37,19 @@ There is also an `allowUnorderedMigrations` option. This option will allow new m
 
 To allow unordered migrations, pass the `allowUnorderedMigrations` option to Migrator:
 
-```ts
+```ts twoslash
+/// <reference types="node" />
+import { promises as fs } from 'fs'
+import * as path from 'path'
+import type { Kysely } from 'kysely'
+declare const db: Kysely<any>
+declare const migrationFolder: string
+// ---cut---
 import { FileMigrationProvider, Migrator } from 'kysely/migration'
 
 const migrator = new Migrator({
   db,
-  provider: new FileMigrationProvider(...),
+  provider: new FileMigrationProvider({ fs, path, migrationFolder }),
   allowUnorderedMigrations: true
 })
 ```
@@ -59,7 +66,7 @@ You don't need to store your migrations as separate files if you don't want to. 
 
 ## PostgreSQL migration example
 
-```ts
+```ts twoslash
 import { Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
@@ -99,7 +106,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 
 ## SQLite migration example
 
-```ts
+```ts twoslash
 import { Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
@@ -148,7 +155,10 @@ For more information, visit https://github.com/kysely-org/kysely-ctl.
 
 You can then use:
 
-```ts
+```ts twoslash
+import type { MigratorProps } from 'kysely/migration'
+declare const migratorConfig: MigratorProps
+// ---cut---
 import { Migrator } from 'kysely/migration'
 
 const migrator = new Migrator(migratorConfig)
@@ -159,7 +169,13 @@ to run all migrations that have not yet been run. See the Migrator class's docum
 
 You will probably want to add a simple migration script to your projects like this:
 
-```ts
+```ts twoslash
+// @filename: globals.d.ts
+/// <reference types="node" />
+// @filename: types.ts
+export interface Database {}
+// @filename: migrate.ts
+// ---cut---
 import * as path from 'path'
 import { Pool } from 'pg'
 import { promises as fs } from 'fs'
