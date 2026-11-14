@@ -223,7 +223,13 @@ export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
 /**
  * Dehydrates any root properties of an object that are not valid JSON types.
  *
- * For now, we catch anything in {@link StringsWhenDataTypeNotAvailable} and convert it to `string`.
+ * Converts {@link StringsWhenDataTypeNotAvailable} to `string` and
+ * {@link NumbersWhenDataTypeNotAvailable} to `number`, including array elements.
+ * Other object properties are not recursively transformed.
+ *
+ * This only changes types. The database and driver determine runtime values.
+ * Use {@link NonDehydrateable} to preserve a column's original type when your
+ * runtime configuration returns that type.
  */
 export type ShallowDehydrateObject<O> = {
   [K in keyof O]: ShallowDehydrateValue<O[K]>
