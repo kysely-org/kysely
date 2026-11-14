@@ -84,7 +84,8 @@
    faint until intent (same convention as the proof wall). */
 .quoteContainer::after {
   color: var(--kl-faint);
-  content: '↗';
+  content: '\2197\FE0E';
+  font-family: 'Segoe UI Symbol', var(--ifm-font-family-base);
   font-size: 11px;
   position: absolute;
   right: 6px;
