@@ -19,7 +19,7 @@ test('build-time highlighting preserves copy text, titles, and line highlights',
   assert.match(props.highlightedHtml, /class="line highlighted"/)
   assert.match(props.highlightedHtml, /--shiki-light/)
   assert.match(props.highlightedHtml, /--shiki-dark/)
-  assert.doesNotMatch(props.highlightedHtml, /<script/i)
+  assert.ok(!props.highlightedHtml.toLowerCase().includes('<script'))
 })
 
 test('examples resolve schema imports separately and expose accessible hovers', async () => {
