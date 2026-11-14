@@ -986,19 +986,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Asserts that query's output row type equals the given type `T`.
    *
-   * This method can be used to simplify excessively complex types to make TypeScript happy
-   * and much faster.
-   *
-   * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
-   * for TypeScript and you get errors like this:
-   *
-   * ```
-   * error TS2589: Type instantiation is excessively deep and possibly infinite.
-   * ```
-   *
-   * In these case you can often use this method to help TypeScript a little bit. When you use this
-   * method to assert the output type of a query, Kysely can drop the complex output type that
-   * consists of multiple nested helper types and replace it with the simple asserted type.
+   * Kysely builds a query's output type from nested helper types. This method replaces
+   * that accumulated type with the simple asserted type `T`, which keeps hovers and error
+   * messages short for long or deeply composed queries.
    *
    * Using this method doesn't reduce type safety at all. You have to pass in a type that is
    * structurally equal to the current type.
