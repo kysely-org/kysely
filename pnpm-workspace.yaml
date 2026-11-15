@@ -45,6 +45,8 @@ catalogs:
     hono: 4.13.18
   node:
     pathe: 2.0.3
+  test:
+    vitest: 5.1.0
 
 # Deduplicate peer dependencies.
 # see: https://github.com/pnpm/pnpm/issues/11070
