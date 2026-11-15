@@ -378,10 +378,12 @@ export const brandLogos: Record<string, BrandLogo> = {
 export function BrandLogoSvg({
   logo,
   loaded,
+  requested,
   showFallback,
 }: {
   logo: BrandLogo
   loaded: boolean
+  requested: boolean
   showFallback: boolean
 }): JSX.Element {
   const spriteUrl = useBaseUrl('/img/brand-logos.svg')
@@ -408,7 +410,7 @@ export function BrandLogoSvg({
         </text>
       )}
       <use
-        href={`${spriteUrl}#${logo.id}`}
+        href={requested ? `${spriteUrl}#${logo.id}` : undefined}
         visibility={loaded ? 'visible' : 'hidden'}
       />
     </svg>
