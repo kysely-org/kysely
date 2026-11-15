@@ -44,6 +44,8 @@ export function Quote(props: QuoteProps) {
           <img
             alt={`${authorName}'s avatar picture`}
             className="avatar__photo"
+            decoding="async"
+            loading="lazy"
             src={jpgSrc}
           />
         </picture>
