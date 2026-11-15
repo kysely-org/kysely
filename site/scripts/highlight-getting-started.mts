@@ -18,7 +18,13 @@ function files(dialect: Dialect, packageManager: PackageManager) {
   return [
     [
       'globals.d.ts',
-      '/// <reference types="node" />\nimport \'vitest/globals\'',
+      `/// <reference types="node" />
+type Hook = () => Promise<void> | void
+declare function describe(name: string, fn: () => void): void
+declare function it(name: string, fn: Hook): void
+declare function beforeAll(fn: Hook): void
+declare function afterEach(fn: Hook): void
+declare function afterAll(fn: Hook): void`,
       false,
     ],
     ['types.ts', typesCode(packageManager), true],
