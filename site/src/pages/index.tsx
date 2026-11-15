@@ -12,7 +12,6 @@ import {
   compilerError,
   compilerSnippetHtml,
   compositionSnippetHtml,
-  compositionType,
 } from '../components/snippets.generated'
 import { TypeHovers } from '../components/TypeHovers'
 import packageJson from '../../package.json'
@@ -651,12 +650,6 @@ function SectionComposition() {
                 dangerouslySetInnerHTML={{ __html: compositionSnippetHtml }}
               />
             </TypeHovers>
-            <div className={styles.typePanel}>
-              <span>
-                {compositionType.slice(0, compositionType.indexOf(':') + 1)}
-              </span>
-              {compositionType.slice(compositionType.indexOf(':') + 1)}
-            </div>
           </div>
         </div>
       </div>

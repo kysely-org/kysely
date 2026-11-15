@@ -556,7 +556,9 @@ a.stat:hover .statValue {
   color: var(--shiki-light);
 }
 
-.editorCode :global(.twoslash-error) {
+.editorCode :global(.twoslash .twoslash-error) {
+  background: none;
+  padding: 0;
   text-decoration: underline wavy var(--kl-err) 1.5px;
   text-underline-offset: 4px;
 }
@@ -606,21 +608,6 @@ a.stat:hover .statValue {
   line-height: 1.7;
   margin: 0 0 12px;
   max-width: 46ch;
-}
-
-.typePanel {
-  border-top: 1px solid var(--kl-line);
-  color: var(--kl-type);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 12px;
-  line-height: 1.7;
-  overflow-x: auto;
-  padding: 12px 20px 14px;
-  white-space: pre;
-}
-
-.typePanel span {
-  color: var(--kl-mut);
 }
 
 /* --------------------------- responsive --------------------------- */
