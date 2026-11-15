@@ -37,6 +37,20 @@ export default function Home(): JSX.Element {
       <Head>
         <title>{title}</title>
         <meta property="og:title" content={title} />
+        <link
+          as="image"
+          fetchPriority="high"
+          href="/demo-poster.webp"
+          media="not (prefers-color-scheme: light)"
+          rel="preload"
+        />
+        <link
+          as="image"
+          fetchPriority="high"
+          href="/demo-poster-light.webp"
+          media="(prefers-color-scheme: light)"
+          rel="preload"
+        />
       </Head>
       <main className={styles.landing}>
         <SectionHero />
