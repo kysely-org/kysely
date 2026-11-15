@@ -235,6 +235,31 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   width: 1px;
 }
 
+/* In the mobile menu, socials share one row under the links, past a
+   divider, with the first icon lined up with the link text. */
+.navbar-sidebar .menu__list:has(> .navbar-group-start) {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.navbar-sidebar .menu__list:has(> .navbar-group-start) > li {
+  flex-basis: 100%;
+}
+
+.navbar-sidebar .menu__list-item:has(+ .navbar-group-start) {
+  border-bottom: 1px solid var(--navbar-divider);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+}
+
+.navbar-sidebar .menu__list-item:has(> .navbar-social) {
+  margin-top: 0;
+}
+
+.navbar-sidebar .navbar-group-start {
+  margin-left: 5.5px;
+}
+
 /* Pagefind Component UI theme mapping. Colors ride the --ifm vars (which
    flip with [data-theme]); the SearchBar also stamps data-pf-theme="dark"
    for the component's own dark-only rules. */
@@ -436,7 +461,8 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
   }
 }
 
-.navbar__link:has([class*='iconExternalLink'])::after {
+.navbar__link:has([class*='iconExternalLink'])::after,
+.navbar-sidebar .menu__link:has([class*='iconExternalLink'])::after {
   content: '\2197\FE0E';
   display: inline-block;
   font-family: 'Segoe UI Symbol', var(--ifm-font-family-base);
@@ -448,7 +474,8 @@ pagefind-modal:is(*, #\#):is(*, #\#):is(*, #\#) .pf-result-title[data-result-bad
   transition: opacity 0.15s ease;
 }
 
-.navbar__link:has([class*='iconExternalLink']):hover::after {
+.navbar__link:has([class*='iconExternalLink']):hover::after,
+.navbar-sidebar .menu__link:has([class*='iconExternalLink']):hover::after {
   opacity: 1;
 }
 
