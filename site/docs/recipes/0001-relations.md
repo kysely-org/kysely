@@ -154,9 +154,7 @@ console.log(persons[0].mother?.first_name)
 ```
 
 :::warning[SQL Server]
-The SQL Server helpers only work with the `ParseJSONResultsPlugin` installed, otherwise the nested selections are returned as JSON strings.
-
-SQL Server also doesn't allow `ORDER BY` in subqueries unless they have an `OFFSET`, so add `.offset(0)` after `.orderBy(...)` in the subqueries you pass to the helpers, including the `pets` helper below:
+SQL Server doesn't allow `ORDER BY` in subqueries unless they have an `OFFSET`, so add `.offset(0)` after `.orderBy(...)` in the subqueries you pass to the helpers, including the `pets` helper below:
 
 ```ts twoslash
 import type { Generated, Kysely } from 'kysely'
