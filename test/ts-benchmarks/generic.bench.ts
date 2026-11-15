@@ -130,11 +130,11 @@ bench('SelectQueryBuilder assignable to narrower SelectQueryBuilder', () => {
 
 bench('ExpressionBuilder assignable to narrower ExpressionBuilder', () => {
   return acceptsNarrowExpressionBuilder(wideExpressionBuilder)
-}).types([55494, 'instantiations'])
+}).types([55482, 'instantiations'])
 
 bench('ExpressionBuilder passed to function expecting fewer tables', () => {
   return acceptsTwoTableExpressionBuilder(threeTableExpressionBuilder)
-}).types([55545, 'instantiations'])
+}).types([55529, 'instantiations'])
 
 bench('select(genericSelectHelper) on a left joined query', () => {
   return kysely
@@ -142,7 +142,7 @@ bench('select(genericSelectHelper) on a left joined query', () => {
     .leftJoin('person as personJoin', 'personJoin.parent_id', 'parent.id')
     .leftJoin('pet as petJoin', 'petJoin.owner_id', 'personJoin.id')
     .select(selectParentId)
-}).types([57871, 'instantiations'])
+}).types([57855, 'instantiations'])
 
 bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
   return acceptsNarrowDeleteQueryBuilder(wideDeleteQueryBuilder)
@@ -150,7 +150,7 @@ bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
 
 bench('UpdateQueryBuilder assignable to narrower UpdateQueryBuilder', () => {
   return acceptsNarrowUpdateQueryBuilder(wideUpdateQueryBuilder)
-}).types([91178, 'instantiations'])
+}).types([91172, 'instantiations'])
 
 bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
   return acceptsNarrowMergeQueryBuilder(wideMergeQueryBuilder)
@@ -158,8 +158,8 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([162352, 'instantiations'])
+}).types([161995, 'instantiations'])
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)
-}).types([22733, 'instantiations'])
+}).types([22428, 'instantiations'])
