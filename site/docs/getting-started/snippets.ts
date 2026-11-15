@@ -135,32 +135,18 @@ export async function deletePerson(id: number) {
 
   return person
 }`,
-  // TODO: Update to use output clause once #687 is completed
-  mssql: `// As of v0.27.0, Kysely doesn't support the \`OUTPUT\` clause. This will change
-// in the future. For now, the following implementations achieve the same results
-// as other dialects' examples, but with extra steps.
-
-export async function createPerson(person: NewPerson) {
-  const compiledQuery = db.insertInto('person').values(person).compile()
-
-  const {
-    rows: [{ id }],
-  } = await db.executeQuery<Pick<Person, 'id'>>({
-    ...compiledQuery,
-    sql: \`\${compiledQuery.sql}; select scope_identity() as id\`
-  })
-
-  return await findPersonById(id)
+  mssql: `export async function createPerson(person: NewPerson) {
+  return await db.insertInto('person')
+    .outputAll('inserted')
+    .values(person)
+    .executeTakeFirstOrThrow()
 }
 
 export async function deletePerson(id: number) {
-  const person = await findPersonById(id)
-
-  if (person) {
-    await db.deleteFrom('person').where('id', '=', id).execute()
-  }
-
-  return person
+  return await db.deleteFrom('person')
+    .outputAll('deleted')
+    .where('id', '=', id)
+    .executeTakeFirst()
 }`,
   sqlite: repositoryPostgresqlSnippet,
   pglite: repositoryPostgresqlSnippet,
@@ -239,9 +225,8 @@ const specSnippets: Record<Dialect, string> = {
       )
       .addColumn('metadata', 'json', (cb) => cb.notNull())
       .execute()`,
-  // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
   mssql: `    await db.schema.createTable('person')
-      .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`identity\`))
+      .addColumn('id', 'integer', (cb) => cb.identity().primaryKey())
       .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
       .addColumn('last_name', 'varchar(255)')
       .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())

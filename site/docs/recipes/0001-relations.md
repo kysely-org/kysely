@@ -12,8 +12,8 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 Phew, glad we got that out the way..
 
 Having said all that, there are ways to nest related rows in your queries. You just have to do it
-using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
-we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
+using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, SQL Server, or SQLite) provide. In this recipe
+we show one way to do that when using the built-in PostgreSQL, MySQL, SQL Server, and SQLite dialects.
 
 This recipe is supported on MySQL versions starting from 8.0.14. This is due to the way subqueries use outer references in this recipe (cf. [MySQL 8.0.14 changelog](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-14.html#mysqld-8-0-14-optimizer) | [MariaDB is not supported yet](https://jira.mariadb.org/browse/MDEV-19078)).
 
@@ -22,7 +22,7 @@ This recipe is supported on MySQL versions starting from 8.0.14. This is due to 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
 :::info[Parsing JSON]
-The built in `SqliteDialect` and some third-party dialects don't parse the returned JSON columns to objects automatically.
+The built in `MssqlDialect`, `SqliteDialect` and some third-party dialects don't parse the returned JSON columns to objects automatically.
 Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled (or not handled) by the database driver
 that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
@@ -103,10 +103,14 @@ These helpers are included in Kysely and you can import them from the `helpers` 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
 
-MySQL and SQLite versions of the helpers are slightly different, but you can use them the same way. You can import them like this:
+MySQL, SQL Server, and SQLite versions of the helpers are slightly different, but you can use them the same way. You can import them like this:
 
 ```ts twoslash
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'
+```
+
+```ts twoslash
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mssql'
 ```
 
 ```ts twoslash
@@ -148,6 +152,36 @@ const persons = await db
 console.log(persons[0].pets[0].name)
 console.log(persons[0].mother?.first_name)
 ```
+
+:::warning[SQL Server]
+The SQL Server helpers only work with the `ParseJSONResultsPlugin` installed, otherwise the nested selections are returned as JSON strings.
+
+SQL Server also doesn't allow `ORDER BY` in subqueries unless they have an `OFFSET`, so add `.offset(0)` after `.orderBy(...)` in the subqueries you pass to the helpers, including the `pets` helper below:
+
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+import { jsonArrayFrom } from 'kysely/helpers/mssql'
+interface DB {
+  person: { id: Generated<number>; first_name: string; mother_id: number }
+  pet: { id: Generated<number>; name: string; owner_id: number }
+}
+declare const db: Kysely<DB>
+// ---cut---
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .select((eb) => [
+    jsonArrayFrom(
+      eb.selectFrom('pet')
+        .select(['pet.id', 'pet.name'])
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .orderBy('pet.name')
+        .offset(0)
+    ).as('pets'),
+  ])
+  .execute()
+```
+:::
 
 That's better right? If you need to do this over and over in your codebase, you can create some helpers like these:
 
