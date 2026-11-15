@@ -9,9 +9,11 @@ import { DemoVideo } from '../components/DemoVideo'
 import { SectionFeatures } from '../components/SectionFeatures'
 import { SectionQuotes } from '../components/SectionQuotes'
 import {
+  compilerError,
   compilerSnippetHtml,
   compositionSnippetHtml,
 } from '../components/snippets.generated'
+import { TypeHovers } from '../components/TypeHovers'
 import packageJson from '../../package.json'
 import productionProof from '../data/production-proof.json'
 import styles from './index.module.css'
@@ -570,6 +572,9 @@ function SectionProduction() {
   )
 }
 
+const loadPopups = () =>
+  import('../components/snippets-popups.generated').then((m) => m.POPUPS)
+
 function SectionCompiler() {
   return (
     <section className={styles.compiler}>
@@ -596,15 +601,16 @@ function SectionCompiler() {
               </span>
               person.repository.ts
             </div>
-            <div
-              className={styles.editorCode}
-              dangerouslySetInnerHTML={{ __html: compilerSnippetHtml }}
-            />
+            <TypeHovers className={styles.editorCode} loadPopups={loadPopups}>
+              <div dangerouslySetInnerHTML={{ __html: compilerSnippetHtml }} />
+            </TypeHovers>
             <div className={styles.errPanel}>
-              Argument of type <span>'"person.ag"'</span> is not assignable to
-              parameter of type{' '}
-              <span>{'\'ReferenceExpression<DB, "person">\''}</span>.{' '}
-              <span>ts(2345)</span>
+              {compilerError.text
+                .split(/('[^']*')/)
+                .map((part, index) =>
+                  index % 2 ? <span key={index}>{part}</span> : part,
+                )}{' '}
+              <span>ts({compilerError.code})</span>
             </div>
           </div>
         </div>
@@ -639,16 +645,11 @@ function SectionComposition() {
               </span>
               person.helpers.ts
             </div>
-            <div
-              className={styles.editorCode}
-              dangerouslySetInnerHTML={{ __html: compositionSnippetHtml }}
-            />
-            <div className={styles.typePanel}>
-              <span>const person:</span>{' '}
-              {
-                "{ id: number; first_name: string; pets: { name: string; species: 'dog' | 'cat' }[] }"
-              }
-            </div>
+            <TypeHovers className={styles.editorCode} loadPopups={loadPopups}>
+              <div
+                dangerouslySetInnerHTML={{ __html: compositionSnippetHtml }}
+              />
+            </TypeHovers>
           </div>
         </div>
       </div>

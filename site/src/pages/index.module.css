@@ -556,9 +556,16 @@ a.stat:hover .statValue {
   color: var(--shiki-light);
 }
 
-.editorCode :global(.kl-squiggle) {
+.editorCode :global(.twoslash .twoslash-error) {
+  background: none;
+  padding: 0;
   text-decoration: underline wavy var(--kl-err) 1.5px;
   text-underline-offset: 4px;
+}
+
+.editorCode :global(.twoslash-hover:focus-visible) {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
 }
 
 .errPanel {
@@ -601,19 +608,6 @@ a.stat:hover .statValue {
   line-height: 1.7;
   margin: 0 0 12px;
   max-width: 46ch;
-}
-
-.typePanel {
-  border-top: 1px solid var(--kl-line);
-  color: var(--kl-type);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 12px;
-  line-height: 1.7;
-  padding: 12px 20px 14px;
-}
-
-.typePanel span {
-  color: var(--kl-mut);
 }
 
 /* --------------------------- responsive --------------------------- */

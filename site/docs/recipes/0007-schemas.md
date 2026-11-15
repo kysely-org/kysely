@@ -22,7 +22,13 @@ Kysely offers tools for both of these cases.
 When you have an enumarable set of schemas, you can add them to your database interface
 like this:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface UserTable { id: Generated<number>; username: string; created_at: Date }
+interface UserPermissionTable { user_id: number; permission_id: number }
+interface PermissionTable { id: Generated<number>; name: string }
+interface PetTable { id: Generated<number>; name: string; owner_id: number }
+// ---cut---
 interface Database {
   'user.user': UserTable
   'user.user_permission': UserPermissionTable
@@ -33,7 +39,21 @@ interface Database {
 
 then you can refer to the tables just like you would a normal table:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface UserTable { id: Generated<number>; username: string; created_at: Date }
+interface UserPermissionTable { user_id: number; permission_id: number }
+interface PermissionTable { id: Generated<number>; name: string }
+interface PetTable { id: Generated<number>; name: string; owner_id: number }
+interface Database {
+  'user.user': UserTable
+  'user.user_permission': UserPermissionTable
+  'user.permission': PermissionTable
+  pet: PetTable
+}
+declare const db: Kysely<Database>
+declare const createdAt: Date
+// ---cut---
 db.selectFrom('user.user')
   .where('username', '=', '')
   // You can also include the full table name
@@ -52,7 +72,28 @@ database interface, nor would it make sense to do so. In this case you can use t
 The `withSchema` method sets the default schema of all table references that don't explicitly
 specify a schema:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface UserTable { id: Generated<number>; username: string; created_at: Date }
+interface UserPermissionTable { user_id: number; permission_id: number }
+interface PermissionTable { id: Generated<number>; name: string }
+interface PetTable { id: Generated<number>; name: string; owner_id: number }
+interface Database {
+  // Add your tenant tables without any schema:
+  user: UserTable
+  user_permission: UserPermissionTable
+
+  // Add schemas and tables you need to explicitly reference like this:
+  'public.permission': PermissionTable
+
+  // You can also have other shared tables with or without schemas here.
+  // But keep in mind that if you want to refer to them from a `withSchema`
+  // query, you need the table name with the schema name.
+  pet: PetTable
+}
+declare const db: Kysely<Database>
+declare const tenant: string
+// ---cut---
 db.withSchema(tenant)
   .selectFrom('user')
   .innerJoin('user_permission as up', 'up.user_id', 'user.id')
@@ -72,7 +113,13 @@ In this example we also referred to a shared table `permission` in the `public` 
 Please note that you need to add a `'public.permission': PermissionTable` item in your
 database schema to be able to refer to the `public.permission` table:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface UserTable { id: Generated<number>; username: string; created_at: Date }
+interface UserPermissionTable { user_id: number; permission_id: number }
+interface PermissionTable { id: Generated<number>; name: string }
+interface PetTable { id: Generated<number>; name: string; owner_id: number }
+// ---cut---
 interface Database {
   // Add your tenant tables without any schema:
   user: UserTable

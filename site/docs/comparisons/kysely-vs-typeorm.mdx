@@ -30,7 +30,7 @@ Assume configured Kysely (`db`) and TypeORM (`dataSource`) clients over the same
 
 Kysely's `Database` interface is types only, handwritten or [generated](/docs/generating-types) from the database:
 
-```ts
+```ts twoslash
 interface Database {
   person: { id: number; first_name: string; age: number | null }
   pet: { id: number; name: string; owner_id: number }
@@ -39,7 +39,7 @@ interface Database {
 
 TypeORM's entities are classes with metadata, declared here through `EntitySchema` instead of decorators, which TypeORM also reads to generate migrations:
 
-```ts
+```ts twoslash
 import { EntitySchema } from 'typeorm'
 
 class Person {
@@ -96,7 +96,58 @@ Select adults with their pets' names, keeping people who have no pet.
 
 With TypeORM:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const rows = await dataSource
   .getRepository(Person)
   .createQueryBuilder('person')
@@ -111,7 +162,14 @@ const rows = await dataSource
 
 With Kysely:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const rows = await db
   .selectFrom('person')
   .leftJoin('pet', 'pet.owner_id', 'person.id')
@@ -134,7 +192,58 @@ A join without a declared relation, a computed column, a grouped aggregate, or a
 
 Production queries collect their filters. Put the query above in a function with an optional pet name, and later drop the pet's name from the result, and the join with it:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 function matchingPeople(options: { petName?: string }) {
   const query = dataSource
     .getRepository(Person)
@@ -151,7 +260,15 @@ function matchingPeople(options: { petName?: string }) {
 
 It compiles, and it runs for every request without a pet name. A request with one fails in PostgreSQL: the filter still reads `pet`, and the change never touched that line. The same function after the same change in Kysely:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// @errors: 2345
+// ---cut---
 function matchingPeople(options: { petName?: string }) {
   let query = db
     .selectFrom('person')
@@ -209,7 +326,7 @@ A column renamed in the database is a compile error in every Kysely query that n
 
 One Kysely gap is quiet: a `union` whose sides list the same columns in a different order returns values under the wrong keys.
 
-The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor. [Excessively deep types](/docs/recipes/excessively-deep-types) covers the limit TypeScript can hit and how to stay inside it.
+The checks also cost compile time. Kysely's types are computed by the compiler, and a schema with hundreds of tables or a deeply composed query can slow type-checking and the editor.
 
 </details>
 
@@ -219,7 +336,58 @@ TypeORM has two result shapes. `getMany()` and `getOne()` return entity instance
 
 Rename the alias and leave the annotation:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const rows = await dataSource
   .getRepository(Person)
   .createQueryBuilder('person')
@@ -231,7 +399,58 @@ rows[0].first_name // Compiles. undefined at runtime: the row has name.
 
 Select one property and read another:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const person = await dataSource
   .getRepository(Person)
   .createQueryBuilder('person')
@@ -252,7 +471,65 @@ JSON traversal, CASE, filtered aggregates, and window clauses are SQL text in `s
 
 A `user_settings.profile` column holds JSON typed as `Profile`, which is `{ addresses: { city: string }[] }`. Read the first address's city. With TypeORM:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+interface Profile {
+  addresses: { city: string }[]
+}
+class Settings {
+  declare id: number
+  declare profile: Profile
+}
+// ---cut---
 const rows = await dataSource
   .getRepository(Settings)
   .createQueryBuilder('settings')
@@ -264,7 +541,18 @@ const rows = await dataSource
 
 With Kysely:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+interface Profile {
+  addresses: { city: string }[]
+}
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+  user_settings: { id: number; profile: Profile }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const rows = await db
   .selectFrom('user_settings')
   .select('id')
@@ -311,7 +599,14 @@ The find API can load relations without the join. With [`relationLoadStrategy: '
 
 Kysely nests in SQL, with `jsonArrayFrom` from `kysely/helpers/postgres`:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 import { jsonArrayFrom } from 'kysely/helpers/postgres'
 
 const rows = await db
@@ -342,7 +637,58 @@ Ordered by a joined column, the join's first statement picks distinct pairs of t
 
 TypeORM mutates the shared base:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const base = dataSource
   .getRepository(Person)
   .createQueryBuilder('person')
@@ -356,7 +702,14 @@ const everyone = await base.getRawMany()
 
 Kysely branches independently:
 
-```ts
+```ts twoslash
+import { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const base = db.selectFrom('person').select('id').where('age', '>=', 18)
 const preview = base.limit(1)
 const everyone = await base.execute()
@@ -365,7 +718,59 @@ const everyone = await base.execute()
 
 The same mutation decides what `where()` means. TypeORM's docs say that [using `.where` more than once overrides all previous `WHERE` expressions](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L418), and `andWhere()` is the method that adds:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+declare const ownerId: number
+// ---cut---
 const ownedPets = dataSource
   .getRepository(Pet)
   .createQueryBuilder('pet')
@@ -395,7 +800,58 @@ Kysely's `eb.or()` and `eb.and()` put their conditions in parentheses, so `where
 
 TypeORM binds values through named parameters in the SQL string, and the names share one namespace per query. The docs open the query builder page with [a note on it](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L40-L42), and repeat it: [values will be overridden](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/query-builder/1-select-query-builder.md#L308) if a name is set twice.
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const peopleWithPets = () =>
   dataSource
     .getRepository(Person)
@@ -427,7 +883,58 @@ Kysely passes the driver's error through, and node-postgres adds no parameters t
 
 TypeORM's builder adds to a statement from the entity's metadata. Give `person` a `deleted_at` column declared as its [delete date](https://github.com/typeorm/typeorm/blob/5a572a40bae2f85a1d5f7b87a0aa88bbbaec5ab3/docs/docs/entity/1-entities.md#L177) (`deleteDate: true` in `EntitySchema`, `@DeleteDateColumn()` with decorators), and every select and count on it gets `"deleted_at" IS NULL`. So does the `ON` condition of a join written by hand:
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 const rows = await dataSource
   .getRepository(Pet)
   .createQueryBuilder('pet')
@@ -463,7 +970,58 @@ A move from TypeORM to Kysely does not have to happen at once, or at all for the
 
 Yes. [kysely-typeorm](https://github.com/kysely-org/kysely-typeorm) runs Kysely over an existing `DataSource`: its [`KyselyTypeORMDialect`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L207-L233) reuses TypeORM's connections, and its [`KyselifyEntity`](https://github.com/kysely-org/kysely-typeorm/blob/f4789777c56b291666ff8f873a8fafbac9184cbd/README.md#L185-L198) type derives Kysely's table types from the entity classes, with no generation step.
 
-```ts
+```ts twoslash
+import { EntitySchema } from 'typeorm'
+
+class Person {
+  declare id: number
+  declare first_name: string
+  declare age: number | null
+  declare pets: Pet[]
+}
+
+class Pet {
+  declare id: number
+  declare name: string
+  declare owner_id: number
+  declare owner: Person
+}
+
+const PersonSchema = new EntitySchema<Person>({
+  name: 'Person',
+  target: Person,
+  tableName: 'person',
+  columns: {
+    id: { type: Number, primary: true },
+    first_name: { type: String },
+    age: { type: Number, nullable: true },
+  },
+  relations: {
+    pets: { type: 'one-to-many', target: 'Pet', inverseSide: 'owner' },
+  },
+})
+
+const PetSchema = new EntitySchema<Pet>({
+  name: 'Pet',
+  target: Pet,
+  tableName: 'pet',
+  columns: {
+    id: { type: Number, primary: true },
+    name: { type: String },
+    owner_id: { type: Number },
+  },
+  relations: {
+    owner: {
+      type: 'many-to-one',
+      target: 'Person',
+      joinColumn: { name: 'owner_id' },
+      inverseSide: 'pets',
+    },
+  },
+})
+import { DataSource } from 'typeorm'
+declare const dataSource: DataSource
+// ---cut---
 import {
   Kysely,
   PostgresAdapter,

@@ -6,7 +6,9 @@ description: 'Configure Kysely plugins for camelCase identifiers, duplicate join
 
 Plugins are classes that implement [KyselyPlugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html). Plugins are then added to the `Kysely` instance as follows:
 
-```ts
+```ts twoslash
+interface Database {}
+// ---cut---
 import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
 

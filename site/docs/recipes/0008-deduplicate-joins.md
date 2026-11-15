@@ -7,7 +7,14 @@ description: 'Prevent duplicate joins in dynamic Kysely queries by configuring D
 When building dynamic queries, you sometimes end up in situations where the same join
 could be added twice. Consider this query:
 
-```ts
+```ts twoslash
+import type { Generated, Kysely } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string }
+  pet: { id: Generated<number>; name: string; species: 'dog' | 'cat'; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 async function getPerson(
   id: number,
   withPetName: boolean,
@@ -42,7 +49,14 @@ To prevent the error from happening, you can install the
 [DeduplicateJoinsPlugin](https://kysely-org.github.io/kysely-apidoc/classes/DeduplicateJoinsPlugin.html).
 You can either install it globally by providing it in the configuration:
 
-```ts
+```ts twoslash
+import { DeduplicateJoinsPlugin, Kysely, type Dialect, type Generated } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string }
+  pet: { id: Generated<number>; name: string; species: 'dog' | 'cat'; owner_id: number }
+}
+declare const dialect: Dialect
+// ---cut---
 const db = new Kysely<Database>({
   dialect,
   plugins: [new DeduplicateJoinsPlugin()],
@@ -51,7 +65,14 @@ const db = new Kysely<Database>({
 
 or you can use it when needed:
 
-```ts
+```ts twoslash
+import { DeduplicateJoinsPlugin, type Generated, type Kysely } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string }
+  pet: { id: Generated<number>; name: string; species: 'dog' | 'cat'; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 async function getPerson(
   id: number,
   withPetName: boolean,

@@ -27,7 +27,7 @@ expression is compiled.
 
 Here's an example of a custom expression for `JSON` or `JSONB` values on PostgreSQL:
 
-```ts
+```ts twoslash
 import { Expression, Kysely, OperationNode, sql } from 'kysely'
 
 class JsonValue<T> implements Expression<T> {
@@ -54,7 +54,30 @@ class JsonValue<T> implements Expression<T> {
 
 Now you can use your new `JsonValue` expression pretty much anywhere _as a value_ in a type-safe way:
 
-```ts
+```ts twoslash
+import { Expression, Kysely, OperationNode, sql } from 'kysely'
+
+class JsonValue<T> implements Expression<T> {
+  #value: T
+
+  constructor(value: T) {
+    this.#value = value
+  }
+
+  // This is a mandatory getter. You must add it and always return `undefined`.
+  // The return type must always be `T | undefined`.
+  get expressionType(): T | undefined {
+    return undefined
+  }
+
+  toOperationNode(): OperationNode {
+    const json = JSON.stringify(this.#value)
+    // Most of the time you can use the `sql` template tag to build the returned node.
+    // The `sql` template tag takes care of passing the `json` string as a parameter, alongside the sql string, to the DB.
+    return sql`CAST(${json} AS JSONB)`.toOperationNode()
+  }
+}
+// ---cut---
 interface DB {
   person: {
     address: {
@@ -94,7 +117,7 @@ implements the `Expression<T>` interface.
 
 Our previous example would get simplified into this:
 
-```ts
+```ts twoslash
 import { Kysely, RawBuilder, sql } from 'kysely'
 
 function json<T>(value: T): RawBuilder<T> {
@@ -104,7 +127,13 @@ function json<T>(value: T): RawBuilder<T> {
 
 And you'd use it like this:
 
-```ts
+```ts twoslash
+import { Kysely, RawBuilder, sql } from 'kysely'
+
+function json<T>(value: T): RawBuilder<T> {
+  return sql`CAST(${JSON.stringify(value)} AS JSONB)`
+}
+// ---cut---
 interface DB {
   person: {
     address: {
@@ -148,7 +177,7 @@ where you need a name for the expression, like in a `SELECT` statement or a `FRO
 Let's expand the `JsonValue` example from the [previous section](#expression). We'll add an `as`
 method for the `JsonValue` class that can be used to turn an `Expression<T>` into an `AliasedExpression<T, A>`:
 
-```ts
+```ts twoslash
 import {
   Expression,
   AliasedExpression,
@@ -161,6 +190,21 @@ import {
 
 class JsonValue<T> implements Expression<T> {
   // ... Methods from the previous example ...
+  // ---cut-start---
+  #value: T
+
+  constructor(value: T) {
+    this.#value = value
+  }
+
+  get expressionType(): T | undefined {
+    return undefined
+  }
+
+  toOperationNode(): OperationNode {
+    return sql`CAST(${JSON.stringify(this.#value)} AS JSONB)`.toOperationNode()
+  }
+  // ---cut-end---
 
   as<A extends string>(alias: A): AliasedJsonValue<T, A> {
     return new AliasedJsonValue(this, alias)
@@ -195,7 +239,63 @@ class AliasedJsonValue<T, A extends string> implements AliasedExpression<T, A> {
 
 And now you can use `JsonValue` in `select` statements too with full type safety:
 
-```ts
+```ts twoslash
+import {
+  Expression,
+  AliasedExpression,
+  Kysely,
+  OperationNode,
+  sql,
+  AliasNode,
+  IdentifierNode,
+} from 'kysely'
+
+class JsonValue<T> implements Expression<T> {
+  // ... Methods from the previous example ...
+  #value: T
+
+  constructor(value: T) {
+    this.#value = value
+  }
+
+  get expressionType(): T | undefined {
+    return undefined
+  }
+
+  toOperationNode(): OperationNode {
+    return sql`CAST(${JSON.stringify(this.#value)} AS JSONB)`.toOperationNode()
+  }
+
+  as<A extends string>(alias: A): AliasedJsonValue<T, A> {
+    return new AliasedJsonValue(this, alias)
+  }
+}
+
+class AliasedJsonValue<T, A extends string> implements AliasedExpression<T, A> {
+  #expression: Expression<T>
+  #alias: A
+
+  constructor(expression: Expression<T>, alias: A) {
+    this.#expression = expression
+    this.#alias = alias
+  }
+
+  get expression(): Expression<T> {
+    return this.#expression
+  }
+
+  get alias(): A {
+    return this.#alias
+  }
+
+  toOperationNode(): AliasNode {
+    return AliasNode.create(
+      this.#expression.toOperationNode(),
+      IdentifierNode.create(this.#alias)
+    )
+  }
+}
+// ---cut---
 interface DB {
   person: {
     address: {
@@ -225,13 +325,20 @@ Again, in most cases you don't need to implement your own `AliasedExpression<T, 
 `RawBuilder` has a similar `as` method and we can use the three line long `json`
 function from our previous example:
 
-```ts
+```ts twoslash
+import { sql, type Kysely, type RawBuilder } from 'kysely'
+// ---cut---
 function json<T>(value: T): RawBuilder<T> {
   return sql`CAST(${JSON.stringify(value)} AS JSONB)`
 }
 ```
 
-```ts
+```ts twoslash
+import { sql, type Kysely, type RawBuilder } from 'kysely'
+function json<T>(value: T): RawBuilder<T> {
+  return sql`CAST(${JSON.stringify(value)} AS JSONB)`
+}
+// ---cut---
 interface DB {
   person: {
     address: {
@@ -276,7 +383,9 @@ inner join
 Kysely doesn't have built-in support for the `values` keyword in this context, but you can create
 a type-safe helper function like this:
 
-```ts
+```ts twoslash
+import { sql, type AliasedRawBuilder } from 'kysely'
+// ---cut---
 function values<R extends Record<string, unknown>, A extends string>(
   records: R[],
   alias: A
@@ -316,7 +425,40 @@ table, so we need to tell Kysely both the type of the table AND the name of the 
 
 This is how you could now create our query using the `values` helper:
 
-```ts
+```ts twoslash
+import { sql, type AliasedRawBuilder, type Kysely } from 'kysely'
+function values<R extends Record<string, unknown>, A extends string>(
+  records: R[],
+  alias: A
+): AliasedRawBuilder<R, A> {
+  // Assume there's at least one record and all records
+  // have the same keys.
+  const keys = Object.keys(records[0])
+
+  // Transform the records into a list of lists such as
+  // ($1, $2, $3), ($4, $5, $6)
+  const values = sql.join(
+    records.map((r) => sql`(${sql.join(keys.map((k) => r[k]))})`)
+  )
+
+  // Create the alias `v(id, v1, v2)` that specifies the table alias
+  // AND a name for each column.
+  const wrappedAlias = sql.ref(alias)
+  const wrappedColumns = sql.join(keys.map(sql.ref))
+  const aliasSql = sql`${wrappedAlias}(${wrappedColumns})`
+
+  // Finally create a single `AliasedRawBuilder` instance of the
+  // whole thing. Note that we need to explicitly specify
+  // the alias type using `.as<A>` because we are using a
+  // raw sql snippet as the alias.
+  return sql<R>`(values ${values})`.as<A>(aliasSql)
+}
+interface DB {
+  t: { t1: string; t2: string }
+  j: { vid: number; j2: string }
+}
+declare const db: Kysely<DB>
+// ---cut---
 // This could come as an input from somewhere.
 const records = [
   {
@@ -363,8 +505,10 @@ You can override and extend Kysely's builder classes via [Typescript module augm
 The following example adds an `addIdColumn` method to `CreateTableBuilder`, which helps
 in adding a PostgreSQL UUID primary key column:
 
-```ts
-declare module 'kysely/dist/schema/create-table-builder' {
+```ts twoslash
+import { CreateTableBuilder, sql } from 'kysely'
+
+declare module 'kysely' {
   interface CreateTableBuilder<TB extends string, C extends string = never> {
     addIdColumn<CN extends string = 'id'>(
       col?: CN
@@ -384,7 +528,26 @@ CreateTableBuilder.prototype.addIdColumn = function (
 Now you can use `addIdColumn` seamlessly to create several tables with a uniform
 primary key definition:
 
-```ts
+```ts twoslash
+import { CreateTableBuilder, sql } from 'kysely'
+
+declare module 'kysely' {
+  interface CreateTableBuilder<TB extends string, C extends string = never> {
+    addIdColumn<CN extends string = 'id'>(
+      col?: CN
+    ): CreateTableBuilder<TB, C | CN>
+  }
+}
+CreateTableBuilder.prototype.addIdColumn = function (
+  this: CreateTableBuilder<any, any>,
+  col?: string
+) {
+  return this.addColumn(col || 'id', 'uuid', (col) =>
+    col.primaryKey().defaultTo(sql`gen_random_uuid()`)
+  )
+}
+declare const db: import('kysely').Kysely<any>
+// ---cut---
 db.schema.createTable('person').addIdColumn().addColumn('name', 'varchar')
 db.schema.createTable('pet').addColumn('species', 'varchar').addIdColumn()
 ```

@@ -6,7 +6,7 @@ description: 'Use Kysely in the browser to build type-safe queries and compile S
 
 Kysely also runs in the browser. Here's a minimal example:
 
-```ts
+```ts twoslash
 import {
   Kysely,
   Generated,

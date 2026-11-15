@@ -26,9 +26,13 @@ The built in `SqliteDialect` and some third-party dialects don't parse the retur
 Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled (or not handled) by the database driver
 that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
-```ts
+```ts twoslash
+import { Kysely, ParseJSONResultsPlugin, type Dialect } from 'kysely'
+interface DB {}
+declare const dialect: Dialect
+// ---cut---
 const db = new Kysely<DB>({
-  ...
+  dialect,
   plugins: [new ParseJSONResultsPlugin()]
 })
 ```
@@ -81,7 +85,9 @@ Simple right 😅. Yeah, not so much. But it does provide full control over the 
 
 Fortunately we can improve and simplify this a lot using Kysely. First let's define a couple of helpers:
 
-```ts
+```ts twoslash
+import { sql, type Expression, type Simplify } from 'kysely'
+// ---cut---
 function jsonArrayFrom<O>(expr: Expression<O>) {
   return sql<Simplify<O>[]>`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
@@ -93,23 +99,31 @@ function jsonObjectFrom<O>(expr: Expression<O>) {
 
 These helpers are included in Kysely and you can import them from the `helpers` module like this:
 
-```ts
+```ts twoslash
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
 
 MySQL and SQLite versions of the helpers are slightly different, but you can use them the same way. You can import them like this:
 
-```ts
+```ts twoslash
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'
 ```
 
-```ts
+```ts twoslash
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
 ```
 
 With these helpers, our example query already becomes a little more bearable to look at:
 
-```ts
+```ts twoslash
+import type { Expression, Generated, Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+interface DB {
+  person: { id: Generated<string>; first_name: string; mother_id: string }
+  pet: { id: Generated<string>; name: string; owner_id: string }
+}
+declare const db: Kysely<DB>
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
@@ -137,7 +151,15 @@ console.log(persons[0].mother?.first_name)
 
 That's better right? If you need to do this over and over in your codebase, you can create some helpers like these:
 
-```ts
+```ts twoslash
+import type { Expression, Generated, Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+interface DB {
+  person: { id: Generated<string>; first_name: string; mother_id: string }
+  pet: { id: Generated<string>; name: string; owner_id: string }
+}
+declare const db: Kysely<DB>
+// ---cut---
 function pets(ownerId: Expression<string>) {
   return jsonArrayFrom(
     db.selectFrom('pet')
@@ -158,7 +180,31 @@ function mother(motherId: Expression<string>) {
 
 And now you get this:
 
-```ts
+```ts twoslash
+import type { Expression, Generated, Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+interface DB {
+  person: { id: Generated<string>; first_name: string; mother_id: string }
+  pet: { id: Generated<string>; name: string; owner_id: string }
+}
+declare const db: Kysely<DB>
+function pets(ownerId: Expression<string>) {
+  return jsonArrayFrom(
+    db.selectFrom('pet')
+      .select(['pet.id', 'pet.name'])
+      .where('pet.owner_id', '=', ownerId)
+      .orderBy('pet.name')
+  )
+}
+
+function mother(motherId: Expression<string>) {
+  return jsonObjectFrom(
+    db.selectFrom('person as mother')
+      .select(['mother.id', 'mother.first_name'])
+      .where('mother.id', '=', motherId)
+  )
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
@@ -176,7 +222,31 @@ In some cases Kysely marks your selections as nullable if it's not able to know 
 always exists. If you have that information, you can mark the relation non-null using the
 `$notNull()` helper like this:
 
-```ts
+```ts twoslash
+import type { Expression, Generated, Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+interface DB {
+  person: { id: Generated<string>; first_name: string; mother_id: string }
+  pet: { id: Generated<string>; name: string; owner_id: string }
+}
+declare const db: Kysely<DB>
+function pets(ownerId: Expression<string>) {
+  return jsonArrayFrom(
+    db.selectFrom('pet')
+      .select(['pet.id', 'pet.name'])
+      .where('pet.owner_id', '=', ownerId)
+      .orderBy('pet.name')
+  )
+}
+
+function mother(motherId: Expression<string>) {
+  return jsonObjectFrom(
+    db.selectFrom('person as mother')
+      .select(['mother.id', 'mother.first_name'])
+      .where('mother.id', '=', motherId)
+  )
+}
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
@@ -192,7 +262,33 @@ console.log(persons[0].mother.first_name)
 
 If you need to select relations conditionally, `$if` is your friend:
 
-```ts
+```ts twoslash
+import type { Expression, Generated, Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+interface DB {
+  person: { id: Generated<string>; first_name: string; mother_id: string }
+  pet: { id: Generated<string>; name: string; owner_id: string }
+}
+declare const db: Kysely<DB>
+function pets(ownerId: Expression<string>) {
+  return jsonArrayFrom(
+    db.selectFrom('pet')
+      .select(['pet.id', 'pet.name'])
+      .where('pet.owner_id', '=', ownerId)
+      .orderBy('pet.name')
+  )
+}
+
+function mother(motherId: Expression<string>) {
+  return jsonObjectFrom(
+    db.selectFrom('person as mother')
+      .select(['mother.id', 'mother.first_name'])
+      .where('mother.id', '=', motherId)
+  )
+}
+declare const includePets: boolean
+declare const includeMom: boolean
+// ---cut---
 const persons = await db
   .selectFrom('person')
   .selectAll('person')

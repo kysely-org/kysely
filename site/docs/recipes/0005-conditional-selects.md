@@ -7,7 +7,7 @@ description: 'Select columns conditionally with the Kysely $if method while pres
 Sometimes you may want to select some fields based on a runtime condition.
 Something like this:
 
-```ts
+```ts twoslash
 async function getPerson(id: number, withLastName: boolean) {}
 ```
 
@@ -16,7 +16,14 @@ property, otherwise without it.
 
 Your first thought can be to simply do this:
 
-```ts
+```ts twoslash
+import { sql, type Generated, type Kysely } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string; last_name: string }
+}
+declare const db: Kysely<Database>
+// ---cut---
+// @errors: 2339
 async function getPerson(id: number, withLastName: boolean) {
   let query = db.selectFrom('person').select('first_name').where('id', '=', id)
 
@@ -28,9 +35,13 @@ async function getPerson(id: number, withLastName: boolean) {
   // ❌ Wrong return type { first_name: string, kind: 'person' }
   return await query.select(sql.val('person' as const).as('kind')).executeTakeFirstOrThrow()
 }
+
+const person = await getPerson(1, true)
+// ❌ `last_name` is missing from the result type
+console.log(person.last_name)
 ```
 
-While that _would_ compile, the result type would be `{ first_name: string, kind: 'person' }`
+While `getPerson` _would_ compile, its result type would be `{ first_name: string, kind: 'person' }`
 without the `last_name` column and `kind` being "person_with_last_name", which is wrong. 
 What happens is that the type of `query` when created is something, let's say `A`. 
 The type of the query with `last_name` selection is `B` which extends `A` but also contains 
@@ -46,7 +57,13 @@ query builder.
 
 In this simple case you could implement the method like this:
 
-```ts
+```ts twoslash
+import { sql, type Generated, type Kysely } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string; last_name: string }
+}
+declare const db: Kysely<Database>
+// ---cut---
 async function getPerson(id: number, withLastName: boolean) {
   const query = db
     .selectFrom("person")
@@ -58,14 +75,14 @@ async function getPerson(id: number, withLastName: boolean) {
     return await query
       .select([
         "last_name",
-        sql.val("person_with_last_name").as("kind"),
+        sql.val("person_with_last_name" as const).as("kind"),
       ])
       .executeTakeFirstOrThrow();
   }
 
   // ✅ The return type is { first_name: string, kind: 'person' }
   return await query
-    .select(sql.val("person").as("kind"))
+    .select(sql.val("person" as const).as("kind"))
     .executeTakeFirstOrThrow();
 }
 ```
@@ -78,7 +95,13 @@ the types won't be correct.
 This is where the [$if](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#_if)
 method can help you:
 
-```ts
+```ts twoslash
+import { sql, type Generated, type Kysely } from 'kysely'
+interface Database {
+  person: { id: Generated<number>; first_name: string; last_name: string }
+}
+declare const db: Kysely<Database>
+// ---cut---
 async function getPerson(id: number, withLastName: boolean) {
   // ✅ The return type is { first_name: string, last_name?: string }
   return await db

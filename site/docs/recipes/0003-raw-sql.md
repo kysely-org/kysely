@@ -10,7 +10,7 @@ Use the [sql template tag](https://kysely-org.github.io/kysely-apidoc/interfaces
 
 [Materialize's time-bucket queries](https://github.com/MaterializeInc/materialize/blob/adb829aee5913d08eaccce2aee2e0df31c0a2dfd/console/src/api/materialize/cluster/replicaUtilizationHistory.ts#L150-L200), linked from the homepage, use `date_bin` expressions inside CTEs. The simplified PostgreSQL example below keeps the database-specific expression in one reusable helper:
 
-```ts
+```ts twoslash
 import { sql, type ExpressionBuilder } from 'kysely'
 
 interface Database {
@@ -32,7 +32,28 @@ const bucket = (eb: ExpressionBuilder<Database, 'asset'>) =>
 
 With a configured `Kysely<Database>` instance named `db`:
 
-```ts
+```ts twoslash
+import { sql, type ExpressionBuilder } from 'kysely'
+
+interface Database {
+  asset: {
+    id: number
+    owner_id: number
+    kind: string
+    created_at: Date
+  }
+}
+
+const bucket = (eb: ExpressionBuilder<Database, 'asset'>) =>
+  sql<Date>`date_bin(
+    ${'15 minutes'}::interval,
+    ${eb.ref('created_at')},
+    ${new Date('2000-01-01T00:00:00Z')}
+  )`
+import type { Kysely } from 'kysely'
+declare const db: Kysely<Database>
+declare const ownerId: number
+// ---cut---
 const rows = await db
   .selectFrom('asset')
   .select('id')

@@ -31,7 +31,12 @@ Most drivers provide a way to change the returned types. For example `pg` return
 
 When using the `pg` driver, you can use the [pg-types](https://github.com/brianc/node-pg-types) package to configure the types. For example here's how you'd configure the `bigint` to be returned as a number:
 
-```ts
+```ts twoslash
+/// <reference types="node" />
+import type { PoolConfig } from 'pg'
+interface Database {}
+declare const config: PoolConfig
+// ---cut---
 import { Kysely, PostgresDialect } from 'kysely'
 import * as pg from 'pg'
 
@@ -52,11 +57,16 @@ See the documentation [here](https://github.com/brianc/node-pg-types) on how to 
 
 #### MySQL
 
-When using the `mysql2` driver, you an use the [typeCast](https://github.com/mysqljs/mysql?tab=readme-ov-file#custom-type-casting) pool property.
+When using the `mysql2` driver, you can use the [typeCast](https://github.com/mysqljs/mysql?tab=readme-ov-file#custom-type-casting) pool property.
 
 For example here's how you'd map `tinyint(1)` to a boolean:
 
-```ts
+```ts twoslash
+/// <reference types="node" />
+import type { PoolOptions } from 'mysql2'
+interface Database {}
+declare const config: PoolOptions
+// ---cut---
 import { Kysely, MysqlDialect } from 'kysely'
 import { createPool } from 'mysql2'
 

@@ -8,7 +8,10 @@ Extracting metadata about tables and views from your database schema in runtime 
 
 The example below uses a PostgreSQL connection to print information about all tables and views found in the database schema:
 
-```ts
+```ts twoslash
+// @esModuleInterop
+/// <reference types="node" />
+// ---cut---
 import { Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
 const { Pool } = pg

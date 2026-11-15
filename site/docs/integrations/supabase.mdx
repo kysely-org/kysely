@@ -40,7 +40,28 @@ npx supabase gen types typescript --local > path/to/supabase/generated/types/fil
 
 ### Translate Supabase types to Kysely types
 
-```ts title="src/types.ts"
+```ts title="src/types.ts" twoslash
+// @filename: supabase.d.ts
+declare module 'path/to/supabase/generated/types/file' {
+  export type Database = {
+    public: {
+      Tables: {
+        person: {
+          Row: { id: number; first_name: string }
+          Insert: { id?: number; first_name: string }
+          Update: { id?: number; first_name?: string }
+          Relationships: []
+        }
+      }
+      Views: {}
+      Functions: {}
+      Enums: {}
+      CompositeTypes: {}
+    }
+  }
+}
+// @filename: types.ts
+// ---cut---
 import type { Database as SupabaseDatabase } from 'path/to/supabase/generated/types/file'
 import type { KyselifyDatabase } from 'kysely-supabase'
 
@@ -49,7 +70,35 @@ export type Database = KyselifyDatabase<SupabaseDatabase>
 
 ### Pass translated types to Kysely constructor
 
-```ts title="src/db.ts"
+```ts title="src/db.ts" twoslash
+// @filename: globals.d.ts
+/// <reference types="node" />
+// @filename: supabase.d.ts
+declare module 'path/to/supabase/generated/types/file' {
+  export type Database = {
+    public: {
+      Tables: {
+        person: {
+          Row: { id: number; first_name: string }
+          Insert: { id?: number; first_name: string }
+          Update: { id?: number; first_name?: string }
+          Relationships: []
+        }
+      }
+      Views: {}
+      Functions: {}
+      Enums: {}
+      CompositeTypes: {}
+    }
+  }
+}
+// @filename: types.ts
+import type { Database as SupabaseDatabase } from 'path/to/supabase/generated/types/file'
+import type { KyselifyDatabase } from 'kysely-supabase'
+
+export type Database = KyselifyDatabase<SupabaseDatabase>
+// @filename: db.ts
+// ---cut---
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
 import type { Database } from './types'

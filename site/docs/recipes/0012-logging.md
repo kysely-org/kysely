@@ -16,12 +16,15 @@ When `'query'` is included in the array, `Kysely` will log all executed queries,
 
 When `'error'` is included in the array, `Kysely` will log all errors.
 
-```ts
-const db = new Kysely({
-  ...
-  log: ['query', 'error']
-  ...
-});
+```ts twoslash
+import { Kysely, type Dialect } from 'kysely'
+interface Database {}
+declare const dialect: Dialect
+// ---cut---
+const db = new Kysely<Database>({
+  dialect,
+  log: ['query', 'error'],
+})
 ```
 
 ## 2. Provide a custom logging function
@@ -31,7 +34,9 @@ You can provide a custom logging function to the `log` property when instantiati
 `LogEvent` is a discriminated union. Query events may have `isStream`; only error
 events have an `error` property:
 
-```ts
+```ts twoslash
+import type { CompiledQuery, LogEvent as KyselyLogEvent } from 'kysely'
+// ---cut---
 type LogEvent =
   | {
       level: 'query'
@@ -45,11 +50,19 @@ type LogEvent =
       query: CompiledQuery
       queryDurationMillis: number
     }
+// ---cut-start---
+const fromKysely: LogEvent = {} as KyselyLogEvent
+const toKysely: KyselyLogEvent = {} as LogEvent
+// ---cut-end---
 ```
 
 Example:
 
-```ts
+```ts twoslash
+import { Kysely, PostgresDialect, type PostgresDialectConfig } from 'kysely'
+declare const postgresConfig: PostgresDialectConfig
+declare function maskPII(value: unknown): unknown
+// ---cut---
 const db = new Kysely({
   dialect: new PostgresDialect(postgresConfig),
   log(event) {

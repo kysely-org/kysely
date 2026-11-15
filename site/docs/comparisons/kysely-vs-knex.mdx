@@ -21,7 +21,7 @@ Assume configured Kysely and Knex clients with matching table types:
 
 Use these table shapes for Kysely's `Kysely<Database>` instance:
 
-```ts
+```ts twoslash
 interface Database {
   person: { id: number; first_name: string; age: number | null }
   pet: { id: number; name: string; owner_id: number }
@@ -30,7 +30,13 @@ interface Database {
 
 Register the same shapes with Knex's [table declarations](https://knexjs.org/guide/#typescript):
 
-```ts
+```ts twoslash
+import 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+// ---cut---
 declare module 'knex/types/tables.js' {
   interface Tables {
     person: Database['person']
@@ -49,7 +55,20 @@ Select adults and return each person's name alongside their pet's name.
 
 With Knex:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 const rows = await knex('person')
   .innerJoin('pet', 'pet.owner_id', 'person.id')
   .select('person.first_name', 'pet.name as pet_name')
@@ -59,7 +78,14 @@ const rows = await knex('person')
 
 With Kysely:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const rows = await db
   .selectFrom('person')
   .innerJoin('pet', 'pet.owner_id', 'person.id')
@@ -82,13 +108,34 @@ Knex documents [qualified-column and alias limitations](https://knexjs.org/guide
 
 With the registered table types, Knex accepts a filter on a table the query never joined:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 knex('person').select('id').where('pet.name', '=', 'Catto')
 ```
 
 PostgreSQL rejects it when it runs. Kysely rejects it as you type:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// @errors: 2345
+// ---cut---
 db.selectFrom('person').select('id').where('pet.name', '=', 'Catto')
 // TypeScript error: pet is not available in this query.
 ```
@@ -107,7 +154,15 @@ Other checked failures:
 
 Return each person with an array of their pets' names. With Kysely's `jsonArrayFrom` helper, from `kysely/helpers/postgres`, the subquery's selection becomes the nested type:
 
-```ts
+```ts twoslash
+import { jsonArrayFrom } from 'kysely/helpers/postgres'
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const rows = await db
   .selectFrom('person')
   .select((eb) => [
@@ -126,7 +181,20 @@ const rows = await db
 
 Knex has no JSON aggregation helper, so the aggregate is raw SQL, and the row type is declared by hand:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 type PersonWithPets = { first_name: string; pets: { name: string }[] }
 
 const rows = await knex('person').select<PersonWithPets[]>(
@@ -143,7 +211,20 @@ The declaration compiles, and so does `pets: number`: nothing compares it with t
 
 Knex mutates the shared base:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 const base = knex('person').where('age', '>=', 18)
 const named = base.where('first_name', '=', 'Jennifer')
 const everyone = base.select('id', 'first_name')
@@ -152,7 +233,20 @@ const everyone = base.select('id', 'first_name')
 
 Branch with `.clone()`:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 const base = knex('person').where('age', '>=', 18)
 const named = base.clone().where('first_name', '=', 'Jennifer')
 const everyone = base.clone().select('id', 'first_name')
@@ -160,7 +254,14 @@ const everyone = base.clone().select('id', 'first_name')
 
 Kysely branches independently:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const base = db.selectFrom('person').where('age', '>=', 18)
 const named = base.where('first_name', '=', 'Jennifer')
 const everyone = base.select(['id', 'first_name'])
@@ -172,7 +273,20 @@ const everyone = base.select(['id', 'first_name'])
 
 Knex builders are [thenable](https://knexjs.org/guide/interfaces.html#promises): resolving one as a promise executes the query. An `async` helper can therefore execute a query it intended to return for further composition:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 async function adultQuery() {
   return knex('person').select('id').where('age', '>=', 18)
 }
@@ -183,7 +297,14 @@ const rows = await adultQuery()
 
 Keep the helper synchronous, or return an object containing the builder to avoid promise assimilation. With Kysely, even an async helper returns a composable builder:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 async function adultQuery() {
   return db.selectFrom('person').select('id').where('age', '>=', 18)
 }
@@ -200,7 +321,20 @@ Kysely's API follows [what you see is what you get](/docs/examples/insert/insert
 
 ### One upsert method, two conflict semantics
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 knex('person')
   .insert({ id: 1, first_name: 'Jennifer' })
   .onConflict('id')
@@ -216,7 +350,15 @@ Knex 3.3.0 compiles that same chain to:
 
 MySQL has no conflict target, for any library: a duplicate on any unique key triggers the update. Knex [documents this](https://knexjs.org/guide/query-builder.html#onconflict), but the code still reads `.onConflict('id')`. Kysely exposes the two operations separately:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const pgDb: Kysely<Database>
+declare const mysqlDb: Kysely<Database>
+// ---cut---
 // PostgreSQL / SQLite: explicitly target the id constraint.
 const pgUpsert = pgDb
   .insertInto('person')
@@ -240,7 +382,20 @@ const mysqlUpsert = mysqlDb
 
 Knex's [`jsonExtract`](https://knexjs.org/guide/query-builder.html#jsonextract) also hides different operations behind one method:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 knex('person').jsonExtract('profile', '$.name', 'name')
 ```
 
@@ -254,7 +409,14 @@ For a JSON `profile` column, Knex 3.3.0 emits these expressions:
 
 PostgreSQL's `jsonb_path_query` is set-returning; this is more than changing identifier quotes or parameter markers. With `profile` typed `{ name: string }`, Kysely writes the operator you choose and types the result:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface DialectDatabase {
+  person: { id: number; first_name: string; profile: { name: string } }
+}
+declare const pgDb: Kysely<DialectDatabase>
+declare const mysqlDb: Kysely<DialectDatabase>
+// ---cut---
 // PostgreSQL: "profile"->>'name'
 const pgName = pgDb
   .selectFrom('person')
@@ -274,7 +436,20 @@ Both cover [CTEs, set operations, ranking, and locks](https://knexjs.org/guide/q
 
 Knex's raw fragments use MySQL-style `?` value placeholders and `??` [identifier bindings](https://knexjs.org/guide/raw.html#raw-parameter-binding), even when targeting PostgreSQL:
 
-```ts
+```ts twoslash
+import type { Knex } from 'knex'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare module 'knex/types/tables.js' {
+  interface Tables {
+    person: Database['person']
+    pet: Database['pet']
+  }
+}
+declare const knex: Knex
+// ---cut---
 knex.raw('?? = ?', ['person.first_name', 'Jennifer'])
 // PostgreSQL: "person"."first_name" = $1
 // Bindings: ['Jennifer']
@@ -282,7 +457,14 @@ knex.raw('?? = ?', ['person.first_name', 'Jennifer'])
 
 The bindings live in a separate array from the placeholders they fill, and literal question marks need escaping. Kysely puts references and values where they belong in the expression:
 
-```ts
+```ts twoslash
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 import { sql, type SqlBool } from 'kysely'
 
 db.selectFrom('person')
@@ -296,7 +478,12 @@ db.selectFrom('person')
 
 Knex's extension points are hooks on each instance. [`wrapIdentifier`](https://knexjs.org/guide/#wrapidentifier) receives each identifier as a string, and [`postProcessResponse`](https://knexjs.org/guide/#postprocessresponse) receives each raw result. Together they cover the common case, camelCase properties over snake_case columns, with conversion functions you supply:
 
-```ts
+```ts twoslash
+import knexFactory from 'knex'
+declare const connection: string
+declare function toSnakeCase(value: string): string
+declare function toCamelCaseKeys(result: any): any
+// ---cut---
 const knex = knexFactory({
   client: 'pg',
   connection,
@@ -307,7 +494,13 @@ const knex = knexFactory({
 
 Kysely ships that conversion as [`CamelCasePlugin`](https://kysely-org.github.io/kysely-apidoc/classes/CamelCasePlugin.html), with the database interface written in camelCase:
 
-```ts
+```ts twoslash
+import { CamelCasePlugin, Kysely, type Dialect } from 'kysely'
+interface CamelCaseDatabase {
+  person: { id: number; firstName: string; age: number | null }
+}
+declare const dialect: Dialect
+// ---cut---
 const camelDb = new Kysely<CamelCaseDatabase>({
   dialect,
   plugins: [new CamelCasePlugin()],
@@ -316,7 +509,15 @@ const camelDb = new Kysely<CamelCaseDatabase>({
 
 A [Kysely plugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html) receives the query as a tree of operation nodes before it compiles, and the result after it runs, so it can rewrite tables, joins, and expressions, not only identifier text. The [built-in plugins](/docs/plugins) also qualify tables with a schema, deduplicate joins, handle empty `in` lists, make null comparisons safe, and parse JSON results. `withPlugin` scopes a plugin to one query or a derived instance and leaves the original unchanged:
 
-```ts
+```ts twoslash
+import { WithSchemaPlugin } from 'kysely'
+import type { Kysely } from 'kysely'
+interface Database {
+  person: { id: number; first_name: string; age: number | null }
+  pet: { id: number; name: string; owner_id: number }
+}
+declare const db: Kysely<Database>
+// ---cut---
 const tenantDb = db.withPlugin(new WithSchemaPlugin('tenant_1'))
 ```
 
@@ -349,7 +550,10 @@ Start with a query whose joined aliases lose inference, or a base query that sev
 
 Schema types can come later, as queries migrate:
 
-```ts
+```ts twoslash
+import type { Dialect } from 'kysely'
+declare const dialect: Dialect
+// ---cut---
 import { Kysely } from 'kysely'
 
 const untypedDb = new Kysely<any>({ dialect })
