@@ -7,6 +7,7 @@ import type { MermaidConfig } from 'mermaid'
 import type { PluginOptions as LLMsTXTPluginOptions } from '@signalwire/docusaurus-plugin-llms-txt'
 import type { PluginOptions as VercelAnalyticsPluginOptions } from '@docusaurus/plugin-vercel-analytics'
 import { socialIconPaths } from './src/components/socialIconPaths'
+import dropPrism from './plugins/drop-prism'
 import preloadDemoPoster from './plugins/preload-demo-poster'
 import generateAgentDiscoveryCatalogs from './plugins/generate-agent-discovery-catalogs'
 import generateBrandLogoSprite from './plugins/generate-brand-logo-sprite'
@@ -120,6 +121,7 @@ export default {
   onDuplicateRoutes: 'throw',
   organizationName: 'kysely-org',
   plugins: [
+    dropPrism,
     preloadDemoPoster,
     generateAgentDiscoveryCatalogs,
     generateBrandLogoSprite,
