@@ -15,6 +15,11 @@ const supportedKeys = [
   'continue',
   'status',
 ]
+const redirectStatuses = [301, 302, 307, 308] as const
+type RedirectStatus = (typeof redirectStatuses)[number]
+function isRedirect(status: number | undefined): status is RedirectStatus {
+  return redirectStatuses.includes(status as RedirectStatus)
+}
 let filesystemPhase = false
 const routes = vercel.routes.flatMap((route) => {
   if ('handle' in route) {
@@ -30,7 +35,15 @@ const routes = vercel.routes.flatMap((route) => {
   if (
     Object.keys(route).some((key) => !supportedKeys.includes(key)) ||
     route.has?.some((condition) => condition.type !== 'header') ||
-    (route.status !== undefined && route.status !== 404)
+    (route.status !== undefined &&
+      route.status !== 404 &&
+      !(
+        isRedirect(route.status) &&
+        route.headers &&
+        'Location' in route.headers &&
+        !('dest' in route) &&
+        !('continue' in route)
+      ))
   ) {
     throw new Error('Update the afdocs server to support the new Vercel rules')
   }
@@ -38,6 +51,7 @@ const routes = vercel.routes.flatMap((route) => {
   return {
     filesystemPhase,
     status: route.status === 404 ? (404 as const) : undefined,
+    redirect: isRedirect(route.status) ? route.status : undefined,
     pattern: new RegExp(route.src),
     methods: route.methods && new Set(route.methods),
     conditions: (route.has ?? []).map(({ key, value }) => ({
@@ -76,6 +90,9 @@ function applyRoutes(filesystemPhase: boolean): MiddlewareHandler<Env> {
 
       for (const [key, value] of route.headers) {
         headers.set(key, value)
+      }
+      if (route.redirect) {
+        return new Response(null, { status: route.redirect, headers })
       }
       if (route.dest) {
         pathname = pathname.replace(route.pattern, route.dest)
