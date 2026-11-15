@@ -285,7 +285,7 @@ import { db } from './database'
 import * as PersonRepository from './PersonRepository'
 
 describe('PersonRepository', () => {
-  before(async () => {
+  beforeAll(async () => {
 ${dialectSpecificCodeSnippet}
   })
     
@@ -293,7 +293,7 @@ ${dialectSpecificCodeSnippet}
     ${dialectSpecificTruncateSnippet}
   })
     
-  after(async () => {
+  afterAll(async () => {
     await db.schema.dropTable('person').execute()
   })
     

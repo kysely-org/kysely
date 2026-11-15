@@ -18,7 +18,7 @@ function files(dialect: Dialect, packageManager: PackageManager) {
   return [
     [
       'globals.d.ts',
-      '/// <reference types="node" />\n/// <reference types="mocha" />',
+      '/// <reference types="node" />\nimport \'vitest/globals\'',
       false,
     ],
     ['types.ts', typesCode(packageManager), true],

@@ -64,7 +64,8 @@
     "twoslash": "0.3.9",
     "typeorm": "0.3.31",
     "typescript": "7.0.2",
-    "typescript-6": "npm:typescript@6.0.3"
+    "typescript-6": "npm:typescript@6.0.3",
+    "vitest": "5.1.0"
   },
   "browserslist": {
     "production": [
