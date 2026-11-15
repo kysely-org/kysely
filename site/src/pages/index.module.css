@@ -556,9 +556,14 @@ a.stat:hover .statValue {
   color: var(--shiki-light);
 }
 
-.editorCode :global(.kl-squiggle) {
+.editorCode :global(.twoslash-error) {
   text-decoration: underline wavy var(--kl-err) 1.5px;
   text-underline-offset: 4px;
+}
+
+.editorCode :global(.twoslash-hover:focus-visible) {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
 }
 
 .errPanel {
@@ -609,7 +614,9 @@ a.stat:hover .statValue {
   font-family: var(--ifm-font-family-monospace);
   font-size: 12px;
   line-height: 1.7;
+  overflow-x: auto;
   padding: 12px 20px 14px;
+  white-space: pre;
 }
 
 .typePanel span {

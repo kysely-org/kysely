@@ -122,7 +122,13 @@ async function loadHighlighter() {
 
 export async function highlightCode(
   code,
-  { lang = 'text', meta = '', twoslash: hasTypes = false, collectPopup } = {},
+  {
+    lang = 'text',
+    meta = '',
+    twoslash: hasTypes = false,
+    collectPopup,
+    transformers = [],
+  } = {},
 ) {
   const { codeToHtml, twoslash, transformerMetaHighlight } =
     await (highlighter ??= loadHighlighter())
@@ -165,6 +171,7 @@ export async function highlightCode(
             },
           ]
         : []),
+      ...transformers,
     ],
   })
 }
