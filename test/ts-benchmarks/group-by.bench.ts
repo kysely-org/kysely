@@ -39,7 +39,7 @@ bench('kysely..groupBy(sql)', () =>
 
 bench('kysely..groupBy(eb => ref)', () =>
   query.groupBy((eb) => eb.ref('col_164b7896ec8e770207febe0812c5f052')),
-).types([974, 'instantiations'])
+).types([657, 'instantiations'])
 
 bench('kysely..groupBy(column).groupBy(column)', () =>
   query
@@ -82,7 +82,7 @@ bench('kyselyAny..groupBy(sql)', () =>
 
 bench('kyselyAny..groupBy(eb => ref)', () =>
   queryAny.groupBy((eb) => eb.ref('col_164b7896ec8e770207febe0812c5f052')),
-).types([651, 'instantiations'])
+).types([637, 'instantiations'])
 
 bench('kyselyAny..groupBy([column, column])', () =>
   queryAny.groupBy([

@@ -43,9 +43,9 @@ export type AnyColumn<DB, TB extends keyof DB> = {
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = {
-  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-}[TB]
+export type ExtractColumnType<DB, TB extends keyof DB, C> = TB extends keyof DB
+  ? DB[TB][C & keyof DB[TB]]
+  : never
 
 /**
  * Given a database type and a union of table names in that db, returns
