@@ -2,7 +2,9 @@ import { isObject, isString } from '../util/object-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
 import type { Driver } from './driver.js'
 
-const ABORTED_TRANSACTION_ERROR = Symbol.for('kysely.AbortedTransactionError')
+const ABORTED_TRANSACTION_ERROR_PROPERTY: unique symbol = Symbol.for(
+  'kysely.AbortedTransactionError',
+)
 
 /**
  * Thrown when attempting to use a transaction that the database has aborted,
@@ -30,7 +32,7 @@ export class AbortedTransactionError extends Error {
  * Recognizes errors created or marked by any copy of Kysely.
  */
 export function isAbortedTransactionError(error: unknown): boolean {
-  return isObject(error) && ABORTED_TRANSACTION_ERROR in error
+  return isObject(error) && ABORTED_TRANSACTION_ERROR_PROPERTY in error
 }
 
 /**
@@ -86,6 +88,8 @@ export function isAbortedTransactionError(error: unknown): boolean {
  */
 export function markAsAbortedTransactionError(error: unknown): void {
   if (isObject(error) && Object.isExtensible(error)) {
-    Object.defineProperty(error, ABORTED_TRANSACTION_ERROR, { value: true })
+    Object.defineProperty(error, ABORTED_TRANSACTION_ERROR_PROPERTY, {
+      value: true,
+    })
   }
 }
