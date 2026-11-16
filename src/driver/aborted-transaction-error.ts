@@ -1,6 +1,5 @@
 import { isObject, isString } from '../util/object-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
-import type { Driver } from './driver.js'
 
 const ABORTED_TRANSACTION_ERROR_PROPERTY: unique symbol = Symbol.for(
   'kysely.AbortedTransactionError',
@@ -38,10 +37,8 @@ export function isAbortedTransactionError(error: unknown): boolean {
 /**
  * Marks a database error as having aborted the current transaction.
  *
- * For use in {@link DatabaseConnection.executeQuery} and {@link Driver.commitTransaction}
- * implementations, when the database reports an error and the transaction is
- * no longer active. Kysely then rethrows the original error, marks the transaction
- * as aborted, and skips sending another rollback.
+ * For use in {@link DatabaseConnection} implementations when a failing query
+ * ends the current transaction.
  *
  * If the database rolls back without reporting an error, throw
  * {@link AbortedTransactionError} instead.
