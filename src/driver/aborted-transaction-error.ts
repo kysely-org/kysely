@@ -15,9 +15,7 @@ export class AbortedTransactionError extends Error {
   constructor(options?: ErrorOptions) {
     const cause = options?.cause
     super(
-      isObject(cause) && isString(cause.message)
-        ? `Transaction was aborted: ${cause.message}`
-        : 'Transaction was aborted',
+      `Transaction was aborted${isObject(cause) && isString(cause.message) ? `: ${cause.message}` : ''}`,
       options,
     )
     markAsAbortedTransactionError(this)
