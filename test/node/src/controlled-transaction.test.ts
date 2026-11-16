@@ -16,8 +16,11 @@ import {
   PostgresIntrospector,
   PostgresQueryCompiler,
   sql,
+  SqliteDialect,
+  type SqliteDatabase,
   TRANSACTION_ACCESS_MODES,
   AbortedTransactionError,
+  isAbortedTransactionError,
   markAsAbortedTransactionError,
   type Transaction,
 } from '../../../dist/index.js'
@@ -1403,6 +1406,100 @@ describe('controlled transaction', () => {
     expect(querySpy.notCalled).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should abort the transaction when a stream reports an automatic rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    markAsAbortedTransactionError(rollbackError)
+    sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+      yield { rows: [{ id: 1 }] }
+      throw rollbackError
+    })
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const stream = trx.selectFrom('person').selectAll().stream()
+
+    expect(await stream.next()).to.eql({ done: false, value: { id: 1 } })
+    await expect(stream.next()).to.be.rejectedWith(rollbackError)
+    expect(releaseSpy.calledOnce).to.be.true
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith(AbortedTransactionError)
+    await trx.rollback().execute()
+    expect(trx.isRolledBack).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should reject a callback transaction when a swallowed stream error reports an automatic rollback', async () => {
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    markAsAbortedTransactionError(rollbackError)
+    sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+      throw rollbackError
+    })
+    const commitSpy = sandbox.spy(driver, 'commitTransaction')
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+
+    await expect(
+      db.transaction().execute(async (trx) => {
+        try {
+          for await (const _ of trx.selectFrom('person').selectAll().stream()) {
+          }
+        } catch {}
+      }),
+    ).to.be.rejectedWith(AbortedTransactionError)
+    expect(commitSpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+  })
+
+  it('should mark a SQLite stream error that ends the transaction', async () => {
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    const database = {
+      inTransaction: false as boolean,
+      close() {},
+      prepare(sql: string) {
+        return {
+          reader: sql.startsWith('select'),
+          all: () => [],
+          run: () => {
+            database.inTransaction = sql === 'begin'
+            return { changes: 0, lastInsertRowid: 0 }
+          },
+          *iterate() {
+            database.inTransaction = false
+            throw rollbackError
+          },
+        }
+      },
+    } satisfies SqliteDatabase
+    const sqliteDb = new Kysely<Database>({
+      dialect: new SqliteDialect({ database }),
+    })
+
+    try {
+      const trx = await sqliteDb.startTransaction().execute()
+
+      await expect(
+        trx.selectFrom('person').selectAll().stream().next(),
+      ).to.be.rejectedWith(rollbackError)
+      expect(isAbortedTransactionError(rollbackError)).to.be.true
+      await expect(
+        trx.selectFrom('person').selectAll().execute(),
+      ).to.be.rejectedWith(AbortedTransactionError)
+      await trx.rollback().execute()
+    } finally {
+      await sqliteDb.destroy()
+    }
   })
 
   it('should preserve a native error marked by another package copy', async () => {

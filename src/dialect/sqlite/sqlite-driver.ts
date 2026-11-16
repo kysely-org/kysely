@@ -151,12 +151,20 @@ class SqliteConnection implements DatabaseConnection {
       throw new Error('Sqlite driver only supports streaming of select queries')
     }
 
-    const iter = stmt.iterate(parameters)
+    const inTransactionBefore = this.#db.inTransaction
 
-    for (const row of iter) {
-      yield {
-        rows: [row as R],
+    try {
+      for (const row of stmt.iterate(parameters)) {
+        yield {
+          rows: [row as R],
+        }
       }
+    } catch (error) {
+      if (inTransactionBefore && this.#db.inTransaction === false) {
+        markAsAbortedTransactionError(error)
+      }
+
+      throw error
     }
   }
 }

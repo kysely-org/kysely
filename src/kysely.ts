@@ -1503,9 +1503,25 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
   ): AsyncIterableIterator<QueryResult<R>> {
     assertNotCommittedOrRolledBack(this.#transactionState)
 
-    return this.#executor
-      .withConnectionProvider(this)
-      .stream(compiledQuery, chunkSize, options)
+    return this.#abortTransactionOnStreamError(
+      this.#executor
+        .withConnectionProvider(this)
+        .stream(compiledQuery, chunkSize, options),
+    )
+  }
+
+  async *#abortTransactionOnStreamError<R>(
+    stream: AsyncIterableIterator<QueryResult<R>>,
+  ): AsyncIterableIterator<QueryResult<R>> {
+    try {
+      yield* stream
+    } catch (error) {
+      if (isAbortedTransactionError(error)) {
+        abortTransaction(this.#transactionState)
+      }
+
+      throw error
+    }
   }
 
   withConnectionProvider(
