@@ -367,7 +367,9 @@ export class Kysely<DB>
    *
    *   // ...
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    * ```
    *
@@ -423,7 +425,9 @@ export class Kysely<DB>
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    * ```
    */
@@ -1109,7 +1113,9 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
@@ -1129,8 +1135,9 @@ export class ControlledTransaction<
   /**
    * Rolls back the transaction.
    *
-   * If a query or commit already reported that the database rolled back the transaction,
-   * succeeds without sending another rollback command.
+   * Throws {@link AbortedTransactionError} if a query or commit already reported
+   * that the database rolled back the transaction. The connection is already
+   * released in that case, and {@link isRolledBack} is `true`.
    *
    * The connection is released even if the rollback fails, so the transaction
    * cannot be used afterwards in either case.
@@ -1154,7 +1161,9 @@ export class ControlledTransaction<
    *
    *   await trx.commit().execute()
    * } catch (error) {
-   *   await trx.rollback().execute()
+   *   if (!trx.isRolledBack) {
+   *     await trx.rollback().execute()
+   *   }
    * }
    *
    * async function doSomething(kysely: Kysely<Database>) {}
@@ -1162,11 +1171,6 @@ export class ControlledTransaction<
    */
   rollback(): Command<void> {
     return new Command(async (): Promise<void> => {
-      if (this.#props.transactionState.status === 'aborted') {
-        this.#props.transactionState.status = 'rolled back'
-        return
-      }
-
       await this.#props.executor.provideConnection(async (connection) => {
         // A failed rollback can't be meaningfully retried (e.g. dead connection).
         try {

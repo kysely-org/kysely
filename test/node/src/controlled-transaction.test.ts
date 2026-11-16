@@ -198,6 +198,12 @@ for (const dialect of DIALECTS) {
           await expect(
             trx.selectFrom('person').selectAll().execute(),
           ).to.be.rejectedWith(AbortedTransactionError)
+          await expect(trx.rollback().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+          await expect(trx.rollback().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
         } finally {
           if (!trx.isRolledBack) {
             await trx.rollback().execute()
@@ -237,7 +243,9 @@ for (const dialect of DIALECTS) {
             await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
               AbortedTransactionError,
             )
-            await derivedTrx.rollback().execute()
+            await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
+              AbortedTransactionError,
+            )
           })
 
           expect(
@@ -1290,7 +1298,9 @@ describe('controlled transaction', () => {
     await expect(savedQuery.execute()).to.be.rejectedWith(
       AbortedTransactionError,
     )
-    await trx.rollback().execute()
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
     expect(derivedTrx.isRolledBack).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
@@ -1322,7 +1332,9 @@ describe('controlled transaction', () => {
     expect(trx.isRolledBack).to.be.true
     expect(queryStub.calledOnce).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
-    await trx.rollback().execute()
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
     expect(releaseSpy.calledOnce).to.be.true
   })
 
@@ -1390,7 +1402,9 @@ describe('controlled transaction', () => {
     await completion
     await query
 
-    await savedRollback.execute()
+    await expect(savedRollback.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
 
     expect(trx.isCommitted).to.be.false
     expect(trx.isRolledBack).to.be.true
@@ -1421,7 +1435,9 @@ describe('controlled transaction', () => {
     await completion
     await query
 
-    await savedRollback.execute()
+    await expect(savedRollback.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
 
     expect(trx.isCommitted).to.be.false
     expect(trx.isRolledBack).to.be.true
@@ -1474,7 +1490,9 @@ describe('controlled transaction', () => {
     await expect(
       trx.selectFrom('person').selectAll().execute(),
     ).to.be.rejectedWith(AbortedTransactionError)
-    await trx.rollback().execute()
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
     expect(trx.isRolledBack).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
@@ -1541,7 +1559,9 @@ describe('controlled transaction', () => {
       await expect(
         trx.selectFrom('person').selectAll().execute(),
       ).to.be.rejectedWith(AbortedTransactionError)
-      await trx.rollback().execute()
+      await expect(trx.rollback().execute()).to.be.rejectedWith(
+        AbortedTransactionError,
+      )
     } finally {
       await sqliteDb.destroy()
     }
@@ -1568,7 +1588,9 @@ describe('controlled transaction', () => {
     await expect(trx.commit().execute()).to.be.rejectedWith(
       AbortedTransactionError,
     )
-    await trx.rollback().execute()
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
     expect(trx.isRolledBack).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true

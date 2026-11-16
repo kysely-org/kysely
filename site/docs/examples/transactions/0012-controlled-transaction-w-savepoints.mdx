@@ -54,7 +54,9 @@ try {
 
   await trx.commit().execute()
 } catch (error) {
-  await trx.rollback().execute()
+  if (!trx.isRolledBack) {
+    await trx.rollback().execute()
+  }
 }
 ```
 

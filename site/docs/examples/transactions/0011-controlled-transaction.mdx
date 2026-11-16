@@ -37,7 +37,9 @@ try {
 
   // ...
 } catch (error) {
-  await trx.rollback().execute()
+  if (!trx.isRolledBack) {
+    await trx.rollback().execute()
+  }
 }
 ```
 
