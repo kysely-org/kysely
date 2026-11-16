@@ -192,6 +192,180 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    if (variant === 'sqlite') {
+      it('should handle an automatic rollback with an uncaught statement error', async () => {
+        const commitSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'commitTransaction',
+        )
+        const rollbackSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'rollbackTransaction',
+        )
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        const error = await ctx.db
+          .transaction()
+          .execute(async (trx) => {
+            await trx.insertInto('person').values(person).execute()
+            await trx.insertInto('person').orRollback().values(person).execute()
+          })
+          .catch((error: unknown) => error)
+
+        expect(error).to.be.instanceOf(SqliteError)
+        expect(commitSpy.notCalled).to.be.true
+        expect(rollbackSpy.notCalled).to.be.true
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should handle an automatic rollback with a caught statement error', async () => {
+        const commitSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'commitTransaction',
+        )
+        const rollbackSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'rollbackTransaction',
+        )
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        const error = await ctx.db
+          .transaction()
+          .execute(async (trx) => {
+            await trx.insertInto('person').values(person).execute()
+            await expect(
+              trx.insertInto('person').orRollback().values(person).execute(),
+            ).to.be.rejectedWith(SqliteError)
+          })
+          .catch((error: unknown) => error)
+
+        expect(error).to.be.instanceOf(AbortedTransactionError)
+        expect(commitSpy.notCalled).to.be.true
+        expect(rollbackSpy.notCalled).to.be.true
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should preserve a callback error thrown after an automatic rollback', async () => {
+        const rollbackSpy = sandbox.spy(
+          SqliteDriver.prototype,
+          'rollbackTransaction',
+        )
+        const callbackError = new Error('callback failed')
+        let escapedTrx: Transaction<Database> | undefined
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await expect(
+          ctx.db.transaction().execute(async (trx) => {
+            escapedTrx = trx
+            await trx.insertInto('person').values(person).execute()
+            await expect(
+              trx.insertInto('person').orRollback().values(person).execute(),
+            ).to.be.rejectedWith(SqliteError)
+
+            throw callbackError
+          }),
+        ).to.be.rejectedWith(callbackError)
+
+        expect(rollbackSpy.notCalled).to.be.true
+        await expect(
+          escapedTrx!.selectFrom('person').selectAll().execute(),
+        ).to.be.rejectedWith(AbortedTransactionError)
+      })
+
+      it('should keep a single connection usable after an automatic rollback', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.connection().execute(async (conn) => {
+          await expect(
+            conn.transaction().execute(async (trx) => {
+              await trx.insertInto('person').values(person).execute()
+              await expect(
+                trx.insertInto('person').orRollback().values(person).execute(),
+              ).to.be.rejectedWith(SqliteError)
+            }),
+          ).to.be.rejectedWith(AbortedTransactionError)
+
+          expect(
+            await conn
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+
+          await conn.transaction().execute(async (trx) => {
+            await trx.insertInto('person').values(person).execute()
+          })
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+
+      it('should commit after a caught constraint violation that only rolls back the statement', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.transaction().execute(async (trx) => {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+          expect(
+            await trx
+              .selectFrom('person')
+              .select('first_name')
+              .where('id', '=', person.id)
+              .executeTakeFirstOrThrow(),
+          ).to.eql({ first_name: 'Foo' })
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+    }
+
     if (sqlSpec === 'postgres') {
       it('should reject a commit when a caught statement error aborted the transaction', async () => {
         let escapedTrx: Transaction<Database> | undefined
@@ -221,7 +395,7 @@ for (const dialect of DIALECTS) {
 
         await expect(
           escapedTrx!.selectFrom('person').selectAll().execute(),
-        ).to.be.rejectedWith('Transaction is already rolled back')
+        ).to.be.rejectedWith(AbortedTransactionError)
         expect(executedQueries.map((query) => query.sql)).to.not.include(
           'rollback',
         )

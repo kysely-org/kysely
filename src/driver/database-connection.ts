@@ -1,3 +1,4 @@
+import type { markAsAbortedTransactionError } from './aborted-transaction-error.js'
 import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import type { AbortableOperationOptions } from '../util/abort.js'
 
@@ -19,6 +20,13 @@ export interface DatabaseConnection {
    */
   collectSessionInfo?(): Promise<void>
 
+  /**
+   * Executes a query.
+   *
+   * Implementations that can tell a failing query ended the current transaction
+   * should mark the error with {@link markAsAbortedTransactionError} before
+   * rethrowing it.
+   */
   executeQuery<R>(
     compiledQuery: CompiledQuery,
     options?: AbortableOperationOptions,

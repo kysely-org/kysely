@@ -1,4 +1,7 @@
-import type { AbortedTransactionError } from './aborted-transaction-error.js'
+import type {
+  AbortedTransactionError,
+  markAsAbortedTransactionError,
+} from './aborted-transaction-error.js'
 import type { QueryCompiler } from '../query-compiler/query-compiler.js'
 import type { ArrayItemType } from '../util/type-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
@@ -35,8 +38,10 @@ export interface Driver {
   /**
    * Commits a transaction.
    *
-   * Throws {@link AbortedTransactionError} if the database confirms that
-   * the transaction was rolled back instead of committed.
+   * Implementations that can tell the database rolled back instead of committing
+   * should throw {@link AbortedTransactionError} if the database reported no
+   * error, or mark the database error with {@link markAsAbortedTransactionError}
+   * and rethrow it.
    */
   commitTransaction(connection: DatabaseConnection): Promise<void>
 

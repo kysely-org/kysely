@@ -1,4 +1,5 @@
 import { DatabaseError as PostgresError } from 'pg'
+import { SqliteError } from 'better-sqlite3'
 import * as sinon from 'sinon'
 import { setImmediate } from 'node:timers/promises'
 import { Pool } from 'pg'
@@ -15,8 +16,12 @@ import {
   PostgresIntrospector,
   PostgresQueryCompiler,
   sql,
+  SqliteDialect,
+  type SqliteDatabase,
   TRANSACTION_ACCESS_MODES,
   AbortedTransactionError,
+  isAbortedTransactionError,
+  markAsAbortedTransactionError,
   type Transaction,
 } from '../../../dist/index.js'
 import {
@@ -103,6 +108,222 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
+    if (variant === 'sqlite') {
+      it('should recognize an automatic rollback when attempting to commit', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+
+          expect(trx.isCommitted).to.be.false
+          expect(trx.isRolledBack).to.be.true
+
+          // Aborting releases the connection even before explicit cleanup.
+          expect(
+            await ctx.db
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+
+          await expect(trx.commit().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith(AbortedTransactionError)
+        } finally {
+          if (!trx.isRolledBack) {
+            await trx.rollback().execute()
+          }
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should recognize an automatic rollback when attempting to rollback', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+
+          expect(trx.isCommitted).to.be.false
+          expect(trx.isRolledBack).to.be.true
+
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith(AbortedTransactionError)
+          await expect(trx.rollback().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+          await expect(trx.rollback().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+        } finally {
+          if (!trx.isRolledBack) {
+            await trx.rollback().execute()
+          }
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where('id', '=', person.id)
+            .execute(),
+        ).to.eql([])
+      })
+
+      it('should not affect a new transaction when using an aborted transaction handle', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const derivedTrx = trx.withoutPlugins()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        try {
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+
+          await ctx.db.transaction().execute(async (nextTrx) => {
+            await nextTrx.insertInto('person').values(person).execute()
+            await expect(
+              derivedTrx.selectFrom('person').selectAll().execute(),
+            ).to.be.rejectedWith(AbortedTransactionError)
+            await expect(derivedTrx.commit().execute()).to.be.rejectedWith(
+              AbortedTransactionError,
+            )
+            await expect(derivedTrx.rollback().execute()).to.be.rejectedWith(
+              AbortedTransactionError,
+            )
+          })
+
+          expect(
+            await ctx.db
+              .selectFrom('person')
+              .select('first_name')
+              .where('id', '=', person.id)
+              .executeTakeFirstOrThrow(),
+          ).to.eql({ first_name: 'Foo' })
+        } finally {
+          if (!trx.isRolledBack) {
+            await trx.rollback().execute()
+          }
+        }
+      })
+
+      it('should keep a single connection usable after an automatic rollback', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.connection().execute(async (conn) => {
+          const trx = await conn.startTransaction().execute()
+
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+
+          expect(trx.isRolledBack).to.be.true
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith(AbortedTransactionError)
+          await expect(trx.commit().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+
+          expect(
+            await conn
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+
+          await conn.insertInto('person').values(person).execute()
+
+          const nextTrx = await conn.startTransaction().execute()
+          await nextTrx
+            .updateTable('person')
+            .set({ first_name: 'Bar' })
+            .where('id', '=', person.id)
+            .execute()
+          await nextTrx.commit().execute()
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Bar' })
+      })
+
+      it('should commit after a caught constraint violation that only rolls back the statement', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await trx.insertInto('person').values(person).execute()
+        await expect(
+          trx.insertInto('person').values(person).execute(),
+        ).to.be.rejectedWith(SqliteError)
+        expect(trx.isRolledBack).to.be.false
+        expect(
+          await trx
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+        await trx.commit().execute()
+        expect(trx.isCommitted).to.be.true
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+    }
+
     if (sqlSpec === 'postgres') {
       const statementErrorType =
         variant === 'pglite' ? pgliteMessages.DatabaseError : PostgresError
@@ -132,12 +353,11 @@ for (const dialect of DIALECTS) {
           expect(derivedTrx.isCommitted).to.be.false
           expect(derivedTrx.isRolledBack).to.be.true
           await expect(savedQuery.execute()).to.be.rejectedWith(
-            'Transaction is already rolled back',
+            AbortedTransactionError,
           )
           await expect(savedCommit.execute()).to.be.rejectedWith(
-            'Transaction is already rolled back',
+            AbortedTransactionError,
           )
-          await trx.rollback().execute()
         } finally {
           if (!trx.isCommitted && !trx.isRolledBack) {
             await trx.rollback().execute()
@@ -1000,6 +1220,129 @@ describe('controlled transaction', () => {
     return await trx.savepoint('foo').execute()
   }
 
+  it('should block queued work and release once when a query reports an automatic rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savedQuery = derivedTrx.selectFrom('person').selectAll()
+    const savedCommit = derivedTrx.commit()
+    const finished = new Deferred<never>()
+    const rollbackError = new SqliteError(
+      'UNIQUE constraint failed: person.id',
+      'SQLITE_CONSTRAINT_PRIMARYKEY',
+    )
+    markAsAbortedTransactionError(rollbackError)
+    const queryStub = sandbox
+      .stub(connection, 'executeQuery')
+      .returns(finished.promise)
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const commitSpy = sandbox.spy(driver, 'commitTransaction')
+    const streamSpy = sandbox.spy(connection, 'streamQuery')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const consumer = sandbox.spy(async () => undefined)
+    const failedQuery = expect(savedQuery.execute()).to.be.rejectedWith(
+      rollbackError,
+    )
+    const queuedQuery = expect(savedQuery.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    const queuedCommit = expect(savedCommit.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    const queuedStream = expect(savedQuery.stream().next()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    const queuedConsumer = expect(
+      trx.getExecutor().provideConnection(consumer),
+    ).to.be.rejectedWith(AbortedTransactionError)
+
+    finished.reject(rollbackError)
+    await failedQuery
+    await queuedQuery
+    await queuedCommit
+    await queuedStream
+    await queuedConsumer
+
+    expect(trx.isRolledBack).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+    expect(queryStub.calledOnce).to.be.true
+    expect(commitSpy.notCalled).to.be.true
+    expect(streamSpy.notCalled).to.be.true
+    expect(consumer.notCalled).to.be.true
+    await expect(savedCommit.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    await expect(savedQuery.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should block a queued query and release once when a query with a signal reports an automatic rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const finished = new Deferred<never>()
+    const rollbackError = new AbortedTransactionError()
+    const queryStub = sandbox
+      .stub(connection, 'executeQuery')
+      .returns(finished.promise)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const failedQuery = expect(
+      trx
+        .selectFrom('person')
+        .selectAll()
+        .execute({ signal: new AbortController().signal }),
+    ).to.be.rejectedWith(rollbackError)
+    await setImmediate()
+    const queuedQuery = expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith(AbortedTransactionError)
+
+    finished.reject(rollbackError)
+    await failedQuery
+    await queuedQuery
+
+    expect(trx.isRolledBack).to.be.true
+    expect(queryStub.calledOnce).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should keep a callback transaction connection reserved until its callback exits after an automatic rollback', async () => {
+    const rollbackError = new AbortedTransactionError()
+    sandbox.stub(connection, 'executeQuery').rejects(rollbackError)
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const commitSpy = sandbox.spy(driver, 'commitTransaction')
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const caught = new Deferred<void>()
+    const finishCallback = new Deferred<void>()
+    const transaction = expect(
+      db.transaction().execute(async (trx) => {
+        await expect(
+          trx.selectFrom('person').selectAll().execute(),
+        ).to.be.rejectedWith(rollbackError)
+        caught.resolve()
+        await finishCallback.promise
+      }),
+    ).to.be.rejectedWith(AbortedTransactionError)
+
+    await caught.promise
+    expect(releaseSpy.notCalled).to.be.true
+    finishCallback.resolve()
+    await transaction
+
+    expect(commitSpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
   it('should release the connection if the transaction fails to begin', async () => {
     const beginError = new Error('begin failed')
     sandbox.stub(driver, 'beginTransaction').rejects(beginError)
@@ -1015,42 +1358,71 @@ describe('controlled transaction', () => {
     expect(releaseSpy.firstCall.args[0]).to.equal(connection)
   })
 
-  for (const otherCopy of [false, true]) {
-    it(`should block queued queries and release once when commit reports a rollback${otherCopy ? ' from another package copy' : ''}`, async () => {
-      const trx = await db.startTransaction().execute()
-      const derivedTrx = trx.withSchema('public')
-      const savedRollback = derivedTrx.rollback()
-      const finished = new Deferred<void>()
-      const rollbackError = otherCopy
-        ? await createRollbackErrorFromOtherCopy()
-        : new AbortedTransactionError()
-      sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
-      const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
-      const releaseSpy = sandbox.spy(driver, 'releaseConnection')
-      const querySpy = sandbox.spy(connection, 'executeQuery')
-      const completion = expect(
-        derivedTrx.commit().execute(),
-      ).to.be.rejectedWith(rollbackError)
-      const query = expect(
-        trx.selectFrom('person').selectAll().execute(),
-      ).to.be.rejectedWith('Transaction is already rolled back')
+  it('should block queued queries and release once when commit reports a rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savedRollback = derivedTrx.rollback()
+    const finished = new Deferred<void>()
+    const rollbackError = new AbortedTransactionError()
+    sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const querySpy = sandbox.spy(connection, 'executeQuery')
+    const completion = expect(derivedTrx.commit().execute()).to.be.rejectedWith(
+      rollbackError,
+    )
+    const query = expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith(AbortedTransactionError)
 
-      finished.reject(rollbackError)
-      await completion
-      await query
+    finished.reject(rollbackError)
+    await completion
+    await query
 
-      await savedRollback.execute()
-      await trx.rollback().execute()
-      await derivedTrx.rollback().execute()
+    await expect(savedRollback.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
 
-      expect(trx.isCommitted).to.be.false
-      expect(trx.isRolledBack).to.be.true
-      expect(derivedTrx.isRolledBack).to.be.true
-      expect(querySpy.notCalled).to.be.true
-      expect(rollbackSpy.notCalled).to.be.true
-      expect(releaseSpy.calledOnce).to.be.true
-    })
-  }
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(querySpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should block queued queries and release once when commit reports a rollback from another package copy', async () => {
+    const trx = await db.startTransaction().execute()
+    const derivedTrx = trx.withSchema('public')
+    const savedRollback = derivedTrx.rollback()
+    const finished = new Deferred<void>()
+    const rollbackError = await createRollbackErrorFromOtherCopy()
+    sandbox.stub(driver, 'commitTransaction').returns(finished.promise)
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const querySpy = sandbox.spy(connection, 'executeQuery')
+    const completion = expect(derivedTrx.commit().execute()).to.be.rejectedWith(
+      rollbackError,
+    )
+    const query = expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith(AbortedTransactionError)
+
+    finished.reject(rollbackError)
+    await completion
+    await query
+
+    await expect(savedRollback.execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+
+    expect(trx.isCommitted).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.true
+    expect(querySpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
 
   it('should recognize a rollback from another package copy in a managed transaction', async () => {
     const rollbackError = await createRollbackErrorFromOtherCopy()
@@ -1068,8 +1440,135 @@ describe('controlled transaction', () => {
 
     await expect(
       escapedTrx!.selectFrom('person').selectAll().execute(),
-    ).to.be.rejectedWith('Transaction is already rolled back')
+    ).to.be.rejectedWith(AbortedTransactionError)
     expect(querySpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should abort the transaction when a stream reports an automatic rollback', async () => {
+    const trx = await db.startTransaction().execute()
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    markAsAbortedTransactionError(rollbackError)
+    sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+      yield { rows: [{ id: 1 }] }
+      throw rollbackError
+    })
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+    const stream = trx.selectFrom('person').selectAll().stream()
+
+    expect(await stream.next()).to.eql({ done: false, value: { id: 1 } })
+    await expect(stream.next()).to.be.rejectedWith(rollbackError)
+    expect(releaseSpy.calledOnce).to.be.true
+    await expect(
+      trx.selectFrom('person').selectAll().execute(),
+    ).to.be.rejectedWith(AbortedTransactionError)
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    expect(trx.isRolledBack).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+    expect(releaseSpy.calledOnce).to.be.true
+  })
+
+  it('should reject a callback transaction when a swallowed stream error reports an automatic rollback', async () => {
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    markAsAbortedTransactionError(rollbackError)
+    sandbox.stub(connection, 'streamQuery').callsFake(async function* () {
+      throw rollbackError
+    })
+    const commitSpy = sandbox.spy(driver, 'commitTransaction')
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+
+    await expect(
+      db.transaction().execute(async (trx) => {
+        try {
+          for await (const _ of trx.selectFrom('person').selectAll().stream()) {
+          }
+        } catch {}
+      }),
+    ).to.be.rejectedWith(AbortedTransactionError)
+    expect(commitSpy.notCalled).to.be.true
+    expect(rollbackSpy.notCalled).to.be.true
+  })
+
+  it('should mark a SQLite stream error that ends the transaction', async () => {
+    const rollbackError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    const database = {
+      inTransaction: false as boolean,
+      close() {},
+      prepare(sql: string) {
+        return {
+          reader: sql.startsWith('select'),
+          all: () => [],
+          run: () => {
+            database.inTransaction = sql === 'begin'
+            return { changes: 0, lastInsertRowid: 0 }
+          },
+          *iterate() {
+            database.inTransaction = false
+            throw rollbackError
+          },
+        }
+      },
+    } satisfies SqliteDatabase
+    const sqliteDb = new Kysely<Database>({
+      dialect: new SqliteDialect({ database }),
+    })
+
+    try {
+      const trx = await sqliteDb.startTransaction().execute()
+
+      await expect(
+        trx.selectFrom('person').selectAll().stream().next(),
+      ).to.be.rejectedWith(rollbackError)
+      expect(isAbortedTransactionError(rollbackError)).to.be.true
+      await expect(
+        trx.selectFrom('person').selectAll().execute(),
+      ).to.be.rejectedWith(AbortedTransactionError)
+      await expect(trx.rollback().execute()).to.be.rejectedWith(
+        AbortedTransactionError,
+      )
+    } finally {
+      await sqliteDb.destroy()
+    }
+  })
+
+  it('should preserve a native error marked by another package copy', async () => {
+    const trx = await db.startTransaction().execute()
+    const nativeError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
+    )
+    await createRollbackErrorFromOtherCopy(nativeError)
+    sandbox.stub(connection, 'executeQuery').rejects(nativeError)
+    const rollbackSpy = sandbox.spy(driver, 'rollbackTransaction')
+    const releaseSpy = sandbox.spy(driver, 'releaseConnection')
+
+    const error = await trx
+      .selectFrom('person')
+      .selectAll()
+      .execute()
+      .catch((error: unknown) => error)
+    expect(error).to.equal(nativeError)
+    expect(trx.isRolledBack).to.be.true
+    await expect(trx.commit().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    await expect(trx.rollback().execute()).to.be.rejectedWith(
+      AbortedTransactionError,
+    )
+    expect(trx.isRolledBack).to.be.true
     expect(rollbackSpy.notCalled).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
   })
@@ -1473,7 +1972,7 @@ async function insertSomethingElse(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 }
 
-async function createRollbackErrorFromOtherCopy(): Promise<Error> {
+async function createRollbackErrorFromOtherCopy(error?: Error): Promise<Error> {
   const otherCopy: typeof import('../../../dist/driver/aborted-transaction-error.js') =
     await import(
       new URL(
@@ -1485,5 +1984,9 @@ async function createRollbackErrorFromOtherCopy(): Promise<Error> {
   expect(otherCopy.AbortedTransactionError).to.not.equal(
     AbortedTransactionError,
   )
+  if (error) {
+    otherCopy.markAsAbortedTransactionError(error)
+    return error
+  }
   return new otherCopy.AbortedTransactionError()
 }
