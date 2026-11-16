@@ -134,7 +134,7 @@ for (const dialect of DIALECTS) {
           )
 
           expect(trx.isCommitted).to.be.false
-          expect(trx.isRolledBack).to.be.false
+          expect(trx.isRolledBack).to.be.true
 
           // Aborting releases the connection even before explicit cleanup.
           expect(
@@ -193,7 +193,7 @@ for (const dialect of DIALECTS) {
           )
 
           expect(trx.isCommitted).to.be.false
-          expect(trx.isRolledBack).to.be.false
+          expect(trx.isRolledBack).to.be.true
 
           await expect(
             trx.selectFrom('person').selectAll().execute(),
@@ -318,16 +318,15 @@ for (const dialect of DIALECTS) {
             AbortedTransactionError,
           )
           expect(trx.isCommitted).to.be.false
-          expect(trx.isRolledBack).to.be.false
+          expect(trx.isRolledBack).to.be.true
           expect(derivedTrx.isCommitted).to.be.false
-          expect(derivedTrx.isRolledBack).to.be.false
+          expect(derivedTrx.isRolledBack).to.be.true
           await expect(savedQuery.execute()).to.be.rejectedWith(
             AbortedTransactionError,
           )
           await expect(savedCommit.execute()).to.be.rejectedWith(
             AbortedTransactionError,
           )
-          await trx.rollback().execute()
         } finally {
           if (!trx.isCommitted && !trx.isRolledBack) {
             await trx.rollback().execute()
@@ -1232,8 +1231,8 @@ describe('controlled transaction', () => {
     await queuedStream
     await queuedConsumer
 
-    expect(trx.isRolledBack).to.be.false
-    expect(derivedTrx.isRolledBack).to.be.false
+    expect(trx.isRolledBack).to.be.true
+    expect(derivedTrx.isRolledBack).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
     expect(queryStub.calledOnce).to.be.true
     expect(commitSpy.notCalled).to.be.true
@@ -1274,7 +1273,7 @@ describe('controlled transaction', () => {
     await failedQuery
     await queuedQuery
 
-    expect(trx.isRolledBack).to.be.false
+    expect(trx.isRolledBack).to.be.true
     expect(queryStub.calledOnce).to.be.true
     expect(releaseSpy.calledOnce).to.be.true
     await trx.rollback().execute()
@@ -1519,7 +1518,7 @@ describe('controlled transaction', () => {
       .execute()
       .catch((error: unknown) => error)
     expect(error).to.equal(nativeError)
-    expect(trx.isRolledBack).to.be.false
+    expect(trx.isRolledBack).to.be.true
     await expect(trx.commit().execute()).to.be.rejectedWith(
       AbortedTransactionError,
     )

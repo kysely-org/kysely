@@ -1077,7 +1077,10 @@ export class ControlledTransaction<
   }
 
   get isRolledBack(): boolean {
-    return this.#props.transactionState.status === 'rolled back'
+    return (
+      this.#props.transactionState.status === 'rolled back' ||
+      this.#props.transactionState.status === 'aborted'
+    )
   }
 
   /**
