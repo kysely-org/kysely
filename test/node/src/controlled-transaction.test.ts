@@ -263,25 +263,20 @@ for (const dialect of DIALECTS) {
           gender: 'male',
         } as const
 
-        try {
-          await trx.insertInto('person').values(person).execute()
-          await expect(
-            trx.insertInto('person').values(person).execute(),
-          ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
-          expect(trx.isRolledBack).to.be.false
-          expect(
-            await trx
-              .selectFrom('person')
-              .select('first_name')
-              .where('id', '=', person.id)
-              .executeTakeFirstOrThrow(),
-          ).to.eql({ first_name: 'Foo' })
-          await trx.commit().execute()
-          expect(trx.isCommitted).to.be.true
-        } finally {
-          if (!trx.isCommitted && !trx.isRolledBack) {
-          }
-        }
+        await trx.insertInto('person').values(person).execute()
+        await expect(
+          trx.insertInto('person').values(person).execute(),
+        ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+        expect(trx.isRolledBack).to.be.false
+        expect(
+          await trx
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+        await trx.commit().execute()
+        expect(trx.isCommitted).to.be.true
 
         expect(
           await ctx.db
