@@ -86,11 +86,6 @@ export function isAbortedTransactionError(error: unknown): boolean {
  */
 export function markAsAbortedTransactionError(error: unknown): void {
   if (isObject(error) && Object.isExtensible(error)) {
-    Object.defineProperty(error, ABORTED_TRANSACTION_ERROR, {
-      configurable: true,
-      enumerable: false,
-      value: true,
-      writable: false,
-    })
+    Object.defineProperty(error, ABORTED_TRANSACTION_ERROR, { value: true })
   }
 }
