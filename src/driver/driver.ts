@@ -38,10 +38,10 @@ export interface Driver {
   /**
    * Commits a transaction.
    *
-   * If the database rolls back instead of committing without reporting an
-   * error, throws {@link AbortedTransactionError}. If it reports an error and
-   * the transaction is no longer active, marks that error with
-   * {@link markAsAbortedTransactionError} and rethrows it.
+   * Implementations that can tell the database rolled back instead of committing
+   * should throw {@link AbortedTransactionError} if the database reported no
+   * error, or mark the database error with {@link markAsAbortedTransactionError}
+   * and rethrow it.
    */
   commitTransaction(connection: DatabaseConnection): Promise<void>
 

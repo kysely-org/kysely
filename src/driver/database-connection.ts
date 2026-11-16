@@ -23,8 +23,9 @@ export interface DatabaseConnection {
   /**
    * Executes a query.
    *
-   * If the query fails and the database ends the current transaction as a result,
-   * marks the error with {@link markAsAbortedTransactionError} before rethrowing it.
+   * Implementations that can tell a failing query ended the current transaction
+   * should mark the error with {@link markAsAbortedTransactionError} before
+   * rethrowing it.
    */
   executeQuery<R>(
     compiledQuery: CompiledQuery,
