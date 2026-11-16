@@ -56,7 +56,7 @@
     "pagefind": "1.6.0",
     "pathe": "catalog:node",
     "pg-pool": "3.14.0",
-    "postgres": "3.4.9",
+    "postgres": "4.1.1",
     "reflect-metadata": "0.2.2",
     "sequelize": "6.37.8",
     "shiki": "4.6.0",
