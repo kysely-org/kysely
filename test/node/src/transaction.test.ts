@@ -369,11 +369,7 @@ for (const dialect of DIALECTS) {
 
             return 'success'
           }),
-        ).to.be.rejectedWith(
-          variant === 'pglite'
-            ? pgliteMessages.DatabaseError
-            : AbortedTransactionError,
-        )
+        ).to.be.rejectedWith(AbortedTransactionError)
 
         await expect(
           escapedTrx!.selectFrom('person').selectAll().execute(),

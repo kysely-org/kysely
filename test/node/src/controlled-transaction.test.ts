@@ -312,9 +312,7 @@ for (const dialect of DIALECTS) {
           ).to.be.rejectedWith(statementErrorType, 'duplicate key')
 
           await expect(trx.commit().execute()).to.be.rejectedWith(
-            variant === 'pglite'
-              ? pgliteMessages.DatabaseError
-              : AbortedTransactionError,
+            AbortedTransactionError,
           )
           expect(trx.isCommitted).to.be.false
           expect(trx.isRolledBack).to.be.false
