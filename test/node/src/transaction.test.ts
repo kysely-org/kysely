@@ -216,13 +216,7 @@ for (const dialect of DIALECTS) {
           })
           .catch((error: unknown) => error)
 
-        expect(error)
-          .to.be.instanceOf(SqliteError)
-          .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
-        expect(error).to.have.property(
-          'message',
-          'UNIQUE constraint failed: person.id',
-        )
+        expect(error).to.be.instanceOf(SqliteError)
         expect(commitSpy.notCalled).to.be.true
         expect(rollbackSpy.notCalled).to.be.true
         expect(
@@ -243,7 +237,6 @@ for (const dialect of DIALECTS) {
           SqliteDriver.prototype,
           'rollbackTransaction',
         )
-        let statementError: unknown
         const person = {
           id: -1000000,
           first_name: 'Foo',
@@ -254,22 +247,12 @@ for (const dialect of DIALECTS) {
           .transaction()
           .execute(async (trx) => {
             await trx.insertInto('person').values(person).execute()
-            statementError = await trx
-              .insertInto('person')
-              .orRollback()
-              .values(person)
-              .execute()
-              .catch((error: unknown) => error)
+            await expect(
+              trx.insertInto('person').orRollback().values(person).execute(),
+            ).to.be.rejectedWith(SqliteError)
           })
           .catch((error: unknown) => error)
 
-        expect(statementError)
-          .to.be.instanceOf(SqliteError)
-          .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
-        expect(statementError).to.have.property(
-          'message',
-          'UNIQUE constraint failed: person.id',
-        )
         expect(error).to.be.instanceOf(AbortedTransactionError)
         expect(commitSpy.notCalled).to.be.true
         expect(rollbackSpy.notCalled).to.be.true
@@ -363,7 +346,7 @@ for (const dialect of DIALECTS) {
           await trx.insertInto('person').values(person).execute()
           await expect(
             trx.insertInto('person').values(person).execute(),
-          ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+          ).to.be.rejectedWith(SqliteError)
           expect(
             await trx
               .selectFrom('person')

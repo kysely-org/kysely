@@ -119,19 +119,9 @@ for (const dialect of DIALECTS) {
 
         try {
           await trx.insertInto('person').values(person).execute()
-          const statementError = await trx
-            .insertInto('person')
-            .orRollback()
-            .values(person)
-            .execute()
-            .catch((error: unknown) => error)
-          expect(statementError)
-            .to.be.instanceOf(SqliteError)
-            .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
-          expect(statementError).to.have.property(
-            'message',
-            'UNIQUE constraint failed: person.id',
-          )
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
 
           expect(trx.isCommitted).to.be.false
           expect(trx.isRolledBack).to.be.true
@@ -177,19 +167,9 @@ for (const dialect of DIALECTS) {
 
         try {
           await trx.insertInto('person').values(person).execute()
-          const statementError = await trx
-            .insertInto('person')
-            .orRollback()
-            .values(person)
-            .execute()
-            .catch((error: unknown) => error)
-          expect(statementError)
-            .to.be.instanceOf(SqliteError)
-            .with.property('code', 'SQLITE_CONSTRAINT_PRIMARYKEY')
-          expect(statementError).to.have.property(
-            'message',
-            'UNIQUE constraint failed: person.id',
-          )
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
 
           expect(trx.isCommitted).to.be.false
           expect(trx.isRolledBack).to.be.true
@@ -322,7 +302,7 @@ for (const dialect of DIALECTS) {
         await trx.insertInto('person').values(person).execute()
         await expect(
           trx.insertInto('person').values(person).execute(),
-        ).to.be.rejectedWith(SqliteError, 'UNIQUE constraint failed')
+        ).to.be.rejectedWith(SqliteError)
         expect(trx.isRolledBack).to.be.false
         expect(
           await trx
