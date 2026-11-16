@@ -45,46 +45,6 @@ export function isAbortedTransactionError(error: unknown): boolean {
  *
  * If the database rolls back without reporting an error, throw
  * {@link AbortedTransactionError} instead.
- *
- * ### Examples
- *
- * ```ts
- * import {
- *   markAsAbortedTransactionError,
- *   type CompiledQuery,
- *   type DatabaseConnection,
- *   type QueryResult,
- * } from 'kysely'
- *
- * interface Database {
- *   readonly inTransaction: boolean
- *   execute(sql: string, parameters: readonly unknown[]): unknown[]
- * }
- *
- * class MyConnection implements DatabaseConnection {
- *   constructor(private readonly db: Database) {}
- *
- *   async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
- *     const inTransactionBefore = this.db.inTransaction
- *
- *     try {
- *       return {
- *         rows: this.db.execute(compiledQuery.sql, compiledQuery.parameters) as R[],
- *       }
- *     } catch (error) {
- *       if (inTransactionBefore && !this.db.inTransaction) {
- *         markAsAbortedTransactionError(error)
- *       }
- *
- *       throw error
- *     }
- *   }
- *
- *   async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
- *     throw new Error('Not implemented')
- *   }
- * }
- * ```
  */
 export function markAsAbortedTransactionError(error: unknown): void {
   if (isObject(error) && Object.isExtensible(error)) {
