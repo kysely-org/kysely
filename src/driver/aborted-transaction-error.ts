@@ -2,13 +2,7 @@ import { isObject, isString } from '../util/object-utils.js'
 import type { DatabaseConnection } from './database-connection.js'
 import type { Driver } from './driver.js'
 
-// Drivers and executors may belong to different copies of Kysely.
-const ABORTED_TRANSACTION_ERRORS = Symbol.for('kysely.abortedTransactionErrors')
-const registry = globalThis as typeof globalThis & {
-  [ABORTED_TRANSACTION_ERRORS]?: WeakSet<object>
-}
-const abortedTransactionErrors = (registry[ABORTED_TRANSACTION_ERRORS] ??=
-  new WeakSet<object>())
+const ABORTED_TRANSACTION_ERROR = Symbol.for('kysely.AbortedTransactionError')
 
 /**
  * Thrown when attempting to use a transaction that the database has aborted,
@@ -25,7 +19,7 @@ export class AbortedTransactionError extends Error {
         : 'Transaction was aborted',
       options,
     )
-    abortedTransactionErrors.add(this)
+    markAsAbortedTransactionError(this)
   }
 }
 
@@ -36,7 +30,7 @@ export class AbortedTransactionError extends Error {
  * Recognizes errors created or marked by any copy of Kysely.
  */
 export function isAbortedTransactionError(error: unknown): boolean {
-  return isObject(error) && abortedTransactionErrors.has(error)
+  return isObject(error) && ABORTED_TRANSACTION_ERROR in error
 }
 
 /**
@@ -91,7 +85,12 @@ export function isAbortedTransactionError(error: unknown): boolean {
  * ```
  */
 export function markAsAbortedTransactionError(error: unknown): void {
-  if (isObject(error)) {
-    abortedTransactionErrors.add(error)
+  if (isObject(error) && Object.isExtensible(error)) {
+    Object.defineProperty(error, ABORTED_TRANSACTION_ERROR, {
+      configurable: true,
+      enumerable: false,
+      value: true,
+      writable: false,
+    })
   }
 }

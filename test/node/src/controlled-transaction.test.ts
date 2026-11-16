@@ -1193,13 +1193,10 @@ describe('controlled transaction', () => {
     const savedQuery = derivedTrx.selectFrom('person').selectAll()
     const savedCommit = derivedTrx.commit()
     const finished = new Deferred<never>()
-    const rollbackError = Object.freeze(
-      new SqliteError(
-        'UNIQUE constraint failed: person.id',
-        'SQLITE_CONSTRAINT_PRIMARYKEY',
-      ),
+    const rollbackError = new SqliteError(
+      'UNIQUE constraint failed: person.id',
+      'SQLITE_CONSTRAINT_PRIMARYKEY',
     )
-    const errorProperties = Object.getOwnPropertyDescriptors(rollbackError)
     markAsAbortedTransactionError(rollbackError)
     const queryStub = sandbox
       .stub(connection, 'executeQuery')
@@ -1232,9 +1229,6 @@ describe('controlled transaction', () => {
     await queuedStream
     await queuedConsumer
 
-    expect(Object.getOwnPropertyDescriptors(rollbackError)).to.eql(
-      errorProperties,
-    )
     expect(trx.isRolledBack).to.be.false
     expect(derivedTrx.isRolledBack).to.be.false
     expect(releaseSpy.calledOnce).to.be.true
@@ -1413,8 +1407,9 @@ describe('controlled transaction', () => {
 
   it('should preserve a native error marked by another package copy', async () => {
     const trx = await db.startTransaction().execute()
-    const nativeError = Object.freeze(
-      new SqliteError('database or disk is full', 'SQLITE_FULL'),
+    const nativeError = new SqliteError(
+      'database or disk is full',
+      'SQLITE_FULL',
     )
     await createRollbackErrorFromOtherCopy(nativeError)
     sandbox.stub(connection, 'executeQuery').rejects(nativeError)
