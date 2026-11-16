@@ -38,7 +38,7 @@ export function isAbortedTransactionError(error: unknown): boolean {
  * Marks a database error as having aborted the current transaction.
  *
  * For use in {@link DatabaseConnection} implementations when a failing query
- * ends the current transaction.
+ * ends the current transaction, so Kysely can mark the transaction as aborted.
  *
  * If the database rolls back without reporting an error, throw
  * {@link AbortedTransactionError} instead.
