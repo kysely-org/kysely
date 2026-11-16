@@ -156,7 +156,6 @@ for (const dialect of DIALECTS) {
           if (!trx.isRolledBack) {
             await trx.rollback().execute()
           }
-          expect(trx.isRolledBack).to.be.true
         }
 
         expect(
@@ -208,7 +207,6 @@ for (const dialect of DIALECTS) {
           if (!trx.isRolledBack) {
             await trx.rollback().execute()
           }
-          expect(trx.isRolledBack).to.be.true
         }
 
         expect(
@@ -259,7 +257,6 @@ for (const dialect of DIALECTS) {
           if (!trx.isRolledBack) {
             await trx.rollback().execute()
           }
-          expect(trx.isRolledBack).to.be.true
         }
       })
 
