@@ -255,6 +255,57 @@ for (const dialect of DIALECTS) {
         }
       })
 
+      it('should keep a single connection usable after an automatic rollback', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.connection().execute(async (conn) => {
+          const trx = await conn.startTransaction().execute()
+
+          await trx.insertInto('person').values(person).execute()
+          await expect(
+            trx.insertInto('person').orRollback().values(person).execute(),
+          ).to.be.rejectedWith(SqliteError)
+
+          expect(trx.isRolledBack).to.be.true
+          await expect(
+            trx.selectFrom('person').selectAll().execute(),
+          ).to.be.rejectedWith(AbortedTransactionError)
+          await expect(trx.commit().execute()).to.be.rejectedWith(
+            AbortedTransactionError,
+          )
+
+          expect(
+            await conn
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+
+          await conn.insertInto('person').values(person).execute()
+
+          const nextTrx = await conn.startTransaction().execute()
+          await nextTrx
+            .updateTable('person')
+            .set({ first_name: 'Bar' })
+            .where('id', '=', person.id)
+            .execute()
+          await nextTrx.commit().execute()
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Bar' })
+      })
+
       it('should commit after a caught constraint violation that only rolls back the statement', async () => {
         const trx = await ctx.db.startTransaction().execute()
         const person = {

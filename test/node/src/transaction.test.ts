@@ -313,6 +313,45 @@ for (const dialect of DIALECTS) {
         ).to.be.rejectedWith(AbortedTransactionError)
       })
 
+      it('should keep a single connection usable after an automatic rollback', async () => {
+        const person = {
+          id: -1000000,
+          first_name: 'Foo',
+          gender: 'male',
+        } as const
+
+        await ctx.db.connection().execute(async (conn) => {
+          await expect(
+            conn.transaction().execute(async (trx) => {
+              await trx.insertInto('person').values(person).execute()
+              await expect(
+                trx.insertInto('person').orRollback().values(person).execute(),
+              ).to.be.rejectedWith(SqliteError)
+            }),
+          ).to.be.rejectedWith(AbortedTransactionError)
+
+          expect(
+            await conn
+              .selectFrom('person')
+              .selectAll()
+              .where('id', '=', person.id)
+              .execute(),
+          ).to.eql([])
+
+          await conn.transaction().execute(async (trx) => {
+            await trx.insertInto('person').values(person).execute()
+          })
+        })
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where('id', '=', person.id)
+            .executeTakeFirstOrThrow(),
+        ).to.eql({ first_name: 'Foo' })
+      })
+
       it('should commit after a caught constraint violation that only rolls back the statement', async () => {
         const person = {
           id: -1000000,
