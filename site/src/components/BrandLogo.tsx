@@ -369,6 +369,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 578 93',
     id: 'teamspective',
   },
+  // Official wordmark: tempoxyz/tempo-apps apps/og/public/tempo-lockup.svg;
+  // its black fills inherit currentColor.
+  Tempo: {
+    label: 'Tempo',
+    viewBox: '0 0 830 185',
+    id: 'tempo',
+  },
   // Official lockup: liketrek/TREK client/public/logo-light.svg; its white
   // fills inherit currentColor and the icon's clip+rect flattens to a
   // direct path (the clip path already carried the four-facet shape).

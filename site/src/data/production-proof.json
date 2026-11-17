@@ -536,6 +536,15 @@
     "provenAt": "2026-10-21"
   },
   {
+    "name": "Tempo",
+    "repo": "tempoxyz/tempo-apps",
+    "path": "apps/explorer/src/lib/server/tempo-queries.ts",
+    "sha": "6f2b7b91d13f6fb64a1e1d8a6e496f7c07611a71",
+    "href": "https://github.com/tempoxyz/tempo-apps/blob/6f2b7b91d13f6fb64a1e1d8a6e496f7c07611a71/apps/explorer/src/lib/server/tempo-queries.ts",
+    "group": "production",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "tldraw",
     "repo": "tldraw/tldraw",
     "path": "apps/dotcom/sync-worker/src/adminRoutes.ts",
