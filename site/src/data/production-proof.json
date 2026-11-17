@@ -293,11 +293,11 @@
   {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
-    "path": "packages/sql/package.json",
-    "sha": "a70a72a7936e258f52a462c5dc2688b03466616c",
-    "href": "https://github.com/mikro-orm/mikro-orm/blob/a70a72a7936e258f52a462c5dc2688b03466616c/packages/sql/package.json",
+    "path": "packages/sql/src/AbstractSqlConnection.ts",
+    "sha": "bd11f92b54d494c9aca79aa3dd5bbda16fdf4ecc",
+    "href": "https://github.com/mikro-orm/mikro-orm/blob/bd11f92b54d494c9aca79aa3dd5bbda16fdf4ecc/packages/sql/src/AbstractSqlConnection.ts",
     "group": "built-into",
-    "provenAt": "2026-11-07"
+    "provenAt": "2026-11-17"
   },
   {
     "name": "Mozilla",
