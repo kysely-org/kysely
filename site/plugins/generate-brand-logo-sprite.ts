@@ -9,6 +9,7 @@ import {
   writeFile,
 } from 'node:fs/promises'
 import { join } from 'pathe'
+import { brandLogos } from '../src/data/brand-logos'
 
 export interface BrandLogoSpriteData {
   fileName: string
@@ -21,13 +22,24 @@ export default function generateBrandLogoSprite({
 }: LoadContext): Plugin<BrandLogoSpriteData> {
   const sourceDir = join(siteDir, 'src/assets/brands')
   const outputDir = join(generatedFilesDir, 'brand-logos')
+  const proofPath = join(siteDir, 'src/data/production-proof.json')
 
   return {
     name: 'generate-brand-logo-sprite',
-    getPathsToWatch: () => [join(sourceDir, '*.svg')],
+    getPathsToWatch: () => [join(sourceDir, '*.svg'), proofPath],
     async loadContent() {
+      const proof: { name: string; hidden?: boolean }[] = JSON.parse(
+        await readFile(proofPath, 'utf8'),
+      )
+      const hiddenIds = new Set(
+        proof
+          .filter((entry) => entry.hidden)
+          .map((entry) => brandLogos[entry.name]?.id),
+      )
       const files = (await readdir(sourceDir))
-        .filter((file) => file.endsWith('.svg'))
+        .filter(
+          (file) => file.endsWith('.svg') && !hiddenIds.has(file.slice(0, -4)),
+        )
         .sort()
       const logos = await Promise.all(
         files.map(async (file) => {
