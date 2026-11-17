@@ -20,7 +20,29 @@ bench('kysely.updateTable(~table)', () => {
 
 bench('kysely.updateTable(table as alias)', () => {
   return kysely.updateTable('my_table as mt')
-}).types([356, 'instantiations'])
+}).types([359, 'instantiations'])
+
+bench('kysely.updateTable(table as table)', () => {
+  return kysely.updateTable(
+    'my_table as table_fff4c6195261874920bc7ce92d67d2c2',
+  )
+}).types([359, 'instantiations'])
+
+bench('kysely.updateTable(table as alias).where(alias.column)', () => {
+  return kysely
+    .updateTable('my_table as mt')
+    .where('mt.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
+}).types([2635, 'instantiations'])
+
+bench('kysely.updateTable(table as table).where(table.column)', () => {
+  return kysely
+    .updateTable('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
+    .where(
+      'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
+      '=',
+      1,
+    )
+}).types([2632, 'instantiations'])
 
 bench('kysely.updateTable([table])', () => {
   return kysely.updateTable(['my_table'])

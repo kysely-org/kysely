@@ -142,3 +142,23 @@ async function testFromMultiple(db: Kysely<Database>) {
   // Should not be able to start a query against non-existent table.
   expectError(db.selectFrom(['person', 'doesnt_exists']))
 }
+
+async function testFromAliasMatchingTableName(db: Kysely<Database>) {
+  const [r1] = await db
+    .selectFrom('pet as person')
+    .select(['person.id', 'species'])
+    .execute()
+  expectType<{ id: string; species: 'dog' | 'cat' }>(r1)
+
+  const [r2] = await db.selectFrom('pet as person').selectAll().execute()
+  expectType<{
+    id: string
+    name: string
+    owner_id: number
+    species: 'dog' | 'cat'
+  }>(r2)
+
+  expectError(db.selectFrom('pet as person').select('first_name'))
+  expectError(db.selectFrom('pet as person').select('person.first_name'))
+  expectError(db.selectFrom('pet as person').selectAll().where('age', '>', 18))
+}

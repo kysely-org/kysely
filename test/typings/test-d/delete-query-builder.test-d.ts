@@ -92,6 +92,14 @@ async function testDelete(db: Kysely<Database>) {
   )
 }
 
+async function testDeleteFromAliasMatchingTableName(db: Kysely<Database>) {
+  db.deleteFrom('pet as person').where('species', '=', 'cat')
+  db.deleteFrom('pet as person').where('person.species', '=', 'cat')
+
+  expectError(db.deleteFrom('pet as person').where('age', '>', 18))
+  expectError(db.deleteFrom('pet as person').where('person.age', '>', 18))
+}
+
 async function testReturning(db: Kysely<Database>) {
   const r1 = await db
     .deleteFrom('person')

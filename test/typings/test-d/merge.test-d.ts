@@ -35,6 +35,24 @@ async function testMergeInto(db: Kysely<Database>) {
   )
 }
 
+async function testMergeIntoAliasMatchingTableName(db: Kysely<Database>) {
+  db.mergeInto('pet as person')
+    .using('toy', 'toy.pet_id', 'person.id')
+    .whenMatched()
+    .thenUpdateSet({ species: 'cat' })
+
+  expectError(
+    db.mergeInto('pet as person').using('toy', 'toy.pet_id', 'person.age'),
+  )
+  expectError(
+    db
+      .mergeInto('pet as person')
+      .using('toy', 'toy.pet_id', 'person.id')
+      .whenMatched()
+      .thenUpdateSet({ age: 18 }),
+  )
+}
+
 async function testUsing(db: Kysely<Database>) {
   db.mergeInto('person').using('pet', 'pet.owner_id', 'person.id')
   db.mergeInto('person as p').using('pet as p2', 'p2.owner_id', 'p.id')

@@ -4,6 +4,7 @@ import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
+  FromAliasedTable,
   FromTables,
   TableExpressionOrList,
 } from './table-parser.js'
@@ -25,7 +26,9 @@ export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
     // updateTable('person as p') --> UpdateQueryBuilder<DB & { p: Person }, 'p', 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? UpdateQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, A, UpdateResult>
+      ? A extends keyof DB
+        ? UpdateQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, A, UpdateResult>
+        : UpdateQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, A, UpdateResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? UpdateQueryBuilder<

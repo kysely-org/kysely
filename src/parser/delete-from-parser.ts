@@ -4,6 +4,7 @@ import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
+  FromAliasedTable,
   FromTables,
   TableExpressionOrList,
 } from './table-parser.js'
@@ -20,7 +21,9 @@ export type DeleteFrom<DB, TE extends TableExpressionOrList<DB, never>> = [
     // deleteFrom('person as p') --> DeleteQueryBuilder<DB & { p: Person }, 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? DeleteQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, DeleteResult>
+      ? A extends keyof DB
+        ? DeleteQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, DeleteResult>
+        : DeleteQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, DeleteResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? DeleteQueryBuilder<From<DB, T>, FromTables<DB, never, T>, DeleteResult>
