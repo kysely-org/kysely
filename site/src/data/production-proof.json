@@ -236,6 +236,15 @@
     "provenAt": "2026-11-05"
   },
   {
+    "name": "eXeLearning",
+    "repo": "exelearning/exelearning",
+    "path": "src/db/queries/admin.ts",
+    "sha": "d1e76c5c4baa13e8264206aeda1505611937db6b",
+    "href": "https://github.com/exelearning/exelearning/blob/d1e76c5c4baa13e8264206aeda1505611937db6b/src/db/queries/admin.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "Farcaster",
     "repo": "farcasterxyz/fname-registry",
     "path": "src/transfers.ts",

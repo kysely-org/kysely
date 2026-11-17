@@ -198,6 +198,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 99 23',
     id: 'evolu',
   },
+  // Official exelearning/exelearning doc/logo-only.svg; its single fill
+  // inherits currentColor.
+  eXeLearning: {
+    label: 'eXeLearning',
+    viewBox: '60 0 230 224',
+    id: 'exelearning',
+  },
   Farcaster: {
     label: 'Farcaster',
     viewBox: '0 0 683 95',
