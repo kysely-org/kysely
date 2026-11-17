@@ -114,7 +114,8 @@
     "sha": "d649523637f0f059c936418488165d4a689da27c",
     "href": "https://github.com/colanode/colanode/blob/d649523637f0f059c936418488165d4a689da27c/packages/client/src/services/workspaces/node-service.ts",
     "group": "production",
-    "provenAt": "2026-04-03"
+    "provenAt": "2026-04-03",
+    "hidden": true
   },
   {
     "name": "Corsair.dev",

@@ -315,6 +315,7 @@ function SectionStats() {
 // by scripts/verify-proof-links.mjs, or a public statement by an employee.
 // "production" = the company's own deployed services run Kysely.
 // "built-into" = Kysely is the product's data layer, running wherever it runs.
+// "hidden" entries stay verified for research but don't render.
 const PROOF_GROUPS = [
   { group: 'production', caption: 'In production at' },
   { group: 'built-into', caption: 'Built into' },
@@ -328,9 +329,12 @@ interface ProofEntry {
   path?: string
   sha?: string
   provenAt?: string
+  hidden?: boolean
 }
 
-const proofEntries = productionProof as ProofEntry[]
+const proofEntries = (productionProof as ProofEntry[]).filter(
+  (entry) => !entry.hidden,
+)
 
 // Proof strength, the hairline gauge on "in production at" cells. Evidence
 // fades as it ages, with an 18-month half-life, until the two-year floor:
