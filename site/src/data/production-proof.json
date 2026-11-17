@@ -626,6 +626,15 @@
     "provenAt": "2026-11-04"
   },
   {
+    "name": "X Minecraft Launcher",
+    "repo": "Voxelum/x-minecraft-launcher",
+    "path": "xmcl-runtime/moddb/ModMetadataService.ts",
+    "sha": "14b1ac11e52377ee0ab34f5485d1e2758495b34f",
+    "href": "https://github.com/Voxelum/x-minecraft-launcher/blob/14b1ac11e52377ee0ab34f5485d1e2758495b34f/xmcl-runtime/moddb/ModMetadataService.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "ZenStack",
     "repo": "zenstackhq/zenstack",
     "path": "packages/orm/src/client/crud/operations/base.ts",
