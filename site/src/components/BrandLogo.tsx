@@ -101,6 +101,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 1025 331',
     id: 'deno',
   },
+  // Official wordmark: DEPT--LOGO---2022-Black.svg from engineering.dept.global.
+  // Its single fill inherits currentColor.
+  DEPT: {
+    label: 'DEPT',
+    viewBox: '0 0 10688 3035',
+    id: 'dept',
+  },
   // Wikimedia Commons Disney_wordmark.svg (public domain), a single path.
   Disney: {
     label: 'Disney',

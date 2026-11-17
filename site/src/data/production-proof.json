@@ -165,6 +165,12 @@
     "provenAt": "2025-05-16"
   },
   {
+    "name": "DEPT",
+    "href": "https://engineering.dept.global/prisma-vs-kysely",
+    "group": "production",
+    "provenAt": "2023-12-20"
+  },
+  {
     "name": "Disney",
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-3281189902",
     "group": "production",
