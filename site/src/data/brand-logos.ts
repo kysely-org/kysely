@@ -444,6 +444,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '34 2 442 508',
     id: 'x-minecraft-launcher',
   },
+  // Official Synapse mark: zai-org/Synapse
+  // packages/mobile-app/assets/images/synapse.svg; its fills inherit currentColor.
+  'Z.ai Synapse': {
+    label: 'Synapse',
+    viewBox: '92 40 836 888',
+    id: 'zai-synapse',
+  },
   ZenStack: {
     label: 'ZenStack',
     viewBox: '0 0 36 36',

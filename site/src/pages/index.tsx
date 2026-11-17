@@ -425,6 +425,7 @@ const LOGO_WITH_NAME = new Set([
   'US Tax Court',
   'wevm curl.md',
   'X Minecraft Launcher',
+  'Z.ai Synapse',
   'ZenStack',
 ])
 
