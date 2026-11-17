@@ -402,6 +402,7 @@ const LOGO_WITH_NAME = new Set([
   'Notesnook',
   'Open Mercato',
   'OpenClaw',
+  'OpenCRVS',
   'OpenPencil',
   'Prisma Studio',
   'Replicas',
