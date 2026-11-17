@@ -218,6 +218,15 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "ETHBEAT",
+    "repo": "l2beat/l2beat",
+    "path": "packages/database/src/repositories/ActivityRepository.ts",
+    "sha": "33953ebfd29755f915c8500adce5cced0fbc9449",
+    "href": "https://github.com/l2beat/l2beat/blob/33953ebfd29755f915c8500adce5cced0fbc9449/packages/database/src/repositories/ActivityRepository.ts",
+    "group": "production",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "Evolu",
     "repo": "evoluhq/evolu",
     "path": "packages/common/src/local-first/Query.ts",
