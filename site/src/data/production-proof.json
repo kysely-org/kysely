@@ -119,6 +119,15 @@
     "hidden": true
   },
   {
+    "name": "ColorStack",
+    "repo": "colorstackorg/oyster",
+    "path": "packages/core/src/modules/active-statuses/use-cases/create-new-active-statuses.ts",
+    "sha": "f95bf3194eeb072e2e02005d3ceced312b703c58",
+    "href": "https://github.com/colorstackorg/oyster/blob/f95bf3194eeb072e2e02005d3ceced312b703c58/packages/core/src/modules/active-statuses/use-cases/create-new-active-statuses.ts",
+    "group": "production",
+    "provenAt": "2026-11-08"
+  },
+  {
     "name": "Corsair.dev",
     "repo": "corsairdev/corsair",
     "path": "packages/suzanne/endpoints/persist.ts",
