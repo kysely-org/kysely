@@ -381,6 +381,12 @@
     "provenAt": "2026-11-06"
   },
   {
+    "name": "Orderly",
+    "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-6894469762",
+    "group": "production",
+    "provenAt": "2026-11-15"
+  },
+  {
     "name": "Parabol",
     "repo": "ParabolInc/parabol",
     "path": "packages/server/postgres/select.ts",

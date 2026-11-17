@@ -24,9 +24,9 @@ import styles from './BrandLogo.module.css'
  * 'lite' (Prisma Studio pattern). Canton Network is the docs.canton.network
  * lockup rendered through a luminance mask: all 210 paths in original
  * stacking order, diamond fills as ink and outline rings as knockouts, so
- * the layered-C tunnel detail survives single-tone intact. Docmost and Sink
- * have no public vector mark and stay text; Reflect (raster-only orb) is text
- * pending a sourced mark; AWS stays text by policy.
+ * the layered-C tunnel detail survives single-tone intact. Docmost, Orderly,
+ * and Sink have no public vector mark and stay text; Reflect (raster-only
+ * orb) is text pending a sourced mark; AWS stays text by policy.
  */
 export type BrandLogo = { label: string; viewBox: string; id: string }
 
