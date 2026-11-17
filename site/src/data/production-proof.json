@@ -471,6 +471,15 @@
     "provenAt": "2026-09-29"
   },
   {
+    "name": "Superstreamer",
+    "repo": "superstreamerapp/superstreamer",
+    "path": "apps/api/src/repositories/assets.ts",
+    "sha": "3ee045fd650bf4706c81e676a0fd1878f3128f56",
+    "href": "https://github.com/superstreamerapp/superstreamer/blob/3ee045fd650bf4706c81e676a0fd1878f3128f56/apps/api/src/repositories/assets.ts",
+    "group": "built-into",
+    "provenAt": "2026-02-13"
+  },
+  {
     "name": "Tailor",
     "repo": "tailor-platform/sdk",
     "path": "packages/sdk/src/kysely/index.ts",
