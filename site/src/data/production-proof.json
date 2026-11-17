@@ -146,6 +146,15 @@
     "provenAt": "2026-11-03"
   },
   {
+    "name": "CS Demo Manager",
+    "repo": "akiver/cs-demo-manager",
+    "path": "src/node/database/matches/fetch-matches-table.ts",
+    "sha": "b0d3258cfdb435eb6707ed8fee771774c450aa11",
+    "href": "https://github.com/akiver/cs-demo-manager/blob/b0d3258cfdb435eb6707ed8fee771774c450aa11/src/node/database/matches/fetch-matches-table.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "Cypress",
     "href": "https://npmx.dev/package-code/@cypress/cloud/v/0.6.0/dist/database/queries.js",
     "group": "production",
