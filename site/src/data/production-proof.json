@@ -198,6 +198,12 @@
     "provenAt": "2026-11-05"
   },
   {
+    "name": "e-dash",
+    "href": "https://zenn.dev/edash_tech_blog/articles/b79ebb15c401d0",
+    "group": "production",
+    "provenAt": "2024-12-07"
+  },
+  {
     "name": "EmbedPDF",
     "repo": "embedpdf/embed-pdf-viewer",
     "path": "cloudpdf/server/src/db/repos/object_numbers.repo.ts",

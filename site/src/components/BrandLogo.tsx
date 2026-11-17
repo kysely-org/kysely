@@ -178,6 +178,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 153 30',
     id: 'colanode',
   },
+  // Official header lockup from e-dash.io; its green and gray fills
+  // flatten to currentColor.
+  'e-dash': {
+    label: 'e-dash',
+    viewBox: '0 0 120 28',
+    id: 'e-dash',
+  },
   EmbedPDF: {
     label: 'EmbedPDF',
     viewBox: '58 58 134 134',
