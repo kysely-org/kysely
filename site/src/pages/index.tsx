@@ -410,6 +410,7 @@ const LOGO_WITH_NAME = new Set([
   'Tamery',
   'Teable',
   'Tunarr',
+  'US Tax Court',
   'wevm curl.md',
   'ZenStack',
 ])
