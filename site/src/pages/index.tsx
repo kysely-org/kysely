@@ -329,6 +329,7 @@ interface ProofEntry {
   path?: string
   sha?: string
   provenAt?: string
+  hiddenReason?: string
   hidden?: boolean
 }
 
