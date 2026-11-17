@@ -581,6 +581,15 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "Uniswap",
+    "repo": "Uniswap/uniroute-public",
+    "path": "src/lib/poolCaching/auroraPoolsSource.ts",
+    "sha": "657ddbe352bb38c5d51e8a6954969f35d0a2e911",
+    "href": "https://github.com/Uniswap/uniroute-public/blob/657ddbe352bb38c5d51e8a6954969f35d0a2e911/src/lib/poolCaching/auroraPoolsSource.ts",
+    "group": "production",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "US Tax Court",
     "repo": "ustaxcourt/ef-cms",
     "path": "web-api/src/persistence/postgres/cases/getCasesByDocketNumbers.ts",
