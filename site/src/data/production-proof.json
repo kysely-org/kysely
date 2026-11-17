@@ -264,6 +264,12 @@
     "provenAt": "2024-06-22"
   },
   {
+    "name": "Marmelab",
+    "href": "https://marmelab.com/blog/2025/06/26/kysely-vs-drizzle.html",
+    "group": "production",
+    "provenAt": "2025-06-26"
+  },
+  {
     "name": "Materialize",
     "repo": "MaterializeInc/materialize",
     "path": "console/src/api/materialize/cluster/replicaUtilizationHistory.ts",

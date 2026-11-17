@@ -128,6 +128,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 135 31',
     id: 'maersk',
   },
+  // Official lockup: marmelab.com/logo-white-unicolour.svg.
+  // Its single fill inherits currentColor.
+  Marmelab: {
+    label: 'Marmelab',
+    viewBox: '0 0 152 28',
+    id: 'marmelab',
+  },
   Mozilla: {
     label: 'Mozilla',
     viewBox: '-179.044 -17.834 1000 239.22326',
