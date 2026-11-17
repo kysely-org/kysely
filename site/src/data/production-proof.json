@@ -342,6 +342,15 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "OpenCRVS",
+    "repo": "opencrvs/opencrvs-core",
+    "path": "packages/events/src/storage/postgres/administrative-hierarchy/locations.ts",
+    "sha": "907980db7ce6bea500073b76c82b1fd3157ad03d",
+    "href": "https://github.com/opencrvs/opencrvs-core/blob/907980db7ce6bea500073b76c82b1fd3157ad03d/packages/events/src/storage/postgres/administrative-hierarchy/locations.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-16"
+  },
+  {
     "name": "OpenPencil",
     "repo": "open-pencil/open-pencil",
     "path": "packages/cloud/src/server/sharing/service.ts",

@@ -260,6 +260,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 120 120',
     id: 'openclaw',
   },
+  // Official opencrvs/opencrvs-core packages/client/public/images/logo-90x90.svg,
+  // cropped to the mark; its single blue fill inherits currentColor.
+  OpenCRVS: {
+    label: 'OpenCRVS',
+    viewBox: '13 12.8 64 64',
+    id: 'opencrvs',
+  },
   // Official open-pencil/open-pencil assets/brand/mark.svg: grid dropped and
   // parts one fill like its monochrome artwork; handle centers knock out.
   OpenPencil: {
