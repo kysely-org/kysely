@@ -189,7 +189,7 @@ export const brandLogos: Record<string, BrandLogo> = {
     id: 'emdash',
   },
   // Official l2beat/l2beat packages/frontend/static/brand-kit/logo-dark.svg:
-  // the heart inherits currentColor with its ETH letters knocked out by a mask.
+  // the heart is a tonal plate under solid ETH letters, as in logo-light.svg.
   ETHBEAT: {
     label: 'ETHBEAT',
     viewBox: '0 0 1045 442',
