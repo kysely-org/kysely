@@ -50,7 +50,7 @@
     "kysely-typeorm": "0.3.0",
     "mdast-util-from-markdown": "2.1.0",
     "mdast-util-gfm": "3.1.0",
-    "mdast-util-to-hast": "13.2.1",
+    "mdast-util-to-hast": "13.2.2",
     "mermaid": "12.3.0",
     "objection": "4.4.3",
     "pagefind": "1.6.0",
