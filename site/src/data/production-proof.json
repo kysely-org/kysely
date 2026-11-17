@@ -408,6 +408,12 @@
     "provenAt": "2026-11-02"
   },
   {
+    "name": "RabbitGUI",
+    "href": "https://rabbitgui.com/blog/how-we-built-rabbitgui-with-electron",
+    "group": "built-into",
+    "provenAt": "2026-10-25"
+  },
+  {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
     "path": "addons/passkey/src/passkey/db/db.ts",
