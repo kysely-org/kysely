@@ -81,6 +81,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 723 723',
     id: 'craig',
   },
+  // Official lockup: cyna.security/images/branding/cyna-logo-full-white.svg;
+  // its white fills inherit currentColor.
+  Cyna: {
+    label: 'Cyna',
+    viewBox: '0 0 924.2 251.5',
+    id: 'cyna',
+  },
   Cypress: {
     label: 'Cypress',
     viewBox: '0 0 119 48',
