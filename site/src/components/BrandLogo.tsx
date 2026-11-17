@@ -1,10 +1,13 @@
 import type { JSX } from 'react'
 import useBaseUrl from '@docusaurus/useBaseUrl'
+import { usePluginData } from '@docusaurus/useGlobalData'
+import type { BrandLogoSpriteData } from '../../plugins/generate-brand-logo-sprite'
 import styles from './BrandLogo.module.css'
 
 /**
  * Edit artwork in src/assets/brands/<id>.svg. The Docusaurus plugin combines
- * these files into /img/brand-logos.svg for both development and production.
+ * these files into a content-hashed /img/brand-logos.<hash>.svg for both
+ * development and production.
  * Keep each source SVG's viewBox aligned with the metadata below.
  * Official brand marks normalized to single-tone `currentColor`, sourced
  * from each company's press kit, public repo, site assets, or Wikimedia
@@ -414,7 +417,10 @@ export function BrandLogoSvg({
   requested: boolean
   showFallback: boolean
 }): JSX.Element {
-  const spriteUrl = useBaseUrl('/img/brand-logos.svg')
+  const { fileName } = usePluginData(
+    'generate-brand-logo-sprite',
+  ) as BrandLogoSpriteData
+  const spriteUrl = useBaseUrl(`/img/${fileName}`)
   const [x, y, width, height] = logo.viewBox.split(' ').map(Number)
 
   return (

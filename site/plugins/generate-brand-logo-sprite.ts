@@ -1,15 +1,26 @@
 import type { LoadContext, Plugin } from '@docusaurus/types'
-import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import {
+  copyFile,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
 import { join } from 'pathe'
+
+export interface BrandLogoSpriteData {
+  fileName: string
+}
 
 export default function generateBrandLogoSprite({
   generatedFilesDir,
   siteDir,
   siteConfig,
-}: LoadContext): Plugin {
+}: LoadContext): Plugin<BrandLogoSpriteData> {
   const sourceDir = join(siteDir, 'src/assets/brands')
   const outputDir = join(generatedFilesDir, 'brand-logos')
-  const outputFile = join(outputDir, 'brand-logos.svg')
 
   return {
     name: 'generate-brand-logo-sprite',
@@ -33,11 +44,18 @@ export default function generateBrandLogoSprite({
           return `<g id="${file.slice(0, -4)}"${attributes}>${match[2]}</g>`
         }),
       )
+      const sprite = `<svg xmlns="http://www.w3.org/2000/svg">\n${logos.join('\n')}\n</svg>\n`
+      const hash = createHash('sha256').update(sprite).digest('hex').slice(0, 8)
+      const fileName = `brand-logos.${hash}.svg`
+
+      await rm(outputDir, { force: true, recursive: true })
       await mkdir(outputDir, { recursive: true })
-      await writeFile(
-        outputFile,
-        `<svg xmlns="http://www.w3.org/2000/svg">\n${logos.join('\n')}\n</svg>\n`,
-      )
+      await writeFile(join(outputDir, fileName), sprite)
+
+      return { fileName }
+    },
+    async contentLoaded({ content, actions }) {
+      actions.setGlobalData(content)
     },
     configureWebpack() {
       return {
@@ -51,9 +69,12 @@ export default function generateBrandLogoSprite({
         },
       }
     },
-    async postBuild({ outDir }) {
+    async postBuild({ content, outDir }) {
       await mkdir(join(outDir, 'img'), { recursive: true })
-      await copyFile(outputFile, join(outDir, 'img/brand-logos.svg'))
+      await copyFile(
+        join(outputDir, content.fileName),
+        join(outDir, 'img', content.fileName),
+      )
     },
   }
 }
