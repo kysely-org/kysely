@@ -304,6 +304,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 1556 502',
     id: 'sesame-care',
   },
+  // Official lockup from the skyfall.co.jp footer, whose white fills
+  // inherit currentColor.
+  Skyfall: {
+    label: 'Skyfall',
+    viewBox: '0 0 563 141',
+    id: 'skyfall',
+  },
   StudioCMS: {
     label: 'StudioCMS',
     viewBox: '0 0 755 792',

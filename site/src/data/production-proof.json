@@ -456,6 +456,12 @@
     "provenAt": "2026-10-27"
   },
   {
+    "name": "Skyfall",
+    "href": "https://zenn.dev/skyfall/articles/58f71aa4f25bfa",
+    "group": "production",
+    "provenAt": "2026-02-25"
+  },
+  {
     "name": "StudioCMS",
     "repo": "withstudiocms/studiocms",
     "path": "packages/@withstudiocms/sdk/src/modules/auth/index.ts",
