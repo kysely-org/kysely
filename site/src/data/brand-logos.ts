@@ -365,6 +365,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 563 141',
     id: 'skyfall',
   },
+  // Official wordmark: store-craft/storecraft packages/assets/logo2.svg,
+  // fills dropped so it inherits currentColor.
+  Storecraft: {
+    label: 'Storecraft',
+    viewBox: '5 7.5 274.5 38.5',
+    id: 'storecraft',
+  },
   StudioCMS: {
     label: 'StudioCMS',
     viewBox: '0 0 755 792',
