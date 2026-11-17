@@ -323,6 +323,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 438 69',
     id: 'redwoodsdk',
   },
+  // Official waveform mark: remnawave/panel static/img/logo.svg; the
+  // gradient app-icon plate is dropped and the bars inherit currentColor.
+  Remnawave: {
+    label: 'Remnawave',
+    viewBox: '1.25 1 13.5 14',
+    id: 'remnawave',
+  },
   Replicas: {
     label: 'Replicas',
     viewBox: '0 0 225 300',
