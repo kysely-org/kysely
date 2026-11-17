@@ -363,6 +363,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 3 32 25',
     id: 'tunarr',
   },
+  // Court seal from ustaxcourt/ef-cms web-client/src/images/ustc_seal.svg (public
+  // domain): black inks through a luminance mask, white details knock out.
+  'US Tax Court': {
+    label: 'US Tax Court',
+    viewBox: '0 0 719.992 720',
+    id: 'united-states-tax-court',
+  },
   'wevm curl.md': {
     label: 'wevm',
     viewBox: '0 0 311 63',

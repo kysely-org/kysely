@@ -546,6 +546,15 @@
     "provenAt": "2026-11-07"
   },
   {
+    "name": "US Tax Court",
+    "repo": "ustaxcourt/ef-cms",
+    "path": "web-api/src/persistence/postgres/cases/getCasesByDocketNumbers.ts",
+    "sha": "d100bb191cb3c3654b210306eefe51d7a408e85c",
+    "href": "https://github.com/ustaxcourt/ef-cms/blob/d100bb191cb3c3654b210306eefe51d7a408e85c/web-api/src/persistence/postgres/cases/getCasesByDocketNumbers.ts",
+    "group": "production",
+    "provenAt": "2026-11-09"
+  },
+  {
     "name": "wevm curl.md",
     "repo": "wevm/curl.md",
     "path": "src/api.ts",
