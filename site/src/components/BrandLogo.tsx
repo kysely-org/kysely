@@ -141,9 +141,10 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 132 27',
     id: 'parabol',
   },
+  // Official prisma/presskit Assets/black/black.svg, the 2026 brand.
   'Prisma Studio': {
     label: 'Prisma',
-    viewBox: '0 0 228 72',
+    viewBox: '0 0 264 67',
     id: 'prisma-studio',
   },
   tldraw: {
