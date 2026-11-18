@@ -12,14 +12,10 @@ export type SelectFrom<
   TB extends keyof DB,
   TE extends TableExpressionOrList<DB, TB>,
 > = [TE] extends [keyof DB]
-  ? // This branch creates a good-looking type for the most common case:
-    // selectFrom('person') --> SelectQueryBuilder<DB, 'person', {}>.
-    // ExtractTableAlias is needed for the case where DB == any. Without it:
+  ? // ExtractTableAlias is needed for the case where DB == any. Without it:
     // selectFrom('person as p') --> SelectQueryBuilder<DB, 'person as p', {}>
     SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-  : // This branch creates a good-looking type for common aliased case:
-    // selectFrom('person as p') --> SelectQueryBuilder<FromAliasedTable<DB, Person, 'p'>, 'p', {}>.
-    [TE] extends [`${infer T} as ${infer A}`]
+  : [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
       ? SelectQueryBuilder<FromAliasedTable<DB, DB[T], A>, TB | A, {}>
       : never
