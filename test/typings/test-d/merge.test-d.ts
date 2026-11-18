@@ -89,6 +89,37 @@ async function testUsing(db: Kysely<Database>) {
   )
 }
 
+async function testUsingAliasMatchingTableName(db: Kysely<Database>) {
+  db.mergeInto('person')
+    .using('toy as pet', 'pet.price', 'person.age')
+    .whenMatchedAnd('pet.price', '>', 10)
+
+  db.mergeInto('person')
+    .using(
+      db.selectFrom('toy').select(['toy.price']).as('pet'),
+      'pet.price',
+      'person.age',
+    )
+    .whenMatchedAnd('pet.price', '>', 10)
+
+  expectError(
+    db
+      .mergeInto('person')
+      .using('toy as pet', 'pet.price', 'person.age')
+      .whenMatchedAnd('pet.species', '=', 'cat'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using(
+        db.selectFrom('toy').select(['toy.price']).as('pet'),
+        'pet.price',
+        'person.age',
+      )
+      .whenMatchedAnd('pet.species', '=', 'cat'),
+  )
+}
+
 async function testWhenMatched(
   baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
 ) {
