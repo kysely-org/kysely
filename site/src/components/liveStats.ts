@@ -20,6 +20,7 @@ export function formatCompact(value: number): string {
 }
 
 let starsRequest: Promise<number | null> | undefined
+let resolvedStars: number | null = null
 
 function fetchStars(): Promise<number | null> {
   starsRequest ??= fetch('https://api.github.com/repos/kysely-org/kysely')
@@ -28,14 +29,19 @@ function fetchStars(): Promise<number | null> {
       typeof data?.stargazers_count === 'number' ? data.stargazers_count : null,
     )
     .catch(() => null)
+    .then((value) => (resolvedStars = value))
 
   return starsRequest
 }
 
 export function useGitHubStars(): number | null {
-  const [stars, setStars] = useState<number | null>(null)
+  const [stars, setStars] = useState<number | null>(resolvedStars)
 
   useEffect(() => {
+    if (resolvedStars != null) {
+      return
+    }
+
     let active = true
 
     fetchStars().then((value) => {
