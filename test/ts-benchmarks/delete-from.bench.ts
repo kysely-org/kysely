@@ -22,6 +22,26 @@ bench('kysely.deleteFrom(table as alias)', () => {
   return kysely.deleteFrom('my_table as mt')
 }).types([356, 'instantiations'])
 
+bench('kysely.deleteFrom(table as table)', () => {
+  return kysely.deleteFrom('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
+}).types([356, 'instantiations'])
+
+bench('kysely.deleteFrom(table as alias).where(alias.column)', () => {
+  return kysely
+    .deleteFrom('my_table as mt')
+    .where('mt.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
+}).types([2621, 'instantiations'])
+
+bench('kysely.deleteFrom(table as table).where(table.column)', () => {
+  return kysely
+    .deleteFrom('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
+    .where(
+      'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
+      '=',
+      1,
+    )
+}).types([2621, 'instantiations'])
+
 bench('kysely.deleteFrom([table])', () => {
   return kysely.deleteFrom(['my_table'])
 }).types([379, 'instantiations'])

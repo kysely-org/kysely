@@ -33,7 +33,10 @@ import {
   type SelectCallback,
   type SelectExpression,
 } from '../parser/select-parser.js'
-import type { TableExpression } from '../parser/table-parser.js'
+import type {
+  FromAliasedTable,
+  TableExpression,
+} from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
 import type {
   ExtractUpdateTypeFromReferenceExpression,
@@ -53,7 +56,6 @@ import type {
 import { freeze } from '../util/object-utils.js'
 import type { QueryId } from '../util/query-id.js'
 import type {
-  ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
   SqlBool,
@@ -1243,22 +1245,12 @@ export type ExtractWheneableMergeQueryBuilder<
   O,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UsingBuilder<DB, TT, A, DB[T], O>
+    ? WheneableMergeQueryBuilder<FromAliasedTable<DB, DB[T], A>, TT, A, O>
     : never
   : TE extends keyof DB
     ? WheneableMergeQueryBuilder<DB, TT, TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? UsingBuilder<DB, TT, QA, QO, O>
+      ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? UsingBuilder<DB, TT, QA, QO, O>
+        ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
         : never
-
-type UsingBuilder<
-  DB,
-  TT extends keyof DB,
-  A extends string,
-  R,
-  O,
-> = A extends keyof DB
-  ? WheneableMergeQueryBuilder<DB, TT, A, O>
-  : WheneableMergeQueryBuilder<DB & ShallowRecord<A, R>, TT, A, O>

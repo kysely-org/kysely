@@ -2,6 +2,20 @@ import type { Kysely, UpdateResult } from '../index.js'
 import type { Database } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
+async function testUpdateTableAliasMatchingTableName(db: Kysely<Database>) {
+  db.updateTable('person as pet')
+    .set({ first_name: 'Jennifer' })
+    .where('pet.age', '>', 18)
+
+  expectError(db.updateTable('person as pet').set({ species: 'cat' }))
+  expectError(
+    db
+      .updateTable('person as pet')
+      .set({ first_name: 'Jennifer' })
+      .where('species', '=', 'cat'),
+  )
+}
+
 async function testUpdate(db: Kysely<Database>) {
   const r1 = await db
     .updateTable('pet')

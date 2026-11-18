@@ -37,6 +37,14 @@ export type From<DB, TE> = DrainOuterGeneric<{
       : never
 }>
 
+/**
+ * Inserts a table with row type `R` at alias `A` in `DB`, overriding any
+ * existing table named `A`.
+ */
+export type FromAliasedTable<DB, R, A extends keyof any> = {
+  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+}
+
 export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
   TB | ExtractAliasFromTableExpression<DB, TE>
 >

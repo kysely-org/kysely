@@ -35,6 +35,24 @@ async function testMergeInto(db: Kysely<Database>) {
   )
 }
 
+async function testMergeIntoAliasMatchingTableName(db: Kysely<Database>) {
+  db.mergeInto('person as pet')
+    .using('toy', 'toy.price', 'pet.age')
+    .whenMatched()
+    .thenUpdateSet({ first_name: 'Jennifer' })
+
+  expectError(
+    db.mergeInto('person as pet').using('toy', 'toy.pet_id', 'pet.species'),
+  )
+  expectError(
+    db
+      .mergeInto('person as pet')
+      .using('toy', 'toy.price', 'pet.age')
+      .whenMatched()
+      .thenUpdateSet({ species: 'cat' }),
+  )
+}
+
 async function testUsing(db: Kysely<Database>) {
   db.mergeInto('person').using('pet', 'pet.owner_id', 'person.id')
   db.mergeInto('person as p').using('pet as p2', 'p2.owner_id', 'p.id')
@@ -68,6 +86,37 @@ async function testUsing(db: Kysely<Database>) {
       .mergeInto('person')
       .using('pet', 'pet.owner_id', 'person.id')
       .executeTakeFirstOrThrow(),
+  )
+}
+
+async function testUsingAliasMatchingTableName(db: Kysely<Database>) {
+  db.mergeInto('person')
+    .using('toy as pet', 'pet.price', 'person.age')
+    .whenMatchedAnd('pet.price', '>', 10)
+
+  db.mergeInto('person')
+    .using(
+      db.selectFrom('toy').select(['toy.price']).as('pet'),
+      'pet.price',
+      'person.age',
+    )
+    .whenMatchedAnd('pet.price', '>', 10)
+
+  expectError(
+    db
+      .mergeInto('person')
+      .using('toy as pet', 'pet.price', 'person.age')
+      .whenMatchedAnd('pet.species', '=', 'cat'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using(
+        db.selectFrom('toy').select(['toy.price']).as('pet'),
+        'pet.price',
+        'person.age',
+      )
+      .whenMatchedAnd('pet.species', '=', 'cat'),
   )
 }
 

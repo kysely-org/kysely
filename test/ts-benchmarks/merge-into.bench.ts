@@ -22,6 +22,62 @@ bench('kysely.mergeInto(table as alias)', () => {
   return kysely.mergeInto('my_table as mt')
 }).types([331, 'instantiations'])
 
+bench('kysely.mergeInto(table as table)', () => {
+  return kysely.mergeInto('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
+}).types([331, 'instantiations'])
+
+bench('kysely.mergeInto(table as alias).using(table)', () => {
+  return kysely
+    .mergeInto('my_table as mt')
+    .using(
+      'my_table',
+      'my_table.col_1d726898491fbca9a8dac855d2be1be8',
+      'mt.col_1d726898491fbca9a8dac855d2be1be8',
+    )
+}).types([7089, 'instantiations'])
+
+bench('kysely.mergeInto(table as table).using(table)', () => {
+  return kysely
+    .mergeInto('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
+    .using(
+      'my_table',
+      'my_table.col_1d726898491fbca9a8dac855d2be1be8',
+      'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
+    )
+}).types([7066, 'instantiations'])
+
+bench(
+  'kysely.mergeInto(table as alias).using(table as alias).whenMatchedAnd(alias.column)',
+  () => {
+    return kysely
+      .mergeInto('my_table as mt')
+      .using(
+        'my_table as mt2',
+        'mt2.col_1d726898491fbca9a8dac855d2be1be8',
+        'mt.col_1d726898491fbca9a8dac855d2be1be8',
+      )
+      .whenMatchedAnd('mt2.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
+  },
+).types([10333, 'instantiations'])
+
+bench(
+  'kysely.mergeInto(table as alias).using(table as table).whenMatchedAnd(table.column)',
+  () => {
+    return kysely
+      .mergeInto('my_table as mt')
+      .using(
+        'my_table as table_fff4c6195261874920bc7ce92d67d2c2',
+        'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
+        'mt.col_1d726898491fbca9a8dac855d2be1be8',
+      )
+      .whenMatchedAnd(
+        'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
+        '=',
+        1,
+      )
+  },
+).types([10333, 'instantiations'])
+
 bench('kysely.$pickTables<tables>.mergeInto(table)', () => {
   return kysely
     .$pickTables<'table_fff4c6195261874920bc7ce92d67d2c2'>()
