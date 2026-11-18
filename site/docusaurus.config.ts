@@ -303,12 +303,9 @@ export default {
           position: 'right',
         },
         {
-          ...socialNavbarItem(
-            'GitHub',
-            'https://github.com/kysely-org/kysely',
-            socialIconPaths.github,
-          ),
           className: 'navbar-group-start',
+          position: 'right',
+          type: 'custom-github',
         },
         socialNavbarItem(
           'Discord',

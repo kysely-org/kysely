@@ -7,6 +7,11 @@ import clsx from 'clsx'
 import { BrandLogoSvg } from '../components/BrandLogo'
 import { brandLogos } from '../data/brand-logos'
 import { DemoVideo } from '../components/DemoVideo'
+import {
+  FALLBACK_STATS,
+  formatCompact,
+  useGitHubStars,
+} from '../components/liveStats'
 import { SectionFeatures } from '../components/SectionFeatures'
 import { SectionQuotes } from '../components/SectionQuotes'
 import {
@@ -175,27 +180,10 @@ function SectionHero() {
   )
 }
 
-// Rendered at build time and shown until the live numbers arrive, and the
-// permanent values for visitors with JavaScript disabled or the APIs blocked.
-const FALLBACK_STATS = {
-  contributors: '150+',
-  downloads: '20M+',
-  stars: '14k+',
-}
-
-function formatCompact(value: number): string {
-  return new Intl.NumberFormat('en', {
-    maximumFractionDigits: 1,
-    notation: 'compact',
-  })
-    .format(value)
-    .replace('K', 'k')
-}
-
 function useLiveStats() {
   const [contributors, setContributors] = useState<number | null>(null)
   const [downloads, setDownloads] = useState<number | null>(null)
-  const [stars, setStars] = useState<number | null>(null)
+  const stars = useGitHubStars()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -222,17 +210,6 @@ function useLiveStats() {
       .then((data) => {
         if (typeof data?.downloads === 'number') {
           setDownloads(data.downloads)
-        }
-      })
-      .catch(() => {})
-
-    fetch('https://api.github.com/repos/kysely-org/kysely', {
-      signal: controller.signal,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (typeof data?.stargazers_count === 'number') {
-          setStars(data.stargazers_count)
         }
       })
       .catch(() => {})

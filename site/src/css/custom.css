@@ -198,6 +198,15 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   padding: 0 2px;
 }
 
+.navbar-github {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  gap: 6px;
+  padding: 0 6px;
+  width: auto;
+}
+
 /* Socials sit outermost, past the color-mode toggle (which Docusaurus
    always renders after the items), so flex order flips the visual sequence. */
 .navbar__items--right > div[class*='toggle_'] {
