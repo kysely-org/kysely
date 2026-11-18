@@ -1,5 +1,4 @@
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
-import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
@@ -19,12 +18,10 @@ export type SelectFrom<
     // selectFrom('person as p') --> SelectQueryBuilder<DB, 'person as p', {}>
     SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
   : // This branch creates a good-looking type for common aliased case:
-    // selectFrom('person as p') --> SelectQueryBuilder<DB & { p: Person }, 'p', {}>.
+    // selectFrom('person as p') --> SelectQueryBuilder<FromAliasedTable<DB, 'p', Person>, 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? A extends keyof DB
-        ? SelectQueryBuilder<FromAliasedTable<DB, A, DB[T]>, TB | A, {}>
-        : SelectQueryBuilder<DB & ShallowRecord<A, DB[T]>, TB | A, {}>
+      ? SelectQueryBuilder<FromAliasedTable<DB, A, DB[T]>, TB | A, {}>
       : never
     : TE extends ReadonlyArray<infer T>
       ? SelectQueryBuilder<From<DB, T>, FromTables<DB, TB, T>, {}>

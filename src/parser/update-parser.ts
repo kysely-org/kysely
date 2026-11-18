@@ -1,6 +1,5 @@
 import type { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import type { UpdateResult } from '../query-builder/update-result.js'
-import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
@@ -23,12 +22,10 @@ export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
       UpdateResult
     >
   : // This branch creates a good-looking type for common aliased case:
-    // updateTable('person as p') --> UpdateQueryBuilder<DB & { p: Person }, 'p', 'p', {}>.
+    // updateTable('person as p') --> UpdateQueryBuilder<FromAliasedTable<DB, 'p', Person>, 'p', 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? A extends keyof DB
-        ? UpdateQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, A, UpdateResult>
-        : UpdateQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, A, UpdateResult>
+      ? UpdateQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, A, UpdateResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? UpdateQueryBuilder<

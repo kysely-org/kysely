@@ -1,6 +1,5 @@
 import type { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import type { DeleteResult } from '../query-builder/delete-result.js'
-import type { ShallowRecord } from '../util/type-utils.js'
 import type {
   ExtractTableAlias,
   From,
@@ -18,12 +17,10 @@ export type DeleteFrom<DB, TE extends TableExpressionOrList<DB, never>> = [
     // deleteFrom('person as p') --> DeleteQueryBuilder<DB, 'person as p', {}>
     DeleteQueryBuilder<DB, ExtractTableAlias<DB, TE>, DeleteResult>
   : // This branch creates a good-looking type for common aliased case:
-    // deleteFrom('person as p') --> DeleteQueryBuilder<DB & { p: Person }, 'p', {}>.
+    // deleteFrom('person as p') --> DeleteQueryBuilder<FromAliasedTable<DB, 'p', Person>, 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? A extends keyof DB
-        ? DeleteQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, DeleteResult>
-        : DeleteQueryBuilder<DB & ShallowRecord<A, DB[T]>, A, DeleteResult>
+      ? DeleteQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, DeleteResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? DeleteQueryBuilder<From<DB, T>, FromTables<DB, never, T>, DeleteResult>

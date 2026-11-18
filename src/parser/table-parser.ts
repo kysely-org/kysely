@@ -37,8 +37,8 @@ export type From<DB, TE> = DrainOuterGeneric<{
       : never
 }>
 
-export type FromAliasedTable<DB, A, R> = {
-  [C in keyof DB]: C extends A ? R : DB[C]
+export type FromAliasedTable<DB, A extends keyof any, R> = {
+  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
 }
 
 export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
