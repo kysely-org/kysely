@@ -3,16 +3,16 @@ import type { Database } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
 async function testUpdateTableAliasMatchingTableName(db: Kysely<Database>) {
-  db.updateTable('pet as person')
-    .set({ species: 'cat' })
-    .where('person.name', '=', 'Catto')
+  db.updateTable('person as pet')
+    .set({ first_name: 'Jennifer' })
+    .where('pet.age', '>', 18)
 
-  expectError(db.updateTable('pet as person').set({ age: 18 }))
+  expectError(db.updateTable('person as pet').set({ species: 'cat' }))
   expectError(
     db
-      .updateTable('pet as person')
-      .set({ species: 'cat' })
-      .where('age', '>', 18),
+      .updateTable('person as pet')
+      .set({ first_name: 'Jennifer' })
+      .where('species', '=', 'cat'),
   )
 }
 

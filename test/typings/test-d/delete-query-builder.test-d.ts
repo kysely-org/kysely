@@ -93,11 +93,11 @@ async function testDelete(db: Kysely<Database>) {
 }
 
 async function testDeleteFromAliasMatchingTableName(db: Kysely<Database>) {
-  db.deleteFrom('pet as person').where('species', '=', 'cat')
-  db.deleteFrom('pet as person').where('person.species', '=', 'cat')
+  db.deleteFrom('person as pet').where('first_name', '=', 'Jennifer')
+  db.deleteFrom('person as pet').where('pet.first_name', '=', 'Jennifer')
 
-  expectError(db.deleteFrom('pet as person').where('age', '>', 18))
-  expectError(db.deleteFrom('pet as person').where('person.age', '>', 18))
+  expectError(db.deleteFrom('person as pet').where('species', '=', 'cat'))
+  expectError(db.deleteFrom('person as pet').where('pet.species', '=', 'cat'))
 }
 
 async function testReturning(db: Kysely<Database>) {
