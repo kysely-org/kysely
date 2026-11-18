@@ -402,6 +402,7 @@ const LOGO_WITH_NAME = new Set([
   'Craig',
   'Domain Locker',
   'EmbedPDF',
+  'eXeLearning',
   'Hot Updater',
   'inlang',
   'Materialize',
