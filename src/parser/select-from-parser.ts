@@ -18,10 +18,10 @@ export type SelectFrom<
     // selectFrom('person as p') --> SelectQueryBuilder<DB, 'person as p', {}>
     SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
   : // This branch creates a good-looking type for common aliased case:
-    // selectFrom('person as p') --> SelectQueryBuilder<FromAliasedTable<DB, 'p', Person>, 'p', {}>.
+    // selectFrom('person as p') --> SelectQueryBuilder<FromAliasedTable<DB, Person, 'p'>, 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? SelectQueryBuilder<FromAliasedTable<DB, A, DB[T]>, TB | A, {}>
+      ? SelectQueryBuilder<FromAliasedTable<DB, DB[T], A>, TB | A, {}>
       : never
     : TE extends ReadonlyArray<infer T>
       ? SelectQueryBuilder<From<DB, T>, FromTables<DB, TB, T>, {}>

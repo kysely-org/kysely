@@ -1245,12 +1245,12 @@ export type ExtractWheneableMergeQueryBuilder<
   O,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? WheneableMergeQueryBuilder<FromAliasedTable<DB, A, DB[T]>, TT, A, O>
+    ? WheneableMergeQueryBuilder<FromAliasedTable<DB, DB[T], A>, TT, A, O>
     : never
   : TE extends keyof DB
     ? WheneableMergeQueryBuilder<DB, TT, TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QA, QO>, TT, QA, O>
+      ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QA, QO>, TT, QA, O>
+        ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
         : never

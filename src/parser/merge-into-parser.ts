@@ -12,6 +12,6 @@ export type MergeInto<DB, TE extends SimpleTableReference<DB>> = [TE] extends [
   ? MergeQueryBuilder<DB, ExtractTableAlias<DB, TE>, MergeResult>
   : [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? MergeQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, MergeResult>
+      ? MergeQueryBuilder<FromAliasedTable<DB, DB[T], A>, A, MergeResult>
       : never
     : never

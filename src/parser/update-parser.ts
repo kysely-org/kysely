@@ -22,10 +22,10 @@ export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
       UpdateResult
     >
   : // This branch creates a good-looking type for common aliased case:
-    // updateTable('person as p') --> UpdateQueryBuilder<FromAliasedTable<DB, 'p', Person>, 'p', 'p', {}>.
+    // updateTable('person as p') --> UpdateQueryBuilder<FromAliasedTable<DB, Person, 'p'>, 'p', 'p', {}>.
     [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? UpdateQueryBuilder<FromAliasedTable<DB, A, DB[T]>, A, A, UpdateResult>
+      ? UpdateQueryBuilder<FromAliasedTable<DB, DB[T], A>, A, A, UpdateResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? UpdateQueryBuilder<
