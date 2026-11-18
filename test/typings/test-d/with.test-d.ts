@@ -304,3 +304,85 @@ async function testManyWith(db: Kysely<Database>) {
     fn20: string
   }>(res)
 }
+
+async function testWithNameOfExistingTable(db: Kysely<Database>) {
+  const r1 = await db
+    .with('person', (db) =>
+      db.selectFrom('pet').where('species', '=', 'dog').select(['id', 'name']),
+    )
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: string; name: string }[]>(r1)
+
+  const r2 = await db
+    .with('person', (db) =>
+      db
+        .selectFrom('person')
+        .where('age', '>', 60)
+        .select(['id', 'first_name']),
+    )
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: number; first_name: string }[]>(r2)
+
+  expectError(
+    db
+      .with('person', (db) =>
+        db.selectFrom('person').select(['id', 'first_name']),
+      )
+      .selectFrom('person')
+      .select('last_name'),
+  )
+
+  const r3 = await db
+    .with('person(id, name)', (db) =>
+      db.selectFrom('pet').select(['id', 'name']),
+    )
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: string; name: string }[]>(r3)
+
+  const r4 = await db
+    .with('person', (db) => db.selectFrom('pet').select(['id', 'name']))
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.id', 'person.id')
+    .select(['person.name', 'pet.species'])
+    .execute()
+
+  expectType<{ name: string; species: 'dog' | 'cat' }[]>(r4)
+}
+
+async function testWithRecursiveNameOfExistingTable(db: Kysely<Database>) {
+  const r1 = await db
+    .withRecursive('person(id, first_name)', (db) =>
+      db
+        .selectFrom('pet')
+        .select(['owner_id as id', 'name as first_name'])
+        .unionAll(
+          db
+            .selectFrom('person')
+            .select(['id', 'first_name'])
+            .where('first_name', '=', 'Jennifer'),
+        ),
+    )
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: number; first_name: string }[]>(r1)
+
+  expectError(
+    db.withRecursive('person(id, first_name)', (db) =>
+      db
+        .selectFrom('pet')
+        .select(['owner_id as id', 'name as first_name'])
+        .unionAll(db.selectFrom('person').select(['id', 'last_name'])),
+    ),
+  )
+}
