@@ -207,31 +207,9 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   width: auto;
 }
 
-/* Vertical dividers flanking the appearance toggle, with hono/knex's exact
-   VitePress geometry: 24px bars, 8px toward the outer groups, 16px toward
-   the toggle. */
+.navbar__items--right .navbar__item.navbar-group-start,
 .navbar__items--right > div[class*='toggle_'] {
   margin-left: 8px;
-  padding-left: 16px;
-  position: relative;
-}
-
-.navbar__items--right .navbar__item.navbar-group-start {
-  margin-left: 16px;
-  padding: 0 2px 0 8px;
-  position: relative;
-}
-
-.navbar__items--right .navbar-group-start::before,
-.navbar__items--right > div[class*='toggle_']::before {
-  background: var(--navbar-divider);
-  content: '';
-  height: 24px;
-  left: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
 }
 
 /* In the mobile menu, socials share one row under the links, past a
