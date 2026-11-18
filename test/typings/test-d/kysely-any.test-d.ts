@@ -2,6 +2,7 @@ import type {
   DeleteResult,
   InsertResult,
   Kysely,
+  MergeResult,
   UpdateResult,
 } from '../index.js'
 import { expectType } from 'tsd'
@@ -165,4 +166,50 @@ async function testKyselyAnyDeletes(db: Kysely<any>) {
     .where('baz', '=', 1)
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r4)
+}
+
+async function testKyselyAnyMerges(db: Kysely<any>) {
+  const r1 = await db
+    .mergeInto('foo')
+    .using('bar as b', 'b.id', 'foo.id')
+    .whenMatchedAnd('b.eggs', '=', 1)
+    .thenUpdateSet({ spam: 2 })
+    .executeTakeFirstOrThrow()
+  expectType<MergeResult>(r1)
+
+  const r2 = await db
+    .mergeInto('foo')
+    .using('bar as b', 'b.id', 'foo.id')
+    .whenMatched()
+    .thenDelete()
+    .returning(['b.eggs', 'foo.spam'])
+    .executeTakeFirstOrThrow()
+  expectType<{ eggs: any; spam: any }>(r2)
+
+  const r3 = await db
+    .mergeInto('foo')
+    .using('bar as b', 'b.id', 'foo.id')
+    .whenMatched()
+    .thenDelete()
+    .returningAll()
+    .executeTakeFirstOrThrow()
+  expectType<{ [x: string]: any }>(r3)
+
+  const r4 = await db
+    .mergeInto('foo')
+    .using('bar as b', 'b.id', 'foo.id')
+    .whenMatched()
+    .thenDelete()
+    .returningAll('b')
+    .executeTakeFirstOrThrow()
+  expectType<{ [x: string]: any }>(r4)
+
+  const r5 = await db
+    .mergeInto('foo')
+    .using(db.selectFrom('bar').selectAll().as('b'), 'b.id', 'foo.id')
+    .whenMatched()
+    .thenDelete()
+    .returning((eb) => eb.ref('b.eggs').as('e'))
+    .executeTakeFirstOrThrow()
+  expectType<{ e: any }>(r5)
 }
