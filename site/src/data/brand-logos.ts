@@ -389,6 +389,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 3 32 25',
     id: 'tunarr',
   },
+  // Official unicorn mark: Uniswap/interface
+  // packages/mycelium/src/assets/icons/uniswap-logo.svg; already currentColor.
+  Uniswap: {
+    label: 'Uniswap',
+    viewBox: '6 3 84 90',
+    id: 'uniswap',
+  },
   // Court seal from ustaxcourt/ef-cms web-client/src/images/ustc_seal.svg (public
   // domain): black inks through a luminance mask, white details knock out.
   'US Tax Court': {
