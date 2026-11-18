@@ -371,12 +371,6 @@
     "provenAt": "2026-11-10"
   },
   {
-    "name": "OpenWork",
-    "href": "https://techblog.openwork.co.jp/entry/tech-selection-megasearch",
-    "group": "production",
-    "provenAt": "2026-11-06"
-  },
-  {
     "name": "Open Collective",
     "repo": "opencollective/opencollective-api",
     "path": "server/graphql/v2/query/collection/OrdersCollectionQuery.ts",
@@ -397,6 +391,12 @@
     "path": "ui/lib/db.ts",
     "sha": "937d88d5f4c35b140fe6c0b3a60f369b3e0568c6",
     "href": "https://github.com/opensanctions/opensanctions/blob/937d88d5f4c35b140fe6c0b3a60f369b3e0568c6/ui/lib/db.ts",
+    "group": "production",
+    "provenAt": "2026-11-06"
+  },
+  {
+    "name": "OpenWork",
+    "href": "https://techblog.openwork.co.jp/entry/tech-selection-megasearch",
     "group": "production",
     "provenAt": "2026-11-06"
   },
