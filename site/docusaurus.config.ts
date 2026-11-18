@@ -283,24 +283,24 @@ export default {
     navbar: {
       items: [
         {
-          position: 'left',
-          type: 'search',
-        },
-        {
           docId: 'intro',
           label: 'Docs',
-          position: 'right',
+          position: 'left',
           type: 'doc',
         },
         {
           href: 'https://play.kysely.dev',
           label: 'Playground',
-          position: 'right',
+          position: 'left',
         },
         {
           href: 'https://kysely-org.github.io/kysely-apidoc',
           label: 'API docs',
+          position: 'left',
+        },
+        {
           position: 'right',
+          type: 'search',
         },
         {
           className: 'navbar-group-start',
