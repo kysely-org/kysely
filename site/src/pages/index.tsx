@@ -399,6 +399,7 @@ function proofTitle(entry: ProofEntry): string {
 const LOGO_WITH_NAME = new Set([
   'AirTrail',
   'Capacities',
+  'ColorStack',
   'Craig',
   'Domain Locker',
   'EmbedPDF',

@@ -176,6 +176,14 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 153 30',
     id: 'colanode',
   },
+  // The stacked-S mark vectorized on colorstackgt.org (ColorStack at Georgia
+  // Tech's colorstack-gt-light.svg) with the GT monogram and Buzz dropped;
+  // it matches the mark in oyster's colorstack-wordmark.png.
+  ColorStack: {
+    label: 'ColorStack',
+    viewBox: '0 0 1200 1251',
+    id: 'colorstack',
+  },
   EmbedPDF: {
     label: 'EmbedPDF',
     viewBox: '58 58 134 134',
