@@ -207,16 +207,6 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   width: auto;
 }
 
-/* Socials sit outermost, past the color-mode toggle (which Docusaurus
-   always renders after the items), so flex order flips the visual sequence. */
-.navbar__items--right > div[class*='toggle_'] {
-  order: 5;
-}
-
-.navbar__items--right .navbar__item:has(.navbar-social) {
-  order: 10;
-}
-
 /* Vertical dividers flanking the appearance toggle, with hono/knex's exact
    VitePress geometry: 24px bars, 8px toward the outer groups, 16px toward
    the toggle. */
