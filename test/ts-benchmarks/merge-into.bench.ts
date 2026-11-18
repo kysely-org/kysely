@@ -58,7 +58,7 @@ bench(
       )
       .whenMatchedAnd('mt2.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
   },
-).types([10344, 'instantiations'])
+).types([10333, 'instantiations'])
 
 bench(
   'kysely.mergeInto(table as alias).using(table as table).whenMatchedAnd(table.column)',
@@ -76,7 +76,7 @@ bench(
         1,
       )
   },
-).types([10344, 'instantiations'])
+).types([10333, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.mergeInto(table)', () => {
   return kysely
