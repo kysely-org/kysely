@@ -119,6 +119,15 @@
     "hidden": true
   },
   {
+    "name": "ColorStack",
+    "repo": "colorstackorg/oyster",
+    "path": "packages/core/src/modules/opportunities.ts",
+    "sha": "a53faeaef4aaa2b92127ead99ad2db08c60821d4",
+    "href": "https://github.com/colorstackorg/oyster/blob/a53faeaef4aaa2b92127ead99ad2db08c60821d4/packages/core/src/modules/opportunities.ts",
+    "group": "production",
+    "provenAt": "2026-11-18"
+  },
+  {
     "name": "Corsair.dev",
     "repo": "corsairdev/corsair",
     "path": "packages/suzanne/endpoints/persist.ts",
