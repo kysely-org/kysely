@@ -451,8 +451,8 @@ importers:
   test/ts-benchmarks:
     devDependencies:
       '@ark/attest':
-        specifier: 0.58.0
-        version: 0.58.0(supports-color@8.1.1)(typescript@6.0.3)
+        specifier: 0.58.1
+        version: 0.58.1(supports-color@8.1.1)(typescript@6.0.3)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -571,8 +571,8 @@ packages:
     resolution: {integrity: sha512-9ytjzGwxjm9Uz7I9avfbt5vlQt6uk9uRRESzJjqrznl6WKvI6dwYTo+vJ3U02Wrq/mR3iql/PzhvHhKdJIAjDQ==}
     engines: {node: '>=20'}
 
-  '@ark/attest@0.58.0':
-    resolution: {integrity: sha512-UxsK1WE3D40yM7C6jDS+sQiwtfQxtkcJ7SlUB76iFnJktavlzFDYUv5s4Odj1wpbab71wIyR2U/Wsz0ZMwX13w==}
+  '@ark/attest@0.58.1':
+    resolution: {integrity: sha512-PkfpRbFjHIf8gNZJotKtp9s0X9IAp5B6ycyhESa3bnNCBzu5tRTQ3iRKUrI5cCEPXnjxeWFk67egvqa2Q1zFKw==}
     hasBin: true
     peerDependencies:
       tsrs: '*'
@@ -581,14 +581,14 @@ packages:
       tsrs:
         optional: true
 
-  '@ark/fs@0.56.8':
-    resolution: {integrity: sha512-HVVLmDg2tni6W+cVDmZpeK8fdsGCyQrzQy+9avr9fvOzwIEBrOHOu+tMOajgY2BGY8w2JlNOHx3E7tSm210Oew==}
+  '@ark/fs@0.56.9':
+    resolution: {integrity: sha512-GPS2mLpsS3qvSPKF8k3Qx6iB557bNNt19J1FcNoCU8M8uq77EjIFFZ7GS4KqslS71XxdfZom/W6s3yotK2OULg==}
 
-  '@ark/schema@0.56.8':
-    resolution: {integrity: sha512-R05TOe85oQBGFFw2zKMuZpqkXibLKuC/aJt6VwFn5Cjc4x3NkWfhvGRpRDycNkj3ddcHnOPtIsmjVowJO9Yxdw==}
+  '@ark/schema@0.56.9':
+    resolution: {integrity: sha512-3kFUweE9PagqzEC9FEOirBRrVxBj0D6o8UiZDDrCyrcaBepRFHjUezf6MuTk8mKfJ4NKzSsaUCOVK+jzcm+dPw==}
 
-  '@ark/util@0.56.8':
-    resolution: {integrity: sha512-XLiQyGfpJcws1zCtp2Cva8s1oheCdFn1Rt6JSyC4NnkDrpwCJnlaiawuuOc1Z97vMH+jEzW5vyyf0xOju5wUQA==}
+  '@ark/util@0.56.9':
+    resolution: {integrity: sha512-/yA1me+AMmI75VaQ5owz1A1owopAJ0ZZFXy9SI1Q69kErJfxuglQBYjGeOTFyygJjZ9Rf4UjCtD5XTuEiNiGHw==}
 
   '@azure-rest/core-client@2.5.0':
     resolution: {integrity: sha512-KMVIPxG6ygcQ1M2hKHahF7eddKejYsWTjoLIfTWiqnaj42dBkYzj4+S8rK9xxmlOaEHKZHcMrRbm0NfN4kgwHw==}
@@ -3229,11 +3229,11 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arkregex@0.0.14:
-    resolution: {integrity: sha512-G3I/uCtWE0IKQiPh0qqmmAFDdtjZKZQ5mNPR6gJBeAMZ7VqYCpoaDeXnLju2Zo6ywExtmxZJELeVFb0MPDjPyA==}
+  arkregex@0.0.15:
+    resolution: {integrity: sha512-mu9vS4b8kTipqr2AfVIL1NYhGH47CZgPdYFzB762lu4/dsxm7hmNsN3ayDahcM9OhepOpTQc+W744yh4KE+mAw==}
 
-  arktype@2.2.9:
-    resolution: {integrity: sha512-Cja0IMEn19rB35on9da1i1z6QMasuS7ULffXbetCry09jvCGYT8Bi1KgYiqri5FymF4nQAXkM90yksYkgSK2EA==}
+  arktype@2.2.10:
+    resolution: {integrity: sha512-xfum3++1RGjULFBeeXph3XrejEhAfswZlpH/V5m324j8aZ/53tHUd8OPCXE1v5iU/2UEkn/ZDFUT0Exkjv96xA==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -8259,27 +8259,27 @@ snapshots:
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
-  '@ark/attest@0.58.0(supports-color@8.1.1)(typescript@6.0.3)':
+  '@ark/attest@0.58.1(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
-      '@ark/fs': 0.56.8
-      '@ark/schema': 0.56.8
-      '@ark/util': 0.56.8
+      '@ark/fs': 0.56.9
+      '@ark/schema': 0.56.9
+      '@ark/util': 0.56.9
       '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
       '@typescript/vfs': 1.6.1(supports-color@8.1.1)(typescript@6.0.3)
-      arktype: 2.2.9
+      arktype: 2.2.10
       prettier: 3.6.2
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
 
-  '@ark/fs@0.56.8': {}
+  '@ark/fs@0.56.9': {}
 
-  '@ark/schema@0.56.8':
+  '@ark/schema@0.56.9':
     dependencies:
-      '@ark/util': 0.56.8
+      '@ark/util': 0.56.9
 
-  '@ark/util@0.56.8': {}
+  '@ark/util@0.56.9': {}
 
   '@azure-rest/core-client@2.5.0(supports-color@10.2.2)':
     dependencies:
@@ -12086,15 +12086,15 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arkregex@0.0.14:
+  arkregex@0.0.15:
     dependencies:
-      '@ark/util': 0.56.8
+      '@ark/util': 0.56.9
 
-  arktype@2.2.9:
+  arktype@2.2.10:
     dependencies:
-      '@ark/schema': 0.56.8
-      '@ark/util': 0.56.8
-      arkregex: 0.0.14
+      '@ark/schema': 0.56.9
+      '@ark/util': 0.56.9
+      arkregex: 0.0.15
 
   array-flatten@1.1.1: {}
 
