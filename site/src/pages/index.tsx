@@ -422,6 +422,7 @@ const LOGO_WITH_NAME = new Set([
   'Uniswap',
   'US Tax Court',
   'wevm curl.md',
+  'X Minecraft Launcher',
   'ZenStack',
 ])
 

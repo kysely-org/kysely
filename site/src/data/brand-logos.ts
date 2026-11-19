@@ -423,6 +423,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 311 63',
     id: 'wevm-curl-md',
   },
+  // Official Voxelum/xmcl-page public/logo.svg: drop shadow and gradients
+  // dropped; the X knocks out of the hexagon plate through a mask.
+  'X Minecraft Launcher': {
+    label: 'X Minecraft Launcher',
+    viewBox: '34 2 442 508',
+    id: 'x-minecraft-launcher',
+  },
   ZenStack: {
     label: 'ZenStack',
     viewBox: '0 0 36 36',
