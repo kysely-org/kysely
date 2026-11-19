@@ -148,11 +148,11 @@
   {
     "name": "CS Demo Manager",
     "repo": "akiver/cs-demo-manager",
-    "path": "src/node/database/matches/fetch-matches-table.ts",
-    "sha": "b0d3258cfdb435eb6707ed8fee771774c450aa11",
-    "href": "https://github.com/akiver/cs-demo-manager/blob/b0d3258cfdb435eb6707ed8fee771774c450aa11/src/node/database/matches/fetch-matches-table.ts",
+    "path": "src/node/database/players/fetch-players-utility-stats.ts",
+    "sha": "950459e333b8563094f2e1f4d7e41948396792e3",
+    "href": "https://github.com/akiver/cs-demo-manager/blob/950459e333b8563094f2e1f4d7e41948396792e3/src/node/database/players/fetch-players-utility-stats.ts",
     "group": "built-into",
-    "provenAt": "2026-11-16"
+    "provenAt": "2026-11-18"
   },
   {
     "name": "Cypress",
