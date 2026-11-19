@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Official akiver/cs-demo-manager.com static/img/logo.svg. -->
+  <path d="M124 64C124 97.1371 97.1371 124 64 124C30.8629 124 4 97.1371 4 64C4 30.8629 30.8629 4 64 4C97.1371 4 124 30.8629 124 64Z" fill="none" stroke="currentColor" stroke-width="8"/>
+  <path d="M64 124H128" stroke="currentColor" stroke-width="8"/>
+  <circle cx="63.9999" cy="64" r="3.84"/>
+  <circle cx="38" cy="49" r="12"/>
+  <circle cx="64" cy="32" r="12"/>
+  <circle cx="38" cy="79" r="12"/>
+  <circle cx="64" cy="96" r="12"/>
+  <circle cx="90" cy="79" r="12"/>
+  <circle cx="90" cy="49" r="12"/>
+</svg>

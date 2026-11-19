@@ -78,6 +78,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 723 723',
     id: 'craig',
   },
+  // Official akiver/cs-demo-manager.com static/img/logo.svg: the film reel;
+  // its white strokes and fills inherit currentColor.
+  'CS Demo Manager': {
+    label: 'CS Demo Manager',
+    viewBox: '0 0 128 128',
+    id: 'cs-demo-manager',
+  },
   Cypress: {
     label: 'Cypress',
     viewBox: '0 0 119 48',

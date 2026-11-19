@@ -401,6 +401,7 @@ const LOGO_WITH_NAME = new Set([
   'Capacities',
   'ColorStack',
   'Craig',
+  'CS Demo Manager',
   'Domain Locker',
   'EmbedPDF',
   'eXeLearning',
