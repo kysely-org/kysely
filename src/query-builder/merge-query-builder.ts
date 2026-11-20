@@ -34,7 +34,7 @@ import {
   type SelectExpression,
 } from '../parser/select-parser.js'
 import type {
-  FromAliasedTable,
+  ShadowTableWith,
   TableExpression,
 } from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
@@ -1245,12 +1245,12 @@ export type ExtractWheneableMergeQueryBuilder<
   O,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? WheneableMergeQueryBuilder<FromAliasedTable<DB, DB[T], A>, TT, A, O>
+    ? WheneableMergeQueryBuilder<ShadowTableWith<DB, A, DB[T]>, TT, A, O>
     : never
   : TE extends keyof DB
     ? WheneableMergeQueryBuilder<DB, TT, TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
+      ? WheneableMergeQueryBuilder<ShadowTableWith<DB, QA, QO>, TT, QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? WheneableMergeQueryBuilder<FromAliasedTable<DB, QO, QA>, TT, QA, O>
+        ? WheneableMergeQueryBuilder<ShadowTableWith<DB, QA, QO>, TT, QA, O>
         : never

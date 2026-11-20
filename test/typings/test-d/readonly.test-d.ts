@@ -30,6 +30,14 @@ import {
   type TransactionBuilder,
 } from '../index.js'
 
+type DatabaseWithCTE = {
+  [T in keyof Database | 'cte']: T extends 'cte'
+    ? Selectable<Database['action']>
+    : T extends keyof Database
+      ? Database[T]
+      : never
+}
+
 async function testReadonlyKysely(
   db: Kysely<Database>,
   rdb: ReadonlyKysely<Database>,
@@ -206,12 +214,12 @@ async function testReadonlyKysely(
   expectType<NotAllowed>(rdb.updateTable)
   expectDeprecated(rdb.updateTable)
 
-  expectType<
-    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
-  >(rdb.with('cte', rdb.selectFrom('action').selectAll()))
-  expectType<
-    ReadonlyQueryCreator<Database & { cte: Selectable<Database['action']> }>
-  >(rdb.with('cte', (qb) => qb.selectFrom('action').selectAll()))
+  expectType<ReadonlyQueryCreator<DatabaseWithCTE>>(
+    rdb.with('cte', rdb.selectFrom('action').selectAll()),
+  )
+  expectType<ReadonlyQueryCreator<DatabaseWithCTE>>(
+    rdb.with('cte', (qb) => qb.selectFrom('action').selectAll()),
+  )
   expectNotDeprecated(rdb.with)
   expectError(rdb.with('cte', db.deleteFrom('action').returningAll()))
   expectError(rdb.with('cte', (qb) => qb.deleteFrom('action').returningAll()))
@@ -605,3 +613,37 @@ declare function keyof<T>(thing: T): keyof T & string
 type NotAllowed = (
   ...args: any[]
 ) => KyselyTypeError<'not allowed with a read-only Kysely instance.'>
+
+async function testReadonlyWithNameOfExistingTable(
+  rdb: ReadonlyKysely<Database>,
+) {
+  const r1 = await rdb
+    .with('person', (qb) => qb.selectFrom('pet').select(['id', 'name']))
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: string; name: string }[]>(r1)
+
+  const r2 = await rdb
+    .withRecursive('person(id, first_name)', (qb) =>
+      qb
+        .selectFrom('pet')
+        .select(['owner_id as id', 'name as first_name'])
+        .unionAll(qb.selectFrom('person').select(['id', 'first_name'])),
+    )
+    .selectFrom('person')
+    .selectAll()
+    .execute()
+
+  expectType<{ id: number; first_name: string }[]>(r2)
+
+  expectError(
+    rdb.withRecursive('person(id, first_name)', (qb) =>
+      qb
+        .selectFrom('pet')
+        .select(['owner_id as id', 'name as first_name'])
+        .unionAll(qb.selectFrom('person').select(['id', 'last_name'])),
+    ),
+  )
+}

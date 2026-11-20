@@ -15,6 +15,7 @@ import type { Compilable } from '../util/compilable.js'
 import type { Expression } from '../expression/expression.js'
 import type { ShallowRecord } from '../util/type-utils.js'
 import type { OperationNode } from '../operation-node/operation-node.js'
+import type { ShadowTableWith } from './table-parser.js'
 
 export type CommonTableExpression<DB, CN> =
   CommonTableExpressionOutput<DB, CN> | CommonTableExpressionFactory<DB, CN>
@@ -25,12 +26,12 @@ export type CommonTableExpressionFactory<DB, CN> = (
 
 export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
-    DB & {
-      // Recursive CTE can select from itself.
-      [
-        K in ExtractTableFromCommonTableExpressionName<CN>
-      ]: ExtractRowFromCommonTableExpressionName<CN>
-    }
+    // Recursive CTE can select from itself.
+    ShadowTableWith<
+      DB,
+      ExtractTableFromCommonTableExpressionName<CN>,
+      ExtractRowFromCommonTableExpressionName<CN>
+    >
   >,
 ) => CommonTableExpressionOutput<DB, CN>
 
@@ -39,11 +40,11 @@ export type QueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE,
 > = QueryCreator<
-  DB & {
-    [
-      K in ExtractTableFromCommonTableExpressionName<CN>
-    ]: ExtractRowFromCommonTableExpression<CTE>
-  }
+  ShadowTableWith<
+    DB,
+    ExtractTableFromCommonTableExpressionName<CN>,
+    ExtractRowFromCommonTableExpression<CTE>
+  >
 >
 
 export type CommonTableExpressionOutput<DB, CN> =

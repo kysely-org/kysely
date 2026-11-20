@@ -114,3 +114,50 @@ bench('kyselyAny.with(cte, updateQuery)', () => {
 bench('kyselyAny.with(cte, deleteQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.deleteFrom('my_table').returningAll())
 }).types([11332, 'instantiations'])
+
+bench('kysely.with(cte, ...).selectFrom(cte)', () => {
+  return kysely
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+}).types([66957, 'instantiations'])
+
+bench('kysely.with(table, ...).selectFrom(table)', () => {
+  return kysely
+    .with('my_table', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('my_table')
+    .selectAll()
+}).types([66950, 'instantiations'])
+
+bench('kysely.with(cte1, ...)...with(cte8, ...).selectFrom(cte8)', () => {
+  return kysely
+    .with('cte1', (qc) => qc.selectFrom('my_table').select('id'))
+    .with('cte2', (qc) => qc.selectFrom('cte1').select('id'))
+    .with('cte3', (qc) => qc.selectFrom('cte2').select('id'))
+    .with('cte4', (qc) => qc.selectFrom('cte3').select('id'))
+    .with('cte5', (qc) => qc.selectFrom('cte4').select('id'))
+    .with('cte6', (qc) => qc.selectFrom('cte5').select('id'))
+    .with('cte7', (qc) => qc.selectFrom('cte6').select('id'))
+    .with('cte8', (qc) => qc.selectFrom('cte7').select('id'))
+    .selectFrom('cte8')
+    .selectAll()
+}).types([77100, 'instantiations'])
+
+bench('kysely.withRecursive(cte, ...).selectFrom(cte)', () => {
+  return kysely
+    .withRecursive('cte(id)', (qc) =>
+      qc
+        .selectFrom('my_table')
+        .select('id')
+        .unionAll(qc.selectFrom('cte').select('id')),
+    )
+    .selectFrom('cte')
+    .selectAll()
+}).types([63423, 'instantiations'])
+
+bench('kyselyAny.with(cte, ...).selectFrom(cte)', () => {
+  return kyselyAny
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+}).types([2085, 'instantiations'])

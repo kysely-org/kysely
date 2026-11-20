@@ -30,11 +30,11 @@ bench('kysely.selectFrom(table as table).selectAll(table)', () => {
   return kysely
     .selectFrom('my_table as table_fff4c6195261874920bc7ce92d67d2c2')
     .selectAll('table_fff4c6195261874920bc7ce92d67d2c2')
-}).types([1049, 'instantiations'])
+}).types([1058, 'instantiations'])
 
 bench('kysely.selectFrom(table as alias).selectAll(alias)', () => {
   return kysely.selectFrom('my_table as mt').selectAll('mt')
-}).types([1049, 'instantiations'])
+}).types([1058, 'instantiations'])
 
 bench('kysely.selectFrom([table])', () => {
   return kysely.selectFrom(['my_table'])

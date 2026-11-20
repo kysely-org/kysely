@@ -3,8 +3,8 @@ import type { UpdateResult } from '../query-builder/update-result.js'
 import type {
   ExtractTableAlias,
   From,
-  FromAliasedTable,
   FromTables,
+  ShadowTableWith,
   TableExpressionOrList,
 } from './table-parser.js'
 
@@ -21,7 +21,7 @@ export type UpdateTable<DB, TE extends TableExpressionOrList<DB, never>> = [
     >
   : [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? UpdateQueryBuilder<FromAliasedTable<DB, DB[T], A>, A, A, UpdateResult>
+      ? UpdateQueryBuilder<ShadowTableWith<DB, A, DB[T]>, A, A, UpdateResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? UpdateQueryBuilder<
