@@ -318,6 +318,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '573.4 107 1556.6 378',
     id: 'profilarr',
   },
+  // Official knowledgefutures/pubplatform core/public/logos/icon.svg; the
+  // group's 0.89 opacity is dropped so both shapes take currentColor.
+  'PubPub Platform': {
+    label: 'PubPub Platform',
+    viewBox: '0 0 100 114',
+    id: 'pubpub-platform',
+  },
   RedwoodSDK: {
     label: 'RedwoodSDK',
     viewBox: '0 0 438 69',
