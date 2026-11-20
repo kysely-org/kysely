@@ -80,10 +80,10 @@
     "name": "Cal.com",
     "repo": "calcom/cal.diy",
     "path": "packages/trpc/server/routers/viewer/bookings/get.handler.ts",
-    "sha": "2eb48eccd8aca8a0c0ffabf28cf92e298b33ecee",
-    "href": "https://github.com/calcom/cal.diy/blob/2eb48eccd8aca8a0c0ffabf28cf92e298b33ecee/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
+    "sha": "ae027bb70e694e2d2c44569f398d6cbcee0389b1",
+    "href": "https://github.com/calcom/cal.diy/blob/ae027bb70e694e2d2c44569f398d6cbcee0389b1/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
     "group": "production",
-    "provenAt": "2026-11-03"
+    "provenAt": "2026-11-13"
   },
   {
     "name": "Canton Network",
@@ -371,11 +371,11 @@
   {
     "name": "Notesnook",
     "repo": "streetwriters/notesnook",
-    "path": "packages/core/src/collections/notebooks.ts",
-    "sha": "27b7f518f3a7579a367bfa6765dc523ab0cd046a",
-    "href": "https://github.com/streetwriters/notesnook/blob/27b7f518f3a7579a367bfa6765dc523ab0cd046a/packages/core/src/collections/notebooks.ts",
+    "path": "packages/core/src/api/lookup.ts",
+    "sha": "8bb25559ea7804007f618157b3d1f5dd105ce820",
+    "href": "https://github.com/streetwriters/notesnook/blob/8bb25559ea7804007f618157b3d1f5dd105ce820/packages/core/src/api/lookup.ts",
     "group": "production",
-    "provenAt": "2026-11-04"
+    "provenAt": "2026-11-16"
   },
   {
     "name": "Omnea",
@@ -462,10 +462,10 @@
     "name": "Prisma Studio",
     "repo": "prisma/studio",
     "path": "data/postgres-core/dml.ts",
-    "sha": "3e8ef3bafbaded6d8bb803c9bccf2b17b0597bea",
-    "href": "https://github.com/prisma/studio/blob/3e8ef3bafbaded6d8bb803c9bccf2b17b0597bea/data/postgres-core/dml.ts",
+    "sha": "d608b895520ec010f731906981560730d6d8d3ca",
+    "href": "https://github.com/prisma/studio/blob/d608b895520ec010f731906981560730d6d8d3ca/data/postgres-core/dml.ts",
     "group": "built-into",
-    "provenAt": "2026-11-06"
+    "provenAt": "2026-11-20"
   },
   {
     "name": "Profilarr",
@@ -672,11 +672,11 @@
   {
     "name": "US Tax Court",
     "repo": "ustaxcourt/ef-cms",
-    "path": "web-api/src/persistence/postgres/cases/getCasesByDocketNumbers.ts",
-    "sha": "d100bb191cb3c3654b210306eefe51d7a408e85c",
-    "href": "https://github.com/ustaxcourt/ef-cms/blob/d100bb191cb3c3654b210306eefe51d7a408e85c/web-api/src/persistence/postgres/cases/getCasesByDocketNumbers.ts",
+    "path": "web-api/src/persistence/postgres/cases/reports/getClerkDashboardStats.ts",
+    "sha": "20f7b54c91e436f9d0ec48ea8acd7f9733a1d5bb",
+    "href": "https://github.com/ustaxcourt/ef-cms/blob/20f7b54c91e436f9d0ec48ea8acd7f9733a1d5bb/web-api/src/persistence/postgres/cases/reports/getClerkDashboardStats.ts",
     "group": "production",
-    "provenAt": "2026-11-09"
+    "provenAt": "2026-11-19"
   },
   {
     "name": "wevm curl.md",
