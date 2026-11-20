@@ -175,22 +175,21 @@ for (const dialect of DIALECTS) {
       })
 
       it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
-        let cancelQueryFailed = false
-        let cancelQueryDone!: () => void
-        const cancelQuerySettled = new Promise<void>(
-          (resolve) => (cancelQueryDone = resolve),
-        )
+        let resolveCancelQuery!: () => void
+        let rejectCancelQuery!: (error: unknown) => void
+        const cancelQuerySettled = new Promise<void>((resolve, reject) => {
+          resolveCancelQuery = resolve
+          rejectCancelQuery = reject
+        })
 
         const onCreateConnection = async (connection: DatabaseConnection) => {
           const cancelQuery = connection.cancelQuery!.bind(connection)
 
-          connection.cancelQuery = (controlConnectionProvider) =>
-            cancelQuery(controlConnectionProvider)
-              .catch((error) => {
-                cancelQueryFailed = true
-                throw error
-              })
-              .finally(cancelQueryDone)
+          connection.cancelQuery = (controlConnectionProvider) => {
+            const promise = cancelQuery(controlConnectionProvider)
+            promise.then(resolveCancelQuery, rejectCancelQuery)
+            return promise
+          }
         }
 
         const db = new Kysely<Database>({
@@ -232,7 +231,6 @@ for (const dialect of DIALECTS) {
 
           await cancelQuerySettled
 
-          expect(cancelQueryFailed).to.be.false
           await expect(
             ctx.db
               .selectFrom('person')
