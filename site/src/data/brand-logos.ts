@@ -127,6 +127,12 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 2245 527',
     id: 'langfuse',
   },
+  // Official wordmark: logtide-dev/logtide packages/frontend/static/logo/dark.svg.
+  LogTide: {
+    label: 'LogTide',
+    viewBox: '-1 137 5387 1463',
+    id: 'logtide',
+  },
   Maersk: {
     label: 'Maersk',
     viewBox: '0 0 135 31',

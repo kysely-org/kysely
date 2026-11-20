@@ -329,6 +329,17 @@
     "provenAt": "2026-11-06"
   },
   {
+    "name": "LogTide",
+    "repo": "logtide-dev/logtide",
+    "path": "packages/backend/src/modules/admin/service.ts",
+    "sha": "0dc3001330657d3a1ca8869990c6c34b8cadf151",
+    "href": "https://github.com/logtide-dev/logtide/blob/0dc3001330657d3a1ca8869990c6c34b8cadf151/packages/backend/src/modules/admin/service.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-14",
+    "hiddenReason": "Kept for downstream testing (an admin service with ~50 selectFroms mixing COUNT(*) FILTER sql aggregates, fn helpers, joins, and groupBys); a solo-developer product with ~460 stars doesn't carry adoption weight on the wall.",
+    "hidden": true
+  },
+  {
     "name": "MikroORM",
     "repo": "mikro-orm/mikro-orm",
     "path": "packages/sql/src/AbstractSqlConnection.ts",
