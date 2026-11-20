@@ -2,8 +2,8 @@ import type { SelectQueryBuilder } from '../query-builder/select-query-builder.j
 import type {
   ExtractTableAlias,
   From,
-  FromAliasedTable,
   FromTables,
+  ShadowTableWith,
   TableExpressionOrList,
 } from './table-parser.js'
 
@@ -17,7 +17,7 @@ export type SelectFrom<
     SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
   : [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? SelectQueryBuilder<FromAliasedTable<DB, DB[T], A>, TB | A, {}>
+      ? SelectQueryBuilder<ShadowTableWith<DB, A, DB[T]>, TB | A, {}>
       : never
     : TE extends ReadonlyArray<infer T>
       ? SelectQueryBuilder<From<DB, T>, FromTables<DB, TB, T>, {}>

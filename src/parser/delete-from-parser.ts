@@ -3,8 +3,8 @@ import type { DeleteResult } from '../query-builder/delete-result.js'
 import type {
   ExtractTableAlias,
   From,
-  FromAliasedTable,
   FromTables,
+  ShadowTableWith,
   TableExpressionOrList,
 } from './table-parser.js'
 
@@ -16,7 +16,7 @@ export type DeleteFrom<DB, TE extends TableExpressionOrList<DB, never>> = [
     DeleteQueryBuilder<DB, ExtractTableAlias<DB, TE>, DeleteResult>
   : [TE] extends [`${infer T} as ${infer A}`]
     ? T extends keyof DB
-      ? DeleteQueryBuilder<FromAliasedTable<DB, DB[T], A>, A, DeleteResult>
+      ? DeleteQueryBuilder<ShadowTableWith<DB, A, DB[T]>, A, DeleteResult>
       : never
     : TE extends ReadonlyArray<infer T>
       ? DeleteQueryBuilder<From<DB, T>, FromTables<DB, never, T>, DeleteResult>

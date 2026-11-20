@@ -9,7 +9,7 @@ import type {
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
 } from '../parser/with-parser.js'
-import type { FromAliasedTable } from '../parser/table-parser.js'
+import type { ShadowTableWith } from '../parser/table-parser.js'
 import type { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import type { ReadonlyQueryCreator } from './readonly-query-creator.js'
 
@@ -33,10 +33,10 @@ export type ReadonlyCommonTableExpressionFactory<DB, CN> = (
 export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
   creator: ReadonlyQueryCreator<
     // Recursive CTE can select from itself.
-    FromAliasedTable<
+    ShadowTableWith<
       DB,
-      ExtractRowFromCommonTableExpressionName<CN>,
-      ExtractTableFromCommonTableExpressionName<CN>
+      ExtractTableFromCommonTableExpressionName<CN>,
+      ExtractRowFromCommonTableExpressionName<CN>
     >
   >,
 ) => ReadonlyCommonTableExpressionOutput<DB, CN>
@@ -56,10 +56,10 @@ export type ReadonlyQueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE,
 > = ReadonlyQueryCreator<
-  FromAliasedTable<
+  ShadowTableWith<
     DB,
-    ReadonlyExtractRowFromCommonTableExpression<CTE>,
-    ExtractTableFromCommonTableExpressionName<CN>
+    ExtractTableFromCommonTableExpressionName<CN>,
+    ReadonlyExtractRowFromCommonTableExpression<CTE>
   >
 >
 
