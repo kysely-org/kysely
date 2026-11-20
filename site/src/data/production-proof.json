@@ -661,7 +661,9 @@
     "sha": "651d39d92ff08beff0868f991c36a27c20191726",
     "href": "https://github.com/zai-org/Synapse/blob/651d39d92ff08beff0868f991c36a27c20191726/packages/api/src/modules/access/repo-evaluator.ts",
     "group": "built-into",
-    "provenAt": "2026-07-29"
+    "provenAt": "2026-07-29",
+    "hiddenReason": "Kept for downstream testing (an access control repository layer with ~20 joined selectFrom queries); an experimental side project by two Z.ai engineers that stopped in July 2026, so it doesn't carry adoption weight on the wall.",
+    "hidden": true
   },
   {
     "name": "ZenStack",
