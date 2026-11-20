@@ -3,6 +3,7 @@ import { expect } from 'chai'
 import { createConnection, createPool } from 'mysql2'
 import { Client, Pool } from 'pg'
 import {
+  type DatabaseConnection,
   Kysely,
   MysqlDialect,
   PostgresDialect,
@@ -174,7 +175,17 @@ for (const dialect of DIALECTS) {
       })
 
       it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
-        let cancelQuerySent = false
+        let cancelQueryFailed = false
+
+        const onCreateConnection = async (connection: DatabaseConnection) => {
+          const cancelQuery = connection.cancelQuery!.bind(connection)
+
+          connection.cancelQuery = (controlConnectionProvider) =>
+            cancelQuery(controlConnectionProvider).catch((error) => {
+              cancelQueryFailed = true
+              throw error
+            })
+        }
 
         const db = new Kysely<Database>({
           dialect:
@@ -185,12 +196,8 @@ for (const dialect of DIALECTS) {
                       await setTimeout(250)
                       return super.connect()
                     }
-
-                    override query(): never {
-                      cancelQuerySent = true
-                      throw new Error('cancel query should not be sent')
-                    }
                   },
+                  onCreateConnection,
                   pool: new Pool(DIALECT_CONFIGS.postgres),
                 })
               : new MysqlDialect({
@@ -199,16 +206,9 @@ for (const dialect of DIALECTS) {
                     const connect = connection.connect.bind(connection)
                     connection.connect = (callback) =>
                       void setTimeout(250).then(() => connect(callback))
-                    connection.query = ((
-                      _sql: string,
-                      _values: unknown[],
-                      callback: () => void,
-                    ) => {
-                      cancelQuerySent = true
-                      callback()
-                    }) as never
                     return connection
                   },
+                  onCreateConnection,
                   pool: createPool(DIALECT_CONFIGS.mysql),
                 }),
         })
@@ -226,7 +226,7 @@ for (const dialect of DIALECTS) {
 
           await setTimeout(500)
 
-          expect(cancelQuerySent).to.be.false
+          expect(cancelQueryFailed).to.be.false
           await expect(
             ctx.db
               .selectFrom('person')
