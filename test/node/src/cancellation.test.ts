@@ -2,7 +2,6 @@ import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
 import { createConnection, createPool } from 'mysql2'
 import { Client, Pool } from 'pg'
-import { createSandbox, type SinonSpy } from 'sinon'
 import {
   Kysely,
   MysqlDialect,
@@ -175,23 +174,21 @@ for (const dialect of DIALECTS) {
       })
 
       it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
-        const sandbox = createSandbox()
-        const errorSpy = sandbox.stub(console, 'error')
-        let controlQuerySpy: SinonSpy | undefined
+        let cancelQuerySent = false
 
         const db = new Kysely<Database>({
           dialect:
             variant === 'postgres'
               ? new PostgresDialect({
                   controlClient: class extends Client {
-                    constructor(config: object) {
-                      super(config)
-                      controlQuerySpy = sandbox.spy(this, 'query')
-                    }
-
                     override async connect(): Promise<Client> {
                       await setTimeout(250)
                       return super.connect()
+                    }
+
+                    override query(): never {
+                      cancelQuerySent = true
+                      throw new Error('cancel query should not be sent')
                     }
                   },
                   pool: new Pool(DIALECT_CONFIGS.postgres),
@@ -200,11 +197,16 @@ for (const dialect of DIALECTS) {
                   controlConnection: (config: any) => {
                     const connection = createConnection(config)
                     const connect = connection.connect.bind(connection)
-                    connection.connect = ((callback) =>
-                      void setTimeout(250).then(() =>
-                        connect(callback),
-                      )) as typeof connect
-                    controlQuerySpy = sandbox.spy(connection, 'query')
+                    connection.connect = (callback) =>
+                      void setTimeout(250).then(() => connect(callback))
+                    connection.query = ((
+                      _sql: string,
+                      _values: unknown[],
+                      callback: () => void,
+                    ) => {
+                      cancelQuerySent = true
+                      callback()
+                    }) as never
                     return connection
                   },
                   pool: createPool(DIALECT_CONFIGS.mysql),
@@ -212,6 +214,7 @@ for (const dialect of DIALECTS) {
         })
 
         try {
+          // warm up pool.
           await sql`select 1`.execute(db)
 
           await expect(
@@ -223,8 +226,7 @@ for (const dialect of DIALECTS) {
 
           await setTimeout(500)
 
-          expect(errorSpy.called).to.be.false
-          expect(controlQuerySpy?.called).to.be.false
+          expect(cancelQuerySent).to.be.false
           await expect(
             ctx.db
               .selectFrom('person')
@@ -235,7 +237,6 @@ for (const dialect of DIALECTS) {
             expect(Number(result.count)).to.equal(1),
           )
         } finally {
-          sandbox.restore()
           await db.destroy()
         }
       })
