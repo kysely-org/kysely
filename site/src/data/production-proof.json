@@ -80,10 +80,10 @@
     "name": "Cal.com",
     "repo": "calcom/cal.diy",
     "path": "packages/trpc/server/routers/viewer/bookings/get.handler.ts",
-    "sha": "2eb48eccd8aca8a0c0ffabf28cf92e298b33ecee",
-    "href": "https://github.com/calcom/cal.diy/blob/2eb48eccd8aca8a0c0ffabf28cf92e298b33ecee/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
+    "sha": "ae027bb70e694e2d2c44569f398d6cbcee0389b1",
+    "href": "https://github.com/calcom/cal.diy/blob/ae027bb70e694e2d2c44569f398d6cbcee0389b1/packages/trpc/server/routers/viewer/bookings/get.handler.ts",
     "group": "production",
-    "provenAt": "2026-11-03"
+    "provenAt": "2026-11-13"
   },
   {
     "name": "Canton Network",
@@ -462,10 +462,10 @@
     "name": "Prisma Studio",
     "repo": "prisma/studio",
     "path": "data/postgres-core/dml.ts",
-    "sha": "3e8ef3bafbaded6d8bb803c9bccf2b17b0597bea",
-    "href": "https://github.com/prisma/studio/blob/3e8ef3bafbaded6d8bb803c9bccf2b17b0597bea/data/postgres-core/dml.ts",
+    "sha": "d608b895520ec010f731906981560730d6d8d3ca",
+    "href": "https://github.com/prisma/studio/blob/d608b895520ec010f731906981560730d6d8d3ca/data/postgres-core/dml.ts",
     "group": "built-into",
-    "provenAt": "2026-11-06"
+    "provenAt": "2026-11-20"
   },
   {
     "name": "Profilarr",
