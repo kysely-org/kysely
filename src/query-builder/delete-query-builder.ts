@@ -3,6 +3,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type NullifyTablesWith,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -28,7 +29,6 @@ import type {
 import type { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import type {
-  DrainOuterGeneric,
   NarrowPartial,
   Nullable,
   SimplifyResult,
@@ -1200,38 +1200,15 @@ export type DeleteQueryBuilderWithRightJoin<
   TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
+    ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, A, DB[T]>, TB | A, O>
     : never
   : TE extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, TE, DB[TE]>, TB | TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, TB, O, QA, QO>
+      ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, TB, O, QA, QO>
+        ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
         : never
-
-type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = DeleteQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
-
-type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? R
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>
 
 export type DeleteQueryBuilderWithFullJoin<
   DB,
@@ -1240,35 +1217,28 @@ export type DeleteQueryBuilderWithFullJoin<
   TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
+    ? DeleteQueryBuilder<
+        NullifyTablesWith<DB, TB, A, Nullable<DB[T]>>,
+        TB | A,
+        O
+      >
     : never
   : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    ? DeleteQueryBuilder<
+        NullifyTablesWith<DB, TB, TE, Nullable<DB[TE]>>,
+        TB | TE,
+        O
+      >
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+      ? DeleteQueryBuilder<
+          NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+          TB | QA,
+          O
+        >
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+        ? DeleteQueryBuilder<
+            NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+            TB | QA,
+            O
+          >
         : never
-
-type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = DeleteQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
-
-type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>

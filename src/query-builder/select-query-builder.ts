@@ -4,6 +4,7 @@ import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
+  type NullifyTablesWith,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -29,7 +30,6 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import type {
-  DrainOuterGeneric,
   NarrowPartial,
   Nullable,
   Simplify,
@@ -2872,38 +2872,15 @@ export type SelectQueryBuilderWithRightJoin<
     ? JoinResultForUnknownTable<O>
     : TE extends `${infer T} as ${infer A}`
       ? T extends keyof DB
-        ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
+        ? SelectQueryBuilder<NullifyTablesWith<DB, TB, A, DB[T]>, TB | A, O>
         : never
       : TE extends keyof DB
-        ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+        ? SelectQueryBuilder<NullifyTablesWith<DB, TB, TE, DB[TE]>, TB | TE, O>
         : TE extends AliasedExpression<infer QO, infer QA>
-          ? RightJoinedBuilder<DB, TB, O, QA, QO>
+          ? SelectQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
           : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-            ? RightJoinedBuilder<DB, TB, O, QA, QO>
+            ? SelectQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
             : never
-
-type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
-
-type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? R
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>
 
 export type SelectQueryBuilderWithFullJoin<
   DB,
@@ -2915,38 +2892,31 @@ export type SelectQueryBuilderWithFullJoin<
     ? JoinResultForUnknownTable<O>
     : TE extends `${infer T} as ${infer A}`
       ? T extends keyof DB
-        ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
+        ? SelectQueryBuilder<
+            NullifyTablesWith<DB, TB, A, Nullable<DB[T]>>,
+            TB | A,
+            O
+          >
         : never
       : TE extends keyof DB
-        ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+        ? SelectQueryBuilder<
+            NullifyTablesWith<DB, TB, TE, Nullable<DB[TE]>>,
+            TB | TE,
+            O
+          >
         : TE extends AliasedExpression<infer QO, infer QA>
-          ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+          ? SelectQueryBuilder<
+              NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+              TB | QA,
+              O
+            >
           : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-            ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+            ? SelectQueryBuilder<
+                NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+                TB | QA,
+                O
+              >
             : never
-
-type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
-
-type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
-  A extends keyof any,
-  R,
-> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
-}>
 
 type TableOrList<TB extends keyof any> =
   (TB & string) | ReadonlyArray<TB & string>

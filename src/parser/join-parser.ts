@@ -4,6 +4,7 @@ import type {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
+  Nullable,
 } from '../util/type-utils.js'
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { createJoinBuilder } from './parse-utils.js'
@@ -74,4 +75,19 @@ function parseOnlessJoin(
   from: TableExpression<any, any>,
 ): JoinNode {
   return JoinNode.create(joinType, parseTableExpression(from))
+}
+
+export type NullifyTablesWith<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R,
+> = {
+  [C in keyof DB | A]: C extends A
+    ? R
+    : C extends TB
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }
