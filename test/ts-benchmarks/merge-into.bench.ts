@@ -34,7 +34,7 @@ bench('kysely.mergeInto(table as alias).using(table)', () => {
       'my_table.col_1d726898491fbca9a8dac855d2be1be8',
       'mt.col_1d726898491fbca9a8dac855d2be1be8',
     )
-}).types([7089, 'instantiations'])
+}).types([7098, 'instantiations'])
 
 bench('kysely.mergeInto(table as table).using(table)', () => {
   return kysely
@@ -44,7 +44,7 @@ bench('kysely.mergeInto(table as table).using(table)', () => {
       'my_table.col_1d726898491fbca9a8dac855d2be1be8',
       'table_fff4c6195261874920bc7ce92d67d2c2.col_1d726898491fbca9a8dac855d2be1be8',
     )
-}).types([7066, 'instantiations'])
+}).types([7075, 'instantiations'])
 
 bench(
   'kysely.mergeInto(table as alias).using(table as alias).whenMatchedAnd(alias.column)',
@@ -58,7 +58,7 @@ bench(
       )
       .whenMatchedAnd('mt2.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
   },
-).types([10333, 'instantiations'])
+).types([10351, 'instantiations'])
 
 bench(
   'kysely.mergeInto(table as alias).using(table as table).whenMatchedAnd(table.column)',
@@ -76,7 +76,7 @@ bench(
         1,
       )
   },
-).types([10333, 'instantiations'])
+).types([10351, 'instantiations'])
 
 bench('kysely.$pickTables<tables>.mergeInto(table)', () => {
   return kysely
