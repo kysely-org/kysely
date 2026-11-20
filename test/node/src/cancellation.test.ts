@@ -1,9 +1,20 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import { type RawBuilder, sql } from '../../../dist/index.js'
+import { createConnection, createPool } from 'mysql2'
+import { Client, Pool } from 'pg'
+import { createSandbox } from 'sinon'
+import {
+  Kysely,
+  MysqlDialect,
+  PostgresDialect,
+  type RawBuilder,
+  sql,
+} from '../../../dist/index.js'
 import {
   clearDatabase,
+  type Database,
   destroyTest,
+  DIALECT_CONFIGS,
   DIALECTS,
   initTest,
   insertDefaultDataSet,
@@ -160,6 +171,96 @@ for (const dialect of DIALECTS) {
           expect(PG_ERRORS.at(-1)?.message).to.equal(
             'Connection terminated unexpectedly',
           )
+        }
+      })
+
+      it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
+        const sandbox = createSandbox()
+        const errorSpy = sandbox.stub(console, 'error')
+        const controlQueries: unknown[] = []
+        let closeControl!: () => void
+        const controlConnectionClosed = new Promise<void>(
+          (resolve) => (closeControl = resolve),
+        )
+
+        const db = new Kysely<Database>({
+          dialect:
+            variant === 'postgres'
+              ? new PostgresDialect({
+                  controlClient: class extends Client {
+                    override async connect(...args: any[]): Promise<any> {
+                      await setTimeout(250)
+                      return super.connect(...(args as []))
+                    }
+
+                    override query(...args: any[]): any {
+                      controlQueries.push(args[0])
+                      return super.query(...(args as [any]))
+                    }
+
+                    override end(...args: any[]): any {
+                      closeControl()
+                      return super.end(...(args as []))
+                    }
+                  },
+                  pool: new Pool(DIALECT_CONFIGS.postgres),
+                })
+              : new MysqlDialect({
+                  controlConnection: ((config: object) => {
+                    const connection = createConnection(config)
+                    const { connect, query, destroy } = connection
+
+                    return Object.assign(connection, {
+                      connect: (...args: any[]) =>
+                        void setTimeout(250).then(() =>
+                          connect.apply(connection, args as never),
+                        ),
+                      query: (...args: any[]) => {
+                        controlQueries.push(args[0])
+                        return query.apply(connection, args as never)
+                      },
+                      destroy: () => {
+                        closeControl()
+                        return destroy.call(connection)
+                      },
+                    })
+                  }) as never,
+                  pool: createPool(DIALECT_CONFIGS.mysql),
+                }),
+        })
+
+        try {
+          await sql`select 1`.execute(db)
+
+          await expect(
+            getLongRunningWriteQuery(sqlSpec).execute(db, {
+              inflightQueryAbortStrategy: 'cancel query',
+              signal: AbortSignal.timeout(10),
+            }),
+          )
+            .to.eventually.be.rejectedWith(DOMException)
+            .and.satisfies((error: { __kysely_timing__: string }) => {
+              expect(error.__kysely_timing__).to.equal('during query execution')
+              return true
+            })
+
+          await controlConnectionClosed
+          await setTimeout(10)
+
+          expect(errorSpy.called).to.be.false
+          expect(controlQueries).to.be.empty
+          await expect(
+            ctx.db
+              .selectFrom('person')
+              .where('gender', '=', 'woah' as never)
+              .select(ctx.db.fn.countAll().as('count'))
+              .executeTakeFirstOrThrow(),
+          ).to.eventually.satisfy((result: { count: unknown }) =>
+            expect(Number(result.count)).to.equal(1),
+          )
+        } finally {
+          sandbox.restore()
+          await db.destroy()
         }
       })
     }
