@@ -455,6 +455,17 @@
     "provenAt": "2026-11-02"
   },
   {
+    "name": "PubPub Platform",
+    "repo": "knowledgefutures/pubplatform",
+    "path": "core/lib/authorization/capabilities.ts",
+    "sha": "795c38b004aa9f6fc489db2653c49b98d34a64c3",
+    "href": "https://github.com/knowledgefutures/pubplatform/blob/795c38b004aa9f6fc489db2653c49b98d34a64c3/core/lib/authorization/capabilities.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-05",
+    "hiddenReason": "README says it's an alpha not recommended for production; no feature work since 2026-04-13, only one maintainer's security and deploy upkeep since, while Knowledge Futures' new projects start on Underlay.",
+    "hidden": true
+  },
+  {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
     "path": "addons/passkey/src/passkey/db/db.ts",
