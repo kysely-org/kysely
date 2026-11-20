@@ -9,6 +9,7 @@ import {
   type From,
   type FromTables,
   parseTableExpressionOrList,
+  type ShadowTableWith,
   type TableExpression,
   type TableExpressionOrList,
 } from '../parser/table-parser.js'
@@ -30,7 +31,6 @@ import type {
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
-  ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
   SqlBool,
@@ -1166,30 +1166,15 @@ export type DeleteQueryBuilderWithInnerJoin<
   TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
+    ? DeleteQueryBuilder<ShadowTableWith<DB, A, DB[T]>, TB | A, O>
     : never
   : TE extends keyof DB
     ? DeleteQueryBuilder<DB, TB | TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+      ? DeleteQueryBuilder<ShadowTableWith<DB, QA, QO>, TB | QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+        ? DeleteQueryBuilder<ShadowTableWith<DB, QA, QO>, TB | QA, O>
         : never
-
-type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends string,
-  R,
-> = A extends keyof DB
-  ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
-
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}>
 
 export type DeleteQueryBuilderWithLeftJoin<
   DB,
@@ -1198,34 +1183,15 @@ export type DeleteQueryBuilderWithLeftJoin<
   TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
+    ? DeleteQueryBuilder<ShadowTableWith<DB, A, Nullable<DB[T]>>, TB | A, O>
     : never
   : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    ? DeleteQueryBuilder<ShadowTableWith<DB, TE, Nullable<DB[TE]>>, TB | TE, O>
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+      ? DeleteQueryBuilder<ShadowTableWith<DB, QA, Nullable<QO>>, TB | QA, O>
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+        ? DeleteQueryBuilder<ShadowTableWith<DB, QA, Nullable<QO>>, TB | QA, O>
         : never
-
-type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = A extends keyof DB
-  ? DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
-
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends keyof DB
-      ? DB[C]
-      : never
-}>
 
 export type DeleteQueryBuilderWithRightJoin<
   DB,

@@ -6,7 +6,11 @@ import {
   type JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { type TableExpression, parseTable } from '../parser/table-parser.js'
+import {
+  type ShadowTableWith,
+  type TableExpression,
+  parseTable,
+} from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
@@ -28,7 +32,6 @@ import type {
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
-  ShallowRecord,
   Simplify,
   SimplifyResult,
   SimplifySingleResult,
@@ -2817,30 +2820,15 @@ export type SelectQueryBuilderWithInnerJoin<
     ? JoinResultForUnknownTable<O>
     : TE extends `${infer T} as ${infer A}`
       ? T extends keyof DB
-        ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
+        ? SelectQueryBuilder<ShadowTableWith<DB, A, DB[T]>, TB | A, O>
         : never
       : TE extends keyof DB
         ? SelectQueryBuilder<DB, TB | TE, O>
         : TE extends AliasedExpression<infer QO, infer QA>
-          ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+          ? SelectQueryBuilder<ShadowTableWith<DB, QA, QO>, TB | QA, O>
           : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-            ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+            ? SelectQueryBuilder<ShadowTableWith<DB, QA, QO>, TB | QA, O>
             : never
-
-type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends string,
-  R,
-> = A extends keyof DB
-  ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
-
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}>
 
 export type SelectQueryBuilderWithLeftJoin<
   DB,
@@ -2852,34 +2840,27 @@ export type SelectQueryBuilderWithLeftJoin<
     ? JoinResultForUnknownTable<O>
     : TE extends `${infer T} as ${infer A}`
       ? T extends keyof DB
-        ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
+        ? SelectQueryBuilder<ShadowTableWith<DB, A, Nullable<DB[T]>>, TB | A, O>
         : never
       : TE extends keyof DB
-        ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+        ? SelectQueryBuilder<
+            ShadowTableWith<DB, TE, Nullable<DB[TE]>>,
+            TB | TE,
+            O
+          >
         : TE extends AliasedExpression<infer QO, infer QA>
-          ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+          ? SelectQueryBuilder<
+              ShadowTableWith<DB, QA, Nullable<QO>>,
+              TB | QA,
+              O
+            >
           : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-            ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+            ? SelectQueryBuilder<
+                ShadowTableWith<DB, QA, Nullable<QO>>,
+                TB | QA,
+                O
+              >
             : never
-
-type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  A extends keyof any,
-  R,
-> = A extends keyof DB
-  ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
-
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends keyof DB
-      ? DB[C]
-      : never
-}>
 
 export type SelectQueryBuilderWithRightJoin<
   DB,
