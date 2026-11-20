@@ -490,9 +490,9 @@
   {
     "name": "RedwoodSDK",
     "repo": "redwoodjs/sdk",
-    "path": "sdk/src/runtime/lib/db/DOWorkerDialect.ts",
+    "path": "addons/passkey/src/passkey/db/db.ts",
     "sha": "31445bb9df117e9afec793ae2998844ebdd96837",
-    "href": "https://github.com/redwoodjs/sdk/blob/31445bb9df117e9afec793ae2998844ebdd96837/sdk/src/runtime/lib/db/DOWorkerDialect.ts",
+    "href": "https://github.com/redwoodjs/sdk/blob/31445bb9df117e9afec793ae2998844ebdd96837/addons/passkey/src/passkey/db/db.ts",
     "group": "built-into",
     "provenAt": "2026-10-30"
   },
