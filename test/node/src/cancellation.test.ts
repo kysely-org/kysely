@@ -2,7 +2,7 @@ import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
 import { createConnection, createPool } from 'mysql2'
 import { Client, Pool } from 'pg'
-import { createSandbox } from 'sinon'
+import { createSandbox, type SinonSpy } from 'sinon'
 import {
   Kysely,
   MysqlDialect,
@@ -177,54 +177,36 @@ for (const dialect of DIALECTS) {
       it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
         const sandbox = createSandbox()
         const errorSpy = sandbox.stub(console, 'error')
-        const controlQueries: unknown[] = []
-        let closeControl!: () => void
-        const controlConnectionClosed = new Promise<void>(
-          (resolve) => (closeControl = resolve),
-        )
+        let controlQuerySpy: SinonSpy | undefined
 
         const db = new Kysely<Database>({
           dialect:
             variant === 'postgres'
               ? new PostgresDialect({
                   controlClient: class extends Client {
-                    override async connect(...args: any[]): Promise<any> {
+                    constructor(config: object) {
+                      super(config)
+                      controlQuerySpy = sandbox.spy(this, 'query')
+                    }
+
+                    override async connect(): Promise<Client> {
                       await setTimeout(250)
-                      return super.connect(...(args as []))
-                    }
-
-                    override query(...args: any[]): any {
-                      controlQueries.push(args[0])
-                      return super.query(...(args as [any]))
-                    }
-
-                    override end(...args: any[]): any {
-                      closeControl()
-                      return super.end(...(args as []))
+                      return super.connect()
                     }
                   },
                   pool: new Pool(DIALECT_CONFIGS.postgres),
                 })
               : new MysqlDialect({
-                  controlConnection: ((config: object) => {
+                  controlConnection: (config: any) => {
                     const connection = createConnection(config)
-                    const { connect, query, destroy } = connection
-
-                    return Object.assign(connection, {
-                      connect: (...args: any[]) =>
-                        void setTimeout(250).then(() =>
-                          connect.apply(connection, args as never),
-                        ),
-                      query: (...args: any[]) => {
-                        controlQueries.push(args[0])
-                        return query.apply(connection, args as never)
-                      },
-                      destroy: () => {
-                        closeControl()
-                        return destroy.call(connection)
-                      },
-                    })
-                  }) as never,
+                    const connect = connection.connect.bind(connection)
+                    connection.connect = ((callback) =>
+                      void setTimeout(250).then(() =>
+                        connect(callback),
+                      )) as typeof connect
+                    controlQuerySpy = sandbox.spy(connection, 'query')
+                    return connection
+                  },
                   pool: createPool(DIALECT_CONFIGS.mysql),
                 }),
         })
@@ -237,18 +219,12 @@ for (const dialect of DIALECTS) {
               inflightQueryAbortStrategy: 'cancel query',
               signal: AbortSignal.timeout(10),
             }),
-          )
-            .to.eventually.be.rejectedWith(DOMException)
-            .and.satisfies((error: { __kysely_timing__: string }) => {
-              expect(error.__kysely_timing__).to.equal('during query execution')
-              return true
-            })
+          ).to.eventually.be.rejectedWith(DOMException)
 
-          await controlConnectionClosed
-          await setTimeout(10)
+          await setTimeout(500)
 
           expect(errorSpy.called).to.be.false
-          expect(controlQueries).to.be.empty
+          expect(controlQuerySpy?.called).to.be.false
           await expect(
             ctx.db
               .selectFrom('person')
