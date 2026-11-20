@@ -301,6 +301,7 @@ export type {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export type {
+  FromAliasedTable,
   SimpleTableReference,
   TableExpression,
   TableExpressionOrList,
