@@ -1,9 +1,20 @@
 import { setTimeout } from 'node:timers/promises'
 import { expect } from 'chai'
-import { type RawBuilder, sql } from '../../../dist/index.js'
+import { createConnection, createPool } from 'mysql2'
+import { Client, Pool } from 'pg'
+import {
+  type DatabaseConnection,
+  Kysely,
+  MysqlDialect,
+  PostgresDialect,
+  type RawBuilder,
+  sql,
+} from '../../../dist/index.js'
 import {
   clearDatabase,
+  type Database,
   destroyTest,
+  DIALECT_CONFIGS,
   DIALECTS,
   initTest,
   insertDefaultDataSet,
@@ -160,6 +171,77 @@ for (const dialect of DIALECTS) {
           expect(PG_ERRORS.at(-1)?.message).to.equal(
             'Connection terminated unexpectedly',
           )
+        }
+      })
+
+      it("should not cancel anything when the query finishes while the control connection is connecting and inflightQueryAbortStrategy is 'cancel query'", async () => {
+        let resolveCancelQuery!: () => void
+        let rejectCancelQuery!: (error: unknown) => void
+        const cancelQuerySettled = new Promise<void>((resolve, reject) => {
+          resolveCancelQuery = resolve
+          rejectCancelQuery = reject
+        })
+
+        const onCreateConnection = async (connection: DatabaseConnection) => {
+          const cancelQuery = connection.cancelQuery!.bind(connection)
+
+          connection.cancelQuery = (controlConnectionProvider) => {
+            const promise = cancelQuery(controlConnectionProvider)
+            promise.then(resolveCancelQuery, rejectCancelQuery)
+            return promise
+          }
+        }
+
+        const db = new Kysely<Database>({
+          dialect:
+            variant === 'postgres'
+              ? new PostgresDialect({
+                  controlClient: class extends Client {
+                    override async connect(): Promise<Client> {
+                      await setTimeout(250)
+                      return super.connect()
+                    }
+                  },
+                  onCreateConnection,
+                  pool: new Pool(DIALECT_CONFIGS.postgres),
+                })
+              : new MysqlDialect({
+                  controlConnection: (config: any) => {
+                    const connection = createConnection(config)
+                    const connect = connection.connect.bind(connection)
+                    connection.connect = (callback) =>
+                      void setTimeout(250).then(() => connect(callback))
+                    return connection
+                  },
+                  onCreateConnection,
+                  pool: createPool(DIALECT_CONFIGS.mysql),
+                }),
+        })
+
+        try {
+          // warm up pool.
+          await sql`select 1`.execute(db)
+
+          await expect(
+            getLongRunningWriteQuery(sqlSpec).execute(db, {
+              inflightQueryAbortStrategy: 'cancel query',
+              signal: AbortSignal.timeout(10),
+            }),
+          ).to.eventually.be.rejectedWith(DOMException)
+
+          await cancelQuerySettled
+
+          await expect(
+            ctx.db
+              .selectFrom('person')
+              .where('gender', '=', 'woah' as never)
+              .select(ctx.db.fn.countAll().as('count'))
+              .executeTakeFirstOrThrow(),
+          ).to.eventually.satisfy((result: { count: unknown }) =>
+            expect(Number(result.count)).to.equal(1),
+          )
+        } finally {
+          await db.destroy()
         }
       })
     }

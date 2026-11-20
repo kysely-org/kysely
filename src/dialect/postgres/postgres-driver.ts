@@ -356,7 +356,7 @@ class PostgresConnection implements DatabaseConnection {
 
       // by the time we get the connection, another query might have been executed.
       // we need to ensure we're not canceling the wrong query.
-      if (queryIdToCancel.queryId !== this.#queryId.queryId) {
+      if (queryIdToCancel.queryId !== this.#queryId?.queryId) {
         return
       }
 
