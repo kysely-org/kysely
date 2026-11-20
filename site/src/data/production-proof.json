@@ -42,6 +42,17 @@
     "provenAt": "2026-11-06"
   },
   {
+    "name": "BetterVoting",
+    "repo": "Equal-Vote/bettervoting",
+    "path": "packages/backend/src/Models/Ballots.ts",
+    "sha": "8fa19127d2ba4183c8d479e1915f261ddc1ac149",
+    "href": "https://github.com/Equal-Vote/bettervoting/blob/8fa19127d2ba4183c8d479e1915f261ddc1ac149/packages/backend/src/Models/Ballots.ts",
+    "group": "production",
+    "provenAt": "2026-11-14",
+    "hiddenReason": "Kept for downstream testing (models that thread a Transaction<Database> through every method over Postgres); the Equal Vote Coalition's hosted STAR Voting service is live (~2.4k elections, ~71k votes) but too small and niche to carry adoption weight on the wall.",
+    "hidden": true
+  },
+  {
     "name": "bknd",
     "repo": "bknd-io/bknd",
     "path": "app/src/plugins/data/sort.plugin.ts",
