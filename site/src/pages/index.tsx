@@ -414,6 +414,7 @@ const LOGO_WITH_NAME = new Set([
   'OpenCRVS',
   'OpenPencil',
   'Prisma Studio',
+  'Remnawave',
   'Replicas',
   'StudioCMS',
   'Supabase Lite',

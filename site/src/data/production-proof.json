@@ -473,6 +473,15 @@
     "provenAt": "2026-11-06"
   },
   {
+    "name": "Remnawave",
+    "repo": "remnawave/backend",
+    "path": "src/modules/config-profiles/repositories/config-profile.repository.ts",
+    "sha": "6853666801d6d1925b6aec55824106100485777a",
+    "href": "https://github.com/remnawave/backend/blob/6853666801d6d1925b6aec55824106100485777a/src/modules/config-profiles/repositories/config-profile.repository.ts",
+    "group": "built-into",
+    "provenAt": "2026-11-14"
+  },
+  {
     "name": "Replicas",
     "href": "https://tryreplicas.com/blog/why-we-switched-from-sql-to-an-orm",
     "group": "production",
