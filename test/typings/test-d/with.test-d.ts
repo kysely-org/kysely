@@ -386,3 +386,27 @@ async function testWithRecursiveNameOfExistingTable(db: Kysely<Database>) {
     ),
   )
 }
+
+async function testWithDynamicName(db: Kysely<Database>, name: string) {
+  const r1 = await db
+    .with(name, (db) => db.selectFrom('pet').select('species'))
+    .selectFrom('person')
+    .select('last_name')
+    .execute()
+
+  expectType<{ last_name: string | null }[]>(r1)
+}
+
+async function testWithIndexSignatureDatabase(
+  db: Kysely<Record<string, Record<string, unknown>>>,
+) {
+  const r1 = await db
+    .with('agg', (db) =>
+      db.selectFrom('t').select((eb) => eb.fn.countAll<number>().as('count')),
+    )
+    .selectFrom('agg')
+    .select('count')
+    .execute()
+
+  expectType<{ count: number }[]>(r1)
+}
