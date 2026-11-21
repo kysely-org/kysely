@@ -1,10 +1,24 @@
-import { expectError, expectType } from 'tsd'
+import { expectAssignable, expectError, expectType } from 'tsd'
+import * as mssql from '../../../dist/helpers/mssql.js'
+import * as mysql from '../../../dist/helpers/mysql.js'
+import * as postgres from '../../../dist/helpers/postgres.js'
 import {
   jsonArrayFrom,
   jsonBuildObject,
   jsonObjectFrom,
 } from '../../../dist/helpers/sqlite.js'
 import { type Kysely, sql } from '../index.js'
+
+// Shared dialect interfaces can use the more restrictive SQLite signatures.
+expectAssignable<typeof jsonArrayFrom>(postgres.jsonArrayFrom)
+expectAssignable<typeof jsonArrayFrom>(mysql.jsonArrayFrom)
+expectAssignable<typeof jsonArrayFrom>(mssql.jsonArrayFrom)
+expectAssignable<typeof jsonObjectFrom>(postgres.jsonObjectFrom)
+expectAssignable<typeof jsonObjectFrom>(mysql.jsonObjectFrom)
+expectAssignable<typeof jsonObjectFrom>(mssql.jsonObjectFrom)
+expectAssignable<typeof jsonBuildObject>(postgres.jsonBuildObject)
+expectAssignable<typeof jsonBuildObject>(mysql.jsonBuildObject)
+expectAssignable<typeof jsonBuildObject>(mssql.jsonBuildObject)
 
 interface Database {
   blob_test: {
