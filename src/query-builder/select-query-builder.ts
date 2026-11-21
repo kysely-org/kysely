@@ -413,11 +413,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "pet"."name" = $1
    * ```
    */
-  distinctOn<RE extends ReferenceExpression<DB, TB>>(
+  distinctOn<RE extends ReferenceExpression<DB, TB> | (keyof O & string)>(
     selections: ReadonlyArray<RE>,
   ): SelectQueryBuilder<DB, TB, O>
 
-  distinctOn<RE extends ReferenceExpression<DB, TB>>(
+  distinctOn<RE extends ReferenceExpression<DB, TB> | (keyof O & string)>(
     selection: RE,
   ): SelectQueryBuilder<DB, TB, O>
 
