@@ -201,6 +201,14 @@ async function testOutput(db: Kysely<Database>) {
 
   expectType<Selectable<Person>>(r5)
 
+  const r6 = await query.output('deleted.first_name').executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string }>(r6)
+
+  const r7 = await query.outputAll('deleted').executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r7)
+
   expectError(query.output('inserted.name'))
   expectError(query.output(['inserted.species']))
   expectError(query.output((eb) => [eb.ref('deleted.owner_id').as('owner')]))
