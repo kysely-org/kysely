@@ -30,7 +30,7 @@ bench('kysely.deleteFrom(table as alias).where(alias.column)', () => {
   return kysely
     .deleteFrom('my_table as mt')
     .where('mt.col_1d726898491fbca9a8dac855d2be1be8', '=', 1)
-}).types([2630, 'instantiations'])
+}).types([2641, 'instantiations'])
 
 bench('kysely.deleteFrom(table as table).where(table.column)', () => {
   return kysely
@@ -40,7 +40,7 @@ bench('kysely.deleteFrom(table as table).where(table.column)', () => {
       '=',
       1,
     )
-}).types([2630, 'instantiations'])
+}).types([2641, 'instantiations'])
 
 bench('kysely.deleteFrom([table])', () => {
   return kysely.deleteFrom(['my_table'])
