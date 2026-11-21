@@ -412,6 +412,31 @@ async function testIf(db: Kysely<Database>) {
   }>(r)
 }
 
+async function testDistinctOn(db: Kysely<Database>) {
+  db.selectFrom('person').select('first_name as name').distinctOn('name')
+
+  db.selectFrom('person')
+    .select(['first_name as name', 'gender as g'])
+    .distinctOn(['name', 'g', 'person.last_name'])
+
+  db.selectFrom('person')
+    .select((eb) => eb.fn<string>('upper', ['first_name']).as('upper_name'))
+    .distinctOn('upper_name')
+
+  expectError(
+    db.selectFrom('person').select('first_name as name').distinctOn('nam'),
+  )
+  expectError(
+    db.selectFrom('person').distinctOn('name').select('first_name as name'),
+  )
+  expectError(
+    db
+      .selectFrom('person')
+      .select('first_name as name')
+      .distinctOn('person.name'),
+  )
+}
+
 async function testManyNestedSubqueries(db: Kysely<Database>) {
   const r = await db
     .selectFrom('person as p1')

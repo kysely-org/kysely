@@ -825,6 +825,33 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should select with distinct on that uses a selection alias', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select(['gender as g', 'first_name'])
+          .distinctOn('g')
+          .orderBy('g')
+          .orderBy('last_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select distinct on ("g") "gender" as "g", "first_name" from "person" order by "g", "last_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(2)
+        expect(persons).to.eql([
+          { g: 'female', first_name: 'Jennifer' },
+          { g: 'male', first_name: 'Arnold' },
+        ])
+      })
+
       it('should select with distinct on that uses a RawBuilder expression', async () => {
         const query = ctx.db
           .selectFrom('person')
