@@ -431,6 +431,12 @@ export class DefaultQueryCompiler
     }
 
     if (node.joins) {
+      if (!node.using) {
+        throw new Error(
+          "Joins in a delete query are only supported after a `using` clause. In MySQL, also name the target table in `using`, e.g. `deleteFrom('pet').using('pet').leftJoin('person', ...)`.",
+        )
+      }
+
       this.append(' ')
       this.compileList(node.joins, ' ')
     }

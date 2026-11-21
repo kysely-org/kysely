@@ -141,6 +141,17 @@ for (const dialect of DIALECTS) {
       expect(result.numDeletedRows).to.equal(0n)
     })
 
+    it('should throw when joins are used without `using`', async () => {
+      const query = ctx.db
+        .deleteFrom('person')
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .where('pet.species', '=', 'dog')
+
+      expect(() => query.compile()).to.throw(
+        'Joins in a delete query are only supported after a `using` clause.',
+      )
+    })
+
     if (sqlSpec === 'mysql') {
       it('should order and limit the deleted rows', async () => {
         const query = ctx.db.deleteFrom('person').orderBy('first_name').limit(2)
