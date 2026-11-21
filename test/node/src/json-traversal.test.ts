@@ -314,6 +314,36 @@ for (const dialect of DIALECTS) {
             ])
           })
 
+          it(`should execute a query with column${jsonOperator} in select clause with a missing optional key`, async () => {
+            await ctx.db
+              .updateTable('person_metadata')
+              .set({
+                profile: JSON.stringify({
+                  tags: [],
+                  auth: { roles: [], login_count: 0, is_verified: false },
+                  avatar: null,
+                }),
+              })
+              .execute()
+
+            const results = await ctx.db
+              .selectFrom('person_metadata')
+              .select((eb) =>
+                eb
+                  .ref('profile', jsonOperator)
+                  .key('auth')
+                  .key('last_login')
+                  .as('last_login'),
+              )
+              .execute()
+
+            expect(results).to.eql([
+              { last_login: null },
+              { last_login: null },
+              { last_login: null },
+            ])
+          })
+
           it(`should execute a query with column${jsonOperator}.key.key in where clause`, async () => {
             const query = ctx.db
               .selectFrom('person_metadata')
@@ -663,6 +693,36 @@ for (const dialect of DIALECTS) {
                 login_count: 12,
                 avatar: null,
               },
+            ])
+          })
+
+          it(`should execute a query with column${jsonOperator} in select clause with a missing optional key`, async () => {
+            await ctx.db
+              .updateTable('person_metadata')
+              .set({
+                profile: JSON.stringify({
+                  tags: [],
+                  auth: { roles: [], login_count: 0, is_verified: false },
+                  avatar: null,
+                }),
+              })
+              .execute()
+
+            const results = await ctx.db
+              .selectFrom('person_metadata')
+              .select((eb) =>
+                eb
+                  .ref('profile', jsonOperator)
+                  .key('auth')
+                  .key('last_login')
+                  .as('last_login'),
+              )
+              .execute()
+
+            expect(results).to.eql([
+              { last_login: null },
+              { last_login: null },
+              { last_login: null },
             ])
           })
 
