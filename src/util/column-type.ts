@@ -219,7 +219,7 @@ export type Updateable<R> = DrainOuterGeneric<{
  * import { jsonArrayFrom } from 'kysely/helpers/postgres'
  *
  * const result = await db
- *   .withTables<{
+ *   .$extendTables<{
  *     my_table: {
  *       a_column: '1' | '2' | '3',
  *       another_column: NonDehydrateable<'1' | '2' | '3'>,
@@ -237,6 +237,18 @@ export type Updateable<R> = DrainOuterGeneric<{
  *   .execute()
  * ```
  *
+ * The generated SQL (PostgreSQL):
+ *
+ * ```sql
+ * select "id", (
+ *   select coalesce(json_agg(agg), '[]') from (
+ *     select "a_column", "another_column", "column_too"
+ *     from "my_table"
+ *   ) as agg
+ * ) as "related"
+ * from "person"
+ * ```
+ *
  * In the example above, "a_column" will be dehydrated to `number`
  * given it is a numeric string - which is normally a numeric data type column
  * that gets output as a string by underlying database drivers to avoid
@@ -244,6 +256,9 @@ export type Updateable<R> = DrainOuterGeneric<{
  *
  * "another_column" and "column_too" will remain as `'1' | '2' | '3'`, given they're
  * wrapped in `NonDehydrateable`, which prevents their dehydration.
+ *
+ * This only changes types. It doesn't change the SQL or parse runtime values.
+ * Only use it when the database, driver or a plugin returns the declared type.
  */
 export type NonDehydrateable<T> = [T] extends [
   ColumnType<infer S, infer I, infer U>,
