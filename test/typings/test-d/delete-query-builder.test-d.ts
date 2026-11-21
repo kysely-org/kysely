@@ -326,3 +326,35 @@ async function testOutput(db: Kysely<Database>) {
   expectError(db.deleteFrom('person').output('id'))
   expectError(db.deleteFrom('person').outputAll())
 }
+
+async function testDeleteWithOuterJoins(db: Kysely<Database>) {
+  const r1 = await db
+    .deleteFrom('person')
+    .using('pet')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: string | null; price: number }>(r1)
+
+  const r2 = await db
+    .deleteFrom('person')
+    .using('pet')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: string | null; price: number | null }>(r2)
+
+  const r3 = await db
+    .deleteFrom('person')
+    .using('pet')
+    .leftJoin('toy as movie', 'movie.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['person.first_name', 'pet.name', 'movie.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; name: string; price: number | null }>(r3)
+}

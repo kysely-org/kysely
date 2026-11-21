@@ -4,6 +4,7 @@ import type {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
+  Nullable,
 } from '../util/type-utils.js'
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { createJoinBuilder } from './parse-utils.js'
@@ -74,4 +75,23 @@ function parseOnlessJoin(
   from: TableExpression<any, any>,
 ): JoinNode {
   return JoinNode.create(joinType, parseTableExpression(from))
+}
+
+/**
+ * Makes the tables in `TB` nullable and shadows table `A` in `DB` with row
+ * type `R`, or adds it when `DB` has no table named `A`.
+ */
+export type NullifyTablesAndShadowWith<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R,
+> = {
+  [C in keyof DB | A]: C extends A
+    ? R
+    : C extends TB
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }

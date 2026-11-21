@@ -89,3 +89,49 @@ async function testUpdate(db: Kysely<Database>) {
 
   db.updateTable('person').set(mutationObject)
 }
+
+async function testUpdateWithJoins(db: Kysely<Database>) {
+  const r1 = await db
+    .updateTable('person')
+    .from('pet')
+    .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; name: string; price: number | null }>(r1)
+
+  const r2 = await db
+    .updateTable('person')
+    .from('pet')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: string | null; price: number }>(r2)
+
+  const r3 = await db
+    .updateTable('person')
+    .from('pet')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: string | null; price: number | null }>(r3)
+
+  const r4 = await db
+    .updateTable('person')
+    .from('pet')
+    .leftJoin('toy as movie', 'movie.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'movie.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; price: number | null }>(r4)
+}

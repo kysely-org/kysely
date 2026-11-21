@@ -213,3 +213,28 @@ async function testKyselyAnyMerges(db: Kysely<any>) {
     .executeTakeFirstOrThrow()
   expectType<{ e: any }>(r5)
 }
+
+async function testKyselyAnyJoins(db: Kysely<any>) {
+  const r1 = await db
+    .selectFrom('foo')
+    .innerJoin('bar as b', 'b.foo_id', 'foo.id')
+    .select(['b.eggs', 'foo.spam'])
+    .executeTakeFirstOrThrow()
+  expectType<{ eggs: any; spam: any }>(r1)
+
+  const r2 = await db
+    .selectFrom('foo')
+    .leftJoin('bar', 'bar.foo_id', 'foo.id')
+    .rightJoin('baz', 'baz.bar_id', 'bar.id')
+    .fullJoin('qux as q', 'q.id', 'foo.id')
+    .select(['foo.spam', 'bar.eggs', 'baz.ham', 'q.toast'])
+    .executeTakeFirstOrThrow()
+  expectType<{ spam: any; eggs: any; ham: any; toast: any }>(r2)
+
+  const r3 = await db
+    .selectFrom('foo')
+    .innerJoin('bar as baz', 'baz.foo_id', 'foo.id')
+    .selectAll('baz')
+    .executeTakeFirstOrThrow()
+  expectType<{ [x: string]: any }>(r3)
+}

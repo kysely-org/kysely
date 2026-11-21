@@ -56,7 +56,7 @@ bench('kysely..innerJoin(table as alias, k1, k2)', () =>
     'my_table.col_164b7896ec8e770207febe0812c5f052',
     't2.col_454ff479a3b5a9ef082d9be9ac02a6f4',
   ),
-).types([6534, 'instantiations'])
+).types([6522, 'instantiations'])
 
 bench('kysely..innerJoin(table, cb)', () =>
   query.innerJoin('table_000a8a0cb7f265a624c851d3e7f8b946', (join) =>
@@ -119,7 +119,7 @@ bench('kyselyAny..innerJoin(table as alias, k1, k2)', () =>
     'my_table.col_164b7896ec8e770207febe0812c5f052',
     't2.col_454ff479a3b5a9ef082d9be9ac02a6f4',
   ),
-).types([881, 'instantiations'])
+).types([869, 'instantiations'])
 
 bench('kyselyAny..innerJoin(table, cb)', () =>
   queryAny.innerJoin('table_000a8a0cb7f265a624c851d3e7f8b946', (join) =>
