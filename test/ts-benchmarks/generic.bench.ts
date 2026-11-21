@@ -150,7 +150,7 @@ bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
 
 bench('UpdateQueryBuilder assignable to narrower UpdateQueryBuilder', () => {
   return acceptsNarrowUpdateQueryBuilder(wideUpdateQueryBuilder)
-}).types([84507, 'instantiations'])
+}).types([89255, 'instantiations'])
 
 bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
   return acceptsNarrowMergeQueryBuilder(wideMergeQueryBuilder)
@@ -158,7 +158,7 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([150004, 'instantiations'])
+}).types([150029, 'instantiations'])
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)

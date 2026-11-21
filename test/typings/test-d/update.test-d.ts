@@ -1,5 +1,5 @@
-import type { Kysely, UpdateResult } from '../index.js'
-import type { Database } from '../shared.js'
+import type { Kysely, Selectable, UpdateResult } from '../index.js'
+import type { Database, Person, Pet } from '../shared.js'
 import { expectType, expectError } from 'tsd'
 
 async function testUpdateTableAliasMatchingTableName(db: Kysely<Database>) {
@@ -164,4 +164,44 @@ async function testUpdateWithJoins(db: Kysely<Database>) {
     name: string | null
     price: number | null
   }>(r6)
+}
+
+async function testOutput(db: Kysely<Database>) {
+  const r1 = await db
+    .updateTable('pet')
+    .set({ name: 'Doggo' })
+    .outputAll('deleted')
+    .executeTakeFirstOrThrow()
+
+  expectType<Selectable<Pet>>(r1)
+
+  const query = db
+    .updateTable('person')
+    .from('pet')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .set({ first_name: 'Jennifer' })
+
+  const r2 = await query.output('inserted.id').executeTakeFirstOrThrow()
+
+  expectType<{ id: number }>(r2)
+
+  const r3 = await query
+    .output(['inserted.first_name', 'deleted.first_name as old_first_name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; old_first_name: string }>(r3)
+
+  const r4 = await query
+    .output((eb) => ['inserted.age', eb.ref('deleted.age').as('old_age')])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ age: number; old_age: number }>(r4)
+
+  const r5 = await query.outputAll('inserted').executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r5)
+
+  expectError(query.output('inserted.name'))
+  expectError(query.output(['inserted.species']))
+  expectError(query.output((eb) => [eb.ref('deleted.owner_id').as('owner')]))
 }
