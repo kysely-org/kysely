@@ -49,7 +49,6 @@ import {
   type OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
-import type { Selectable } from '../util/column-type.js'
 import type { Explainable, ExplainFormat } from '../util/explainable.js'
 import type { Expression } from '../expression/expression.js'
 import type { KyselyTypeError } from '../util/type-error.js'
@@ -971,7 +970,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, out O>
     })
   }
 
-  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll(): InsertQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(

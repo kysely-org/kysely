@@ -15,7 +15,7 @@ bench('kysely.with(cte, qc => qc.selectFrom(table))', () => {
 
 bench('kysely.with(cte, qc => qc.insertInto(table))', () => {
   return kysely.with('cte', (qc) => qc.insertInto('my_table').returningAll())
-}).types([3281, 'instantiations'])
+}).types([2867, 'instantiations'])
 
 bench('kysely.with(cte, qc => qc.updateTable(table))', () => {
   return kysely.with('cte', (qc) => qc.updateTable('my_table').returningAll())
@@ -31,7 +31,7 @@ bench('kyselyAny.with(cte, qc => qc.selectFrom(table))', () => {
 
 bench('kyselyAny.with(cte, qc => qc.insertInto(table))', () => {
   return kyselyAny.with('cte', (qc) => qc.insertInto('my_table').returningAll())
-}).types([2966, 'instantiations'])
+}).types([2911, 'instantiations'])
 
 bench('kyselyAny.with(cte, qc => qc.updateTable(table))', () => {
   return kyselyAny.with('cte', (qc) =>
@@ -49,7 +49,7 @@ bench('kysely.with(cte, () => selectQuery)', () => {
 
 bench('kysely.with(cte, () => insertQuery)', () => {
   return kysely.with('cte', () => kysely.insertInto('my_table').returningAll())
-}).types([3269, 'instantiations'])
+}).types([2855, 'instantiations'])
 
 bench('kysely.with(cte, () => updateQuery)', () => {
   return kysely.with('cte', () => kysely.updateTable('my_table').returningAll())
@@ -69,7 +69,7 @@ bench('kyselyAny.with(cte, () => insertQuery)', () => {
   return kyselyAny.with('cte', () =>
     kyselyAny.insertInto('my_table').returningAll(),
   )
-}).types([2954, 'instantiations'])
+}).types([2899, 'instantiations'])
 
 bench('kyselyAny.with(cte, () => updateQuery)', () => {
   return kyselyAny.with('cte', () =>
@@ -89,7 +89,7 @@ bench('kysely.with(cte, selectQuery)', () => {
 
 bench('kysely.with(cte, insertQuery)', () => {
   return kysely.with('cte', kysely.insertInto('my_table').returningAll())
-}).types([3238, 'instantiations'])
+}).types([2824, 'instantiations'])
 
 bench('kysely.with(cte, updateQuery)', () => {
   return kysely.with('cte', kysely.updateTable('my_table').returningAll())
@@ -105,7 +105,7 @@ bench('kyselyAny.with(cte, selectQuery)', () => {
 
 bench('kyselyAny.with(cte, insertQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.insertInto('my_table').returningAll())
-}).types([2923, 'instantiations'])
+}).types([2868, 'instantiations'])
 
 bench('kyselyAny.with(cte, updateQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.updateTable('my_table').returningAll())

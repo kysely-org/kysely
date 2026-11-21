@@ -43,7 +43,7 @@ bench('kysely.insertInto(table)..returning(column as alias)', () =>
 
 bench('kysely.insertInto(table)..returningAll()', () =>
   insertQuery.returningAll(),
-).types([493, 'instantiations'])
+).types([92, 'instantiations'])
 
 bench('kyselyAny.insertInto(table)..returning(column)', () =>
   insertQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
@@ -61,4 +61,4 @@ bench('kyselyAny.insertInto(table)..returning(table.column as alias)', () =>
 
 bench('kyselyAny.insertInto(table)..returningAll()', () =>
   insertQueryAny.returningAll(),
-).types([173, 'instantiations'])
+).types([92, 'instantiations'])
