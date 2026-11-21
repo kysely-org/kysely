@@ -389,3 +389,117 @@ async function testManyJoins(db: Kysely<Database>) {
 
   expectType<{ age: number; last_name: string | null }>(r3)
 }
+
+async function testJoinAliasMatchingTableName(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('toy')
+    .innerJoin('pet as person', 'person.id', 'toy.pet_id')
+    .select(['person.name', 'person.species', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: string; species: 'dog' | 'cat'; price: number }>(r1)
+
+  expectError(
+    db
+      .selectFrom('toy')
+      .innerJoin('pet as person', 'person.id', 'toy.pet_id')
+      .select('person.first_name'),
+  )
+
+  const r2 = await db
+    .selectFrom('toy')
+    .leftJoin('pet as person', 'person.id', 'toy.pet_id')
+    .select(['person.name', 'person.species', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    name: string | null
+    species: 'dog' | 'cat' | null
+    price: number
+  }>(r2)
+
+  const r3 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .rightJoin('toy as pet', 'pet.pet_id', 'person.id')
+    .select(['person.first_name', 'pet.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string | null; price: number }>(r3)
+
+  const r4 = await db
+    .selectFrom('person')
+    .fullJoin('toy as person_metadata', 'person_metadata.pet_id', 'person.id')
+    .select(['person.first_name', 'person_metadata.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string | null; price: number | null }>(r4)
+}
+
+async function testOuterJoinAfterInnerJoin(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .select(['person.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string | null; name: string | null; price: number }>(
+    r1,
+  )
+
+  const r2 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .select(['person.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    first_name: string | null
+    name: string | null
+    price: number | null
+  }>(r2)
+
+  const r3 = await db
+    .selectFrom('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('toy', 'toy.pet_id', 'pet.id')
+    .rightJoin('movie', 'movie.stars', 'person.age')
+    .select(['person.first_name', 'pet.name', 'toy.price', 'movie.stars'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    first_name: string | null
+    name: string | null
+    price: number | null
+    stars: number
+  }>(r3)
+}
+
+async function testJoinWithStringKeyedDatabase(
+  db: Kysely<Record<string, Record<string, unknown>>>,
+) {
+  const r1 = await db
+    .selectFrom('person')
+    .innerJoin('pet as p', 'p.owner_id', 'person.id')
+    .select(['p.name', 'person.first_name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ name: unknown; first_name: unknown }>(r1)
+
+  const r2 = await db
+    .selectFrom('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .fullJoin('movie as m', 'm.id', 'person.id')
+    .select(['person.first_name', 'pet.name', 'toy.price', 'm.stars'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    first_name: unknown
+    name: unknown
+    price: unknown
+    stars: unknown
+  }>(r2)
+}

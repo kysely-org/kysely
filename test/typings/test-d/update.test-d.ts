@@ -89,3 +89,45 @@ async function testUpdate(db: Kysely<Database>) {
 
   db.updateTable('person').set(mutationObject)
 }
+
+async function testUpdateWithJoins(db: Kysely<Database>) {
+  const r1 = await db
+    .updateTable('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; name: string; price: number | null }>(r1)
+
+  const r2 = await db
+    .updateTable('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string | null; name: string | null; price: number }>(
+    r2,
+  )
+
+  const r3 = await db
+    .updateTable('person')
+    .fullJoin('pet', 'pet.owner_id', 'person.id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'pet.name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string | null; name: string | null }>(r3)
+
+  const r4 = await db
+    .updateTable('person')
+    .leftJoin('toy as pet', 'pet.pet_id', 'person.id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['person.first_name', 'pet.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; price: number | null }>(r4)
+}
