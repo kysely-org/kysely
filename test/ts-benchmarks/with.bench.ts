@@ -19,7 +19,7 @@ bench('kysely.with(cte, qc => qc.insertInto(table))', () => {
 
 bench('kysely.with(cte, qc => qc.updateTable(table))', () => {
   return kysely.with('cte', (qc) => qc.updateTable('my_table').returningAll())
-}).types([21285, 'instantiations'])
+}).types([21473, 'instantiations'])
 
 bench('kysely.with(cte, qc => qc.deleteFrom(table))', () => {
   return kysely.with('cte', (qc) => qc.deleteFrom('my_table').returningAll())
@@ -37,7 +37,7 @@ bench('kyselyAny.with(cte, qc => qc.updateTable(table))', () => {
   return kyselyAny.with('cte', (qc) =>
     qc.updateTable('my_table').returningAll(),
   )
-}).types([21075, 'instantiations'])
+}).types([21263, 'instantiations'])
 
 bench('kyselyAny.with(cte, qc => qc.deleteFrom(table))', () => {
   return kyselyAny.with('cte', (qc) => qc.deleteFrom('my_table').returningAll())
@@ -53,7 +53,7 @@ bench('kysely.with(cte, () => insertQuery)', () => {
 
 bench('kysely.with(cte, () => updateQuery)', () => {
   return kysely.with('cte', () => kysely.updateTable('my_table').returningAll())
-}).types([21273, 'instantiations'])
+}).types([21461, 'instantiations'])
 
 bench('kysely.with(cte, () => deleteQuery)', () => {
   return kysely.with('cte', () => kysely.deleteFrom('my_table').returningAll())
@@ -75,7 +75,7 @@ bench('kyselyAny.with(cte, () => updateQuery)', () => {
   return kyselyAny.with('cte', () =>
     kyselyAny.updateTable('my_table').returningAll(),
   )
-}).types([21063, 'instantiations'])
+}).types([21251, 'instantiations'])
 
 bench('kyselyAny.with(cte, () => deleteQuery)', () => {
   return kyselyAny.with('cte', () =>
@@ -93,7 +93,7 @@ bench('kysely.with(cte, insertQuery)', () => {
 
 bench('kysely.with(cte, updateQuery)', () => {
   return kysely.with('cte', kysely.updateTable('my_table').returningAll())
-}).types([21317, 'instantiations'])
+}).types([21505, 'instantiations'])
 
 bench('kysely.with(cte, deleteQuery)', () => {
   return kysely.with('cte', kysely.deleteFrom('my_table').returningAll())
@@ -109,7 +109,7 @@ bench('kyselyAny.with(cte, insertQuery)', () => {
 
 bench('kyselyAny.with(cte, updateQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.updateTable('my_table').returningAll())
-}).types([21107, 'instantiations'])
+}).types([21295, 'instantiations'])
 
 bench('kyselyAny.with(cte, deleteQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.deleteFrom('my_table').returningAll())

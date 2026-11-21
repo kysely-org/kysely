@@ -108,10 +108,10 @@ async function testUpdateWithJoins(db: Kysely<Database>) {
     .rightJoin('toy', 'toy.pet_id', 'pet.id')
     .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
-    .returning(['pet.name', 'toy.price'])
+    .returning(['person.first_name', 'pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ name: string | null; price: number }>(r2)
+  expectType<{ first_name: string; name: string | null; price: number }>(r2)
 
   const r3 = await db
     .updateTable('person')
@@ -119,10 +119,14 @@ async function testUpdateWithJoins(db: Kysely<Database>) {
     .fullJoin('toy', 'toy.pet_id', 'pet.id')
     .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
-    .returning(['pet.name', 'toy.price'])
+    .returning(['person.first_name', 'pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ name: string | null; price: number | null }>(r3)
+  expectType<{
+    first_name: string
+    name: string | null
+    price: number | null
+  }>(r3)
 
   const r4 = await db
     .updateTable('person')
@@ -134,4 +138,30 @@ async function testUpdateWithJoins(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<{ first_name: string; price: number | null }>(r4)
+
+  const r5 = await db
+    .updateTable('person as p')
+    .from('pet')
+    .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('p.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['p.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; name: string | null; price: number }>(r5)
+
+  const r6 = await db
+    .updateTable('person as p')
+    .from('pet')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('p.id', '=', 'pet.owner_id')
+    .set({ last_name: 'Jennifer' })
+    .returning(['p.first_name', 'pet.name', 'toy.price'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    first_name: string
+    name: string | null
+    price: number | null
+  }>(r6)
 }
