@@ -158,8 +158,8 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([159293, 'instantiations'])
+}).types([159563, 'instantiations'])
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)
-}).types([20021, 'instantiations'])
+}).types([20032, 'instantiations'])

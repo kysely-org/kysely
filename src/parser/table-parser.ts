@@ -45,9 +45,11 @@ export type From<DB, TE> = DrainOuterGeneric<{
 export type ShadowTableWith<DB, A extends keyof any, R> = string extends
   A | keyof DB
   ? DB & { [C in A]: R }
-  : {
-      [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-    }
+  : ShadowMapped<DB, A, R>
+
+type ShadowMapped<DB, A extends keyof any, R> = {
+  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+}
 
 export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
   TB | ExtractAliasFromTableExpression<DB, TE>
