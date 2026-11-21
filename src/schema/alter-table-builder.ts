@@ -75,6 +75,21 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     this.#props = freeze(props)
   }
 
+  /**
+   * Renames the table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema.alterTable('person').renameTo('person_backup').execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename to "person_backup"
+   * ```
+   */
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
@@ -84,6 +99,23 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Moves the table to another schema.
+   *
+   * Only supported by PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema.alterTable('person').setSchema('archive').execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" set schema "archive"
+   * ```
+   */
   setSchema(newSchema: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
@@ -93,6 +125,34 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Alters a column using the provided callback.
+   *
+   * The callback must return exactly one alteration. To alter multiple properties
+   * of a column, call `alterColumn` separately for each property. Support for
+   * individual alterations and multiple alterations in one query varies by dialect.
+   * SQLite doesn't support `alter column`.
+   *
+   * For MySQL column definitions, see {@link modifyColumn}.
+   *
+   * ### Examples
+   *
+   * Set a default and make a column non-nullable on PostgreSQL:
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .alterColumn('first_name', (ac) => ac.setDefault('Anonymous'))
+   *   .alterColumn('first_name', (ac) => ac.setNotNull())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" alter column "first_name" set default 'Anonymous', alter column "first_name" set not null
+   * ```
+   */
   alterColumn(
     column: string,
     alteration: AlterColumnBuilderCallback,
@@ -108,6 +168,26 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Drops a column from the table.
+   *
+   * Use the callback to add `if exists` on dialects that support it.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .dropColumn('middle_name', (dc) => dc.ifExists())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" drop column if exists "middle_name"
+   * ```
+   */
   dropColumn(
     column: string,
     build: DropColumnBuilderCallback = noop,
@@ -125,6 +205,24 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Renames a column in the table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .renameColumn('first_name', 'given_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename column "first_name" to "given_name"
+   * ```
+   */
   renameColumn(
     column: string,
     newColumn: string,
@@ -161,6 +259,29 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Changes a column definition using MySQL's `modify column` syntax.
+   *
+   * Only supported by MySQL. Include all attributes that should remain on the
+   * column, such as `not null` and its default value.
+   *
+   * For `alter column` syntax, see {@link alterColumn}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .modifyColumn('first_name', 'varchar(255)', (col) => col.notNull())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` modify column `first_name` varchar(255) not null
+   * ```
+   */
   modifyColumn(
     columnName: string,
     dataType: DataTypeExpression,
@@ -245,9 +366,29 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   /**
    * See {@link CreateTableBuilder.addForeignKeyConstraint}
    *
-   * Unlike {@link CreateTableBuilder.addForeignKeyConstraint} this method returns
-   * the constraint builder and doesn't take a callback as the last argument. This
-   * is because you can only add one column per `ALTER TABLE` query.
+   * Returns a constraint builder that can be used to configure and execute the
+   * query. You can also configure the constraint using the last callback argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('pet')
+   *   .addForeignKeyConstraint(
+   *     'pet_owner_id_foreign',
+   *     ['owner_id'],
+   *     'person',
+   *     ['id'],
+   *     (fk) => fk.onDelete('cascade'),
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "pet" add constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") on delete cascade
+   * ```
    */
   addForeignKeyConstraint(
     constraintName: string,
@@ -297,6 +438,25 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Drops a named constraint.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .dropConstraint('person_email_unique')
+   *   .ifExists()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" drop constraint if exists "person_email_unique"
+   * ```
+   */
   dropConstraint(constraintName: string): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
@@ -306,6 +466,24 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * Renames a constraint. Only supported by PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .renameConstraint('person_email_unique', 'person_email_key')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * alter table "person" rename constraint "person_email_unique" to "person_email_key"
+   * ```
+   */
   renameConstraint(
     oldName: string,
     newName: string,
