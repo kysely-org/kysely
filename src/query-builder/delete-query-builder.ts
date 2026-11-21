@@ -3,7 +3,7 @@ import type { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   type JoinCallbackExpression,
   type JoinReferenceExpression,
-  type NullifyTablesWith,
+  type NullifyTablesAndShadowWith,
   parseJoin,
 } from '../parser/join-parser.js'
 import {
@@ -1200,14 +1200,30 @@ export type DeleteQueryBuilderWithRightJoin<
   TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, A, DB[T]>, TB | A, O>
+    ? DeleteQueryBuilder<
+        NullifyTablesAndShadowWith<DB, TB, A, DB[T]>,
+        TB | A,
+        O
+      >
     : never
   : TE extends keyof DB
-    ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, TE, DB[TE]>, TB | TE, O>
+    ? DeleteQueryBuilder<
+        NullifyTablesAndShadowWith<DB, TB, TE, DB[TE]>,
+        TB | TE,
+        O
+      >
     : TE extends AliasedExpression<infer QO, infer QA>
-      ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
+      ? DeleteQueryBuilder<
+          NullifyTablesAndShadowWith<DB, TB, QA, QO>,
+          TB | QA,
+          O
+        >
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? DeleteQueryBuilder<NullifyTablesWith<DB, TB, QA, QO>, TB | QA, O>
+        ? DeleteQueryBuilder<
+            NullifyTablesAndShadowWith<DB, TB, QA, QO>,
+            TB | QA,
+            O
+          >
         : never
 
 export type DeleteQueryBuilderWithFullJoin<
@@ -1218,26 +1234,26 @@ export type DeleteQueryBuilderWithFullJoin<
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? DeleteQueryBuilder<
-        NullifyTablesWith<DB, TB, A, Nullable<DB[T]>>,
+        NullifyTablesAndShadowWith<DB, TB, A, Nullable<DB[T]>>,
         TB | A,
         O
       >
     : never
   : TE extends keyof DB
     ? DeleteQueryBuilder<
-        NullifyTablesWith<DB, TB, TE, Nullable<DB[TE]>>,
+        NullifyTablesAndShadowWith<DB, TB, TE, Nullable<DB[TE]>>,
         TB | TE,
         O
       >
     : TE extends AliasedExpression<infer QO, infer QA>
       ? DeleteQueryBuilder<
-          NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+          NullifyTablesAndShadowWith<DB, TB, QA, Nullable<QO>>,
           TB | QA,
           O
         >
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
         ? DeleteQueryBuilder<
-            NullifyTablesWith<DB, TB, QA, Nullable<QO>>,
+            NullifyTablesAndShadowWith<DB, TB, QA, Nullable<QO>>,
             TB | QA,
             O
           >

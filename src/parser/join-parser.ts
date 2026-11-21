@@ -81,7 +81,7 @@ function parseOnlessJoin(
  * Makes the tables in `TB` nullable and shadows table `A` in `DB` with row
  * type `R`, or adds it when `DB` has no table named `A`.
  */
-export type NullifyTablesWith<
+export type NullifyTablesAndShadowWith<
   DB,
   TB extends keyof DB,
   A extends keyof any,
