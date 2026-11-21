@@ -51,6 +51,8 @@ or method you're using to see it in your IDE. The same documentation is also hos
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [Discord server](https://discord.gg/xyBJ3GwvAm).
 
+If Kysely saves you time, please star this repository. It helps other developers find it. ⭐
+
 # Getting started
 
 Please visit our documentation site [kysely.dev](https://kysely.dev) to get started. We also have a comprehensive
