@@ -41,6 +41,12 @@ export type InsertObjectOrListFactory<
   UT extends keyof DB = never,
 > = (eb: ExpressionBuilder<DB, TB | UT>) => InsertObjectOrList<DB, TB>
 
+export type InsertObjectFactory<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB = never,
+> = (eb: ExpressionBuilder<DB, TB | UT>) => InsertObject<DB, TB>
+
 export type InsertExpression<
   DB,
   TB extends keyof DB,
