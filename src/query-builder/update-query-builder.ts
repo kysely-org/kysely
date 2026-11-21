@@ -1184,6 +1184,58 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return result
   }
 
+  /**
+   * @remarks
+   * Without `returning` or `output`, the query returns a {@link UpdateResult}
+   * even when no rows are affected. This method doesn't throw in that case.
+   * Check {@link UpdateResult.numUpdatedRows} to determine whether any rows were affected.
+   *
+   * With `returning` or `output`, this method throws if no rows are returned.
+   *
+   * ### Examples
+   *
+   * Check the affected row count without `returning`:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set({ first_name: 'Jennifer' })
+   *   .where('id', '=', 123)
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (result.numUpdatedRows === 0n) {
+   *   throw new Error('Person not found')
+   * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = $1
+   * where "id" = $2
+   * ```
+   *
+   * On PostgreSQL, use `returning` to throw when no person matches:
+   *
+   * ```ts
+   * const person = await db
+   *   .updateTable('person')
+   *   .set({ first_name: 'Jennifer' })
+   *   .where('id', '=', 123)
+   *   .returning('id')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = $1
+   * where "id" = $2
+   * returning "id"
+   * ```
+   */
   async executeTakeFirstOrThrow(
     errorConstructorOrOptions?:
       | ExecuteTakeFirstOrThrowOptions

@@ -4,7 +4,7 @@ import { OperatorNode } from '../../operation-node/operator-node.js'
 import { ValueNode } from '../../operation-node/value-node.js'
 
 export class SafeNullComparisonTransformer extends OperationNodeTransformer {
-  protected transformBinaryOperation(
+  protected override transformBinaryOperation(
     node: BinaryOperationNode,
   ): BinaryOperationNode {
     const { operator, leftOperand, rightOperand } =
