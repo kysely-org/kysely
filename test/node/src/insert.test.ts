@@ -958,6 +958,26 @@ for (const dialect of DIALECTS) {
           last_name: 'Barson',
         })
       })
+
+      it('should insert a row and return data using `returning` and `returningAll`', async () => {
+        const result = await ctx.db
+          .insertInto('person')
+          .values({
+            first_name: 'Foo',
+            last_name: 'Barson',
+            gender: 'other',
+          })
+          .returning('first_name as name')
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        expect(result).to.containSubset({
+          name: 'Foo',
+          first_name: 'Foo',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+      })
     }
 
     if (sqlSpec === 'postgres' || sqlSpec === 'mysql') {
