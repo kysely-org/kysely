@@ -944,6 +944,32 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should update rows using `from` and return target table values when `output` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .from('pet')
+          .whereRef('person.id', '=', 'pet.owner_id')
+          .where('pet.species', '=', 'dog')
+          .set({ last_name: 'Barson' })
+          .output(['inserted.last_name', 'deleted.last_name as old_last_name'])
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "person" set "last_name" = @1 output "inserted"."last_name", "deleted"."last_name" as "old_last_name" from "pet" where "person"."id" = "pet"."owner_id" and "pet"."species" = @2',
+            parameters: ['Barson', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql([
+          { last_name: 'Barson', old_last_name: 'Schwarzenegger' },
+        ])
+      })
+
       it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {
         const condition = true
 

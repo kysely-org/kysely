@@ -93,7 +93,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     MultiTableReturningInterface<DB, TB, O>,
-    OutputInterface<DB, TB, O>,
+    OutputInterface<DB, UT, O>,
     OrderByInterface<DB, TB, never>,
     OperationNodeSource,
     Compilable<O>,
@@ -795,25 +795,25 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     DB,
     UT,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+    ReturningRow<DB, UT, O, SelectExpressionFromOutputExpression<OE>>
   >
 
-  output<const CB extends OutputCallback<DB, TB>>(
+  output<const CB extends OutputCallback<DB, UT>>(
     callback: CB,
   ): UpdateQueryBuilder<
     DB,
     UT,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+    ReturningRow<DB, UT, O, SelectExpressionFromOutputCallback<CB>>
   >
 
-  output<OE extends OutputExpression<DB, TB>>(
+  output<OE extends OutputExpression<DB, UT>>(
     selection: OE,
   ): UpdateQueryBuilder<
     DB,
     UT,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+    ReturningRow<DB, UT, O, SelectExpressionFromOutputExpression<OE>>
   >
 
   output(args: any): any {
@@ -828,7 +828,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   outputAll(
     table: OutputPrefix,
-  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>> {
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, UT, O>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
