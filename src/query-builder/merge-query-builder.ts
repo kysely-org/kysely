@@ -11,8 +11,8 @@ import type {
 import type { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   type InsertExpression,
-  type InsertObjectOrList,
-  type InsertObjectOrListFactory,
+  type InsertObject,
+  type InsertObjectFactory,
   parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import {
@@ -1210,11 +1210,11 @@ export class NotMatchedThenableMergeQueryBuilder<
    *   insert ("first_name", "last_name") values ($1, $2)
    * ```
    */
-  thenInsertValues<I extends InsertObjectOrList<DB, TT>>(
+  thenInsertValues<I extends InsertObject<DB, TT>>(
     insert: I,
   ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
-  thenInsertValues<IO extends InsertObjectOrListFactory<DB, TT, ST>>(
+  thenInsertValues<IO extends InsertObjectFactory<DB, TT, ST>>(
     insert: IO,
   ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 

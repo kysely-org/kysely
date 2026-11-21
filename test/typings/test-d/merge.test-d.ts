@@ -462,6 +462,18 @@ async function testThenInsert(
     }),
   )
 
+  expectError(
+    baseQuery.thenInsertValues([
+      { age: 2, first_name: 'Moshe', gender: 'other' },
+      { age: 3, first_name: 'Jennifer', gender: 'female' },
+    ]),
+  )
+  expectError(
+    baseQuery.thenInsertValues((eb) => [
+      { age: 2, first_name: eb.ref('pet.name'), gender: 'other' },
+    ]),
+  )
+
   expectType<
     WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
   >(
