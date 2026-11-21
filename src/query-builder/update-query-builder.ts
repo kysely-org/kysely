@@ -1316,7 +1316,7 @@ export type UpdateQueryBuilderWithRightJoin<
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? UpdateQueryBuilder<
-        NullifyTablesAndShadowWith<DB, TB, A, DB[T]>,
+        NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, A, DB[T]>,
         UT,
         TB | A,
         O
@@ -1324,21 +1324,21 @@ export type UpdateQueryBuilderWithRightJoin<
     : never
   : TE extends keyof DB
     ? UpdateQueryBuilder<
-        NullifyTablesAndShadowWith<DB, TB, TE, DB[TE]>,
+        NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, TE, DB[TE]>,
         UT,
         TB | TE,
         O
       >
     : TE extends AliasedExpression<infer QO, infer QA>
       ? UpdateQueryBuilder<
-          NullifyTablesAndShadowWith<DB, TB, QA, QO>,
+          NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, QA, QO>,
           UT,
           TB | QA,
           O
         >
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
         ? UpdateQueryBuilder<
-            NullifyTablesAndShadowWith<DB, TB, QA, QO>,
+            NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, QA, QO>,
             UT,
             TB | QA,
             O
@@ -1354,7 +1354,7 @@ export type UpdateQueryBuilderWithFullJoin<
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? UpdateQueryBuilder<
-        NullifyTablesAndShadowWith<DB, TB, A, Nullable<DB[T]>>,
+        NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, A, Nullable<DB[T]>>,
         UT,
         TB | A,
         O
@@ -1362,21 +1362,21 @@ export type UpdateQueryBuilderWithFullJoin<
     : never
   : TE extends keyof DB
     ? UpdateQueryBuilder<
-        NullifyTablesAndShadowWith<DB, TB, TE, Nullable<DB[TE]>>,
+        NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, TE, Nullable<DB[TE]>>,
         UT,
         TB | TE,
         O
       >
     : TE extends AliasedExpression<infer QO, infer QA>
       ? UpdateQueryBuilder<
-          NullifyTablesAndShadowWith<DB, TB, QA, Nullable<QO>>,
+          NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, QA, Nullable<QO>>,
           UT,
           TB | QA,
           O
         >
       : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
         ? UpdateQueryBuilder<
-            NullifyTablesAndShadowWith<DB, TB, QA, Nullable<QO>>,
+            NullifyTablesAndShadowWith<DB, Exclude<TB, UT>, QA, Nullable<QO>>,
             UT,
             TB | QA,
             O
