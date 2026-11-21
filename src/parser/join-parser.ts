@@ -77,6 +77,10 @@ function parseOnlessJoin(
   return JoinNode.create(joinType, parseTableExpression(from))
 }
 
+/**
+ * Makes the tables in `TB` nullable and shadows table `A` in `DB` with row
+ * type `R`, or adds it when `DB` has no table named `A`.
+ */
 export type NullifyTablesWith<
   DB,
   TB extends keyof DB,
