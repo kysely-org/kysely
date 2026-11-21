@@ -330,36 +330,31 @@ async function testOutput(db: Kysely<Database>) {
 async function testDeleteWithOuterJoins(db: Kysely<Database>) {
   const r1 = await db
     .deleteFrom('person')
-    .using('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .using('pet')
     .rightJoin('toy', 'toy.pet_id', 'pet.id')
-    .returning(['person.first_name', 'pet.name', 'toy.price'])
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string | null; name: string | null; price: number }>(
-    r1,
-  )
+  expectType<{ name: string | null; price: number }>(r1)
 
   const r2 = await db
     .deleteFrom('person')
-    .using('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .fullJoin('toy as t', 't.pet_id', 'pet.id')
-    .returning(['person.first_name', 'pet.name', 't.price'])
+    .using('pet')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{
-    first_name: string | null
-    name: string | null
-    price: number | null
-  }>(r2)
+  expectType<{ name: string | null; price: number | null }>(r2)
 
   const r3 = await db
     .deleteFrom('person')
-    .using('person')
-    .leftJoin('toy as pet', 'pet.pet_id', 'person.id')
-    .returning(['person.first_name', 'pet.price'])
+    .using('pet')
+    .leftJoin('toy as movie', 'movie.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
+    .returning(['person.first_name', 'pet.name', 'movie.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string; price: number | null }>(r3)
+  expectType<{ first_name: string; name: string; price: number | null }>(r3)
 }

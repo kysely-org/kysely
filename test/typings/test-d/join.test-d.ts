@@ -421,15 +421,17 @@ async function testJoinAliasMatchingTableName(db: Kysely<Database>) {
   const r3 = await db
     .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .rightJoin('toy as pet', 'pet.pet_id', 'person.id')
-    .select(['person.first_name', 'pet.price'])
+    .rightJoin('toy as movie', 'movie.pet_id', 'pet.id')
+    .select(['person.first_name', 'pet.name', 'movie.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string | null; price: number }>(r3)
+  expectType<{ first_name: string | null; name: string | null; price: number }>(
+    r3,
+  )
 
   const r4 = await db
     .selectFrom('person')
-    .fullJoin('toy as person_metadata', 'person_metadata.pet_id', 'person.id')
+    .fullJoin('toy as person_metadata', 'person_metadata.price', 'person.age')
     .select(['person.first_name', 'person_metadata.price'])
     .executeTakeFirstOrThrow()
 
@@ -492,7 +494,7 @@ async function testJoinWithStringKeyedDatabase(
     .selectFrom('person')
     .leftJoin('pet', 'pet.owner_id', 'person.id')
     .rightJoin('toy', 'toy.pet_id', 'pet.id')
-    .fullJoin('movie as m', 'm.id', 'person.id')
+    .fullJoin('movie as m', 'm.stars', 'person.age')
     .select(['person.first_name', 'pet.name', 'toy.price', 'm.stars'])
     .executeTakeFirstOrThrow()
 

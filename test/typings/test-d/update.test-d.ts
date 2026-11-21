@@ -93,8 +93,9 @@ async function testUpdate(db: Kysely<Database>) {
 async function testUpdateWithJoins(db: Kysely<Database>) {
   const r1 = await db
     .updateTable('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .from('pet')
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
     .returning(['person.first_name', 'pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
@@ -103,30 +104,33 @@ async function testUpdateWithJoins(db: Kysely<Database>) {
 
   const r2 = await db
     .updateTable('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .from('pet')
     .rightJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
-    .returning(['person.first_name', 'pet.name', 'toy.price'])
+    .returning(['pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string | null; name: string | null; price: number }>(
-    r2,
-  )
+  expectType<{ name: string | null; price: number }>(r2)
 
   const r3 = await db
     .updateTable('person')
-    .fullJoin('pet', 'pet.owner_id', 'person.id')
+    .from('pet')
+    .fullJoin('toy', 'toy.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
-    .returning(['person.first_name', 'pet.name'])
+    .returning(['pet.name', 'toy.price'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string | null; name: string | null }>(r3)
+  expectType<{ name: string | null; price: number | null }>(r3)
 
   const r4 = await db
     .updateTable('person')
-    .leftJoin('toy as pet', 'pet.pet_id', 'person.id')
+    .from('pet')
+    .leftJoin('toy as movie', 'movie.pet_id', 'pet.id')
+    .whereRef('person.id', '=', 'pet.owner_id')
     .set({ last_name: 'Jennifer' })
-    .returning(['person.first_name', 'pet.price'])
+    .returning(['person.first_name', 'movie.price'])
     .executeTakeFirstOrThrow()
 
   expectType<{ first_name: string; price: number | null }>(r4)

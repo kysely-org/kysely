@@ -233,8 +233,8 @@ async function testKyselyAnyJoins(db: Kysely<any>) {
 
   const r3 = await db
     .selectFrom('foo')
-    .innerJoin('bar as foo', 'foo.id', 'foo.bar_id')
-    .selectAll('foo')
+    .innerJoin('bar as baz', 'baz.foo_id', 'foo.id')
+    .selectAll('baz')
     .executeTakeFirstOrThrow()
   expectType<{ [x: string]: any }>(r3)
 }
