@@ -215,9 +215,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
-   * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
-   * function.
+   * was used, or when `filterWhere` filters out every row in a group. It is highly
+   * recommended to include null in the output type union and handle null values
+   * in post-execute code, or wrap the function with a {@link coalesce} function.
    *
    * ```ts
    * await db.selectFrom('toy')
@@ -481,9 +481,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
-   * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
-   * function.
+   * was used, or when `filterWhere` filters out every row in a group. It is highly
+   * recommended to include null in the output type union and handle null values
+   * in post-execute code, or wrap the function with a {@link coalesce} function.
    *
    * ```ts
    * await db.selectFrom('toy')
@@ -537,9 +537,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
-   * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
-   * function.
+   * was used, or when `filterWhere` filters out every row in a group. It is highly
+   * recommended to include null in the output type union and handle null values
+   * in post-execute code, or wrap the function with a {@link coalesce} function.
    *
    * ```ts
    * await db.selectFrom('toy')
@@ -605,9 +605,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
-   * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
-   * function.
+   * was used, or when `filterWhere` filters out every row in a group. It is highly
+   * recommended to include null in the output type union and handle null values
+   * in post-execute code, or wrap the function with a {@link coalesce} function.
    *
    * ```ts
    * await db.selectFrom('toy')
