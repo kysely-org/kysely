@@ -15,7 +15,7 @@ bench.baseline(() => {
 })
 
 bench('eb.ref(->>).key()', () => eb.ref('website', '->>').key('url')).types([
-  45,
+  57,
   'instantiations',
 ])
 
@@ -26,11 +26,11 @@ bench('eb.ref(->>).at()', () => eb.ref('nicknames', '->>').at(0)).types([
 
 bench('eb.ref(->).key().at().key()', () =>
   eb.ref('profile', '->').key('addresses').at(0).key('city'),
-).types([146, 'instantiations'])
+).types([158, 'instantiations'])
 
 bench('jsonBuildObject({ inline key(), at() })', () =>
   jsonBuildObject({
     url: eb.ref('website', '->>').key('url'),
     first_nickname: eb.ref('nicknames', '->>').at(0),
   }),
-).types([164, 'instantiations'])
+).types([188, 'instantiations'])

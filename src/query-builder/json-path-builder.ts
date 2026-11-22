@@ -312,4 +312,6 @@ type JSONObjectValueType<
     : // when the object has non-specific keys, e.g. Record<string, T>, should infer `T | null`!
       string extends keyof NonNullable<O>
       ? null | NonNullable<NonNullable<O>[K]>
-      : NonNullable<O>[K]
+      : undefined extends NonNullable<O>[K]
+        ? null | NonNullable<NonNullable<O>[K]>
+        : NonNullable<O>[K]

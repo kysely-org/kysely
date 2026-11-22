@@ -222,6 +222,41 @@ async function testJSONReference(db: Kysely<Database>) {
   )
 }
 
+async function testOptionalKeys(db: Kysely<Database>) {
+  const [r1] = await db
+    .selectFrom('person_metadata')
+    .select((eb) => [
+      eb.ref('profile', '->').key('auth').key('last_login').as('last_login'),
+      eb
+        .ref('profile', '->')
+        .key('auth')
+        .key('last_login')
+        .$notNull()
+        .as('last_login_not_null'),
+      eb
+        .ref('profile', '->')
+        .key('auth')
+        .key('last_login')
+        .key('device')
+        .as('device'),
+      eb
+        .ref('profile', '->')
+        .key('auth')
+        .key('last_login')
+        .$notNull()
+        .key('device')
+        .as('device_not_null'),
+    ])
+    .execute()
+
+  expectType<{
+    last_login: { device: string } | null
+    last_login_not_null: { device: string }
+    device: string | null
+    device_not_null: string
+  }>(r1)
+}
+
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
   expectType<JSONPathBuilder<Selectable<PersonMetadata>['experience']>>(
     eb.jsonPath<'experience'>(),
