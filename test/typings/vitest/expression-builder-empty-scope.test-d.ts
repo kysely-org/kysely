@@ -19,7 +19,7 @@ test('expression builders with tables in scope are assignable to an empty scope'
   accept<ExpressionBuilder<Pick<DatabaseAB, 'a'>, never>>(eb)
 })
 
-test('accepts empty-scope helpers that introduce their own subqueries', () => {
+test('empty scope helpers with their own subqueries can be passed to queries with tables in scope', () => {
   const db = null! as Kysely<DatabaseAB>
   const hasRows = (eb: ExpressionBuilder<DatabaseAB, never>) =>
     eb.exists(eb.selectFrom('b').select('id'))
@@ -27,7 +27,7 @@ test('accepts empty-scope helpers that introduce their own subqueries', () => {
   db.selectFrom('a').selectAll().where(hasRows)
 })
 
-test('accepts empty-scope helpers in conflict updates with converted columns', () => {
+test('empty scope helpers can be used in conflict updates with converted columns', () => {
   type DB = { a: { id: number; converted: ColumnType<Date, string, string> } }
   const db = null! as Kysely<DB>
   const id = (eb: ExpressionBuilder<DB, never>) => eb.val(1)
@@ -41,7 +41,7 @@ test('accepts empty-scope helpers in conflict updates with converted columns', (
   )
 })
 
-test('keeps references and required table scopes unavailable in an empty scope', () => {
+test('empty scopes reject column references, unknown tables and assignment to scopes with tables', () => {
   const eb = null! as ExpressionBuilder<DatabaseAB, never>
   // @ts-expect-error no table is in scope
   eb.ref('a.id')
@@ -55,7 +55,7 @@ test('keeps references and required table scopes unavailable in an empty scope',
   eb.selectFrom('missing')
 })
 
-test('preserves ANY expression and subquery overloads in an empty scope', () => {
+test('fn.any accepts array expressions and subqueries in an empty scope', () => {
   const eb = null! as ExpressionBuilder<DatabaseAB, never>
   accept<Expression<number>>(eb.fn.any(eb.val([1, 2])))
   accept<Expression<number>>(eb.fn.any(eb.selectFrom('a').select('id')))
@@ -63,7 +63,7 @@ test('preserves ANY expression and subquery overloads in an empty scope', () => 
   eb.fn.any(eb.val(1))
 })
 
-test('preserves ANY column inference and errors with tables in scope', () => {
+test('fn.any keeps column inference and errors with tables in scope', () => {
   const eb = null! as ExpressionBuilder<
     { a: { id: number; values: readonly string[] | null } },
     'a'
@@ -77,7 +77,7 @@ test('preserves ANY column inference and errors with tables in scope', () => {
   eb.fn.any('a.missing')
 })
 
-test('still rejects incompatible columns when the target requires tables', () => {
+test('scopes with tables are not assignable to scopes with incompatible column types', () => {
   const eb = null! as ExpressionBuilder<{ a: { id: string } }, 'a'>
   // @ts-expect-error an in-scope string column cannot satisfy a numeric column
   accept<ExpressionBuilder<{ a: { id: number } }, 'a'>>(eb)
