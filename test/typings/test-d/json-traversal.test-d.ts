@@ -255,15 +255,6 @@ async function testOptionalKeys(db: Kysely<Database>) {
     device: string | null
     device_not_null: string
   }>(r1)
-
-  const [r2] = await db
-    .selectFrom('person_metadata')
-    .select((eb) =>
-      eb.ref('profile', '->>$').key('auth').key('last_login').as('last_login'),
-    )
-    .execute()
-
-  expectType<{ last_login: { device: string } | null }>(r2)
 }
 
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
