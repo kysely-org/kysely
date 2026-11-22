@@ -8,12 +8,12 @@ import type {
 } from '../../../dist/index.js'
 import { accept, type DatabaseAB } from './assignability.fixtures.js'
 
-test('accepts function modules with tables in an empty scope', () => {
+test('function modules with tables in scope are assignable to an empty scope', () => {
   const fn = null! as FunctionModule<DatabaseAB, 'a' | 'b'>
   accept<FunctionModule<DatabaseAB, never>>(fn)
 })
 
-test('accepts expression builders with tables in an empty scope', () => {
+test('expression builders with tables in scope are assignable to an empty scope', () => {
   const eb = null! as ExpressionBuilder<DatabaseAB, 'a' | 'b'>
   accept<ExpressionBuilder<DatabaseAB, never>>(eb)
   accept<ExpressionBuilder<Pick<DatabaseAB, 'a'>, never>>(eb)
