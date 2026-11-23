@@ -200,8 +200,8 @@ importers:
         specifier: 0.18.5
         version: 0.18.5
       '@electric-sql/pglite':
-        specifier: 0.5.16
-        version: 0.5.16
+        specifier: 0.5.17
+        version: 0.5.17
       '@types/better-sqlite3':
         specifier: 9.6.0
         version: 9.6.0
@@ -370,7 +370,7 @@ importers:
         version: 0.23.0(supports-color@10.2.2)
       drizzle-orm:
         specifier: 0.45.4
-        version: 0.45.4(@electric-sql/pglite@0.5.16)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.2.0)(knex@3.3.0)(kysely@0.29.9)(mysql2@3.24.6)(pg@8.23.1)(postgres@4.1.1)
+        version: 0.45.4(@electric-sql/pglite@0.5.17)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.2.0)(knex@3.3.0)(kysely@0.29.9)(mysql2@3.24.6)(pg@8.23.1)(postgres@4.1.1)
       hono:
         specifier: catalog:http
         version: 4.13.19
@@ -1780,8 +1780,8 @@ packages:
     peerDependencies:
       '@noble/ciphers': ^1.0.0
 
-  '@electric-sql/pglite@0.5.16':
-    resolution: {integrity: sha512-Nj8KcIsJL748W408U2N8q4+9IlONdpRIU8MJypIAAINMJ5nqKyqpX7Mgg/5XKkXiAib3AoZGR6hnJFlrlLBrcg==}
+  '@electric-sql/pglite@0.5.17':
+    resolution: {integrity: sha512-8SvKjiUjaU+0O0dbxjOfN+jXz14TEqDWbwDkYOW1aQ11y/ph2JvFVI27ABBo5nfw+ZfSqy4hKCNlbnbB1TDE+g==}
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -10637,7 +10637,7 @@ snapshots:
     dependencies:
       '@noble/ciphers': 1.3.0
 
-  '@electric-sql/pglite@0.5.16': {}
+  '@electric-sql/pglite@0.5.17': {}
 
   '@emnapi/runtime@1.11.3':
     dependencies:
@@ -13102,9 +13102,9 @@ snapshots:
 
   dottie@2.0.7: {}
 
-  drizzle-orm@0.45.4(@electric-sql/pglite@0.5.16)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.2.0)(knex@3.3.0)(kysely@0.29.9)(mysql2@3.24.6)(pg@8.23.1)(postgres@4.1.1):
+  drizzle-orm@0.45.4(@electric-sql/pglite@0.5.17)(@types/better-sqlite3@9.6.0)(@types/pg@8.23.1)(better-sqlite3@13.2.0)(knex@3.3.0)(kysely@0.29.9)(mysql2@3.24.6)(pg@8.23.1)(postgres@4.1.1):
     optionalDependencies:
-      '@electric-sql/pglite': 0.5.16
+      '@electric-sql/pglite': 0.5.17
       '@types/better-sqlite3': 9.6.0
       '@types/pg': 8.23.1
       better-sqlite3: 13.2.0
