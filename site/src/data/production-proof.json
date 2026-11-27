@@ -514,7 +514,9 @@
     "sha": "a363a1451c52a56295133ba96036f85ccd0a9967",
     "href": "https://github.com/team-reflect/reflect-open/blob/a363a1451c52a56295133ba96036f85ccd0a9967/packages/core/src/indexing/search-service.ts",
     "group": "built-into",
-    "provenAt": "2026-11-06"
+    "provenAt": "2026-11-06",
+    "hiddenReason": "Kept for downstream testing (a Kysely dialect that compiles SELECTs to { sql, params } and ships them over Tauri IPC to rusqlite); Reflect moved every read to typed Rust commands and removed Kysely on 2026-11-17 (team-reflect/reflect-open#2235, #2237), so the pinned SHA predates the removal.",
+    "hidden": true
   },
   {
     "name": "Remnawave",
