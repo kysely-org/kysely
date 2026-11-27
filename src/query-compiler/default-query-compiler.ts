@@ -953,6 +953,12 @@ export class DefaultQueryCompiler
     this.compileList(node.updates)
   }
 
+  protected override visitNullIf(node: FunctionNode): void {
+    this.append('nullif(')
+    this.compileList(node.arguments)
+    this.append(')')
+  }
+
   protected override visitCreateIndex(node: CreateIndexNode): void {
     this.append('create ')
 
