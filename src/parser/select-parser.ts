@@ -26,13 +26,14 @@ import {
   type ExpressionBuilder,
 } from '../expression/expression-builder.js'
 
-export type SelectExpression<DB, TB extends keyof DB> =
-  | AnyAliasedColumnWithTable<DB, TB>
-  | AnyAliasedColumn<DB, TB>
-  | AnyColumnWithTable<DB, TB>
-  | AnyColumn<DB, TB>
-  | DynamicReferenceBuilder<any>
-  | AliasedExpressionOrFactory<DB, TB>
+export type SelectExpression<DB, TB extends keyof DB> = [DB] extends [unknown]
+  ? | AnyAliasedColumnWithTable<DB, TB>
+    | AnyAliasedColumn<DB, TB>
+    | AnyColumnWithTable<DB, TB>
+    | AnyColumn<DB, TB>
+    | DynamicReferenceBuilder<any>
+    | AliasedExpressionOrFactory<DB, TB>
+  : never
 
 export type SelectCallback<DB, TB extends keyof DB> = (
   eb: ExpressionBuilder<DB, TB>,
