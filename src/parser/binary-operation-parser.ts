@@ -47,7 +47,7 @@ export type OperandValueExpressionOrList<
 > = ValueExpressionOrList<
   DB,
   TB,
-  ExtractTypeFromReferenceExpression<DB, TB, RE> | null
+  NoInfer<ExtractTypeFromReferenceExpression<DB, TB, RE>> | null
 >
 
 export type OperatorExpression = Operator | Expression<unknown>
