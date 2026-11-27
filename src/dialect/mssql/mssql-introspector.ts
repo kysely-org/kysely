@@ -2,6 +2,7 @@ import type { Kysely } from '../../kysely.js'
 import type {
   DatabaseIntrospector,
   DatabaseMetadataOptions,
+  DatabaseSchemaMetadataOptions,
   SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
@@ -9,6 +10,7 @@ import {
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
+import { sql } from '../../raw-builder/sql.js'
 import { freeze } from '../../util/object-utils.js'
 
 export class MssqlIntrospector implements DatabaseIntrospector {
@@ -18,13 +20,30 @@ export class MssqlIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getSchemas(): Promise<SchemaMetadata[]> {
-    return await this.#db.selectFrom('sys.schemas').select('name').execute()
+  async getSchemas(
+    options: DatabaseSchemaMetadataOptions = {},
+  ): Promise<SchemaMetadata[]> {
+    let query = this.#db.selectFrom('sys.schemas').select('name')
+
+    if (options.where) {
+      query = query.where(options.where({ schema: sql.ref<string>('name') }))
+    }
+
+    return await query.execute()
   }
 
   async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
+    const tablesWhere = options.where?.({
+      schema: sql.ref<string>('table_schemas.name'),
+      table: sql.ref<string>('tables.name'),
+    })
+    const viewsWhere = options.where?.({
+      schema: sql.ref<string>('view_schemas.name'),
+      table: sql.ref<string>('views.name'),
+    })
+
     const rawColumns = await this.#db
       .selectFrom('sys.tables as tables')
       .leftJoin(
@@ -49,15 +68,24 @@ export class MssqlIntrospector implements DatabaseIntrospector {
       )
       .leftJoin('sys.extended_properties as comments', (join) =>
         join
+          .on('comments.class', '=', 1)
           .onRef('comments.major_id', '=', 'tables.object_id')
           .onRef('comments.minor_id', '=', 'columns.column_id')
           .on('comments.name', '=', 'MS_Description'),
+      )
+      .leftJoin('sys.extended_properties as table_comments', (join) =>
+        join
+          .on('table_comments.class', '=', 1)
+          .onRef('table_comments.major_id', '=', 'tables.object_id')
+          .on('table_comments.minor_id', '=', 0)
+          .on('table_comments.name', '=', 'MS_Description'),
       )
       .$if(!options.withInternalKyselyTables, (qb) =>
         qb
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
           .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE),
       )
+      .$if(!!tablesWhere, (qb) => qb.where(tablesWhere!))
       .select([
         'tables.name as table_name',
         (eb) =>
@@ -80,6 +108,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         'types.name as type_name',
         'type_schemas.name as type_schema_name',
         'comments.value as column_comment',
+        'table_comments.value as table_comment',
       ])
       .unionAll(
         this.#db
@@ -106,10 +135,19 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           )
           .leftJoin('sys.extended_properties as comments', (join) =>
             join
+              .on('comments.class', '=', 1)
               .onRef('comments.major_id', '=', 'views.object_id')
               .onRef('comments.minor_id', '=', 'columns.column_id')
               .on('comments.name', '=', 'MS_Description'),
           )
+          .leftJoin('sys.extended_properties as table_comments', (join) =>
+            join
+              .on('table_comments.class', '=', 1)
+              .onRef('table_comments.major_id', '=', 'views.object_id')
+              .on('table_comments.minor_id', '=', 0)
+              .on('table_comments.name', '=', 'MS_Description'),
+          )
+          .$if(!!viewsWhere, (qb) => qb.where(viewsWhere!))
           .select([
             'views.name as table_name',
             'views.type as table_type',
@@ -125,6 +163,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'types.name as type_name',
             'type_schemas.name as type_schema_name',
             'comments.value as column_comment',
+            'table_comments.value as table_comment',
           ]),
       )
       .orderBy('table_schema_name')
@@ -141,6 +180,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         tableDictionary[key] ||
         freeze({
           columns: [],
+          comment: rawColumn.table_comment ?? undefined,
           isForeign: false,
           isView: rawColumn.table_type === 'V ',
           name: rawColumn.table_name,
@@ -213,6 +253,7 @@ interface MssqlSysTables {
     system_type_id: number
   }
   'sys.extended_properties': {
+    class: number
     major_id: number
     minor_id: number
     name: string

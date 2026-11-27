@@ -3,12 +3,23 @@ import type { SelectQueryNode } from '../operation-node/select-query-node.js'
 import type { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import type { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
+import type { KyselyTypeError } from '../util/type-error.js'
 import { getJsonObjectArgs } from '../util/json-object-args.js'
 import type {
+  IsNever,
   ShallowDehydrateObject,
   ShallowDehydrateValue,
   Simplify,
 } from '../util/type-utils.js'
+
+/**
+ * Used to check for `BLOB` column existence in result records.
+ */
+export type ExtractBlobs<O> = {
+  [K in keyof O]: O[K] extends Expression<infer V>
+    ? Extract<V, Uint8Array>
+    : Extract<O[K], Uint8Array>
+}[keyof O]
 
 /**
  * A SQLite helper for aggregating a subquery into a JSON array.
@@ -72,7 +83,10 @@ import type {
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: SelectQueryBuilderExpression<O>,
+  expr: SelectQueryBuilderExpression<O> &
+    (IsNever<ExtractBlobs<O>> extends true
+      ? unknown
+      : KyselyTypeError<'SQLite does not support passing `BLOB` values to `json_object`. Cast to `TEXT`.'>),
 ): RawBuilder<Simplify<ShallowDehydrateObject<O>>[]> {
   return sql`(select coalesce(json_group_array(json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'agg'),
@@ -143,7 +157,10 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: SelectQueryBuilderExpression<O>,
+  expr: SelectQueryBuilderExpression<O> &
+    (IsNever<ExtractBlobs<O>> extends true
+      ? unknown
+      : KyselyTypeError<'SQLite does not support passing `BLOB` values to `json_object`. Cast to `TEXT`.'>),
 ): RawBuilder<Simplify<ShallowDehydrateObject<O>> | null> {
   return sql`(select json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'obj'),
@@ -207,7 +224,10 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-  obj: O,
+  obj: O &
+    (IsNever<ExtractBlobs<O>> extends true
+      ? unknown
+      : KyselyTypeError<'SQLite does not support passing `BLOB` values to `json_object`. Cast to `TEXT`.'>),
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V>

@@ -19,7 +19,7 @@ bench('kysely.with(cte, qc => qc.insertInto(table))', () => {
 
 bench('kysely.with(cte, qc => qc.updateTable(table))', () => {
   return kysely.with('cte', (qc) => qc.updateTable('my_table').returningAll())
-}).types([21498, 'instantiations'])
+}).types([15311, 'instantiations'])
 
 bench('kysely.with(cte, qc => qc.deleteFrom(table))', () => {
   return kysely.with('cte', (qc) => qc.deleteFrom('my_table').returningAll())
@@ -37,7 +37,7 @@ bench('kyselyAny.with(cte, qc => qc.updateTable(table))', () => {
   return kyselyAny.with('cte', (qc) =>
     qc.updateTable('my_table').returningAll(),
   )
-}).types([21288, 'instantiations'])
+}).types([15101, 'instantiations'])
 
 bench('kyselyAny.with(cte, qc => qc.deleteFrom(table))', () => {
   return kyselyAny.with('cte', (qc) => qc.deleteFrom('my_table').returningAll())
@@ -53,7 +53,7 @@ bench('kysely.with(cte, () => insertQuery)', () => {
 
 bench('kysely.with(cte, () => updateQuery)', () => {
   return kysely.with('cte', () => kysely.updateTable('my_table').returningAll())
-}).types([21486, 'instantiations'])
+}).types([15299, 'instantiations'])
 
 bench('kysely.with(cte, () => deleteQuery)', () => {
   return kysely.with('cte', () => kysely.deleteFrom('my_table').returningAll())
@@ -75,7 +75,7 @@ bench('kyselyAny.with(cte, () => updateQuery)', () => {
   return kyselyAny.with('cte', () =>
     kyselyAny.updateTable('my_table').returningAll(),
   )
-}).types([21276, 'instantiations'])
+}).types([15089, 'instantiations'])
 
 bench('kyselyAny.with(cte, () => deleteQuery)', () => {
   return kyselyAny.with('cte', () =>
@@ -93,7 +93,7 @@ bench('kysely.with(cte, insertQuery)', () => {
 
 bench('kysely.with(cte, updateQuery)', () => {
   return kysely.with('cte', kysely.updateTable('my_table').returningAll())
-}).types([21530, 'instantiations'])
+}).types([15343, 'instantiations'])
 
 bench('kysely.with(cte, deleteQuery)', () => {
   return kysely.with('cte', kysely.deleteFrom('my_table').returningAll())
@@ -109,7 +109,7 @@ bench('kyselyAny.with(cte, insertQuery)', () => {
 
 bench('kyselyAny.with(cte, updateQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.updateTable('my_table').returningAll())
-}).types([21320, 'instantiations'])
+}).types([15133, 'instantiations'])
 
 bench('kyselyAny.with(cte, deleteQuery)', () => {
   return kyselyAny.with('cte', kyselyAny.deleteFrom('my_table').returningAll())
@@ -120,14 +120,14 @@ bench('kysely.with(cte, ...).selectFrom(cte)', () => {
     .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
     .selectFrom('cte')
     .selectAll()
-}).types([62868, 'instantiations'])
+}).types([7559, 'instantiations'])
 
 bench('kysely.with(table, ...).selectFrom(table)', () => {
   return kysely
     .with('my_table', (qc) => qc.selectFrom('my_table').select('id'))
     .selectFrom('my_table')
     .selectAll()
-}).types([62861, 'instantiations'])
+}).types([7552, 'instantiations'])
 
 bench('kysely.with(cte1, ...)...with(cte8, ...).selectFrom(cte8)', () => {
   return kysely
@@ -141,7 +141,7 @@ bench('kysely.with(cte1, ...)...with(cte8, ...).selectFrom(cte8)', () => {
     .with('cte8', (qc) => qc.selectFrom('cte7').select('id'))
     .selectFrom('cte8')
     .selectAll()
-}).types([72941, 'instantiations'])
+}).types([17632, 'instantiations'])
 
 bench('kysely.withRecursive(cte, ...).selectFrom(cte)', () => {
   return kysely
@@ -153,7 +153,7 @@ bench('kysely.withRecursive(cte, ...).selectFrom(cte)', () => {
     )
     .selectFrom('cte')
     .selectAll()
-}).types([59328, 'instantiations'])
+}).types([4019, 'instantiations'])
 
 bench('kyselyAny.with(cte, ...).selectFrom(cte)', () => {
   return kyselyAny
@@ -161,3 +161,48 @@ bench('kyselyAny.with(cte, ...).selectFrom(cte)', () => {
     .selectFrom('cte')
     .selectAll()
 }).types([2060, 'instantiations'])
+
+// Consume the returned query creator so these also measure CTE schema composition.
+bench('select from a CTE in a large schema', () => {
+  return kysely
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+    .compile()
+}).types([7595, 'instantiations'])
+
+bench('chain three CTEs in a large schema', () => {
+  return kysely
+    .with('cte1', (qc) => qc.selectFrom('my_table').select('id'))
+    .with('cte2', (qc) => qc.selectFrom('cte1').selectAll())
+    .with('cte3', (qc) => qc.selectFrom('cte2').selectAll())
+    .selectFrom('cte3')
+    .selectAll()
+    .compile()
+}).types([8811, 'instantiations'])
+
+bench('select from a CTE that shadows a table in a large schema', () => {
+  return kysely
+    .with('my_table', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('my_table')
+    .select('id')
+    .compile()
+}).types([7638, 'instantiations'])
+
+bench('select from a CTE in an any schema', () => {
+  return kyselyAny
+    .with('cte', (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom('cte')
+    .selectAll()
+    .compile()
+}).types([2096, 'instantiations'])
+
+declare const cteName: string
+
+bench('select from a dynamically named CTE in a large schema', () => {
+  return kysely
+    .with(cteName, (qc) => qc.selectFrom('my_table').select('id'))
+    .selectFrom(cteName)
+    .select('id')
+    .compile()
+}).types([7373, 'instantiations'])

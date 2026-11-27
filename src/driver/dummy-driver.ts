@@ -30,8 +30,8 @@ import type { Driver } from './driver.js'
  * })
  * ```
  *
- * You can use it to build a query and compile it to SQL but trying to
- * execute the query will throw an error.
+ * You can use it to build a query and compile it to SQL. Executing queries
+ * returns empty results without communicating with a database.
  *
  * ```ts
  * const { sql } = db.selectFrom('person').selectAll().compile()

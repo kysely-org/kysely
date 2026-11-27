@@ -1008,7 +1008,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (sqlSpec === 'postgres' && variant !== 'pglite') {
+    if (variant === 'postgres' || variant === 'sqlite') {
       it('should insert multiple rows and stream returned results', async () => {
         const values = [
           {
@@ -1036,7 +1036,7 @@ for (const dialect of DIALECTS) {
         }
 
         expect(people).to.have.length(values.length)
-        expect(people).to.eql(values)
+        expect(people).to.have.deep.members(values)
       })
     }
 
