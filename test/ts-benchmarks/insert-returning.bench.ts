@@ -17,29 +17,29 @@ bench.baseline(() => {
 
 bench('kysely.insertInto(table).returning(column)', () =>
   insertQuery.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([313, 'instantiations'])
+).types([314, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(~column)', () =>
   // @ts-expect-error
   insertQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7260, 'instantiations'])
+).types([7231, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(table.column)', () =>
   insertQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([313, 'instantiations'])
+).types([314, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(~table.column)', () =>
   // @ts-expect-error
   insertQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7260, 'instantiations'])
+).types([7231, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(table.column as alias)', () =>
   insertQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([313, 'instantiations'])
+).types([314, 'instantiations'])
 
 bench('kysely.insertInto(table)..returning(column as alias)', () =>
   insertQuery.returning('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([313, 'instantiations'])
+).types([314, 'instantiations'])
 
 bench('kysely.insertInto(table)..returningAll()', () =>
   insertQuery.returningAll(),
@@ -47,17 +47,17 @@ bench('kysely.insertInto(table)..returningAll()', () =>
 
 bench('kyselyAny.insertInto(table)..returning(column)', () =>
   insertQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([247, 'instantiations'])
+).types([248, 'instantiations'])
 
 bench('kyselyAny.insertInto(table)..returning(table.column)', () =>
   insertQueryAny.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([247, 'instantiations'])
+).types([248, 'instantiations'])
 
 bench('kyselyAny.insertInto(table)..returning(table.column as alias)', () =>
   insertQueryAny.returning(
     'my_table.col_164b7896ec8e770207febe0812c5f052 as foo',
   ),
-).types([247, 'instantiations'])
+).types([248, 'instantiations'])
 
 bench('kyselyAny.insertInto(table)..returningAll()', () =>
   insertQueryAny.returningAll(),

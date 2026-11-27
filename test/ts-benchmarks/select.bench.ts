@@ -17,29 +17,29 @@ bench.baseline(() => {
 
 bench('kysely..select(column)', () =>
   query.select('col_164b7896ec8e770207febe0812c5f052'),
-).types([279, 'instantiations'])
+).types([280, 'instantiations'])
 
 bench('kysely..select(~column)', () =>
   // @ts-expect-error
   query.select('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7185, 'instantiations'])
+).types([7156, 'instantiations'])
 
 bench('kysely..select(table.column)', () =>
   query.select('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([279, 'instantiations'])
+).types([280, 'instantiations'])
 
 bench('kysely..select(~table.column)', () =>
   // @ts-expect-error
   query.select('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7185, 'instantiations'])
+).types([7156, 'instantiations'])
 
 bench('kysely..select(table.column as alias)', () =>
   query.select('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([279, 'instantiations'])
+).types([280, 'instantiations'])
 
 bench('kysely..select(column as alias)', () =>
   query.select('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([279, 'instantiations'])
+).types([280, 'instantiations'])
 
 bench('kysely..selectAll()', () => query.selectAll()).types([
   37,
@@ -58,15 +58,15 @@ bench('kysely..selectAll(~table)', () =>
 
 bench('kyselyAny..select(column)', () =>
   queryAny.select('col_164b7896ec8e770207febe0812c5f052'),
-).types([213, 'instantiations'])
+).types([214, 'instantiations'])
 
 bench('kyselyAny..select(table.column)', () =>
   queryAny.select('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([213, 'instantiations'])
+).types([214, 'instantiations'])
 
 bench('kyselyAny..select(table.column as alias)', () =>
   queryAny.select('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([213, 'instantiations'])
+).types([214, 'instantiations'])
 
 bench('kyselyAny..selectAll()', () => queryAny.selectAll()).types([
   37,

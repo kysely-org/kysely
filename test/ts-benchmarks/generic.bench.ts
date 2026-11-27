@@ -142,7 +142,7 @@ bench('select(genericSelectHelper) on a left joined query', () => {
     .leftJoin('person as personJoin', 'personJoin.parent_id', 'parent.id')
     .leftJoin('pet as petJoin', 'petJoin.owner_id', 'personJoin.id')
     .select(selectParentId)
-}).types([53971, 'instantiations'])
+}).types([53955, 'instantiations'])
 
 bench('DeleteQueryBuilder assignable to narrower DeleteQueryBuilder', () => {
   return acceptsNarrowDeleteQueryBuilder(wideDeleteQueryBuilder)
@@ -158,7 +158,7 @@ bench('WheneableMergeQueryBuilder assignable to a narrower one', () => {
 
 bench('Transaction assignable to Kysely', () => {
   return acceptsKysely(transaction)
-}).types([150029, 'instantiations'])
+}).types([149484, 'instantiations'])
 
 bench('MergeQueryBuilder assignable to narrower MergeQueryBuilder', () => {
   return acceptsNarrowMergeInto(wideMergeInto)

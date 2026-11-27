@@ -17,29 +17,29 @@ bench.baseline(() => {
 
 bench('kysely.updateTable(table).returning(column)', () =>
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([301, 'instantiations'])
+).types([302, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(~column)', () =>
   // @ts-expect-error
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052_'),
-).types([7101, 'instantiations'])
+).types([7072, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(table.column)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([301, 'instantiations'])
+).types([302, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(~table.column)', () =>
   // @ts-expect-error
   updateQuery.returning('my_table_.col_164b7896ec8e770207febe0812c5f052'),
-).types([7101, 'instantiations'])
+).types([7072, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(table.column as alias)', () =>
   updateQuery.returning('my_table.col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([301, 'instantiations'])
+).types([302, 'instantiations'])
 
 bench('kysely.updateTable(table)..returning(column as alias)', () =>
   updateQuery.returning('col_164b7896ec8e770207febe0812c5f052 as foo'),
-).types([301, 'instantiations'])
+).types([302, 'instantiations'])
 
 bench('kysely.updateTable(table)..returningAll()', () =>
   updateQuery.returningAll(),
@@ -47,17 +47,17 @@ bench('kysely.updateTable(table)..returningAll()', () =>
 
 bench('kyselyAny.updateTable(table)..returning(column)', () =>
   updateQueryAny.returning('col_164b7896ec8e770207febe0812c5f052'),
-).types([235, 'instantiations'])
+).types([236, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returning(table.column)', () =>
   updateQueryAny.returning('my_table.col_164b7896ec8e770207febe0812c5f052'),
-).types([235, 'instantiations'])
+).types([236, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returning(table.column as alias)', () =>
   updateQueryAny.returning(
     'my_table.col_164b7896ec8e770207febe0812c5f052 as foo',
   ),
-).types([235, 'instantiations'])
+).types([236, 'instantiations'])
 
 bench('kyselyAny.updateTable(table)..returningAll()', () =>
   updateQueryAny.returningAll(),
