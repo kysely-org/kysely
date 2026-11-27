@@ -231,6 +231,13 @@ export const brandLogos: Record<string, BrandLogo> = {
     viewBox: '0 0 683 95',
     id: 'farcaster',
   },
+  // Official fastgpt.io header mark (logo-nav.svg); its blue gradient
+  // flattens to currentColor and the name sits beside it as on their site.
+  FastGPT: {
+    label: 'FastGPT',
+    viewBox: '3.89 2.18 14.22 18.43',
+    id: 'fastgpt',
+  },
   Founderpath: {
     label: 'Founderpath',
     viewBox: '0 0 167 28',
