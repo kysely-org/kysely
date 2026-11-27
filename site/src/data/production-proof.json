@@ -283,6 +283,17 @@
     "provenAt": "2026-10-30"
   },
   {
+    "name": "FastGPT",
+    "repo": "labring/FastGPT",
+    "path": "packages/dal/db/repos/appRegistration/oceanbase/repo.ts",
+    "sha": "b446b77f226fabc152b278aca8c16b117010601b",
+    "href": "https://github.com/labring/FastGPT/blob/b446b77f226fabc152b278aca8c16b117010601b/packages/dal/db/repos/appRegistration/oceanbase/repo.ts",
+    "group": "production",
+    "provenAt": "2026-11-27",
+    "hiddenReason": "Kept for downstream testing (typed repositories, explicit DbSession transactions, and deadlock retries over mysql2 against OceanBase / SeekDB, with a real-database contract suite in CI); Kysely landed on 2026-11-24 as the OceanBase engine of a multi-DB refactor, while MongoDB stays the production engine and only the AppRegistration pilot has an OceanBase implementation so far.",
+    "hidden": true
+  },
+  {
     "name": "Founderpath",
     "href": "https://github.com/kysely-org/kysely/issues/320#issuecomment-1659420634",
     "group": "production",
