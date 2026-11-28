@@ -16,6 +16,13 @@ export class AlterColumnBuilder {
     this.#column = column
   }
 
+  /**
+   * Sets the column data type. Supported by PostgreSQL and MSSQL.
+   *
+   * For MySQL, use {@link AlterTableBuilder.modifyColumn}.
+   *
+   * See {@link AlterTableBuilder.alterColumn} for examples.
+   */
   setDataType(dataType: DataTypeExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.create(
@@ -26,6 +33,13 @@ export class AlterColumnBuilder {
     )
   }
 
+  /**
+   * Sets the default value for future inserts. Existing rows are not changed.
+   *
+   * Supported by PostgreSQL and MySQL.
+   *
+   * See {@link AlterTableBuilder.alterColumn} for examples.
+   */
   setDefault(value: DefaultValueExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.create(
@@ -36,18 +50,37 @@ export class AlterColumnBuilder {
     )
   }
 
+  /**
+   * Removes the column default. Supported by PostgreSQL and MySQL.
+   *
+   * See {@link AlterTableBuilder.alterColumn} for examples.
+   */
   dropDefault(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.create(this.#column, 'dropDefault', true),
     )
   }
 
+  /**
+   * Adds a `not null` constraint. Existing rows must not contain null values.
+   *
+   * Supported by PostgreSQL. For MySQL, use {@link AlterTableBuilder.modifyColumn}.
+   *
+   * See {@link AlterTableBuilder.alterColumn} for examples.
+   */
   setNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.create(this.#column, 'setNotNull', true),
     )
   }
 
+  /**
+   * Removes the `not null` constraint. Supported by PostgreSQL.
+   *
+   * For MySQL, use {@link AlterTableBuilder.modifyColumn}.
+   *
+   * See {@link AlterTableBuilder.alterColumn} for examples.
+   */
   dropNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.create(this.#column, 'dropNotNull', true),
