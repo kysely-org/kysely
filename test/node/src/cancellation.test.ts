@@ -3,6 +3,8 @@ import { expect } from 'chai'
 import { createConnection, createPool } from 'mysql2'
 import { Client, Pool } from 'pg'
 import {
+  type AbortableOperationOptions,
+  type CompiledQuery,
   type DatabaseConnection,
   Kysely,
   MysqlDialect,
@@ -96,16 +98,22 @@ for (const dialect of DIALECTS) {
             },
           )
 
-        await setTimeout(250)
-        await expect(
-          ctx.db
+        const deadline = Date.now() + 5_000
+        let count = 0
+
+        while (count === 0 && Date.now() < deadline) {
+          await setTimeout(25)
+
+          const result = await ctx.db
             .selectFrom('person')
             .where('gender', '=', 'woah' as never)
             .select(ctx.db.fn.countAll().as('count'))
-            .executeTakeFirstOrThrow(),
-        ).to.eventually.satisfy((result: { count: unknown }) =>
-          expect(Number(result.count)).to.equal(1),
-        )
+            .executeTakeFirstOrThrow()
+
+          count = Number(result.count)
+        }
+
+        expect(count).to.equal(1)
       })
     }
 
@@ -182,8 +190,27 @@ for (const dialect of DIALECTS) {
           rejectCancelQuery = reject
         })
 
+        let resolveQuery!: () => void
+        const querySettled = new Promise<void>((resolve) => {
+          resolveQuery = resolve
+        })
+
         const onCreateConnection = async (connection: DatabaseConnection) => {
           const cancelQuery = connection.cancelQuery!.bind(connection)
+          const executeQuery = connection.executeQuery.bind(connection)
+
+          connection.executeQuery = <R>(
+            compiledQuery: CompiledQuery,
+            options?: AbortableOperationOptions,
+          ) => {
+            const promise = executeQuery<R>(compiledQuery, options)
+
+            if (compiledQuery.sql.includes('woah')) {
+              promise.then(resolveQuery, resolveQuery)
+            }
+
+            return promise
+          }
 
           connection.cancelQuery = (controlConnectionProvider) => {
             const promise = cancelQuery(controlConnectionProvider)
@@ -198,7 +225,7 @@ for (const dialect of DIALECTS) {
               ? new PostgresDialect({
                   controlClient: class extends Client {
                     override async connect(): Promise<Client> {
-                      await setTimeout(250)
+                      await querySettled
                       return super.connect()
                     }
                   },
@@ -210,7 +237,7 @@ for (const dialect of DIALECTS) {
                     const connection = createConnection(config)
                     const connect = connection.connect.bind(connection)
                     connection.connect = (callback) =>
-                      void setTimeout(250).then(() => connect(callback))
+                      void querySettled.then(() => connect(callback))
                     return connection
                   },
                   onCreateConnection,
