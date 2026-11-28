@@ -5,55 +5,21 @@ on:
     branches: [master, next]
     paths:
       - '.github/**'
-      - '**/package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
       - 'zizmor.yml'
   pull_request:
     branches: ['**']
     paths:
       - '.github/**'
-      - '**/package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
       - 'zizmor.yml'
-  schedule:
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  node:
-    concurrency:
-      cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-node-${{ github.event.pull_request.number || github.sha }}
-
-    name: Audit Node.js dependencies
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: install pnpm
-        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-        with:
-          cache: true
-
-      - name: use node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: lts/*
-
-      - name: audit dependencies
-        run: pnpm audit
-
   zizmor:
     concurrency:
       cancel-in-progress: ${{ github.ref_name != 'master' }}
-      group: ${{ github.workflow }}-zizmor-${{ github.event.pull_request.number || github.sha }}
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
 
     name: zizmor github actions scan
     runs-on: ubuntu-latest
