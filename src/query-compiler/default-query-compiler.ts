@@ -1178,6 +1178,11 @@ export class DefaultQueryCompiler
 
   protected override visitAlterTable(node: AlterTableNode): void {
     this.append('alter table ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
     this.visitNode(node.table)
     this.append(' ')
 
