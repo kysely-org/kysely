@@ -4,11 +4,101 @@ import type { OnModifyForeignAction } from '../operation-node/references-node.js
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 
 export interface ForeignKeyConstraintBuilderInterface<R> {
+  /**
+   * Sets the action taken when a referenced row is deleted.
+   *
+   * For example, `cascade` deletes referencing rows, while `set null` sets the
+   * referencing columns to null. `set null` requires nullable columns.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'pet_owner_id_foreign',
+   *     ['owner_id'],
+   *     'person',
+   *     ['id'],
+   *     (fk) => fk.onDelete('cascade'),
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer,
+   *   constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") on delete cascade
+   * )
+   * ```
+   */
   onDelete(onDelete: OnModifyForeignAction): R
+
+  /**
+   * Sets the action taken when a referenced key is updated.
+   *
+   * For example, `cascade` updates the referencing columns to the new key value.
+   * See {@link onDelete} for a constraint example.
+   */
   onUpdate(onUpdate: OnModifyForeignAction): R
+
+  /**
+   * Allows checking the constraint to be deferred until the transaction commits.
+   *
+   * Supported by PostgreSQL and SQLite for foreign keys. Use
+   * {@link initiallyDeferred} to defer checks by default. Otherwise checks are
+   * initially immediate. MySQL and MSSQL don't support this modifier.
+   */
   deferrable(): R
+
+  /**
+   * Prevents deferring constraint checks. This is the default.
+   *
+   * Supported by PostgreSQL and SQLite for foreign keys.
+   */
   notDeferrable(): R
+
+  /**
+   * Checks the constraint at transaction commit by default.
+   *
+   * Use with {@link deferrable}. Supported by PostgreSQL and SQLite for foreign keys.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('owner_id', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'pet_owner_id_foreign',
+   *     ['owner_id'],
+   *     'person',
+   *     ['id'],
+   *     (fk) => fk.deferrable().initiallyDeferred(),
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "pet" (
+   *   "owner_id" integer,
+   *   constraint "pet_owner_id_foreign" foreign key ("owner_id") references "person" ("id") deferrable initially deferred
+   * )
+   * ```
+   */
   initiallyDeferred(): R
+
+  /**
+   * Checks the constraint after each statement by default.
+   *
+   * A {@link deferrable} constraint can still be deferred within a transaction.
+   * Supported by PostgreSQL and SQLite for foreign keys.
+   */
   initiallyImmediate(): R
 }
 
