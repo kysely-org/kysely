@@ -198,41 +198,18 @@ html[data-theme='dark'][data-navbar-scrolled] .navbar {
   padding: 0 2px;
 }
 
-/* Socials sit outermost, past the color-mode toggle (which Docusaurus
-   always renders after the items), so flex order flips the visual sequence. */
-.navbar__items--right > div[class*='toggle_'] {
-  order: 5;
+.navbar-github {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  gap: 6px;
+  padding: 0 6px;
+  width: auto;
 }
 
-.navbar__items--right .navbar__item:has(.navbar-social) {
-  order: 10;
-}
-
-/* Vertical dividers flanking the appearance toggle, with hono/knex's exact
-   VitePress geometry: 24px bars, 8px toward the outer groups, 16px toward
-   the toggle. */
+.navbar__items--right .navbar__item.navbar-group-start,
 .navbar__items--right > div[class*='toggle_'] {
   margin-left: 8px;
-  padding-left: 16px;
-  position: relative;
-}
-
-.navbar__items--right .navbar__item.navbar-group-start {
-  margin-left: 16px;
-  padding: 0 2px 0 8px;
-  position: relative;
-}
-
-.navbar__items--right .navbar-group-start::before,
-.navbar__items--right > div[class*='toggle_']::before {
-  background: var(--navbar-divider);
-  content: '';
-  height: 24px;
-  left: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
 }
 
 /* In the mobile menu, socials share one row under the links, past a

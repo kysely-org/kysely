@@ -283,32 +283,29 @@ export default {
     navbar: {
       items: [
         {
-          position: 'left',
-          type: 'search',
-        },
-        {
           docId: 'intro',
           label: 'Docs',
-          position: 'right',
+          position: 'left',
           type: 'doc',
         },
         {
           href: 'https://play.kysely.dev',
           label: 'Playground',
-          position: 'right',
+          position: 'left',
         },
         {
           href: 'https://kysely-org.github.io/kysely-apidoc',
           label: 'API docs',
-          position: 'right',
+          position: 'left',
         },
         {
-          ...socialNavbarItem(
-            'GitHub',
-            'https://github.com/kysely-org/kysely',
-            socialIconPaths.github,
-          ),
+          position: 'right',
+          type: 'search',
+        },
+        {
           className: 'navbar-group-start',
+          position: 'right',
+          type: 'custom-github',
         },
         socialNavbarItem(
           'Discord',
