@@ -284,8 +284,8 @@ importers:
         specifier: 3.1.2
         version: 3.1.2
       tedious:
-        specifier: 20.3.9
-        version: 20.3.9(supports-color@8.1.1)
+        specifier: 20.4.1
+        version: 20.4.1(supports-color@8.1.1)
       tsd:
         specifier: 0.33.0
         version: 0.33.0
@@ -376,7 +376,7 @@ importers:
         version: 4.13.19
       knex:
         specifier: 3.3.0
-        version: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+        version: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1)
       kysely-sequelize:
         specifier: 0.2.0
         version: 0.2.0(kysely@0.29.9)(sequelize@6.37.8)
@@ -418,7 +418,7 @@ importers:
         version: 0.2.2
       sequelize:
         specifier: 6.37.8
-        version: 6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+        version: 6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1)
       shiki:
         specifier: 4.6.0
         version: 4.6.0
@@ -7437,8 +7437,8 @@ packages:
     resolution: {integrity: sha512-3RTvqKZcK/17jnJ8rMKFXbyNogywTs1z0gVPPwFsJGX46rkmUHOdIaSQ/aVO1rS7nH+soiXiWk7rvUXxndm8Dg==}
     engines: {node: '>=8.0.0'}
 
-  tedious@20.3.9:
-    resolution: {integrity: sha512-fiHhg1xcVWzUkJ6uIGFkN41xpC0J2B2W1/IaFSMt0StjEWyhcCUKp2wzXJRBtb0FZyB1HvbAx+n2Go3jf/aicg==}
+  tedious@20.4.1:
+    resolution: {integrity: sha512-6PwHbFQMu8Pxqyj8uF/LhteO6O1tT2g+WUs/XQPACVAzaxEpdtJWvpTPGNorljH0ye6wMbOuPaCaN8on4WjGaQ==}
     engines: {node: '>=22'}
 
   terser-webpack-plugin@5.6.0:
@@ -13108,7 +13108,7 @@ snapshots:
       '@types/better-sqlite3': 9.6.0
       '@types/pg': 8.23.1
       better-sqlite3: 13.2.0
-      knex: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+      knex: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1)
       kysely: 0.29.9
       mysql2: 3.24.6(@types/node@26.6.6)
       pg: 8.23.1
@@ -14304,7 +14304,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex@3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9):
+  knex@3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -14324,14 +14324,14 @@ snapshots:
       better-sqlite3: 13.2.0
       mysql2: 3.24.6(@types/node@26.6.6)
       pg: 8.23.1
-      tedious: 20.3.9(supports-color@10.2.2)
+      tedious: 20.4.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
   kysely-sequelize@0.2.0(kysely@0.29.9)(sequelize@6.37.8):
     dependencies:
       kysely: 0.29.9
-      sequelize: 6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+      sequelize: 6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1)
 
   kysely-supabase@0.2.1(kysely@0.29.9)(supabase@2.122.1):
     dependencies:
@@ -15289,7 +15289,7 @@ snapshots:
     dependencies:
       ajv: 8.18.0
       ajv-formats: 3.0.1
-      knex: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9)
+      knex: 3.3.0(better-sqlite3@13.2.0)(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1)
     optionalDependencies:
       typescript: 7.0.2
 
@@ -16523,7 +16523,7 @@ snapshots:
 
   sequelize-pool@7.1.0: {}
 
-  sequelize@6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.3.9):
+  sequelize@6.37.8(mysql2@3.24.6)(pg@8.23.1)(supports-color@10.2.2)(tedious@20.4.1):
     dependencies:
       '@types/debug': 4.1.13
       '@types/validator': 13.15.10
@@ -16544,7 +16544,7 @@ snapshots:
     optionalDependencies:
       mysql2: 3.24.6(@types/node@26.6.6)
       pg: 8.23.1
-      tedious: 20.3.9(supports-color@10.2.2)
+      tedious: 20.4.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -16930,7 +16930,7 @@ snapshots:
 
   tarn@3.1.2: {}
 
-  tedious@20.3.9(supports-color@10.2.2):
+  tedious@20.4.1(supports-color@10.2.2):
     dependencies:
       '@azure/core-auth': 1.10.1(supports-color@10.2.2)
       '@azure/identity': 4.13.1(supports-color@10.2.2)
@@ -16945,7 +16945,7 @@ snapshots:
       - supports-color
     optional: true
 
-  tedious@20.3.9(supports-color@8.1.1):
+  tedious@20.4.1(supports-color@8.1.1):
     dependencies:
       '@azure/core-auth': 1.10.1(supports-color@8.1.1)
       '@azure/identity': 4.13.1(supports-color@8.1.1)
