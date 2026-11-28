@@ -3,8 +3,23 @@ name: secure
 on:
   push:
     branches: [master, next]
+    paths:
+      - '.github/**'
+      - '**/package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'zizmor.yml'
   pull_request:
     branches: ['**']
+    paths:
+      - '.github/**'
+      - '**/package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'zizmor.yml'
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 permissions: {}
 
