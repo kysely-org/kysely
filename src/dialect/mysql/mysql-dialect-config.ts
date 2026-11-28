@@ -34,6 +34,11 @@ export interface MysqlDialectConfig {
    * `pool.end(callback)` once all consumers, including Kysely, have finished. No
    * separate cleanup of the `Kysely` instance is needed.
    *
+   * The pool must not enable mysql2's `nestTables` or `rowsAsArray` options,
+   * since they change the shape of query results. A pool supplied directly is
+   * rejected when the driver is created. A pool returned by a function is
+   * rejected, and ended, when the first query is executed.
+   *
    * https://github.com/sidorares/node-mysql2#using-connection-pools
    */
   pool:
