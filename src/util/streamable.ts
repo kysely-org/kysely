@@ -7,6 +7,9 @@ export interface Streamable<O> {
    * The optional argument `chunkSize` defines how many rows to fetch from the database
    * at a time. It only affects some dialects like PostgreSQL that support it.
    *
+   * You can pass an options object to set both `chunkSize` and an abort signal.
+   * Streaming doesn't accept `inflightQueryAbortStrategy`.
+   *
    * ### Examples
    *
    * ```ts
@@ -25,6 +28,32 @@ export interface Streamable<O> {
    *     break
    *   }
    * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", "last_name"
+   * from "person"
+   * where "gender" = $1
+   * ```
+   *
+   * Stop consuming rows when a timeout expires:
+   *
+   * ```ts
+   * for await (const person of db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .stream({ chunkSize: 100, signal: AbortSignal.timeout(1000) })) {
+   *   console.log(person.id)
+   * }
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
    * ```
    */
   stream(
