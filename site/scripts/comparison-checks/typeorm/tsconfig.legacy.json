@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "customConditions": ["legacy"]
+  },
+  "include": ["*.mts", "types/*.legacy.mts"]
+}
